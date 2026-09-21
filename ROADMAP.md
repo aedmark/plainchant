@@ -123,8 +123,8 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
 - [x] P4-08 Split the inline app script in `index.html` (~925 lines) into eleven classic script files under
   `src/app/`, one per concern (D-014). Behaviour-neutral: every original line moved exactly once (checked), all
   319 e2e checks unchanged. `test/structure.test.js` guards the structure.
-- [ ] P4-09 Move the inline stylesheet (~770 lines of `index.html`) into its own file(s). Same idea as P4-08, lower
-  risk; do it when a CSS change next makes the size annoying.
+- [x] P4-09 Moved the inline stylesheet (~680 lines) out of `index.html` into `src/styles.css`, linked from the page.
+  Byte-for-byte the same rules (de-indented); `test/structure.test.js` fails if an inline `<style>` returns.
 - [x] P4-07 Replace deprecated `document.execCommand('copy')` with the async Clipboard API (execCommand stays as the
   fallback for insecure origins)
 

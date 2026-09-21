@@ -31,7 +31,8 @@ Sessions are short-lived and context resets between them, so the repo carries th
 
 | Path | Purpose |
 | --- | --- |
-| `index.html` | The page: markup, the stylesheet, and the list of scripts to load (no inline script) |
+| `index.html` | The page: markup, and the links to the stylesheet and scripts (no inline style or script) |
+| `src/styles.css` | All the CSS. Desktop-first; the mobile block mirrors `MOBILE_QUERY` / `FIT_QUERY` in `src/app/layout.js` |
 | `src/app/*.js` | The app itself, one file per concern, loaded in order by `index.html` (see "App scripts" below, D-014) |
 | `src/fountain.js` | Fountain parser + HTML renderer. Pure, UMD, no DOM (D-003) |
 | `src/editing.js` | Typing helpers (Tab, smart Enter, auto-uppercase): text + caret in, edit out. Pure, UMD (D-010) |
@@ -60,7 +61,7 @@ use what an earlier file already defined. Code inside functions runs later and c
 | `main.js` | Start-up on `DOMContentLoaded`. Always last |
 
 Rules: add a new file to `index.html` in the right place (`test/structure.test.js` fails if the folder and the page
-disagree, if a name is declared twice across files, if an inline script comes back, or if a file passes 500 lines).
+disagree, if a name is declared twice across files, if an inline script or `<style>` comes back, or if a file passes 500 lines).
 Keep each file's own listeners in that file. Functions the e2e tests call (`saveScript`, `setView`, `openTour`,
 `syncElementState`, `flushSave`, ...) must stay top-level function declarations, and `currentScriptId` a top-level
 `let`: tests reach them as globals. Do not use ES modules (D-001).

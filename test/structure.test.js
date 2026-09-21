@@ -59,3 +59,10 @@ test('structure: every app script starts with the explanatory header', () => {
         assert.ok(/^\/\*\n \* Plainchant app script: /.test(fs.readFileSync(path.join(appDir, f), 'utf8')), f + ' has no header comment');
     });
 });
+
+test('structure: the stylesheet is a linked file and no inline <style> has crept back into index.html', () => {
+    const links = Array.from(html.matchAll(/<link rel="stylesheet" href="(src\/[^"]+)">/g)).map((m) => m[1]);
+    assert.deepEqual(links, ['src/styles.css']);
+    assert.ok(fs.existsSync(path.join(root, 'src', 'styles.css')), 'src/styles.css is linked but missing');
+    assert.ok(!/<style[\s>]/.test(html), 'an inline <style> block is back');
+});

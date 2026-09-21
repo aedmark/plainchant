@@ -9,7 +9,7 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-20, end of session 6 (Library management)._
+_Last updated: 2026-09-20, end of session 8 (Help copy proofed; stylesheet extracted)._
 
 **What works**
 - **Library management** (D-013, `src/library.js` + the Library dialog). Search (titles and text), **rename** (rewrites
@@ -164,16 +164,15 @@ _Last updated: 2026-09-20, end of session 6 (Library management)._
 
 ## Next steps (in order)
 
-1. **Get the user's eyes on the tour and Help** (read the copy; try the flow on the tablet, and as a first-time
-   user by clearing site data or `localStorage.removeItem('frictionless_onboarded')`). The wording is mine and
-   unreviewed. Adjust content, length and tone; decide whether a product name belongs in it.
+1. **Try the tour as a first-time user on the tablet** (clear site data or
+   `localStorage.removeItem('frictionless_onboarded')`). The user proofed the Help copy in session 8; the tour copy
+   (`src/app/tour.js` and the tour markup) was not changed then.
 2. **Ask the user how the typing helpers feel** (especially Enter starting a new paragraph after action, and cues
    needing a Tab). Adjust or add settings (P2-15) / cue suggestions (P2-14) accordingly.
 3. **P2-04** autocomplete of character names and locations. The natural next typing helper now that cues exist:
    in Character mode, offer names already used in the script.
 4. **P3-03** print stylesheet / PDF is the next output step (P3-01 export and P3-07 library management are done).
-5. **P4-09** the inline stylesheet (~770 lines) is now what makes `index.html` long; extract it when convenient.
-   (P4-08, splitting the script, is done.)
+5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
 
 ## Open questions for the user
 
@@ -191,6 +190,20 @@ _Last updated: 2026-09-20, end of session 6 (Library management)._
 
 Newest first. Copy the template for each new session.
 
+### Session 8: 2026-09-20: Help copy proofed; stylesheet extracted (P4-09)
+
+**Done:** The user rewrote three passages of the Help "Start here" copy (intro, the "Your work" callout). Their editor
+had reformatted all of `index.html` and stripped its 55 comments, so I restored the committed file and re-applied
+only the wording edits (found by diffing with comments and whitespace normalised). Small fixes on the way: "The Void
+(Write on a phone) / The Canvas (Preview)" so the copy matches the phone tab labels, and "never sent to a server"
+instead of "no Cloud server" (the page still loads fonts from Google until P4-02). Pushed. Then P4-09: the ~680-line
+inline stylesheet is now `src/styles.css` (rules unchanged, de-indented; `index.html` 1,019 to 321 lines) with a
+structure test guarding it. Tests: 144 under Node, 136 unit and 330 e2e in the browser.
+
+**Watch out:** if an editor's "reformat code" is run on `index.html` or the CSS, it can drop comments. Check
+`git diff --stat` before committing a big diff the user did not describe.
+
+**Left undone:** the tour copy is still mine and unreviewed by the user; nothing verified on a real device.
 ### Session 7: 2026-09-20: Split the app script; `.fountain` export (P4-08, P3-01)
 
 **Goal:** Take the growing inline script out of `index.html`, and add the quick `.fountain` export win.
@@ -211,8 +224,6 @@ case, labels reverting). Help updated. Fixed a real Copy bug found on the way: t
 button stuck on "Copied!" (reproduced by mutation, now tested).
 
 **Problems / surprises**
-- The editor reported `index.html` "modified on disk" mid-session; `git diff` showed only my own change, so no
-  concurrent edits were swept into a commit. Worth checking every time that note appears.
 - `.txt` is gone as an export format. If that matters to the user, P3-10 is the place to add a choice.
 
 **Left undone:** Export is untested on real iOS / Android downloads (the delayed `revokeObjectURL` is the
