@@ -59,10 +59,16 @@ Goal: the "just type" promise. The editor helps; it never interrupts.
 - [ ] P2-02 Smart Enter: after a character line, move into dialogue; after dialogue, blank line + likely next element
 - [ ] P2-03 Auto-uppercase scene headings, character cues and transitions as they are typed (non-destructive, undoable)
 - [ ] P2-04 Autocomplete character names and scene locations from the script
-- [ ] P2-05 Mobile layout: single pane with a write/preview toggle, no fixed 50/50 split, keyboard-safe
-- [ ] P2-06 Caret-anchored preview scroll (use the parser's `data-line` anchors instead of percentage sync)
+- [x] P2-05 Mobile layout: single pane with a write/preview toggle, no fixed 50/50 split, keyboard-safe. Verified at
+  375px in a headless browser; real-device keyboard behaviour is P2-09.
+- [~] P2-06 Caret-anchored preview scroll (use the parser's `data-line` anchors instead of percentage sync). Done
+  for opening Preview on mobile; continuous desktop sync still uses percentage.
 - [ ] P2-07 Focus / typewriter mode (dim everything but the current block, keep the caret vertically centred)
 - [ ] P2-08 Editor styling that hints at structure (subtle per-element colour) without becoming a WYSIWYG editor
+- [ ] P2-09 Real-device pass for the mobile layout (iOS Safari and Android Chrome: keyboard vs. caret line, no
+  zoom-on-focus, safe areas, rotation). Serve the folder over LAN with `python -m http.server`.
+- [ ] P2-10 Tap a block in the mobile preview to jump to that line in the editor
+- [ ] P2-11 On-screen element-cycle control for touch (there is no Tab key on a phone); pairs with P2-01
 
 ## Phase 3: Output and library
 
@@ -85,7 +91,8 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
 - [ ] P4-04 Stats: page count, estimated runtime, scene count, per-character line counts
 - [ ] P4-05 Version snapshots and restore
 - [ ] P4-06 Themes and font-size controls; accessibility pass (keyboard, contrast, screen reader labels)
-- [ ] P4-07 Replace deprecated `document.execCommand('copy')` with the async Clipboard API
+- [x] P4-07 Replace deprecated `document.execCommand('copy')` with the async Clipboard API (execCommand stays as the
+  fallback for insecure origins)
 
 ## Phase 5: Sync and share (open questions)
 

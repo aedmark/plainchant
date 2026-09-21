@@ -36,6 +36,16 @@ const W = () => f.contentWindow;
     check('placeholder example is rendered', $('render-target').innerHTML.includes('script-scene-heading'));
     check('no console-breaking globals: Fountain loaded', typeof W().Fountain === 'object');
 
+    // 1b. Desktop width is unchanged by the mobile work: both panes side by side, no mobile bar
+    const shown = (el) => !!el && el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden';
+    const dq = (sel) => f.contentDocument.querySelector(sel);
+    check('desktop: mobile bar hidden', !shown(dq('.mobile-bar')));
+    check('desktop: both panes shown side by side',
+        shown(dq('.pane-void')) && shown(dq('.pane-canvas')) &&
+        dq('.pane-void').getBoundingClientRect().right <= dq('.pane-canvas').getBoundingClientRect().left + 1);
+    check('desktop: pane headers and action buttons shown', shown(dq('.pane-canvas .header')) && shown($('saveBtn')) && shown($('libraryBtn')));
+    check('desktop: keyboard-fit does nothing', (W().fitToViewport({ height: 300, offsetTop: 40 }), f.contentDocument.body.getBoundingClientRect().height === 700), f.contentDocument.body.getBoundingClientRect().height);
+
     // 2. Typing renders through the new parser
     const script = 'Title: Test Film\n\nINT. A - DAY\n\nJOHN\nHi there.\n\nCUT TO:\n\n';
     $('editor').value = script;
@@ -110,9 +120,141 @@ const W = () => f.contentWindow;
     $('editor').dispatchEvent(new Event('input'));
     check('no injected elements', !$('render-target').querySelector('img, script'));
     check('no injected execution', !W().__pwned);
+
+    // 12. Mobile layout (P2-05) in a phone-sized frame, so the stylesheet's media queries evaluate at 375px wide
+    const m = document.createElement('iframe');
+    m.style.cssText = 'width:375px;height:667px';
+    document.body.appendChild(m);
+    await new Promise(r => { m.onload = () => setTimeout(r, 100); m.src = APP; });
+    const MW = () => m.contentWindow, MD = () => m.contentDocument;
+    const $m = (id) => MD().getElementById(id);
+    const mq = (sel) => MD().querySelector(sel);
+    const rect = (el) => el.getBoundingClientRect();
+    const body = () => MD().body;
+
+    check('mobile: top bar shown, desktop pane headers hidden', shown(mq('.mobile-bar')) && !shown(mq('.pane-canvas .header')));
+    check('mobile: only the Write pane is shown at first', shown($m('editor')) && !shown(mq('.pane-canvas')));
+    check('mobile: Write pane fills the space under the bar',
+        Math.abs(rect($m('editor')).bottom - 667) <= 1 && rect($m('editor')).top >= 52 && rect($m('editor')).height > 500,
+        rect($m('editor')));
+    check('mobile: editor font is 16px+ (stops iOS zoom-on-focus)', parseFloat(getComputedStyle($m('editor')).fontSize) >= 16);
+    check('mobile: touch targets are at least 44px', rect($m('menuBtn')).width >= 44 && rect($m('menuBtn')).height >= 44 && rect($m('tabPreview')).height >= 40, [rect($m('menuBtn')), rect($m('tabPreview'))]);
+    check('mobile: page does not scroll sideways', MD().documentElement.scrollWidth <= 375, MD().documentElement.scrollWidth);
+
+    // Long script with the caret parked at the start of item 75 (source line 150)
+    const longScript = Array.from({ length: 200 }, (_, i) => 'Line ' + i + ' of action.').join('\n\n');
+    $m('editor').value = longScript;
+    $m('editor').dispatchEvent(new Event('input'));
+    const caret = longScript.split('\n').slice(0, 150).join('\n').length + 1;
+    $m('editor').setSelectionRange(caret, caret);
+
+    $m('tabPreview').click();
+    check('mobile: Preview shows the preview pane and hides the editor', shown(mq('.pane-canvas')) && !shown($m('editor')));
+    check('mobile: toggle state is exposed (aria-pressed)',
+        $m('tabPreview').getAttribute('aria-pressed') === 'true' && $m('tabWrite').getAttribute('aria-pressed') === 'false');
+    const anchor = mq('#render-target [data-line="150"]');
+    const rt2 = rect($m('render-target')), an = rect(anchor);
+    check('mobile: Preview opens at the caret, not the top of the script', an.top >= rt2.top && an.bottom <= rt2.bottom, [an.top, an.bottom, rt2.top, rt2.bottom]);
+    check('mobile: Preview fills the space under the bar', Math.abs(rt2.bottom - 667) <= 1 && rt2.top >= 52, rt2);
+
+    // Awkward content must fit a 375px column without a horizontal scrollbar
+    $m('editor').value = [
+        'INT. A VERY LONG SCENE HEADING LOCATION NAME THAT KEEPS GOING - LATE AFTERNOON', '',
+        'JOHN (CONT\'D) (V.O.)', '(under his breath, barely audible over the storm outside)',
+        'A long line of speech that has to wrap at least a couple of times inside a narrow phone column.', '',
+        'BRICK', 'Screw you!', '', 'STEEL ^', 'Screw you!', '',
+        'DISSOLVE TO:', '', 'SMASH CUT:', '', '> A FORCED TRANSITION THAT IS QUITE LONG INDEED', '',
+        '> THE END <'
+    ].join('\n');
+    $m('editor').dispatchEvent(new Event('input'));
+    const target = $m('render-target');
+    check('mobile: preview has no horizontal overflow', target.scrollWidth <= target.clientWidth, [target.scrollWidth, target.clientWidth]);
+    check('mobile: dual dialogue stacks instead of squeezing into columns',
+        getComputedStyle(mq('.script-dual')).flexDirection === 'column' &&
+        rect(mq('.script-dual .dual-left')).bottom <= rect(mq('.script-dual .dual-right')).top + 1);
+
+    // The menu stays reachable while previewing (the Void pane is display:contents then)
+    $m('menuBtn').click();
+    check('mobile: menu opens from Preview', shown(mq('.button-group')) && $m('menuBtn').getAttribute('aria-expanded') === 'true');
+    check('mobile: menu lists all five actions', ['newBtn', 'libraryBtn', 'saveBtn', 'exportBtn', 'copyBtn'].every(id => shown($m(id))));
+    check('mobile: menu sits under the bar, on screen', rect(mq('.button-group')).top >= 52 && rect(mq('.button-group')).right <= 375, rect(mq('.button-group')));
+    MD().dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    check('mobile: Escape closes the menu', !shown(mq('.button-group')) && $m('menuBtn').getAttribute('aria-expanded') === 'false');
+    $m('menuBtn').click();
+    MD().body.click();
+    check('mobile: tapping outside closes the menu', !shown(mq('.button-group')));
+
+    // New from the menu: closes it, returns to a focused, blank Write view
+    $m('menuBtn').click();
+    $m('newBtn').click();
+    check('mobile: New closes the menu', !shown(mq('.button-group')));
+    check('mobile: New switches back to Write with a blank, focused editor',
+        body().dataset.view === 'write' && shown($m('editor')) && $m('editor').value === '' && MD().activeElement === $m('editor'));
+
+    // Toggling back to Write focuses the editor and keeps the caret
+    $m('editor').value = 'Some words.';
+    $m('editor').setSelectionRange(4, 4);
+    $m('tabPreview').click();
+    check('mobile: Preview drops focus (keyboard down)', MD().activeElement !== $m('editor'));
+    $m('tabWrite').click();
+    check('mobile: Write refocuses the editor', MD().activeElement === $m('editor'));
+    check('mobile: caret position survives the round trip', $m('editor').selectionStart === 4 && $m('editor').selectionEnd === 4);
+
+    // The screenplay column must not depend on how long the script's lines are (it once shrank to the widest
+    // line and floated to the middle, taking the scrollbar with it). Same check in every layout.
+    const columnFor = (frame, text) => {
+      const d = frame.contentDocument, e = d.getElementById('editor');
+      e.value = text;
+      e.dispatchEvent(new Event('input'));
+      const r = d.getElementById('render-target'), p = d.getElementById('page');
+      const rr = r.getBoundingClientRect(), pr = p.getBoundingClientRect();
+      return { scrollLeft: rr.left, scrollWidth: rr.width, pageLeft: pr.left, pageWidth: pr.width,
+               pad: parseFloat(frame.contentWindow.getComputedStyle(r).paddingLeft),
+               maxW: parseFloat(frame.contentWindow.getComputedStyle(p).maxWidth) };
+    };
+    const SHORT_SCRIPT = 'INT. A - DAY\n\nHe waits.\n\nJOHN\nHi.';
+    const LONG_SCRIPT = SHORT_SCRIPT + '\n\nA very long line of action that easily fills the whole width of the page column and wraps twice over.';
+
+    $m('tabPreview').click();
+    const mShort = columnFor(m, SHORT_SCRIPT), mLong = columnFor(m, LONG_SCRIPT);
+    check('mobile: column is the same for short and long scripts', mShort.pageLeft === mLong.pageLeft && mShort.pageWidth === mLong.pageWidth, [mShort, mLong]);
+    check('mobile: short script sits at the left margin, not centred', Math.abs(mShort.pageLeft - (mShort.scrollLeft + mShort.pad)) <= 1, mShort);
+    check('mobile: scroll area (and its scrollbar) spans the whole width', mShort.scrollWidth === 375, mShort);
+
+    const dShort = columnFor(f, SHORT_SCRIPT), dLong = columnFor(f, LONG_SCRIPT);
+    check('desktop: column is the same for short and long scripts', dShort.pageLeft === dLong.pageLeft && dShort.pageWidth === dLong.pageWidth, [dShort, dLong]);
+    check('desktop: short script sits at the left margin, not centred', Math.abs(dShort.pageLeft - (dShort.scrollLeft + dShort.pad)) <= 1, dShort);
+    check('desktop: scroll area spans the whole pane', Math.abs(dShort.scrollWidth - dq('.pane-canvas').getBoundingClientRect().width) <= 1, dShort);
+
+    // Room to spare: the column caps at 6 inches (60ch) and is centred like a page, again whatever the content
+    const wide = document.createElement('iframe');
+    wide.style.cssText = 'width:1800px;height:600px';
+    document.body.appendChild(wide);
+    await new Promise(r => { wide.onload = () => setTimeout(r, 100); wide.src = APP; });
+    const wShort = columnFor(wide, SHORT_SCRIPT), wLong = columnFor(wide, LONG_SCRIPT);
+    check('wide: column is capped at 60ch whatever the content', Math.abs(wShort.pageWidth - wShort.maxW) <= 1 && Math.abs(wLong.pageWidth - wLong.maxW) <= 1, [wShort, wLong]);
+    check('wide: column is centred in the scroll area', Math.abs((wShort.pageLeft - wShort.scrollLeft) - (wShort.scrollWidth - wShort.pageWidth) / 2) <= 1, wShort);
+    check('wide: column does not move with content', wShort.pageLeft === wLong.pageLeft, [wShort.pageLeft, wLong.pageLeft]);
+
+    $m('tabWrite').click(); // the keyboard checks below need the editor showing
+
+    // Keyboard-safe sizing, with a fake visual viewport standing in for the on-screen keyboard
+    MW().fitToViewport({ height: 300, offsetTop: 0 });
+    check('mobile: keyboard up shrinks the app to the visible height', Math.abs(rect(body()).height - 300) <= 1, rect(body()));
+    check('mobile: editor stays inside the visible area', rect($m('editor')).bottom <= 300 + 1, rect($m('editor')));
+    check('mobile: keyboard-open class set', body().classList.contains('kb-open'));
+    MW().fitToViewport({ height: 300, offsetTop: 40 });
+    check('mobile: app follows the visual viewport when the page is panned', Math.abs(rect(body()).top - 40) <= 1, rect(body()));
+    MW().fitToViewport({ height: 667, offsetTop: 0 });
+    check('mobile: keyboard down restores full height', Math.abs(rect(body()).height - 667) <= 1 && !body().classList.contains('kb-open'), rect(body()));
   } catch (e) {
     log.push('FAIL exception: ' + e.message);
   }
+
+  // The app autosaves 2 s after typing and again when a frame goes away. Stop both so nothing lands in storage
+  // after the writer's real data is put back below.
+  document.querySelectorAll('iframe').forEach(fr => { try { fr.contentWindow.saveScript = () => {}; } catch (e) { /* frame gone */ } });
+
   // Put the writer's real data back exactly as it was
   try {
     (snapshot || []).forEach(([k, v]) => v === null ? W().localStorage.removeItem(k) : W().localStorage.setItem(k, v));

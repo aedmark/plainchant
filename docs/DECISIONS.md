@@ -62,6 +62,17 @@ needs nothing installed. `test/run.js` covers Node when it exists.
 localStorage across the whole origin, so a test could otherwise touch a writer's real scripts. The e2e page also
 snapshots and restores the app's keys.
 
+## D-008 Mobile is a CSS media query, mirrored in JS  (2026-09-20, status: accepted)
+**Context:** Phones need one pane at a time (P2-05). Layout must not depend on JS having run, but behaviour (focus,
+blur, viewport sizing) must know which mode it is in.
+**Decision:** `@media (max-width: 767px), (pointer: coarse) and (max-height: 500px)` in the stylesheet decides the
+layout. The same string is `MOBILE_QUERY` in the script, used through `matchMedia`. Desktop-first CSS; the mobile
+block only overrides. Screenplay indents are CSS variables so mobile swaps `ch` for `%`. Keyboard handling uses
+`interactive-widget=resizes-content` plus `visualViewport` (`--app-height`, `--app-top`) for Safari.
+In Preview, `.pane-void` is `display: contents` so its menu stays reachable.
+**Consequences:** The query is duplicated and must be edited in both places. `display: contents` is load-bearing.
+The keyboard code is verified only against a fake viewport until P2-09 is done on real devices.
+
 ## Open questions
 
 - Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom
