@@ -110,6 +110,14 @@ _Last updated: 2026-09-20, end of session 5 (naming)._
   what follows before it will call something a cue or a transition. Change it with care; the property test in
   `test/editing.test.js` ("the parser agrees afterwards") is the safety net.
 - `frictionless_*` localStorage keys are legacy naming and must stay (D-005).
+- **Git remote:** `origin` is `https://github.com/aedmark/NeuroFountain.git`. As of the end of session 5 local
+  `master` is **5 commits ahead and nothing from sessions 1-5 has been pushed**. The `gh` CLI is not installed.
+  Commits are authored `gknot <oopismcgoopis@gmail.com>` (no git identity is configured; pass it with `-c`).
+  Renaming to Plainchant, in this order: (1) owner renames the repo on GitHub (Settings > General > Repository
+  name; GitHub redirects the old URL); (2) `git remote set-url origin https://github.com/aedmark/plainchant.git`;
+  (3) push (ask first: it publishes the code); (4) optionally rename the *folder* by closing the project in PyCharm
+  and using Refactor > Rename (it updates `.idea/`), not from a Claude session working in that folder, whose working
+  directory and project-memory path are tied to the old name. The docs in this repo carry the context across.
 - **Every e2e frame must set `frictionless_onboarded` first**, or the tour opens in it and blocks the test. The
   e2e page does this once at the start (and snapshots/restores the key with the others). New test files that load
   the app need the same.

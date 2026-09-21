@@ -135,7 +135,8 @@ Not committed. Decide only after Phase 3 ships. See open questions in DECISIONS.
 - [ ] P6-02 Proper trademark search for "Plainchant" in software classes before investing in the brand
 - [ ] P6-03 Wordmark and icon (a page with fold lines was floated; plainchant notation is another source of shapes),
   favicon, and a web-app manifest icon once P4-02 (PWA) happens
-- [ ] P6-04 Decide whether to rename the project folder from NeuroFountain, and set up a remote repository
+- [ ] P6-04 Rename the GitHub repository `aedmark/NeuroFountain` to `plainchant` (owner, in GitHub Settings), point
+  `origin` at the new URL, push the local commits, then optionally rename the project folder (see HANDOFF)
 
 ## Known limitations (deliberate, revisit)
 
