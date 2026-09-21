@@ -10,7 +10,7 @@
 -->
 <html><head><meta charset="UTF-8"><title>NeuroFountain app e2e</title></head><body>
 <div id="banner" style="font:600 14px system-ui;padding:.5rem 1rem;color:#fff;background:#64748b">Running...</div>
-<iframe id="f" style="width:1000px;height:700px"></iframe>
+<iframe id="f" style="width:1200px;height:700px"></iframe>
 <pre id="out">RUNNING</pre>
 <script>
 const APP = '../index.html';
@@ -235,6 +235,90 @@ const W = () => f.contentWindow;
     check('wide: column is capped at 60ch whatever the content', Math.abs(wShort.pageWidth - wShort.maxW) <= 1 && Math.abs(wLong.pageWidth - wLong.maxW) <= 1, [wShort, wLong]);
     check('wide: column is centred in the scroll area', Math.abs((wShort.pageLeft - wShort.scrollLeft) - (wShort.scrollWidth - wShort.pageWidth) / 2) <= 1, wShort);
     check('wide: column does not move with content', wShort.pageLeft === wLong.pageLeft, [wShort.pageLeft, wLong.pageLeft]);
+
+    // 13. Tablets (D-009). Below 1024px: one pane with the actions inline in the bar. From 1024px: the split, never
+    // clipped (the two panes once needed 1109px and the preview was cut off on every iPad in portrait).
+    const openFrame = async (w, h) => {
+      const fr = document.createElement('iframe');
+      fr.style.cssText = 'width:' + w + 'px;height:' + h + 'px';
+      document.body.appendChild(fr);
+      await new Promise(r => { fr.onload = () => setTimeout(r, 100); fr.src = APP; });
+      fr.contentWindow.saveScript = () => {};
+      return fr;
+    };
+    const setText = (fr, text) => {
+      const e = fr.contentDocument.getElementById('editor');
+      e.value = text;
+      e.dispatchEvent(new Event('input'));
+    };
+    const cs = (fr, el) => fr.contentWindow.getComputedStyle(el);
+    const fq = (fr, sel) => fr.contentDocument.querySelector(sel);
+    const fid = (fr, id) => fr.contentDocument.getElementById(id);
+    const TABLET_SCRIPT = [
+      'INT. COFFEE SHOP - DAY #1#', '',
+      'The cafe is entirely empty. Rain hits the glass and keeps hitting it for a very long time, longer than anyone expected.', '',
+      'JOHN (V.O.)', '(nervous)', 'I just wanted a program that let me type without thinking. Is that too much to ask of anyone?', '',
+      'BRICK', 'Screw you!', '', 'STEEL ^', 'Screw you more!', '',
+      'SMASH CUT TO BLACK:', '', 'EXT. THE VOID - CONTINUOUS'
+    ].join('\n');
+    const ACTIONS = ['newBtn', 'libraryBtn', 'saveBtn', 'exportBtn', 'copyBtn'];
+
+    for (const [w, h, label] of [[810, 1080, 'iPad 810x1080'], [768, 1024, 'iPad 768x1024'], [744, 1133, 'iPad mini 744x1133'], [1023, 768, '1023 wide']]) {
+      const t = await openFrame(w, h);
+      setText(t, TABLET_SCRIPT);
+      check('tablet ' + label + ': one pane with the top bar', shown(fq(t, '.mobile-bar')) && shown(fid(t, 'editor')) && !shown(fq(t, '.pane-canvas')));
+      check('tablet ' + label + ': actions are inline in the bar, no ⋯ menu', ACTIONS.every(i => shown(fid(t, i))) && !shown(fid(t, 'menuBtn')));
+      const seg = rect(fq(t, '.seg')), first = rect(fid(t, 'newBtn')), last = rect(fid(t, 'copyBtn'));
+      check('tablet ' + label + ': actions sit inside the bar and clear the switch',
+        first.top >= 0 && last.bottom <= 53 && last.right <= w && seg.right <= first.left, [seg, first, last]);
+      check('tablet ' + label + ': action buttons are at least 40px tall', rect(fid(t, 'saveBtn')).height >= 40, rect(fid(t, 'saveBtn')));
+      check('tablet ' + label + ': editor keeps a readable line length', parseFloat(cs(t, fid(t, 'editor')).paddingLeft) >= 24 && rect(fid(t, 'editor')).width === w, cs(t, fid(t, 'editor')).paddingLeft);
+
+      t.contentWindow.setView('preview');
+      const pg = fid(t, 'page'), rtg = fid(t, 'render-target');
+      const pgW = rect(pg).width, maxW = parseFloat(cs(t, pg).maxWidth);
+      check('tablet ' + label + ': preview is a full 60-character page', Math.abs(pgW - maxW) <= 1, [pgW, maxW]);
+      check('tablet ' + label + ': true screenplay indents (22ch character cue)', Math.abs(parseFloat(cs(t, fq(t, '.script-character')).marginLeft) - pgW * 22 / 60) <= 2, parseFloat(cs(t, fq(t, '.script-character')).marginLeft));
+      check('tablet ' + label + ': dual dialogue sits side by side', cs(t, fq(t, '.script-dual')).flexDirection === 'row');
+      check('tablet ' + label + ': preview has no horizontal overflow', rtg.scrollWidth <= rtg.clientWidth, [rtg.scrollWidth, rtg.clientWidth]);
+      t.remove();
+    }
+
+    // 700px is where the bar has room for the actions; below it (a small tablet, a big phone) they stay in the menu
+    const small = await openFrame(640, 900);
+    check('640px: actions stay in the ⋯ menu', shown(fid(small, 'menuBtn')) && !shown(fid(small, 'saveBtn')));
+    small.remove();
+
+    // From 1024px up: the split, whatever the width, without clipping
+    for (const w of [1024, 1080, 1194, 1280, 1366]) {
+      const s = await openFrame(w, 768);
+      setText(s, TABLET_SCRIPT);
+      const v = rect(fq(s, '.pane-void')), c = rect(fq(s, '.pane-canvas')), r = fid(s, 'render-target');
+      check(w + 'px: split layout, no mobile bar', shown(fq(s, '.pane-void')) && shown(fq(s, '.pane-canvas')) && !shown(fq(s, '.mobile-bar')));
+      check(w + 'px: preview pane is not clipped', c.right <= w + 0.5 && v.right <= c.left + 1, [v, c]);
+      check(w + 'px: panes are about equal', Math.abs(v.width - c.width) <= 2, [v.width, c.width]);
+      check(w + 'px: preview has no horizontal overflow', r.scrollWidth <= r.clientWidth, [r.scrollWidth, r.clientWidth]);
+      // The CSS keys off the width of the scroll area's content box (a container query), so measure the same thing
+      const col = rect(fid(s, 'page')).width;
+      const containerW = r.clientWidth - parseFloat(cs(s, r).paddingLeft) - parseFloat(cs(s, r).paddingRight);
+      if (containerW <= 36 * 16) { // narrower than a true page: indents are proportional and dual dialogue stacks
+        check(w + 'px: narrow preview re-proportions indents', Math.abs(parseFloat(cs(s, fq(s, '.script-character')).marginLeft) - col * 0.3) <= 2, [col, cs(s, fq(s, '.script-character')).marginLeft]);
+        check(w + 'px: narrow preview stacks dual dialogue', cs(s, fq(s, '.script-dual')).flexDirection === 'column');
+      } else {
+        check(w + 'px: roomy preview uses true indents and side-by-side dual dialogue', cs(s, fq(s, '.script-dual')).flexDirection === 'row');
+      }
+      if (w < 1280) check(w + 'px: cramped pane header drops its tagline', !shown(fq(s, '.pane-void .header p')));
+      s.remove();
+    }
+
+    // Content can still be wider than a pane (a long URL, say). The pane must scroll it, not grow and get clipped
+    // off the screen: the panes need min-width: 0 for that.
+    const wordy = await openFrame(1024, 768);
+    setText(wordy, 'See https://example.com/' + 'x'.repeat(200) + ' for details.');
+    check('1024px: one 200-character unbreakable word cannot push the preview off screen',
+      rect(fq(wordy, '.pane-canvas')).right <= 1024.5 && rect(fq(wordy, '.pane-void')).right <= rect(fq(wordy, '.pane-canvas')).left + 1,
+      [rect(fq(wordy, '.pane-void')), rect(fq(wordy, '.pane-canvas'))]);
+    wordy.remove();
 
     $m('tabWrite').click(); // the keyboard checks below need the editor showing
 

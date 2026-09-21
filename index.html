@@ -33,7 +33,8 @@
         }
 
         /* Layout is desktop-first: two panes side by side. The "mobile" block near the end of this stylesheet
-           swaps to one pane at a time. Its media query is mirrored in MOBILE_QUERY in the script; keep both in sync. */
+           swaps to one pane at a time below 1024px. Its media query is mirrored in MOBILE_QUERY in the script;
+           keep both in sync. */
         body {
             margin: 0;
             height: 100vh;
@@ -46,12 +47,34 @@
             overflow: hidden;
         }
 
+        /* Touch devices and narrow windows: size the app to the visual viewport so an on-screen keyboard never
+           covers the text. --app-height / --app-top come from window.visualViewport (fitToViewport); without them
+           this falls back to the dynamic viewport height. Mirrored by FIT_QUERY in the script. */
+        @media (pointer: coarse), (max-width: 1023px) {
+            body {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: var(--app-height, 100dvh);
+                transform: translateY(var(--app-top, 0px));
+            }
+        }
+
+        /* Fingers need bigger targets than a mouse pointer, in every layout */
+        @media (pointer: coarse) {
+            .btn { min-height: 44px; }
+            textarea { font-size: 16px; } /* 16px+ stops iOS Safari zooming the page when the field is focused */
+        }
+
         /* --- THE VOID (Input) --- */
+        /* min-width: 0 lets a pane shrink below its content's minimum. Without it the two panes could not fit in
+           anything under ~1110px and the preview was clipped off the right edge of the screen. */
         .pane-void {
             flex: 1;
+            min-width: 0;
             display: flex;
             flex-direction: column;
-            height: 100vh;
             border-right: 1px solid var(--border-void);
             background-color: var(--bg-void);
         }
@@ -78,6 +101,11 @@
             margin: 0.25rem 0 0 0;
             font-size: 0.75rem;
             color: var(--text-void-muted);
+        }
+
+        /* In a narrow split (1024-1279px, panes under 640px) the tagline is squeezed to three lines beside the buttons */
+        @media (max-width: 1279px) {
+            .pane-void .header p { display: none; }
         }
 
         .btn {
@@ -112,9 +140,9 @@
         /* --- THE CANVAS (Output) --- */
         .pane-canvas {
             flex: 1;
+            min-width: 0;
             display: flex;
             flex-direction: column;
-            height: 100vh;
             background-color: var(--bg-paper);
             position: relative;
         }
@@ -138,16 +166,19 @@
             border: 1px solid #e5e7eb;
         }
 
+        /* The scroll area is also a size container: the @container rules below re-proportion the screenplay by the
+           width of *this column*, not by the device, so phones, portrait tablets and a narrow split all work. */
         #render-target {
             flex: 1;
             overflow-y: auto;
-            padding: 4rem;
+            padding: 3rem clamp(1rem, 2.5vw, 4rem);
             color: var(--text-ink);
             background-color: var(--bg-paper);
+            container: sheet / inline-size;
         }
 
         /* Screenplay Formatting (CSS Implementation of Fountain Rules).
-           Indents are variables so the mobile block can re-proportion them for a narrow screen. */
+           Indents are variables so a narrow column can re-proportion them (see @container below). */
         .screenplay-font {
             --ind-char: 22ch;
             --ind-paren: 16ch;
@@ -192,6 +223,32 @@
             text-align: var(--transition-align);
             white-space: nowrap;
         }
+        /* A true page is 60ch of text (6 inches at 10-pitch). When the column is narrower than that, re-proportion the
+           indents as percentages of the column instead of fixed character counts: nothing overflows, nothing forces
+           the pane wider, and transitions wrap. 36rem is 60ch at 12pt Courier. Below ~26rem (phones) the type also
+           steps down so a line still holds a useful number of characters. */
+        @container sheet (max-width: 36rem) {
+            .screenplay-font {
+                --ind-char: 30%;
+                --ind-paren: 20%;
+                --w-paren: 60%;
+                --ind-dialogue: 8%;
+                --w-dialogue: 84%;
+                --ind-transition: 0;
+                --transition-align: right;
+            }
+            .script-transition { white-space: normal; }
+            /* Two half-width columns would be unreadably narrow: stack dual dialogue instead */
+            .script-dual {
+                flex-direction: column;
+                gap: 1rem;
+                --ind-char: 30%; --ind-paren: 20%; --w-paren: 60%; --ind-dialogue: 8%; --w-dialogue: 84%;
+            }
+        }
+        @container sheet (max-width: 26rem) {
+            .screenplay-font { font-size: 14px; line-height: 1.25; }
+        }
+
         .script-centered { text-align: center; margin: 0 0 1rem; }
         .script-lyrics { font-style: italic; margin: 0 0 1rem; }
         .script-page-break { border: 0; border-top: 1px dashed #cbd5e1; margin: 1.5rem 0; }
@@ -271,23 +328,18 @@
         .script-preview { font-size: 0.75rem; color: var(--text-void-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .button-group { display: flex; gap: 0.5rem; }
 
-        /* --- MOBILE BAR (only shown on phones; see the mobile block below) --- */
+        /* --- MOBILE BAR (shown below 1024px; see the mobile block below) --- */
         .mobile-bar { display: none; }
 
-        /* --- MOBILE: one pane at a time, switched from the top bar (P2-05) ---
-           Mirrored by MOBILE_QUERY in the script. Landscape phones count as mobile too: a keyboard leaves them
-           too little height for two panes. */
-        @media (max-width: 767px), (pointer: coarse) and (max-height: 500px) {
+        /* --- ONE PANE AT A TIME, switched from the top bar (P2-05, D-009) ---
+           Below 1024px two panes are too cramped to be useful (each would get under 512px), so phones AND portrait
+           tablets show one pane with a Write | Preview switch. Landscape tablets (1024px+) keep the split.
+           Landscape phones count too: a keyboard leaves them too little height for two panes.
+           Mirrored by MOBILE_QUERY in the script. The screenplay's own responsiveness is not here: it follows the
+           width of the preview column via @container above. */
+        @media (max-width: 1023px), (pointer: coarse) and (max-height: 500px) {
             body {
                 --bar-h: 52px;
-                /* --app-height / --app-top come from window.visualViewport (fitToViewport) so the on-screen
-                   keyboard never covers the text. Without them, fall back to the dynamic viewport height. */
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: var(--app-height, 100dvh);
-                transform: translateY(var(--app-top, 0px));
                 flex-direction: column;
                 padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
             }
@@ -354,38 +406,46 @@
             body.menu-open .pane-void > .header .button-group { display: flex; }
             .button-group .btn { min-height: 44px; text-align: left; }
 
-            /* 16px or larger stops iOS Safari from zooming the whole page when the field is focused */
             textarea { padding: 1rem; font-size: 16px; }
 
             #render-target { padding: 1rem; overscroll-behavior: contain; }
 
-            /* Re-proportion the screenplay for a narrow column. Percentages instead of ch so nothing scrolls sideways. */
-            .screenplay-font {
-                font-size: 14px;
-                line-height: 1.25;
-                --ind-char: 30%;
-                --ind-paren: 20%;
-                --w-paren: 60%;
-                --ind-dialogue: 8%;
-                --w-dialogue: 84%;
-                --ind-transition: 0;
-                --transition-align: right;
-            }
-            .script-transition { white-space: normal; }
-            /* Two half-width columns would be unreadably narrow: stack dual dialogue instead */
-            .script-dual {
-                flex-direction: column;
-                gap: 1rem;
-                --ind-char: 30%; --ind-paren: 20%; --w-paren: 60%; --ind-dialogue: 8%; --w-dialogue: 84%;
-            }
-
             .modal-close { min-width: 44px; min-height: 44px; }
+        }
+
+        /* --- TABLET TIER of the one-pane layout (700px and up) ---
+           There is room for the actions in the bar itself, so no menu. The editor's text keeps a readable line
+           length instead of stretching across the screen, and the preview is a full-size page. */
+        @media (min-width: 700px) and (max-width: 1023px), (min-width: 700px) and (pointer: coarse) and (max-height: 500px) {
+            .menu-btn { display: none; }
+            .seg { flex: 0 1 16rem; }
+            .mobile-bar { padding: 0 1rem; }
+            .pane-void > .header .button-group {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 0.5rem;
+                top: env(safe-area-inset-top);
+                right: calc(1rem + env(safe-area-inset-right));
+                height: var(--bar-h);
+                min-width: 0;
+                padding: 0;
+                background: none;
+                border: 0;
+                box-shadow: none;
+            }
+            .button-group .btn { min-height: 40px; padding: 0 0.75rem; text-align: center; }
+
+            /* Full-width box (the whole screen stays tappable) with the text held to ~44rem in the middle */
+            textarea { padding-inline: max(1.5rem, calc((100vw - 44rem) / 2)); padding-block: 1.5rem; }
+            #render-target { padding: 2rem; }
         }
     </style>
 </head>
 <body data-view="write">
 
-<!-- Mobile bar: switches between writing and previewing on phones. Hidden on desktop, where both panes show. -->
+<!-- Mobile bar: switches between writing and previewing on phones and portrait tablets (under 1024px wide).
+     Hidden on wider screens, where both panes show. -->
 <div class="mobile-bar">
     <div class="seg" role="group" aria-label="View">
         <button id="tabWrite" type="button" aria-pressed="true">Write</button>
@@ -479,9 +539,11 @@
     }
 
     // --- Mobile: one pane at a time, drop-down menu, keyboard-safe sizing (P2-05) ---
-    // Must match the media query in the "mobile" block of the stylesheet.
-    const MOBILE_QUERY = '(max-width: 767px), (pointer: coarse) and (max-height: 500px)';
+    // Both must match the media queries in the stylesheet (the "one pane at a time" block, and the fixed-body rule).
+    const MOBILE_QUERY = '(max-width: 1023px), (pointer: coarse) and (max-height: 500px)';
+    const FIT_QUERY = '(pointer: coarse), (max-width: 1023px)';
     const mobileMQ = window.matchMedia(MOBILE_QUERY);
+    const fitMQ = window.matchMedia(FIT_QUERY);
     const tabWrite = document.getElementById('tabWrite');
     const tabPreview = document.getElementById('tabPreview');
     const menuBtn = document.getElementById('menuBtn');
@@ -524,7 +586,7 @@
     // Takes the viewport as an argument so tests can pass a fake one.
     function fitToViewport(vv = window.visualViewport) {
         const rootStyle = document.documentElement.style;
-        if (!vv || !mobileMQ.matches) {
+        if (!vv || !fitMQ.matches) {
             rootStyle.removeProperty('--app-height');
             rootStyle.removeProperty('--app-top');
             document.body.classList.remove('kb-open');
@@ -579,7 +641,7 @@
         editor.value = '';
         rememberCurrent();
         render();
-        // On a phone the writer may be looking at the preview: bring them back to the blank page
+        // In one-pane mode the writer may be looking at the preview: bring them back to the blank page
         if (mobileMQ.matches) setView('write');
         else editor.focus();
     }
@@ -689,6 +751,7 @@
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false); });
 
     mobileMQ.addEventListener('change', () => { setMenu(false); fitToViewport(); });
+    fitMQ.addEventListener('change', () => fitToViewport());
     if (window.visualViewport) {
         visualViewport.addEventListener('resize', () => fitToViewport());
         visualViewport.addEventListener('scroll', () => fitToViewport());

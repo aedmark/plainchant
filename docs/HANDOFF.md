@@ -12,11 +12,15 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 _Last updated: 2026-09-20, end of session 2._
 
 **What works**
-- Desktop (and tablets 768px+): two panes side by side, raw Fountain text left, live screenplay preview right.
-- Phones (under 768px wide, or landscape coarse-pointer under 500px tall): one pane at a time. A top bar has a
-  **Write | Preview** toggle and a ⋯ menu holding New / Library / Save / Export / Copy. Opening Preview scrolls to
-  where the caret was. The screenplay indents are percentages so nothing scrolls sideways at 375px; dual dialogue
-  stacks. The layout tracks `visualViewport` so the on-screen keyboard shouldn't cover the text.
+- **1024px and wider** (desktop, iPad landscape): two panes side by side, raw Fountain text left, live preview right.
+- **Below 1024px** (phones, portrait tablets, narrow windows; also landscape coarse-pointer under 500px tall): one pane
+  at a time. A top bar has a **Write | Preview** toggle. Opening Preview scrolls to where the caret was.
+  - Phones (under 700px): New / Library / Save / Export / Copy are in a ⋯ menu.
+  - Tablets (700px+): those actions sit inline in the bar; the editor text is held to ~44rem in the middle.
+- The screenplay adapts to the width of its *column* (container queries, D-009): a full 60-character page with true
+  indents when it fits (portrait iPad), percentage indents and stacked dual dialogue when narrower (phones, a
+  1024-1300px split), 14px type under 26rem. The layout tracks `visualViewport` on any touch device so the
+  on-screen keyboard shouldn't cover the text.
 - Parser/renderer in `src/fountain.js` (pure UMD): scene headings (forced, numbered), action (forced), characters
   (forced `@`, extensions), dual dialogue `^`, parentheticals, dialogue, transitions (forced `>`), centered text,
   lyrics, sections, synopses, page breaks, notes, boneyard, title page, emphasis.
@@ -26,18 +30,21 @@ _Last updated: 2026-09-20, end of session 2._
 
 **Verified**
 - `npm test` passes under Node 24: 45 unit tests.
-- `npm run test:browser` passes: the same 45 unit tests + 67 app end-to-end checks (headless Edge, throwaway
-  profile). 31 of the e2e checks cover the mobile layout, run in a 375x667 frame; desktop is asserted unchanged;
-  9 more guard the preview column position (desktop, phone and a wide 1800px window).
-- The mobile checks were mutation-tested: re-introducing a 14px editor font and an unreachable menu in Preview
-  makes 4 of them fail. Making the column shrink-to-fit makes 6 of the column checks fail.
-- Visually checked at 375x667 (Write, Preview, menu open) in headless Edge.
+- `npm run test:browser` passes: the same 45 unit tests + 137 app end-to-end checks (headless Edge, throwaway
+  profile). Frames: a 375px phone (31 checks), the preview-column position at desktop/phone/1800px (9), and
+  tablets at 744, 768, 810, 1023 and 640px (one-pane behaviour) plus 1024-1366px (split, no clipping) (70).
+- Mutation-tested: a 14px editor font and an unreachable menu in Preview fail 4 checks; a shrink-to-fit column fails
+  6; disabling the container query fails 10. Removing `min-width: 0` alone fails nothing, because the container
+  containment is a second guard against the same clipping; removing both fails the broad set.
+- Visually checked at 375x667 (phone), iPad 810px (Write and Preview) and 1024x768 in headless Edge.
 
 **Not verified / not done**
-- **No real phone yet.** Keyboard behaviour is the risk: `fitToViewport()` is tested only with a fake
+- **No real phone or tablet yet.** Keyboard behaviour is the risk: `fitToViewport()` is tested only with a fake
   `visualViewport`, and `interactive-widget=resizes-content` / iOS Safari's behaviour is from documentation, not
   observation. See P2-09 (roadmap) for how to test it.
-- Only Edge (Chromium) has been used. Firefox and Safari are untested.
+- Only Edge (Chromium) has been used. Firefox and Safari are untested. iPad Safari's "desktop-class" browsing mode
+  and Split View / Stage Manager window widths are reasoned about, not observed.
+- Apple Pencil handwriting and hardware-keyboard use on tablets are unchecked (P2-13).
 - Phase 1 is complete (P1-01 to P1-10); P2-05 is done.
 
 **Gotchas for the next session**
@@ -51,8 +58,11 @@ _Last updated: 2026-09-20, end of session 2._
 - Blank lines are structure, not spacers: the parser emits no spacer tokens, spacing is CSS margins only.
 - The parser is deliberately spec-strict (D-004). Lowercase cues are action until P2-03.
 - `frictionless_*` localStorage keys are legacy naming and must stay (D-005).
-- The mobile media query lives in two places, the CSS "mobile" block and `MOBILE_QUERY` in the script. Change both
-  together (D-008).
+- Two media queries each live in two places: the CSS "one pane" block and `MOBILE_QUERY`, and the CSS fixed-body
+  rule and `FIT_QUERY` (both in the script). Change each pair together (D-008, D-009). The 1024px / 700px
+  breakpoints and the 36rem / 26rem container thresholds are explained in D-009.
+- Do not put a `nowrap` or a large `ch` margin on anything in the preview without checking it at 744-1024px wide:
+  one such line once forced the preview pane to 627px and clipped it off every iPad in portrait.
 - In Preview on mobile, `.pane-void` is `display: contents` so its fixed-position menu stays reachable. Don't
   change it to `display: none`; a test guards this.
 - `fitToViewport(vv)` and `setView()` / `setMenu()` are global functions on purpose: the e2e page calls them.
@@ -63,9 +73,10 @@ _Last updated: 2026-09-20, end of session 2._
 ## Next steps (in order)
 
 1. **P2-09 Real-device pass** (needs the user). Python is now installed, so from the project folder run
-   `python -m http.server 8000`, find the PC's LAN IP, and open `http://<ip>:8000` on a phone (same Wi-Fi; Windows
-   may prompt to allow Python through the firewall). Check: keyboard doesn't cover the caret line, no zoom on
-   focus, Write/Preview and the menu feel right, rotate to landscape. Fix whatever it finds.
+   `python -m http.server 8000`, find the PC's LAN IP, and open `http://<ip>:8000` on a phone AND a tablet (same
+   Wi-Fi; Windows may prompt to allow Python through the firewall). Check: keyboard doesn't cover the caret line,
+   no zoom on focus, Write/Preview and the menu/inline actions feel right, rotate, and on an iPad try Split View.
+   Fix whatever it finds.
 2. **P2-01 / P2-02 / P2-03** (Tab cycling, smart Enter, auto-uppercase): the core "just type" experience. On a phone
    there is no Tab key, so P2-01 needs an on-screen element-cycle button too. Design question to settle first: keep
    the plain `<textarea>` (Q-001 in DECISIONS.md) and implement these as key handlers.
@@ -81,7 +92,14 @@ _Last updated: 2026-09-20, end of session 2._
 
 Newest first. Copy the template for each new session.
 
-### Session 2: 2026-09-20: Mobile layout (P2-05)
+### Session 2: 2026-09-20: Mobile layout (P2-05) and tablets (P2-12)
+
+**Tablet follow-up (second half of session 2, commit after `2eccd97`):** the user pointed out tablets are the most
+likely device. Measured at iPad sizes and found the split layout clipped the preview by 85-341px anywhere below
+1109px wide (see D-009 for cause). Fixed and redesigned: one pane below 1024px, inline actions from 700px, editor
+line-length cap, container-query screenplay, viewport fitting on all touch devices, tagline hidden in narrow splits.
+The e2e desktop frame moved from 1000px to 1200px because 1000px is now (correctly) one-pane. 70 new checks.
+I had told the user tablets were "unchanged" earlier without testing them; that claim was wrong in spirit.
 
 **Goal:** Replace the fixed 50/50 split on phones with a layout that is actually usable for writing.
 

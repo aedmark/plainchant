@@ -73,6 +73,30 @@ In Preview, `.pane-void` is `display: contents` so its menu stays reachable.
 **Consequences:** The query is duplicated and must be edited in both places. `display: contents` is load-bearing.
 The keyboard code is verified only against a fake viewport until P2-09 is done on real devices.
 
+## D-009 Tablets: one pane below 1024px, screenplay responds to its column  (2026-09-20, status: accepted; supersedes the 767px breakpoint and phone-only indent overrides in D-008)
+**Context:** The most likely writer is on a tablet. Measured at iPad sizes, the split layout was broken, not just
+cramped: the two panes could not be narrower than 1109px (a `nowrap` transition line set the preview's minimum
+width), so on every iPad in portrait the right 300px+ of the preview was clipped off-screen. That predates D-008
+(the prototype's 768px breakpoint had it) but D-008 left it in place and I hadn't tested tablet widths.
+**Decision:**
+1. One pane at a time (top bar with Write | Preview) below 1024px, so portrait tablets get the phone pattern. From
+   1024px (iPad landscape and up) keep the split. Landscape phones still count as one-pane.
+2. From 700px within one-pane mode (tablet tier) the five actions sit inline in the bar instead of behind the ⋯
+   menu, and the editor text is held to about 44rem in the middle of a full-width, fully tappable box.
+3. The screenplay's responsiveness follows the width of the preview column, not the device: `#render-target` is a
+   size container (`container: sheet / inline-size`) and `@container sheet (max-width: 36rem)` swaps character-count
+   indents for percentages, wraps transitions and stacks dual dialogue; below 26rem the type steps to 14px. 36rem is
+   60ch at 12pt, a true page. A tablet in portrait therefore gets the real page; a phone or a narrow split gets the
+   compressed one; iPad Split View / Slide Over windows work without special cases.
+4. Panes get `min-width: 0`; the preview's container is inline-size-contained. Either alone stops content from
+   forcing a pane wider than the screen.
+5. Any touch device (`pointer: coarse`), in any layout, gets a visualViewport-fitted body, 44px buttons and a 16px
+   editor. `FIT_QUERY` mirrors the CSS.
+**Consequences:** Two media queries are mirrored in JS (`MOBILE_QUERY`, `FIT_QUERY`); change both sides together.
+A desktop window narrower than 1024px switches to one-pane mode. The `@container` rules require Chrome 105 /
+Safari 16 / Firefox 110 or newer. `min-width: 0` is currently redundant with the container containment; it stays as
+a second guard.
+
 ## Open questions
 
 - Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

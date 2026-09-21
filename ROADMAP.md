@@ -65,8 +65,14 @@ Goal: the "just type" promise. The editor helps; it never interrupts.
   for opening Preview on mobile; continuous desktop sync still uses percentage.
 - [ ] P2-07 Focus / typewriter mode (dim everything but the current block, keep the caret vertically centred)
 - [ ] P2-08 Editor styling that hints at structure (subtle per-element colour) without becoming a WYSIWYG editor
-- [ ] P2-09 Real-device pass for the mobile layout (iOS Safari and Android Chrome: keyboard vs. caret line, no
-  zoom-on-focus, safe areas, rotation). Serve the folder over LAN with `python -m http.server`.
+- [ ] P2-09 Real-device pass for the mobile and tablet layouts (iPad and iPhone Safari, Android Chrome: keyboard vs.
+  caret line, no zoom-on-focus, safe areas, rotation, iPad Split View / Stage Manager window sizes, hardware
+  keyboard attached). Serve the folder over LAN with `python -m http.server`.
+- [x] P2-12 Tablet support (D-009): fix the preview being clipped below ~1110px wide, one pane below 1024px,
+  inline actions from 700px, readable editor column, screenplay re-proportions by column width (container queries),
+  touch-device viewport fitting. Verified at 640-1366px in a headless browser; real iPads are P2-09.
+- [ ] P2-13 Tablet input: check Apple Pencil handwriting (Scribble) and hardware-keyboard shortcuts in the editor;
+  decide whether tablets in landscape want the preview to follow the caret continuously (P2-06)
 - [ ] P2-10 Tap a block in the mobile preview to jump to that line in the editor
 - [ ] P2-11 On-screen element-cycle control for touch (there is no Tab key on a phone); pairs with P2-01
 
