@@ -9,7 +9,7 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-20, session 9 in progress (import done; autocomplete next)._
+_Last updated: 2026-09-20, session 9 (import done; autocomplete designed, not started)._
 
 **What works**
 - **Import** (D-016, `src/importing.js` + `src/app/import.js`). The Library's `Import a file...` button, or drop a file
@@ -173,9 +173,24 @@ _Last updated: 2026-09-20, session 9 in progress (import done; autocomplete next
    (`src/app/tour.js` and the tour markup) was not changed then.
 2. **Ask the user how the typing helpers feel** (especially Enter starting a new paragraph after action, and cues
    needing a Tab). Adjust or add settings (P2-15) / cue suggestions (P2-14) accordingly.
-3. **P2-04** autocomplete of character names and locations. The natural next typing helper now that cues exist:
-   in Character mode, offer names already used in the script.
-4. **P3-03** print stylesheet / PDF is the next output step (P3-01 export and P3-07 library management are done).
+3. **P2-04 autocomplete (the user's next request; nothing written yet).** Agreed order: autocomplete, then PAUSE and
+   spec / plan PDF printing (P3-03) with the user BEFORE implementing any of it. Design sketch, for the user to react to:
+   - Suggestions live in the element bar's row (same height, so no layout shift and nothing over the caret line),
+     replacing the element buttons while a name is being typed. Tap a chip to accept (mousedown cancelled, as the bar
+     does now). **Tab accepts the first suggestion only while one is showing**, otherwise Tab cycles as before.
+     **Enter is never hijacked** (typing JOHN with JOHNNY in the script must not turn into JOHNNY). Esc dismisses.
+   - Only at the end of a line, only a strict prefix of a known name, nothing when the text already equals a name.
+   - New pure UMD module `src/suggest.js` (tests first in `test/suggest.test.js`; register it in `test/run.js`,
+     `test/index.html`, `index.html` and the module list in `test/structure.test.js`): `names(text)` from character
+     cues (strip `(V.O.)`, `(CONT'D)`, `^`, `@`; order by use count then recency), `locations(text)` from scene
+     headings (minus INT./EXT., scene number and the ` - DAY` part), `times(text)` (DAY, NIGHT... plus any used), and
+     `at(text, caret)` -> `{ kind, from, to, options }` or null. Wiring goes in `src/app/typing.js`. Undo must keep
+     working (use `applyEdit`).
+   - Open for the user: whether the time-of-day suggestion is wanted (small extension of the same mechanism).
+4. **P3-03 print stylesheet / PDF: spec and plan only, at the user's request, before any implementation.** Questions to
+   settle: US Letter and A4, screenplay margins and Courier 12pt, about 55 lines a page, page numbers, `(MORE)` /
+   `(CONT'D)`, title page on its own page, dual dialogue, scene numbers, and print-CSS versus a generated PDF (D-001 says
+   no runtime dependencies). Write the result up as a decision plus roadmap items, then wait for the go-ahead.
 5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
 
 ## Open questions for the user
