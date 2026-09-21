@@ -104,7 +104,10 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
 - [ ] P3-04 Pagination (about 55 lines per page), page numbers, `(MORE)` / `(CONT'D)` handling
 - [ ] P3-05 Title page rendering as its own page
 - [ ] P3-06 Dual dialogue in print layout
-- [ ] P3-07 Library management: rename, delete (with undo), duplicate, search
+- [x] P3-07 Library management: search, rename (rewrites the script's own `Title:` line), duplicate, delete with
+  Undo and a 30-day Recently deleted, restore, delete forever (two clicks) (D-013)
+- [ ] P3-09 Library extras, if wanted: sort options (name, date created), multi-select, export a single script
+  from its row, and a storage-usage indicator (localStorage is about 5 MB and Recently deleted holds space)
 - [ ] P3-08 Final Draft `.fdx` export (stretch)
 
 ## Phase 4: Scale and polish

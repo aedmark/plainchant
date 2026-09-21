@@ -344,3 +344,34 @@ test('autoCase: caret stays where it was', () => {
     const t = 'X.\n\nint. kitchen';
     assert.equal(Editing.autoCase(t, t.length).selStart, t.length);
 });
+
+// ---------- diffEdit (title changes from the Library keep the writer's place and undo history) ----------
+
+const diffApplied = (a, b, s, e) => { const d = Editing.diffEdit(a, b, s, e); return { d: d, text: a.slice(0, d.from) + d.insert + a.slice(d.to) }; };
+
+test('diffEdit: applying the edit to the old text gives the new text, for all sorts of changes', () => {
+    [['abc', 'abXc'], ['abc', 'ac'], ['abc', 'abc'], ['', 'abc'], ['abc', ''], ['aaa', 'aaaa'], ['Title: A\n\nBody', 'Title: Bigger\n\nBody'],
+        ['one two three', 'one 2 three'], ['same', 'same!']].forEach(([a, b]) =>
+        assert.equal(diffApplied(a, b, 0, 0).text, b, JSON.stringify([a, b])));
+});
+
+test('diffEdit: only the changed span is replaced', () => {
+    const d = Editing.diffEdit('Title: A\n\nBody', 'Title: Bigger\n\nBody', 0, 0);
+    assert.deepEqual([d.from, d.to, d.insert], [7, 8, 'Bigger']);
+});
+
+test('diffEdit: identical text is an empty edit', () => {
+    const d = Editing.diffEdit('same', 'same', 2, 2);
+    assert.equal(d.insert, '');
+    assert.equal(d.from, d.to);
+    assert.deepEqual([d.selStart, d.selEnd], [2, 2]);
+});
+
+test('diffEdit: the caret before the change stays, after it shifts by the change in length, inside it lands at its end', () => {
+    const old = 'Title: A\n\nBody text', neu = 'Title: Bigger\n\nBody text';
+    assert.equal(Editing.diffEdit(old, neu, 3, 3).selStart, 3);                              // before
+    assert.equal(Editing.diffEdit(old, neu, old.length, old.length).selStart, neu.length);   // after
+    assert.equal(Editing.diffEdit(old, neu, 10, 14).selStart, 10 + 5);                       // a selection in the body moves as a unit
+    assert.equal(Editing.diffEdit(old, neu, 10, 14).selEnd, 14 + 5);
+    assert.equal(Editing.diffEdit(old, neu, 7, 8).selEnd, 13);                               // covering the change: end of the insert
+});

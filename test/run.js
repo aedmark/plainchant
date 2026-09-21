@@ -5,9 +5,11 @@ globalThis.test = harness.test;
 globalThis.assert = harness.assert;
 globalThis.Fountain = require('../src/fountain.js');
 globalThis.Editing = require('../src/editing.js');
+globalThis.Library = require('../src/library.js');
 
 require('./fountain.test.js');
 require('./editing.test.js');
+require('./library.test.js');
 
 const results = harness.runTests();
 let failed = 0;

@@ -15,6 +15,7 @@
  *   Editing.cycleTarget(text, caret, dir, mode)  the element Tab would pick, ignoring whether it is possible
  *   Editing.setType(text, caret, target, mode)   { edit, mode } converting the current line to `target`, or null
  *   Editing.autoCase(text, caret, mode)        uppercase-as-you-type edit, or null
+ *   Editing.diffEdit(old, new, selStart, selEnd)  the smallest edit turning old into new, selection carried across
  *
  * "mode" is the element the writer chose for a line that has no text yet (a blank line cannot say what it is).
  * It is one of 'character' | 'scene' | 'transition' | null and is held by the page, not in the text.
@@ -257,8 +258,29 @@
         return { from: info.start, to: info.end, insert: upper, selStart: caret, selEnd: caret };
     }
 
+    // ---------- whole-text changes ----------
+
+    /**
+     * The smallest edit that turns oldText into newText, with the selection carried across it. Used to change a
+     * script's title from outside the editor (the Library) while leaving the rest of the text, the writer's
+     * position and the undo history alone. If the texts are equal the edit is empty (from === to, insert '').
+     */
+    function diffEdit(oldText, newText, selStart, selEnd) {
+        const max = Math.min(oldText.length, newText.length);
+        let a = 0;
+        while (a < max && oldText[a] === newText[a]) a++;
+        let b = 0;
+        while (b < max - a && oldText[oldText.length - 1 - b] === newText[newText.length - 1 - b]) b++;
+        const from = a;
+        const to = oldText.length - b;
+        const insert = newText.slice(a, newText.length - b);
+        const delta = insert.length - (to - from);
+        const carry = function (p) { return p <= from ? p : (p >= to ? p + delta : from + insert.length); };
+        return { from: from, to: to, insert: insert, selStart: carry(selStart), selEnd: carry(selEnd) };
+    }
+
     return {
         kindAt: kindAt, enter: enter, cycleTarget: cycleTarget, tab: tab, setType: setType, autoCase: autoCase,
-        lineInfo: lineInfo, inDialogueBlock: inDialogueBlock
+        diffEdit: diffEdit, lineInfo: lineInfo, inDialogueBlock: inDialogueBlock
     };
 });

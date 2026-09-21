@@ -9,9 +9,15 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-20, end of session 5 (naming)._
+_Last updated: 2026-09-20, end of session 6 (Library management)._
 
 **What works**
+- **Library management** (D-013, `src/library.js` + the Library dialog). Search (titles and text), **rename** (rewrites
+  the script's own `Title:` line), **duplicate** ("<title> (copy)"), **delete** with an Undo message, and a
+  **Recently deleted** tab (30 days, then removed for good) with Restore and a two-click Delete forever / Delete all
+  forever. Rows show when a script was last edited and its word count, and a preview that skips the title page.
+  Deleting the open script leaves a blank page. Nothing can resurrect a deleted script (autosave, reload, or a second
+  browser tab).
 - **The app is called Plainchant** (D-012): page title, the welcome dialog ("Welcome to Plainchant"), the first line
   of Help plus a one-line note on what the word means, `package.json` (`plainchant`), doc headings and test page
   titles. An e2e check fails if "NeuroFountain" or "SLASH" reappears in `index.html`. The GitHub repo is
@@ -54,8 +60,13 @@ _Last updated: 2026-09-20, end of session 5 (naming)._
 - Scroll sync no longer divides by zero.
 
 **Verified**
-- `npm test` passes under Node 24: 94 unit tests (45 parser, 49 typing helpers).
-- `npm run test:browser` passes: the same 94 unit tests + 267 app end-to-end checks (headless Edge, throwaway
+- `npm test` passes under Node 24: 129 unit tests (53 parser incl. setTitle, 53 typing helpers incl. diffEdit, 23
+  library).
+- Library mutation-tested: removing the guard against autosave writing into a deleted script fails the two-tab
+  test; reusing a deleted script's id on reload fails; a 30-day boundary off by one fails a unit test; hard-deleting
+  instead of soft-deleting crashes the Library section (an exception), so it cannot pass. (The first attempt at the autosave-guard mutation failed *nothing*, which
+  exposed that the two-tab scenario was untested; it now is.)
+- `npm run test:browser` passes: the same 129 unit tests + 319 app end-to-end checks (headless Edge, throwaway
   profile). Frames: a 375px phone, the preview-column position at desktop/phone/1800px, tablets at 640-810px
   (one pane) and 1024-1366px (split, no clipping), a 1200px desktop frame for the typing helpers (Tab, Enter,
   Shift+Enter, auto-uppercase, buttons, undo, Esc+Tab, mode lifetime) and for the tour and Help (first launch,
@@ -157,9 +168,9 @@ _Last updated: 2026-09-20, end of session 5 (naming)._
    needing a Tab). Adjust or add settings (P2-15) / cue suggestions (P2-14) accordingly.
 3. **P2-04** autocomplete of character names and locations. The natural next typing helper now that cues exist:
    in Character mode, offer names already used in the script.
-4. **P3-01** `.fountain` export is a five-minute win worth taking early. **P3-07** library management (delete,
-   rename) is now more pressing: the example script adds a script nobody can delete.
-5. **P4-08** split the inline script out of `index.html` before it grows further.
+4. **P3-01** `.fountain` export is a five-minute win worth taking early. (Library management, P3-07, is done.)
+5. **P4-08** split the inline script out of `index.html` before it grows further (the Library UI added ~250 lines;
+   the data rules already live in `src/library.js`, which is the pattern to follow).
 
 ## Open questions for the user
 
@@ -176,6 +187,43 @@ _Last updated: 2026-09-20, end of session 5 (naming)._
 ## Session log
 
 Newest first. Copy the template for each new session.
+
+### Session 6: 2026-09-20: Library management (P3-07)
+
+**Goal:** Rename, delete (with undo), duplicate and search for scripts in the Library.
+
+**Done:** P3-07 (D-013). New `src/library.js` (pure) with 23 unit tests; `Fountain.setTitle` / `fullTitle` and
+`Editing.diffEdit` with tests; the Library dialog rebuilt in `index.html`; Help updated (rename, Recently deleted);
+52 new e2e checks (267 to 319). Also improved `test/run-headless.ps1` to say plainly when the e2e page never finishes.
+
+**Changed**
+- `index.html`: Library dialog (search box, Scripts / Recently deleted tabs, live-region messages), `renderLibrary`
+  and its actions, `applyEdit(edit, {keepFocus})` (keeps focus in the dialog and suppresses the on-screen keyboard
+  with `inputmode="none"` while it briefly focuses the editor), and safer persistence: `saveScript` merges into the
+  stored record and never writes into a deleted script, `restoreLastScript` ignores a pointer to a deleted script,
+  `purgeTrash` runs at startup. Library rows are now real buttons (the whole row used to be a `div role=button`).
+- Tests: `test/library.test.js`; additions to `fountain.test.js` and `editing.test.js`; a Library section in
+  `app.e2e.html` covering search, rename (open and not open, undo/redo), duplicate, delete/undo, trash, delete forever
+  (two clicks and timeout), deleting the open script, stale pointer, two tabs, XSS, empty state, phone fit.
+
+**Decisions:** D-013.
+
+**Problems / surprises**
+- The first run of the e2e page reported "0 passed, 0 failed": a duplicate `const` was a syntax error, and the
+  runner didn't say so. Checked with `node --check`, fixed, and the runner now reports "the page never finished".
+- Older test frames still had autosaves pending and were writing scripts into the shared storage while the Library
+  was under test. Fixed by silencing saving in every earlier frame before that section.
+- One assertion assumed the renamed script would sort first; a pending autosave of another script legitimately
+  sorted newer. The app was right; the test now asserts the stable facts.
+- Screenshot review showed the Rename / Duplicate / Delete buttons still visible under the rename field; hidden now.
+
+**Left undone:** Not seen on a real device (the `inputmode="none"` focus trick in particular is unobserved on iOS /
+Android). Sort options, multi-select, per-script export and a storage indicator (P3-09). Tour / Help copy still needs
+the user's read.
+
+**Next session should start with:** "Next steps" above.
+
+---
 
 ### Session 5: 2026-09-20: Naming (P6-00)
 

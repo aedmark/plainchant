@@ -192,6 +192,31 @@ the owner's call), the `frictionless_*` storage keys (D-005), and the Void / Can
 **Update, same day:** the owner renamed the GitHub repo to `plainchant` and re-cloned into a `plainchant` folder, so
 the "deliberately unchanged" folder name above no longer applies (roadmap P6-04). The rest stands.
 
+## D-013 Library management: soft delete, rename through the text, data rules in a pure module  (2026-09-20, status: accepted)
+**Context:** The Library could only list and open scripts (P3-07), and the example script (D-011) added a script
+nobody could remove. Principle 3 is "never lose words", and on a touch screen an accidental tap is likely.
+**Decision:**
+1. **Deleting is soft.** A script gets a `deletedAt` timestamp and moves to a "Recently deleted" tab, where it can be
+   restored. An Undo message appears at once. After **30 days** it is removed for good (checked on startup and
+   whenever the Library opens). Deleting *forever* takes two deliberate clicks (the button turns red and asks
+   "Really delete?", and disarms after 4 seconds).
+2. **Rename rewrites the script's own `Title:` line** (creating the title page if there is none), rather than storing
+   a separate label. That keeps D-002: the name travels with the text, exports with it and shows on the title page.
+   Renaming the open script goes through the editor (`applyEdit` with the smallest diff, `Editing.diffEdit`), so the
+   cursor and the undo history survive; other scripts are rewritten in storage.
+3. **Duplicate** writes "<title> (copy)" into the copy's own text, so the two can be told apart everywhere.
+4. **Search** matches titles and script text, case-insensitively.
+5. **Nothing may resurrect a deleted script.** Deleting the open script leaves the writer on a blank page with a new
+   id; on load a pointer to a deleted script is ignored (blank page, new id); and `saveScript` refuses to write into
+   a deleted id (the words go to a new script). The last one exists for two browser tabs: another tab deletes the
+   script this tab still has open.
+6. **The rules are a pure module**, `src/library.js` (scripts object in, new object out, never mutated: the unit tests
+   pass deeply frozen input). `index.html` draws the list and applies the results; script titles and text only ever
+   become text nodes, never markup.
+**Consequences:** Deleted scripts still occupy localStorage (about 5 MB total) for 30 days. `saveScript` now merges
+into the stored record instead of replacing it, so new fields on a script survive. A rename adds a title page to a
+script that had none. There is no UI yet for sort order, multi-select or per-script export (P3-09).
+
 ## Open questions
 
 - Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

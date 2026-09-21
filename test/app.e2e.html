@@ -94,7 +94,7 @@ const W = () => f.contentWindow;
     $('libraryBtn').click();
     const item = f.contentDocument.querySelector('#library-list .script-item');
     check('library lists the script', !!item && item.textContent.includes('Test Film'));
-    item.click();
+    item.querySelector('.script-open').click();
     check('library click loads script', $('editor').value.includes('INT. A - DAY'));
     f.contentWindow.location.reload(); await load();
     check('library selection restored on reload', $('editor').value.includes('INT. A - DAY'));
@@ -605,18 +605,245 @@ const W = () => f.contentWindow;
     const lf = await openFrame(1200, 700);
     fid(lf, 'libraryBtn').focus();
     fid(lf, 'libraryBtn').click();
-    check('library: opens as a dialog with its scripts keyboard-reachable', active(lf).join() === 'library-modal' && fq(lf, '#library-list .script-item').tabIndex === 0 && fq(lf, '#library-list .script-item').getAttribute('role') === 'button');
+    check('library: opens as a dialog whose scripts are real buttons (keyboard-reachable)', active(lf).join() === 'library-modal' && fq(lf, '#library-list .script-open').tagName === 'BUTTON');
     keydown(lf, lf.contentDocument.activeElement, 'Escape');
     check('library: Esc closes it and returns focus to the Library button', active(lf).length === 0 && focusId(lf) === 'libraryBtn', focusId(lf));
     fid(lf, 'libraryBtn').click();
-    keydown(lf, fq(lf, '#library-list .script-item'), 'Enter');
-    check('library: Enter on a script opens it and closes the dialog', fid(lf, 'editor').value === 'INT. ALPHA - DAY' && active(lf).length === 0);
+    fq(lf, '#library-list .script-open').click(); // a real button: Enter and Space activate it natively
+    check('library: choosing a script opens it and closes the dialog', fid(lf, 'editor').value === 'INT. ALPHA - DAY' && active(lf).length === 0);
     fid(lf, 'libraryBtn').click();
     fid(lf, 'library-modal').click();
     check('library: clicking the backdrop closes it', active(lf).length === 0);
     lf.remove();
 
-    // Phone: the dialogs fit a 375px screen, and Help lives in the menu
+    // 16. Library management (P3-07): search, rename, duplicate, delete with Recently deleted. These frames use the
+    // app's real saving (the other sections neutralise it), because persistence is the point.
+    // Earlier frames may still have an autosave pending and share this storage: silence them so they cannot write
+    // scripts into the library while it is being tested.
+    document.querySelectorAll('iframe').forEach(fr => { try { fr.contentWindow.saveScript = () => {}; } catch (e) { /* gone */ } });
+    const openRealFrame = async (w, h) => {
+      const fr = document.createElement('iframe');
+      fr.style.cssText = 'width:' + w + 'px;height:' + h + 'px';
+      document.body.appendChild(fr);
+      await new Promise(r => { fr.onload = () => setTimeout(r, 100); fr.src = APP; });
+      return fr;
+    };
+    const HOUR_MS = 3600000, DAY_MS = 24 * HOUR_MS;
+    const seedLibrary = (extra) => {
+      const t = Date.now();
+      const seed = Object.assign({
+        a: { id: 'a', title: 'Alpha', content: 'Title: Alpha\nAuthor: Me\n\nINT. ALPHA - DAY\n\nRain falls on the roof.', updatedAt: t - 5 * 60000 },
+        b: { id: 'b', title: 'Beta', content: 'Title: Beta\n\nThe kettle sings.', updatedAt: t - 3 * HOUR_MS },
+        c: { id: 'c', title: 'INT. GAMMA - NIGHT', content: 'INT. GAMMA - NIGHT\nHi.', updatedAt: t - 2 * DAY_MS },
+        gone: { id: 'gone', title: 'Old draft', content: 'Title: Old draft\n\nGone.', updatedAt: t - 10 * DAY_MS, deletedAt: t - 2 * DAY_MS },
+        ancient: { id: 'ancient', title: 'Ancient', content: 'Title: Ancient\n\nX', updatedAt: t - 90 * DAY_MS, deletedAt: t - 31 * DAY_MS }
+      }, extra || {});
+      W().localStorage.setItem('frictionless_scripts', JSON.stringify(seed));
+      W().localStorage.setItem('frictionless_current', 'a');
+    };
+    const stored = () => JSON.parse(W().localStorage.getItem('frictionless_scripts') || '{}');
+
+    seedLibrary();
+    const lb = await openRealFrame(1200, 800);
+    const lbe = fid(lb, 'editor');
+    const rows = () => Array.from(lb.contentDocument.querySelectorAll('#library-list .script-item'));
+    const rowTitle = (r) => r.querySelector('.script-title').textContent;
+    const titles = () => rows().map(rowTitle);
+    const rowFor = (t) => rows().find(r => rowTitle(r) === t);
+    const act = (row, name) => row.querySelector('[data-action="' + name + '"]');
+    const searchFor = (q) => { const s = fid(lb, 'librarySearch'); s.value = q; s.dispatchEvent(new lb.contentWindow.Event('input', { bubbles: true })); };
+    const status = () => fid(lb, 'library-status').textContent.replace(/\s+/g, ' ').trim();
+    const inDialog = () => !!lb.contentDocument.activeElement.closest('#library-modal');
+    const openLib = () => { fid(lb, 'libraryBtn').click(); };
+    const trashChip = () => fid(lb, 'libViewTrash').textContent;
+
+    check('library: the app opens on the last script', lbe.value.indexOf('Title: Alpha') === 0, lbe.value);
+    check('library: scripts deleted more than 30 days ago are removed for good on startup', !stored().ancient && !!stored().gone, Object.keys(stored()));
+
+    // Words typed a moment ago (before autosave) must show up: opening the Library saves first
+    lbe.value += ' Extra words here now.';
+    lbe.dispatchEvent(new lb.contentWindow.Event('input', { bubbles: true }));
+    lbe.setSelectionRange(lbe.value.length, lbe.value.length);
+    openLib();
+    check('library: lists live scripts, most recently edited first', titles().join('|') === 'Alpha|Beta|INT. GAMMA - NIGHT', titles());
+    check('library: shows when it was edited and how long it is (including the words just typed)',
+      /Edited just now|Edited \d+ min ago/.test(rowFor('Alpha').textContent) && /17 words/.test(rowFor('Alpha').textContent) && /Edited 3 h ago/.test(rowFor('Beta').textContent) && /Edited 2 days ago/.test(rowFor('INT. GAMMA - NIGHT').textContent),
+      rows().map(r => r.querySelector('.script-meta').textContent));
+    check('library: the preview skips the title page', /INT\. ALPHA - DAY/.test(rowFor('Alpha').querySelector('.script-preview').textContent) && !/Title:/.test(rowFor('Alpha').querySelector('.script-preview').textContent));
+    check('library: the Recently deleted tab counts what is in it', trashChip() === 'Recently deleted (1)', trashChip());
+    check('library: every action button says which script it is for', Array.from(rowFor('Beta').querySelectorAll('.mini')).every(b => /“Beta”/.test(b.getAttribute('aria-label'))));
+    check('library: the messages area is a polite live region', fid(lb, 'library-status').getAttribute('role') === 'status' && fid(lb, 'library-status').getAttribute('aria-live') === 'polite');
+
+    // Search
+    searchFor('kettle');
+    check('library: search finds text inside scripts, not just titles', titles().join() === 'Beta', titles());
+    searchFor('ALPHA');
+    check('library: search ignores case', titles().join() === 'Alpha', titles());
+    searchFor('zzz nothing');
+    check('library: search with no match says so', rows().length === 0 && /No scripts match .zzz nothing./.test(fid(lb, 'library-list').textContent));
+    searchFor('');
+    check('library: clearing the search shows everything again', rows().length === 3);
+
+    // Rename a script that is not open
+    act(rowFor('Beta'), 'rename').click();
+    const renameInput = fq(lb, '#library-list .rename-form input');
+    check('rename: turns the row into a labelled field with the title selected and focused', !!renameInput && renameInput.value === 'Beta' && renameInput.getAttribute('aria-label') === 'New title' && lb.contentDocument.activeElement === renameInput && renameInput.selectionStart === 0 && renameInput.selectionEnd === 4);
+    renameInput.value = '   ';
+    fq(lb, '#library-list .rename-form').requestSubmit();
+    check('rename: an empty title is refused and the field says so', fq(lb, '#library-list .rename-form input').getAttribute('aria-invalid') === 'true' && stored().b.title === 'Beta');
+    const escEv = keydown(lb, fq(lb, '#library-list .rename-form input'), 'Escape');
+    check('rename: Esc cancels the rename, leaves the Library open, and returns focus to Rename',
+      escEv.defaultPrevented && active(lb).join() === 'library-modal' && !fq(lb, '#library-list .rename-form') && titles().indexOf('Beta') !== -1 &&
+      lb.contentDocument.activeElement === act(rowFor('Beta'), 'rename'));
+    const betaEditedBefore = stored().b.updatedAt;
+    act(rowFor('Beta'), 'rename').click();
+    fq(lb, '#library-list .rename-form input').value = 'Beta Prime';
+    fq(lb, '#library-list .rename-form').requestSubmit();
+    check('rename: the script\'s own Title: line is rewritten', stored().b.content === 'Title: Beta Prime\n\nThe kettle sings.' && stored().b.title === 'Beta Prime', stored().b);
+    check('rename: the list shows the new name (and it counts as edited now), and the writer stays in the dialog',
+      titles().indexOf('Beta Prime') !== -1 && titles().indexOf('Beta') === -1 && stored().b.updatedAt > betaEditedBefore && inDialog() && lb.contentDocument.activeElement === act(rowFor('Beta Prime'), 'rename'),
+      [titles(), inDialog(), lb.contentDocument.activeElement && (lb.contentDocument.activeElement.dataset.action + '/' + lb.contentDocument.activeElement.className)]);
+
+    // Rename the script that IS open: edits the editor's own text, keeping the caret and undo history
+    const caretBefore = lbe.selectionStart, lengthBefore = lbe.value.length;
+    act(rowFor('Alpha'), 'rename').click();
+    fq(lb, '#library-list .rename-form input').value = 'Alpha Prime Edition';
+    fq(lb, '#library-list .rename-form').requestSubmit();
+    check('rename open script: the editor\'s Title: line changes and nothing else does', lbe.value.indexOf('Title: Alpha Prime Edition\nAuthor: Me\n\nINT. ALPHA - DAY') === 0 && /Extra words here now\.$/.test(lbe.value), lbe.value);
+    check('rename open script: the caret keeps its place in the text', lbe.selectionStart === caretBefore + (lbe.value.length - lengthBefore), [lbe.selectionStart, caretBefore, lbe.value.length, lengthBefore]);
+    check('rename open script: saved at once, and focus stays in the dialog with the keyboard setting restored', stored().a.content === lbe.value && inDialog() && lbe.inputMode === '', [inDialog(), lbe.inputMode]);
+    lbe.focus();
+    const renameUndone = lb.contentDocument.execCommand('undo');
+    check('rename open script: is one undo step in the editor', renameUndone && lbe.value.indexOf('Title: Alpha\nAuthor: Me') === 0 && /Extra words here now\.$/.test(lbe.value), lbe.value.slice(0, 40));
+    const redone = lb.contentDocument.execCommand('redo');
+    check('rename open script: and redo brings the new title back', redone && lbe.value.indexOf('Title: Alpha Prime Edition\nAuthor: Me') === 0, lbe.value.slice(0, 40));
+    lb.contentWindow.flushSave();
+
+    // Duplicate
+    act(rowFor('Beta Prime'), 'duplicate').click();
+    check('duplicate: makes a copy whose own text says (copy), and says so', !!rowFor('Beta Prime (copy)') && stored()[Object.keys(stored()).find(k => stored()[k].title === 'Beta Prime (copy)')].content === 'Title: Beta Prime (copy)\n\nThe kettle sings.' && /Duplicated as .Beta Prime \(copy\)./.test(status()), [titles(), status()]);
+    check('duplicate: leaves the original alone', stored().b.content === 'Title: Beta Prime\n\nThe kettle sings.');
+
+    // Delete, and undo
+    const copyId = Object.keys(stored()).find(k => stored()[k].title === 'Beta Prime (copy)');
+    act(rowFor('Beta Prime (copy)'), 'delete').click();
+    check('delete: the script leaves the list but is kept, with a timestamp', !rowFor('Beta Prime (copy)') && !!stored()[copyId].deletedAt && stored()[copyId].content.indexOf('(copy)') !== -1);
+    check('delete: says what happened and offers Undo, and the tab count goes up', /Deleted .Beta Prime \(copy\)./.test(status()) && /Undo/.test(status()) && trashChip() === 'Recently deleted (2)', [status(), trashChip()]);
+    check('delete: focus stays inside the dialog', inDialog());
+    Array.from(fid(lb, 'library-status').querySelectorAll('button')).find(b => b.textContent === 'Undo').click();
+    check('delete: Undo puts it straight back', !!rowFor('Beta Prime (copy)') && !stored()[copyId].deletedAt && trashChip() === 'Recently deleted (1)');
+    act(rowFor('Beta Prime (copy)'), 'delete').click();
+
+    // Recently deleted
+    fid(lb, 'libViewTrash').click();
+    check('trash: lists deleted scripts with when they went and when they will be removed for good',
+      titles().join('|') === 'Beta Prime (copy)|Old draft' && /Deleted 2 days ago/.test(rowFor('Old draft').textContent) && /removed for good in 28 days/.test(rowFor('Old draft').textContent), titles());
+    check('trash: explains the 30 days and offers Restore / Delete forever', /kept for 30 days/.test(fid(lb, 'library-list').textContent) && !!act(rowFor('Old draft'), 'restore') && !!act(rowFor('Old draft'), 'purge'));
+    check('trash: deleted scripts cannot be renamed or opened from here', !act(rowFor('Old draft'), 'rename') && !act(rowFor('Old draft'), 'open'));
+    act(rowFor('Old draft'), 'restore').click();
+    check('trash: Restore returns it to Scripts with its text intact', !rowFor('Old draft') && !stored().gone.deletedAt && stored().gone.content === 'Title: Old draft\n\nGone.' && /Restored .Old draft./.test(status()));
+    act(rowFor('Beta Prime (copy)'), 'purge').click();
+    const armedBtn = act(rowFor('Beta Prime (copy)'), 'purge');
+    check('trash: Delete forever asks "Really delete?" first and removes nothing yet', armedBtn.textContent === 'Really delete?' && armedBtn.classList.contains('armed') && !!stored()[copyId]);
+    await sleep(4300);
+    check('trash: the question times out and disarms', act(rowFor('Beta Prime (copy)'), 'purge').textContent === 'Delete forever');
+    act(rowFor('Beta Prime (copy)'), 'purge').click();
+    act(rowFor('Beta Prime (copy)'), 'purge').click();
+    check('trash: a second click removes it for good', !stored()[copyId] && /Removed for good/.test(status()) && /Nothing has been deleted/.test(fid(lb, 'library-list').textContent), [Object.keys(stored()), fid(lb, 'library-list').textContent]);
+    fid(lb, 'libViewScripts').click();
+    check('trash: the tab is back to a plain label when it is empty', trashChip() === 'Recently deleted');
+
+    // Empty the whole trash in two clicks
+    act(rowFor('Beta Prime'), 'delete').click();
+    act(rowFor('INT. GAMMA - NIGHT'), 'delete').click();
+    fid(lb, 'libViewTrash').click();
+    check('trash: two scripts are waiting', titles().length === 2 && trashChip() === 'Recently deleted (2)');
+    fq(lb, '#library-list [data-action="purge-all"]').click();
+    check('trash: "Delete all forever" also asks first', fq(lb, '#library-list [data-action="purge-all"]').textContent === 'Really delete all?' && titles().length === 2);
+    fq(lb, '#library-list [data-action="purge-all"]').click();
+    check('trash: the second click empties it', titles().length === 0 && !stored().b && !stored().c);
+
+    // Deleting the script that is open
+    fid(lb, 'libViewScripts').click();
+    const openIdBefore = lb.contentWindow.eval('currentScriptId');
+    const openText = lbe.value;
+    act(rowFor('Alpha Prime Edition'), 'delete').click();
+    check('delete open script: leaves the writer on a blank page in a new script', lbe.value === '' && lb.contentWindow.eval('currentScriptId') !== openIdBefore && stored()[openIdBefore].deletedAt > 0 && stored()[openIdBefore].content === openText);
+    Array.from(fid(lb, 'library-status').querySelectorAll('button')).find(b => b.textContent === 'Undo').click();
+    check('delete open script: Undo puts the script back on the page if nothing else was started', lbe.value === openText && lb.contentWindow.eval('currentScriptId') === openIdBefore && !stored()[openIdBefore].deletedAt);
+    act(rowFor('Alpha Prime Edition'), 'delete').click();
+    lbe.value = 'Brand new words.';
+    lbe.dispatchEvent(new lb.contentWindow.Event('input', { bubbles: true }));
+    lb.contentWindow.dispatchEvent(new lb.contentWindow.Event('pagehide'));
+    const afterDelete = stored();
+    const newOne = Object.keys(afterDelete).find(k => afterDelete[k].content === 'Brand new words.');
+    check('delete open script: words typed afterwards go into a new script, never back into the deleted one',
+      !!newOne && newOne !== openIdBefore && !!afterDelete[openIdBefore].deletedAt && afterDelete[openIdBefore].content === openText);
+    fq(lb, '#library-modal .modal-close').click();
+
+    // A stale pointer to a deleted script must not bring it back. (The page being left saves whatever is in its
+    // editor as it goes, and would move the pointer, so empty the editor first: an empty editor is never saved.)
+    const blankOut = (fr) => { const e = fid(fr, 'editor'); e.value = ''; e.dispatchEvent(new fr.contentWindow.Event('input', { bubbles: true })); };
+    const reloadReal = async (fr) => { await new Promise(r => { fr.onload = () => setTimeout(r, 100); fr.contentWindow.location.reload(); }); };
+    blankOut(lb);
+    W().localStorage.setItem('frictionless_current', openIdBefore);
+    await reloadReal(lb);
+    const lbe2 = fid(lb, 'editor');
+    check('delete: reopening the app never resurrects the deleted script (starts blank, new id)', lbe2.value === '' && lb.contentWindow.eval('currentScriptId') !== openIdBefore);
+    lbe2.value = 'Typed after the reload.';
+    lbe2.dispatchEvent(new lb.contentWindow.Event('input', { bubbles: true }));
+    lb.contentWindow.dispatchEvent(new lb.contentWindow.Event('pagehide'));
+    check('delete: and the deleted script is still deleted afterwards', !!stored()[openIdBefore].deletedAt && stored()[openIdBefore].content === openText);
+
+    // Two tabs: another tab deletes the script this one has open. Carrying on typing here must not bring it back;
+    // the words are kept, as a new script.
+    blankOut(lb);
+    seedLibrary();
+    await reloadReal(lb);
+    const twoTabs = stored();
+    twoTabs.a.deletedAt = Date.now();
+    W().localStorage.setItem('frictionless_scripts', JSON.stringify(twoTabs));
+    const tabEditor = fid(lb, 'editor');
+    check('two tabs: this tab still has the script open when the other tab deletes it', tabEditor.value.indexOf('Title: Alpha') === 0);
+    tabEditor.value += ' Words written after the other tab deleted it.';
+    tabEditor.dispatchEvent(new lb.contentWindow.Event('input', { bubbles: true }));
+    lb.contentWindow.dispatchEvent(new lb.contentWindow.Event('pagehide'));
+    const afterTwoTabs = stored();
+    const rescuedId = Object.keys(afterTwoTabs).find(k => afterTwoTabs[k].content.indexOf('Words written after the other tab deleted it.') !== -1);
+    check('two tabs: the words are kept as a new script, and the deleted one stays deleted and unchanged',
+      !!rescuedId && rescuedId !== 'a' && !!afterTwoTabs.a.deletedAt && afterTwoTabs.a.content.indexOf('Words written after') === -1, [rescuedId, afterTwoTabs.a]);
+
+    // Opening a script from the list still works, and a script's title is only ever text
+    blankOut(lb);
+    seedLibrary({ x: { id: 'x', title: 'X', content: 'Title: <img src=x onerror="window.__pwned=1">\n\nHi.', updatedAt: Date.now() } });
+    await reloadReal(lb);
+    openLib();
+    const xssRow = rows().find(r => /<img/.test(rowTitle(r)));
+    check('library: titles are shown as text, never as markup', !!xssRow && !fq(lb, '#library-list img') && !lb.contentWindow.__pwned);
+    act(rowFor('Alpha'), 'open').click();
+    check('library: opening a script from the list loads it and closes the dialog', fid(lb, 'editor').value.indexOf('Title: Alpha') === 0 && active(lb).length === 0);
+    fid(lb, 'newBtn').click();                            // saves Alpha, then starts a blank page
+    W().localStorage.setItem('frictionless_scripts', '{}'); // ...and now nothing is saved
+    openLib();
+    check('library: with nothing saved it explains itself', /No saved scripts yet/.test(fid(lb, 'library-list').textContent));
+    blankOut(lb);
+    lb.remove();
+
+    // Phone: the Library fits a 375px screen and every action is reachable
+    seedLibrary();
+    await reloadFrame(m);
+    $m('libraryBtn').click();
+    const pl = rect(fq(m, '#library-modal .modal-content')), plist = fq(m, '#library-list');
+    check('phone library: the dialog fits on the screen', pl.left >= 0 && pl.right <= 375 && pl.top >= 0 && pl.bottom <= 667, pl);
+    check('phone library: nothing scrolls sideways and every action button is on screen',
+      plist.scrollWidth <= plist.clientWidth && Array.from(plist.querySelectorAll('.mini')).every(b => rect(b).left >= 0 && rect(b).right <= 375), [plist.scrollWidth, plist.clientWidth]);
+    mq('#library-list [data-action="rename"]').click();
+    const pri = fq(m, '#library-list .rename-form input');
+    check('phone library: the rename field fits and has room to type', rect(pri).right <= 375 && rect(pri).width > 120, rect(pri));
+    m.contentDocument.activeElement.dispatchEvent(new m.contentWindow.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+    mq('#library-modal .modal-close').click();
+
+    // Phone: Help lives in the menu, and the dialogs fit a 375px screen
     $m('tabWrite').click();
     $m('menuBtn').click();
     $m('helpBtn').focus(); // a real tap focuses the button it lands on

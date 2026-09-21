@@ -5,7 +5,8 @@
  *
  *   Fountain.parse(text)      -> tokens
  *   Fountain.toHTML(tokens)   -> HTML string (all user text escaped)
- *   Fountain.extractTitle(t)  -> best-effort script title
+ *   Fountain.extractTitle(t)  -> best-effort script title, capped for list labels (Fountain.fullTitle: uncapped)
+ *   Fountain.setTitle(t, s)   -> the text with its Title: line set to s (creates the title page if there is none)
  *   Fountain.classifyLines(t) -> one type per source line, for the editor (see src/editing.js)
  *
  * Follows Fountain 1.1 (https://fountain.io/syntax). Deliberately strict about case: lowercase cues are action (D-004).
@@ -320,8 +321,8 @@
         return kinds;
     }
 
-    /** Title-page Title if present, otherwise the first scene heading or non-empty line, capped at 40 chars. */
-    function extractTitle(text) {
+    /** Title-page Title if present, otherwise the first non-empty line; '' for an empty script. Not truncated. */
+    function fullTitle(text) {
         const tokens = parse(text);
         const tp = tokens.find(function (t) { return t.type === 'title_page'; });
         let title = '';
@@ -334,12 +335,45 @@
                 .find(function (l) { return l.length > 0; });
             title = first || '';
         }
-        title = title.replace(/[*_]/g, '').trim();
+        return title.replace(/[*_]/g, '').trim();
+    }
+
+    /** The label used in lists: fullTitle, capped at 40 characters, or "Untitled Script". */
+    function extractTitle(text) {
+        const title = fullTitle(text);
         return title ? title.substring(0, 40) : 'Untitled Script';
     }
 
+    /**
+     * Returns `text` with its title set to `title`, by editing the `Title:` line of the title page (creating the line,
+     * or the whole title page, if needed). The title lives in the script's own text, so it exports and travels with
+     * it. Everything else is left exactly as it was. Newlines in `title` become spaces.
+     */
+    function setTitle(text, title) {
+        const value = String(title == null ? '' : title).replace(/\s*\n\s*/g, ' ').trim();
+        const line = 'Title: ' + value;
+        const src = String(text || '').replace(/\r\n?/g, '\n');
+        const lines = src.split('\n');
+        const page = parseTitlePage(lines);
+
+        if (!page) return line + '\n\n' + src.replace(/^\n+/, '');
+
+        const end = page.next; // first blank line after the title page, or the end
+        const isKeyLine = function (l) { return /^\S/.test(l) && /^([A-Za-z][A-Za-z ]*?):/.test(l); };
+        let at = -1;
+        for (let i = 0; i < end; i++) {
+            if (isKeyLine(lines[i]) && /^title\s*:/i.test(lines[i])) { at = i; break; }
+        }
+        if (at === -1) { lines.unshift(line); return lines.join('\n'); }
+
+        let stop = at + 1; // drop any indented continuation lines of the old value
+        while (stop < end && !isKeyLine(lines[stop])) stop++;
+        lines.splice(at, stop - at, line);
+        return lines.join('\n');
+    }
+
     return {
-        parse: parse, toHTML: toHTML, extractTitle: extractTitle, classifyLines: classifyLines,
-        escapeHTML: escapeHTML, inline: inline
+        parse: parse, toHTML: toHTML, extractTitle: extractTitle, fullTitle: fullTitle, setTitle: setTitle,
+        classifyLines: classifyLines, escapeHTML: escapeHTML, inline: inline
     };
 });

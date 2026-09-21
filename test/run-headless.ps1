@@ -45,8 +45,9 @@ if ($e2e -match '(?s)<pre id="out">(.*?)</pre>') {
     $lines = [Net.WebUtility]::HtmlDecode($Matches[1]) -split "`n"
     $bad = @($lines | Where-Object { $_ -like 'FAIL*' })
     $good = @($lines | Where-Object { $_ -like 'PASS*' })
-    Write-Host ("e2e   : " + $good.Count + " passed, " + $bad.Count + " failed")
-    if ($bad.Count -or $lines[0].Trim() -ne 'DONE') { $failed++; $bad | ForEach-Object { Write-Host "  $_" } }
+    $finished = $lines[0].Trim() -eq 'DONE'
+    Write-Host ("e2e   : " + $good.Count + " passed, " + $bad.Count + " failed" + $(if ($finished) { '' } else { '  (the page never finished: a script error or a hung wait; try test/app.e2e.html in a browser and read its console)' }))
+    if ($bad.Count -or -not $finished) { $failed++; $bad | ForEach-Object { Write-Host "  $_" } }
 } else { Write-Host 'e2e   : no result (page did not run)'; $failed++ }
 
 Remove-Item $work -Recurse -Force -ErrorAction SilentlyContinue

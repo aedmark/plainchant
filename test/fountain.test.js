@@ -278,3 +278,50 @@ test('robustness: empty, whitespace, CRLF and undefined input', () => {
     assert.deepEqual(parse(undefined), []);
     assert.deepEqual(types('JOHN\r\nHi.\r\n\r\nHe leaves.'), ['dialogue', 'action']);
 });
+
+// ---------- setTitle / fullTitle (Library rename writes the title into the script's own text) ----------
+
+test('setTitle: a script with no title page gets one, leading blank lines dropped, body untouched', () => {
+    assert.equal(Fountain.setTitle('INT. A - DAY\nHi.', 'X'), 'Title: X\n\nINT. A - DAY\nHi.');
+    assert.equal(Fountain.setTitle('\n\nFADE IN:', 'X'), 'Title: X\n\nFADE IN:');
+    assert.equal(Fountain.setTitle('', 'X'), 'Title: X\n\n');
+});
+
+test('setTitle: an existing Title: line is replaced in place, other keys untouched', () => {
+    assert.equal(Fountain.setTitle('Title: Old\nAuthor: Me\n\nFADE IN:', 'New'), 'Title: New\nAuthor: Me\n\nFADE IN:');
+    assert.equal(Fountain.setTitle('Author: Me\nTitle: Old\nDate: 1\n\nText', 'New'), 'Author: Me\nTitle: New\nDate: 1\n\nText');
+    assert.equal(Fountain.setTitle('title: old\n\nText', 'New'), 'Title: New\n\nText');
+});
+
+test('setTitle: a multi-line Title value is replaced whole', () => {
+    assert.equal(Fountain.setTitle('Title:\n    Big\n    Fish\nAuthor: Me\n\nText', 'New'), 'Title: New\nAuthor: Me\n\nText');
+});
+
+test('setTitle: a title page with no Title gets one as its first line', () => {
+    assert.equal(Fountain.setTitle('Author: Me\n\nText', 'New'), 'Title: New\nAuthor: Me\n\nText');
+});
+
+test('setTitle: only the title page is touched, not a "Title:" later in the body', () => {
+    assert.equal(Fountain.setTitle('Hello.\n\nTitle: not me', 'X'), 'Title: X\n\nHello.\n\nTitle: not me');
+});
+
+test('setTitle: newlines become spaces, and setting it twice is the same as once', () => {
+    assert.equal(Fountain.setTitle('Text', 'Two\nLines'), 'Title: Two Lines\n\nText');
+    const once = Fountain.setTitle('Title: A\n\nText', 'B');
+    assert.equal(Fountain.setTitle(once, 'B'), once);
+});
+
+test('setTitle: what it writes is what extractTitle and the title page read back', () => {
+    const t = Fountain.setTitle('INT. A - DAY', 'Big Fish');
+    assert.equal(Fountain.extractTitle(t), 'Big Fish');
+    assert.equal(Fountain.parse(t)[0].type, 'title_page');
+    assert.equal(Fountain.parse(t)[1].type, 'scene');
+});
+
+test('fullTitle is not truncated; extractTitle caps at 40 for list labels', () => {
+    const long = 'Title: ' + 'x'.repeat(60);
+    assert.equal(Fountain.fullTitle(long).length, 60);
+    assert.equal(Fountain.extractTitle(long).length, 40);
+    assert.equal(Fountain.fullTitle('  \n '), '');
+    assert.equal(Fountain.extractTitle('  \n '), 'Untitled Script');
+});
