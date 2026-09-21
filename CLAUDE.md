@@ -37,7 +37,8 @@ Sessions are short-lived and context resets between them, so the repo carries th
 | `src/fountain.js` | Fountain parser + HTML renderer. Pure, UMD, no DOM (D-003) |
 | `src/editing.js` | Typing helpers (Tab, smart Enter, auto-uppercase): text + caret in, edit out. Pure, UMD (D-010) |
 | `src/library.js` | Library data rules (search, soft delete, restore, purge, duplicate, rename): scripts object in, new object out. Pure, UMD (D-013) |
-| `test/` | `fountain.test.js` (parser), `editing.test.js` (typing helpers), `library.test.js` (library rules), `structure.test.js` (app script structure, Node only), `app.e2e.html` (app behaviour), `harness.js`, runners: `index.html`, `run-headless.ps1`, `run.js` |
+| `src/importing.js` | Import rules: which files to accept, decoding (UTF-8/16, Windows-1252), line endings. Pure, UMD (D-016) |
+| `test/` | `fountain.test.js` (parser), `editing.test.js` (typing helpers), `library.test.js` (library rules), `importing.test.js` (import rules), `structure.test.js` (app script structure, Node only), `app.e2e.html` (app behaviour), `harness.js`, runners: `index.html`, `run-headless.ps1`, `run.js` |
 | `ROADMAP.md` | The plan, with stable item IDs |
 | `docs/HANDOFF.md` | Current state, next steps, session log |
 | `docs/DECISIONS.md` | Append-only decision record |
@@ -50,7 +51,7 @@ use what an earlier file already defined. Code inside functions runs later and c
 
 | File | Owns |
 | --- | --- |
-| `core.js` | `editor` / `renderTarget` / `page` references, `newId`, `currentScriptId`, `autoSaveTimer`, `render()` |
+| `core.js` | `editor` / `renderTarget` / `page` references, `newId`, `currentScriptId`, `autoSaveTimer`, `showNotice`, `render()` |
 | `layout.js` | One pane at a time, the phone menu, keyboard-safe sizing (`fitToViewport`), scroll sync |
 | `persistence.js` | Saving, restoring the last script, New, the trash purge, save on hide |
 | `dialogs.js` | `openModal` / `closeModal`: the one accessible helper for every modal window |
@@ -58,6 +59,7 @@ use what an earlier file already defined. Code inside functions runs later and c
 | `example.js`, `help.js`, `tour.js` | The example script, the Help window, the welcome tour |
 | `typing.js` | Tab, smart Enter, auto-uppercase, the element bar (rules are in `src/editing.js`) |
 | `export.js` | Export and Copy |
+| `import.js` | Import: the Library's picker and drag-and-drop onto the page; `showNotice` messages (defined in `core.js`) |
 | `main.js` | Start-up on `DOMContentLoaded`. Always last |
 
 Rules: add a new file to `index.html` in the right place (`test/structure.test.js` fails if the folder and the page

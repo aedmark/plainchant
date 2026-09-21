@@ -873,6 +873,103 @@ const W = () => f.contentWindow;
     blankOut(lb);
     lb.remove();
 
+    // 16b. Import (P3-02): a file becomes a NEW script, from the Library's picker or a drop anywhere on the page.
+    seedLibrary();
+    const ib = await openRealFrame(1200, 800);
+    const iw = ib.contentWindow;
+    const ie = fid(ib, 'editor');
+    const makeFile = (name, content) => new iw.File([content], name);
+    const notice = () => fid(ib, 'notice');
+    const noticeText = () => notice().textContent.replace(/\s+/g, ' ').trim();
+    const activeCount = () => Object.values(stored()).filter(s => !s.deletedAt).length;
+    const byContent = (needle) => Object.values(stored()).filter(s => !s.deletedAt && s.content.indexOf(needle) !== -1);
+    const idOfOpen = () => W().localStorage.getItem('frictionless_current');
+
+    ie.value = 'Title: Alpha\n\nINT. ALPHA - DAY\n\nWords typed just before importing.'; // typed, autosave not yet fired
+    ie.dispatchEvent(new iw.Event('input', { bubbles: true }));
+    await iw.importFiles([makeFile('big-fish.fountain', 'Title: Big Fish\r\n\r\nINT. POND - DAY\r\nA fish.\r\n')]);
+    check('import: the file opens in the editor, with plain newlines', ie.value === 'Title: Big Fish\n\nINT. POND - DAY\nA fish.\n', ie.value);
+    check('import: it is a new script in the Library, next to the ones already there', activeCount() === 4 && byContent('A fish.').length === 1, activeCount());
+    check('import: the words being typed when it happened were saved first, not lost', byContent('Words typed just before importing.').length === 1);
+    check('import: the open-script pointer follows the import', idOfOpen() === byContent('A fish.')[0].id);
+    check('import: it says what happened', noticeText() === 'Imported “Big Fish”.' && !notice().classList.contains('error'), noticeText());
+    check('import: the preview shows it formatted', fid(ib, 'render-target').innerHTML.indexOf('INT. POND - DAY') !== -1);
+    check('import: the caret is at the top, not the end', ie.selectionStart === 0 && ie.selectionEnd === 0 && ie.scrollTop === 0);
+
+    await iw.importFiles([makeFile('film.fdx', '<FinalDraft/>')]);
+    check('import: a Final Draft file is refused, and the message names it and says what to do',
+      /Final Draft/.test(noticeText()) && /film\.fdx/.test(noticeText()) && notice().classList.contains('error'), noticeText());
+    check('import: a refused file changes nothing', activeCount() === 4 && ie.value.indexOf('Title: Big Fish') === 0);
+    await iw.importFiles([makeFile('junk.txt', '%PDF' + String.fromCharCode(0, 0) + 'binary')]);
+    check('import: a "text" file that is really binary is refused', /junk\.txt/.test(noticeText()) && /text file/.test(noticeText()) && activeCount() === 4, noticeText());
+    await iw.importFiles([makeFile('empty.txt', '  \n')]);
+    check('import: an empty file is refused', /empty\.txt/.test(noticeText()) && /empty/.test(noticeText()) && activeCount() === 4, noticeText());
+
+    await iw.importFiles([makeFile('one.fountain', 'Title: One\n\nFirst.'), makeFile('two.txt', 'Title: Two\n\nSecond.'), makeFile('bad.pdf', 'x')]);
+    check('import: several files each become a script, and the first is opened',
+      activeCount() === 6 && ie.value === 'Title: One\n\nFirst.' && byContent('Second.').length === 1, [activeCount(), ie.value]);
+    check('import: the message covers the good files and names the one that failed',
+      /Imported 2 scripts/.test(noticeText()) && /“One”/.test(noticeText()) && /bad\.pdf/.test(noticeText()) && notice().classList.contains('error'), noticeText());
+    const sortedTitles = iw.Library.active(stored()).map(s => s.title);
+    check('import: the first file of a batch is listed above the second', sortedTitles.indexOf('One') < sortedTitles.indexOf('Two'), sortedTitles);
+    await iw.importFiles([makeFile('one.fountain', 'Title: One\n\nFirst.')]);
+    check('import: importing the same file again adds another copy, and replaces nothing', byContent('First.').length === 2, byContent('First.').length);
+
+    // The Library's "Import a file..." button hands the chosen files to the same code
+    const picker = fid(ib, 'importInput');
+    const chosen = new iw.DataTransfer();
+    chosen.items.add(makeFile('picked.fountain', 'Title: Picked\n\nFrom the picker.'));
+    picker.files = chosen.files;
+    picker.dispatchEvent(new iw.Event('change', { bubbles: true }));
+    await sleep(200);
+    check('import: choosing a file in the picker imports it', byContent('From the picker.').length === 1 && ie.value.indexOf('Title: Picked') === 0);
+    check('import: the picker is cleared so the same file can be chosen twice', picker.files.length === 0 && picker.value === '');
+    fid(ib, 'libraryBtn').click();
+    check('import: the Library offers it as a button', !!fid(ib, 'libImport') && fid(ib, 'libImport').getClientRects().length > 0 && fid(ib, 'libImport').innerText.indexOf('Import') === 0);
+    fid(ib, 'library-modal').click(); // close it
+
+    // Drag and drop anywhere on the page
+    const drag = (type, dt) => { const ev = new iw.DragEvent(type, { dataTransfer: dt, bubbles: true, cancelable: true }); iw.dispatchEvent(ev); return ev; };
+    const filesDt = new iw.DataTransfer();
+    filesDt.items.add(makeFile('dropped.fountain', 'Title: Dropped\n\nOut of the sky.'));
+    const dropHintEl = fid(ib, 'dropHint');
+    check('drop: the hint is hidden until something is dragged in', dropHintEl.hidden);
+    const enter = drag('dragenter', filesDt);
+    check('drop: dragging a file over the page shows the hint, and the browser is told this is a drop target', !dropHintEl.hidden && enter.defaultPrevented);
+    check('drop: the hint never blocks the drop itself', getComputedStyle(dropHintEl).pointerEvents === 'none');
+    drag('dragleave', filesDt);
+    check('drop: dragging it away hides the hint again', dropHintEl.hidden);
+    drag('dragenter', filesDt);
+    const dropped = drag('drop', filesDt);
+    await sleep(200);
+    check('drop: dropping a file imports it, and the browser does not open the file instead', dropped.defaultPrevented && byContent('Out of the sky.').length === 1 && ie.value.indexOf('Title: Dropped') === 0);
+    check('drop: the hint goes away after the drop', dropHintEl.hidden);
+
+    const textDt = new iw.DataTransfer();
+    textDt.setData('text/plain', 'just some words');
+    const textEnter = drag('dragenter', textDt);
+    const textDrop = drag('drop', textDt);
+    check('drop: dragging text (not a file) is left alone: no hint, and the browser handles it as usual',
+      dropHintEl.hidden && !textEnter.defaultPrevented && !textDrop.defaultPrevented);
+
+    await sleep(6100);
+    check('import: the message clears itself', noticeText() === '' && getComputedStyle(notice()).display === 'none', noticeText());
+
+    // When the browser cannot store it, say so and change nothing
+    const realPut = iw.putScripts;
+    iw.putScripts = () => false;
+    const shape = () => JSON.stringify(Object.values(stored()).map(s => [s.id, s.content, s.deletedAt || 0]).sort()); // timestamps move on every save
+    const before = shape();
+    const editorBefore = ie.value;
+    await iw.importFiles([makeFile('big.fountain', 'Title: Too Big\n\nNo room.')]);
+    iw.putScripts = realPut;
+    check('import: when storage is full the writer is told, and the open script and the library are untouched',
+      /not enough room/.test(noticeText()) && notice().classList.contains('error') && ie.value === editorBefore && shape() === before, noticeText());
+
+    check('help: Import is explained', /Import/.test(fid(ib, 'help-modal').textContent));
+    iw.saveScript = () => {};
+    ib.remove();
+
     // Phone: the Library fits a 375px screen and every action is reachable
     seedLibrary();
     await reloadFrame(m);

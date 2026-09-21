@@ -19,6 +19,17 @@ function newId() {
 let currentScriptId = newId();
 let autoSaveTimer;
 
+// A short message at the foot of the page, for things that happen outside a dialog (an import). An error stays
+// longer, since it is usually longer and has to be read.
+let noticeTimer;
+function showNotice(message, isError = false) {
+    const notice = document.getElementById('notice');
+    notice.textContent = message;
+    notice.classList.toggle('error', isError);
+    clearTimeout(noticeTimer);
+    noticeTimer = setTimeout(() => { notice.textContent = ''; }, isError ? 12000 : 6000);
+}
+
 function render() {
     page.innerHTML = Fountain.toHTML(Fountain.parse(editor.value || editor.getAttribute('placeholder')));
 }

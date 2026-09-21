@@ -682,3 +682,38 @@ code.inline, .help-table code.inline {
     textarea { padding-inline: max(1.5rem, calc((100vw - 44rem) / 2)); padding-block: 1.5rem; }
     #render-target { padding: 2rem; }
 }
+
+/* --- Import: the drop target while a file is dragged over the page, and the message afterwards --- */
+.drop-hint {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 17, 21, 0.85);
+    border: 3px dashed #94a3b8;
+    color: #f8fafc;
+    font: 600 1.25rem var(--font-ui);
+    pointer-events: none;
+}
+.drop-hint[hidden] { display: none; }
+.notice {
+    position: fixed;
+    left: 50%;
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    z-index: 60;
+    width: max-content;
+    max-width: calc(100vw - 2rem);
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border-void);
+    border-radius: 0.5rem;
+    background: #161a21;
+    color: var(--btn-text);
+    font: 0.875rem/1.5 var(--font-ui);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+    overflow-wrap: anywhere;
+}
+.notice.error { border-color: #b91c1c; }
+.notice:empty { display: none; }

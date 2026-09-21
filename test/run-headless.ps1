@@ -22,7 +22,7 @@ function Invoke-Page([string]$relativePage) {
     $url = ([Uri](Join-Path $root $relativePage)).AbsoluteUri
     $dump = Join-Path $work ([IO.Path]::GetFileName($relativePage) + '.dom.html')
     $args = @('--headless=new', '--disable-gpu', '--allow-file-access-from-files', "--user-data-dir=`"$work\profile`"",
-              '--virtual-time-budget=30000', '--dump-dom', $url)
+              '--virtual-time-budget=60000', '--dump-dom', $url)
     Start-Process -FilePath $browser -ArgumentList $args -RedirectStandardOutput $dump `
         -RedirectStandardError (Join-Path $work 'err.txt') -Wait -NoNewWindow
     Get-Content $dump -Raw

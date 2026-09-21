@@ -248,6 +248,23 @@ tests can replace the browser's file saving. The object URL is revoked after a s
 can start the download just after `click()` returns. The Export and Copy buttons share `flashButton`, which also fixed
 a bug where clicking Copy twice quickly could leave the label stuck on "Copied!".
 
+## D-016 Import adds new scripts and never replaces anything  (2026-09-20, status: accepted)
+**Context:** Writers need to bring a `.fountain` or `.txt` script in (P3-02), from a file picker and by dropping a file on
+the page. The risk is data loss: an import must never overwrite or eat what is already there.
+**Decision:** Each importable file becomes a **new** script (a new id) in the Library, and the first one is opened. What
+was being typed is saved first (`flushSave`). If the browser cannot store the result (`putScripts` fails) nothing changes
+and the writer is told. `src/importing.js` holds the pure rules: unsupported formats (`.fdx`, `.pdf`, Word, ...) are
+refused with a reason that says what to do instead; files over 2 MB and empty or binary files are refused; text is
+decoded from UTF-8 (BOM dropped), UTF-16 (BOM) or, failing valid UTF-8, Windows-1252, and CR / CRLF become LF. The
+words are otherwise untouched (no `Title:` line is injected: D-002). The file picker has no `accept=` filter because iOS
+greys out files of types it does not know (`.fountain`); `Importing.checkFile` decides instead. Drops are handled on
+`window`, only when the drag carries files, so dragging text in the editor is untouched and a dropped file is never
+opened by the browser in place of the app. Messages appear in a page-level `#notice` (`showNotice`), because an import
+can happen with no dialog open.
+**Consequences:** Importing the same file twice makes two scripts (deliberate: simple, and nothing is lost). Several
+files at once become several scripts. `.fdx` import is a separate, larger item (P3-08). Only the desktop drop path and
+the picker were exercised, in a headless browser with synthetic events: drag-and-drop from a real file manager, and the
+picker on iOS/Android, are unverified.
 ## Open questions
 
 - Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

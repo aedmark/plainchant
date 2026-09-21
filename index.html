@@ -94,6 +94,9 @@
                 <button type="button" class="chip" id="libViewScripts" aria-pressed="true">Scripts</button>
                 <button type="button" class="chip" id="libViewTrash" aria-pressed="false">Recently deleted</button>
             </div>
+            <button type="button" class="chip" id="libImport">Import a file&hellip;</button>
+            <!-- No accept= filter: iOS greys out files whose type it does not know (.fountain). Importing.checkFile decides. -->
+            <input type="file" id="importInput" multiple hidden>
         </div>
         <div id="library-list" class="modal-body">
             <!-- Scripts are drawn here by renderLibrary() -->
@@ -131,8 +134,9 @@
                     <li>Every change is <strong>saved automatically</strong>, and your last script reopens where you left it.</li>
                     <li><strong>New</strong> starts a blank script. <strong>Library</strong> lists every script you have, and lets you search them, <strong>rename</strong> one (this rewrites its <code class="inline">Title:</code> line), <strong>duplicate</strong> it, or <strong>delete</strong> it.</li>
                     <li>A deleted script is not gone: it waits in <strong>Recently deleted</strong> for 30 days, and you can restore it from there.</li>
-                    <li><strong>Export</strong> downloads your script as a <code class="inline">.fountain</code> file, named after its title. It is plain text, so any text editor opens it, and screenwriting apps that understand Fountain open it as a script.
-                        <strong>Copy</strong> puts the whole script on the clipboard.</li>
+                    <li><strong>Export</strong> downloads your script as a <code class="inline">.fountain</code> file, named after its title. It is plain text, so any text editor opens it, and screenwriting apps that understand Fountain open it as a script.</li>
+                    <li><strong>Import</strong> (in the Library, or drop a file anywhere on the page) adds a <code class="inline">.fountain</code> or <code class="inline">.txt</code> file as a new script. Nothing you already have is replaced.</li>
+                    <li><strong>Copy</strong> puts the whole script on the clipboard.</li>
                 </ul>
                 <div class="callout"><p><strong>Scripts live only in this browser, on this device.</strong> Nothing
                     saves to your filesystem without your consent, and your writing is never sent to a server. Clearing
@@ -321,9 +325,14 @@ Is anyone here?</pre></div>
     </div>
 </div>
 
+<!-- Shown while a file is dragged over the page (import), and for short messages such as "Imported ..." -->
+<div id="dropHint" class="drop-hint" hidden>Drop a script here to import it</div>
+<div id="notice" class="notice" role="status" aria-live="polite"></div>
+
 <script src="src/fountain.js"></script>
 <script src="src/editing.js"></script>
 <script src="src/library.js"></script>
+<script src="src/importing.js"></script>
 <!-- The app itself, split by concern. Classic scripts (D-001: no build step, and modules cannot load over file://),
      sharing one global scope, so ORDER MATTERS: anything that runs while loading may only use what is above it.
      test/structure.test.js checks this list against src/app/. -->
@@ -337,6 +346,7 @@ Is anyone here?</pre></div>
 <script src="src/app/tour.js"></script>
 <script src="src/app/typing.js"></script>
 <script src="src/app/export.js"></script>
+<script src="src/app/import.js"></script>
 <script src="src/app/main.js"></script>
 </body>
 </html>

@@ -89,6 +89,19 @@
     }
 
     /**
+     * Adds text (an imported file, P3-02) as a new script under 
+ewId, titled from its own text. Returns
+     * { scripts, id }, or null if 
+ewId is already taken: nothing is ever overwritten.
+     */
+    function add(scripts, newId, content, now) {
+        if (Object.prototype.hasOwnProperty.call(scripts, newId)) return null;
+        const next = Object.assign({}, scripts);
+        next[newId] = { id: newId, title: Fountain.extractTitle(content), content: content, updatedAt: now };
+        return { scripts: next, id: newId };
+    }
+
+    /**
      * A copy under a new id, titled "<title> (copy)" so the two can be told apart. The title is written into the
      * copy's own text. Returns { scripts, id } or null if the script does not exist or is deleted.
      */
@@ -144,6 +157,6 @@
     return {
         TRASH_DAYS: TRASH_DAYS, active: active, trashed: trashed, search: search,
         softDelete: softDelete, restore: restore, removeForever: removeForever, purgeExpired: purgeExpired,
-        duplicate: duplicate, rename: rename, wordCount: wordCount, relativeTime: relativeTime, daysLeft: daysLeft
+        add: add, duplicate: duplicate, rename: rename, wordCount: wordCount, relativeTime: relativeTime, daysLeft: daysLeft
     };
 });

@@ -101,7 +101,8 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
 - [x] P3-01 Export as `.fountain`, named after the script's title (D-015). There is no separate `.txt` option: a
   `.fountain` file is plain text and any editor opens it. Add a choice only if someone asks (P3-10).
 - [ ] P3-10 Export choices, if wanted: `.txt`, PDF (P3-03), and exporting a script straight from its Library row
-- [ ] P3-02 Import `.fountain` / `.txt` (file picker and drag-drop)
+- [x] P3-02 Import `.fountain` / `.txt` / `.md` (the Library's `Import a file...` picker, and drag-drop anywhere on the page). Each file
+  becomes a new script and the first opens; nothing is overwritten (D-016). Final Draft `.fdx` import is P3-08.
 - [ ] P3-03 Print stylesheet and print-to-PDF at standard screenplay margins
 - [ ] P3-04 Pagination (about 55 lines per page), page numbers, `(MORE)` / `(CONT'D)` handling
 - [ ] P3-05 Title page rendering as its own page

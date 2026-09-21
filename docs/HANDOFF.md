@@ -9,9 +9,13 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-20, end of session 8 (Help copy proofed; stylesheet extracted)._
+_Last updated: 2026-09-20, session 9 in progress (import done; autocomplete next)._
 
 **What works**
+- **Import** (D-016, `src/importing.js` + `src/app/import.js`). The Library's `Import a file...` button, or drop a file
+  anywhere on the page. `.fountain` / `.txt` / `.md` (any UTF-8 / UTF-16 / Windows-1252 text) become NEW scripts, the
+  first opens, nothing is overwritten; `.fdx` / PDF / Word are refused with a reason. Messages show in `#notice`.
+  Untested on a real file manager drag or on iOS / Android pickers.
 - **Library management** (D-013, `src/library.js` + the Library dialog). Search (titles and text), **rename** (rewrites
   the script's own `Title:` line), **duplicate** ("<title> (copy)"), **delete** with an Undo message, and a
   **Recently deleted** tab (30 days, then removed for good) with Restore and a two-click Delete forever / Delete all
@@ -193,17 +197,15 @@ Newest first. Copy the template for each new session.
 ### Session 8: 2026-09-20: Help copy proofed; stylesheet extracted (P4-09)
 
 **Done:** The user rewrote three passages of the Help "Start here" copy (intro, the "Your work" callout). Their editor
-had reformatted all of `index.html` and stripped its 55 comments, so I restored the committed file and re-applied
-only the wording edits (found by diffing with comments and whitespace normalised). Small fixes on the way: "The Void
+had stripped the comments from `index.html` (55 of them) and reformatted it, so I restored the committed file and
+re-applied only the wording edits (found by diffing with comments and whitespace normalised). Small fixes on the way: "The Void
 (Write on a phone) / The Canvas (Preview)" so the copy matches the phone tab labels, and "never sent to a server"
 instead of "no Cloud server" (the page still loads fonts from Google until P4-02). Pushed. Then P4-09: the ~680-line
 inline stylesheet is now `src/styles.css` (rules unchanged, de-indented; `index.html` 1,019 to 321 lines) with a
 structure test guarding it. Tests: 144 under Node, 136 unit and 330 e2e in the browser.
 
-**Watch out:** if an editor's "reformat code" is run on `index.html` or the CSS, it can drop comments. Check
-`git diff --stat` before committing a big diff the user did not describe.
-
 **Left undone:** the tour copy is still mine and unreviewed by the user; nothing verified on a real device.
+
 ### Session 7: 2026-09-20: Split the app script; `.fountain` export (P4-08, P3-01)
 
 **Goal:** Take the growing inline script out of `index.html`, and add the quick `.fountain` export win.
