@@ -60,8 +60,8 @@ _Last updated: 2026-09-20, end of session 6 (Library management)._
 - Scroll sync no longer divides by zero.
 
 **Verified**
-- `npm test` passes under Node 24: 129 unit tests (53 parser incl. setTitle, 53 typing helpers incl. diffEdit, 23
-  library).
+- `npm test` passes under Node 24: 136 tests (53 parser incl. setTitle, 53 typing helpers incl. diffEdit, 23
+  library, 7 app-script structure). The browser runner runs the 129 that need no file access.
 - Library mutation-tested: removing the guard against autosave writing into a deleted script fails the two-tab
   test; reusing a deleted script's id on reload fails; a 30-day boundary off by one fails a unit test; hard-deleting
   instead of soft-deleting crashes the Library section (an exception), so it cannot pass. (The first attempt at the autosave-guard mutation failed *nothing*, which
@@ -154,6 +154,9 @@ _Last updated: 2026-09-20, end of session 6 (Library management)._
   one such line once forced the preview pane to 627px and clipped it off every iPad in portrait.
 - In Preview on mobile, `.pane-void` is `display: contents` so its fixed-position menu stays reachable. Don't
   change it to `display: none`; a test guards this.
+- **The app script is split into `src/app/*.js`** (D-014; the map and rules are in CLAUDE.md "App scripts"). Classic
+  scripts, one shared global scope, order matters only for code that runs at load. `test/structure.test.js` guards it.
+  Put new code in the file that owns the concern (a new file if none does) and register it in `index.html`.
 - `fitToViewport(vv)` and `setView()` / `setMenu()` are global functions on purpose: the e2e page calls them.
 - `#render-target` (full-width scroll area) and `#page` (the fixed-width screenplay column, `.screenplay-font`) are
   separate elements on purpose. Merged into one flex item with `margin: 0 auto`, the column shrank to its widest
@@ -169,8 +172,8 @@ _Last updated: 2026-09-20, end of session 6 (Library management)._
 3. **P2-04** autocomplete of character names and locations. The natural next typing helper now that cues exist:
    in Character mode, offer names already used in the script.
 4. **P3-01** `.fountain` export is a five-minute win worth taking early. (Library management, P3-07, is done.)
-5. **P4-08** split the inline script out of `index.html` before it grows further (the Library UI added ~250 lines;
-   the data rules already live in `src/library.js`, which is the pattern to follow).
+5. **P4-09** the inline stylesheet (~770 lines) is now what makes `index.html` long; extract it when convenient.
+   (P4-08, splitting the script, is done.)
 
 ## Open questions for the user
 
@@ -187,6 +190,20 @@ _Last updated: 2026-09-20, end of session 6 (Library management)._
 ## Session log
 
 Newest first. Copy the template for each new session.
+
+### Session 7: 2026-09-20: Split the app script; `.fountain` export (P4-08, P3-01)
+
+**Goal:** Take the growing inline script out of `index.html`, and add the quick `.fountain` export win.
+
+**Done (part 1, the split):** P4-08. The ~925-line inline script is now eleven files in `src/app/` (D-014). The
+split was mechanical: line ranges cut by script and de-indented, then a multiset comparison proved every original
+code line exists exactly once (826 in; 827 out = two section-comment lines replaced by file headers, plus three
+"Wiring" markers). All 319 e2e checks and 129 unit tests passed unchanged. `index.html` went from 1,931 to 1,019
+lines. New `test/structure.test.js` (7 tests, Node only) guards the load list, duplicate declarations, inline
+scripts, syntax, file size and headers; each guard was mutation-checked.
+
+**Also this session:** pushed the Library commit (`cdafa4d`).
+
 
 ### Session 6: 2026-09-20: Library management (P3-07)
 

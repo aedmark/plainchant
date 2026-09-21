@@ -10,6 +10,7 @@ globalThis.Library = require('../src/library.js');
 require('./fountain.test.js');
 require('./editing.test.js');
 require('./library.test.js');
+require('./structure.test.js'); // reads files, so it runs here only (not in the browser runner)
 
 const results = harness.runTests();
 let failed = 0;

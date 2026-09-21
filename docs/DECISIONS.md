@@ -217,6 +217,23 @@ nobody could remove. Principle 3 is "never lose words", and on a touch screen an
 into the stored record instead of replacing it, so new fields on a script survive. A rename adds a title page to a
 script that had none. There is no UI yet for sort order, multi-select or per-script export (P3-09).
 
+## D-014 The app script is split into ordered classic files under src/app/  (2026-09-20, status: accepted)
+**Context:** The app's script had grown to ~925 lines inline in `index.html` (P4-08), mixing layout, saving, the
+Library, dialogs, help, the tour, typing and export. It was hard to navigate and to change one concern without
+reading the rest.
+**Decision:** Eleven files in `src/app/` (`core`, `layout`, `persistence`, `dialogs`, `library-ui`, `example`,
+`help`, `tour`, `typing`, `export`, `main`), each owning one concern and its own event listeners, loaded by
+`index.html` in that order. They stay **classic scripts sharing one global scope** (D-001: no build step; ES modules
+cannot load over `file://`), so the existing globals that tests rely on are unchanged. The split was done
+mechanically (line ranges cut by script, then a multiset check that every original code line exists exactly once),
+not retyped, and the e2e suite passed unchanged. Load order is the one real constraint: load-time code may only use
+what earlier files define.
+**Consequences:** `test/structure.test.js` (Node) fails if `src/app/` and the page's script tags disagree, if a
+name is declared in two files, if an inline script returns, or if a file exceeds 500 lines. New features should be a
+new file (or a section of the right one), not more lines in `index.html`. This is organisation, not encapsulation:
+files can still touch each other's globals. If that becomes a problem, the next step is a single `App` namespace
+object, which would also mean changing what the tests reach for.
+
 ## Open questions
 
 - Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

@@ -31,14 +31,39 @@ Sessions are short-lived and context resets between them, so the repo carries th
 
 | Path | Purpose |
 | --- | --- |
-| `index.html` | The app: markup, styles, UI glue |
+| `index.html` | The page: markup, the stylesheet, and the list of scripts to load (no inline script) |
+| `src/app/*.js` | The app itself, one file per concern, loaded in order by `index.html` (see "App scripts" below, D-014) |
 | `src/fountain.js` | Fountain parser + HTML renderer. Pure, UMD, no DOM (D-003) |
 | `src/editing.js` | Typing helpers (Tab, smart Enter, auto-uppercase): text + caret in, edit out. Pure, UMD (D-010) |
 | `src/library.js` | Library data rules (search, soft delete, restore, purge, duplicate, rename): scripts object in, new object out. Pure, UMD (D-013) |
-| `test/` | `fountain.test.js` (parser), `editing.test.js` (typing helpers), `library.test.js` (library rules), `app.e2e.html` (app behaviour), `harness.js`, runners: `index.html`, `run-headless.ps1`, `run.js` |
+| `test/` | `fountain.test.js` (parser), `editing.test.js` (typing helpers), `library.test.js` (library rules), `structure.test.js` (app script structure, Node only), `app.e2e.html` (app behaviour), `harness.js`, runners: `index.html`, `run-headless.ps1`, `run.js` |
 | `ROADMAP.md` | The plan, with stable item IDs |
 | `docs/HANDOFF.md` | Current state, next steps, session log |
 | `docs/DECISIONS.md` | Append-only decision record |
+
+## App scripts (`src/app/`)
+
+The app is a set of classic scripts that share **one global scope**, loaded by `index.html` in this order. That
+order matters for one reason: code that runs *while a file loads* (registering listeners, reading the DOM) may only
+use what an earlier file already defined. Code inside functions runs later and can call anything.
+
+| File | Owns |
+| --- | --- |
+| `core.js` | `editor` / `renderTarget` / `page` references, `newId`, `currentScriptId`, `autoSaveTimer`, `render()` |
+| `layout.js` | One pane at a time, the phone menu, keyboard-safe sizing (`fitToViewport`), scroll sync |
+| `persistence.js` | Saving, restoring the last script, New, the trash purge, save on hide |
+| `dialogs.js` | `openModal` / `closeModal`: the one accessible helper for every modal window |
+| `library-ui.js` | The Library dialog (data rules are in `src/library.js`) |
+| `example.js`, `help.js`, `tour.js` | The example script, the Help window, the welcome tour |
+| `typing.js` | Tab, smart Enter, auto-uppercase, the element bar (rules are in `src/editing.js`) |
+| `export.js` | Export and Copy |
+| `main.js` | Start-up on `DOMContentLoaded`. Always last |
+
+Rules: add a new file to `index.html` in the right place (`test/structure.test.js` fails if the folder and the page
+disagree, if a name is declared twice across files, if an inline script comes back, or if a file passes 500 lines).
+Keep each file's own listeners in that file. Functions the e2e tests call (`saveScript`, `setView`, `openTour`,
+`syncElementState`, `flushSave`, ...) must stay top-level function declarations, and `currentScriptId` a top-level
+`let`: tests reach them as globals. Do not use ES modules (D-001).
 
 ## Conventions
 
