@@ -265,6 +265,28 @@ can happen with no dialog open.
 files at once become several scripts. `.fdx` import is a separate, larger item (P3-08). Only the desktop drop path and
 the picker were exercised, in a headless browser with synthetic events: drag-and-drop from a real file manager, and the
 picker on iOS/Android, are unverified.
+
+## D-017 Autocomplete: suggestions in the element bar, Tab takes the first, Enter never does  (2026-09-21, status: accepted)
+**Context:** P2-04. Names and locations are typed constantly in a screenplay and are easy to misspell. A suggestion
+list must not sit over the caret line (small screens, on-screen keyboard), must work by touch, and must not change what
+Enter and Tab already do for a writer who never wanted suggestions.
+**Decision:** `src/suggest.js` (pure, D-003 style) reads names from the script's character cues and locations from its
+scene headings (minus INT./EXT., the scene number and the time of day), ordered by use count, then recency. Up to four
+show as chips **in the element bar's row**, replacing the element buttons while a name is being typed (same height, so
+nothing moves; the `?` stays). A suggestion appears only when the caret is at the end of a line that the parser (via
+`Editing.kindAt`) reads as a cue or scene heading, at least one letter is typed, the text is a strict prefix of a known
+name, and it is not already a whole name. The last two rules are what keep Enter honest: typing JOHN with JOHNNY in the
+script stays JOHN, and **Enter is never hijacked**. **Tab takes the first suggestion only while one is showing**
+(Shift+Tab always cycles). **Esc dismisses** them for that word and does not free Tab; a second Esc does (Esc, Tab still
+leaves the editor). Tapping a chip completes the word; mousedown is cancelled so the keyboard stays up, like the element
+buttons. Every completion goes through `applyEdit`, so undo works. The line being typed is never its own source.
+**Consequences:** A bare `INT. ` or an empty line offers nothing, because Tab has to keep cycling there (a suggestion
+would take it over): the first letter starts the suggestions. Time of day (`- DAY`) is not suggested (open: P2-04 follow-up).
+Names are matched from the start only ("SHOP" does not find "COFFEE SHOP"). A name is only remembered while it is in the
+script, so there is nothing to store or migrate (D-005). Long names are ellipsised in the chips on a phone; tapping
+inserts the full name. The lookup parses the whole script per keystroke on a cue or heading line only: 8 ms for 30,000
+lines, and a unit test guards it. Screen-reader announcement of suggestions is not done.
+
 ## Open questions
 
 - Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

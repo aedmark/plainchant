@@ -9,7 +9,7 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-20, session 9 (import done; autocomplete designed, not started)._
+_Last updated: 2026-09-21, session 10 (autocomplete done; PDF printing is next, as a spec only)._
 
 **What works**
 - **Import** (D-016, `src/importing.js` + `src/app/import.js`). The Library's `Import a file...` button, or drop a file
@@ -47,6 +47,13 @@ _Last updated: 2026-09-20, session 9 (import done; autocomplete designed, not st
   - **Element bar** under the editor: shows what the current line is and converts it on tap, without closing the
     on-screen keyboard. Short names on phones. Hidden while previewing. This is the touch replacement for Tab.
   - All edits go in through `execCommand('insertText')`, so Ctrl/Cmd+Z undoes each one (tested).
+- **Autocomplete** (P2-04, D-017, `src/suggest.js` + the bar in `src/app/typing.js`). While a character name is typed
+  (an uppercase cue) or a location after `INT.` / `EXT.` / `.`, names already used in the script show as up to four chips
+  in the element bar's row, in place of the element buttons (same height, `?` stays). **Tab takes the first chip only
+  while chips are showing; otherwise Tab cycles as before. Enter never takes one. Esc hides them (a second Esc frees Tab
+  as before). Shift+Tab always cycles.** Tap a chip to complete the word. Needs one typed letter (a bare `INT. ` offers
+  nothing so Tab keeps cycling), and nothing once the text is a whole name (JOHN stays JOHN with JOHNNY in the script).
+  Order: use count, then recency. **This changes what Tab does while typing a name, so the user should try it.**
 - **1024px and wider** (desktop, iPad landscape): two panes side by side, raw Fountain text left, live preview right.
 - **Below 1024px** (phones, portrait tablets, narrow windows; also landscape coarse-pointer under 500px tall): one pane
   at a time. A top bar has a **Write | Preview** toggle. Opening Preview scrolls to where the caret was.
@@ -64,13 +71,18 @@ _Last updated: 2026-09-20, session 9 (import done; autocomplete designed, not st
 - Scroll sync no longer divides by zero.
 
 **Verified**
-- `npm test` passes under Node 24: 143 tests (60 parser incl. setTitle and fileName, 53 typing helpers incl.
-  diffEdit, 23 library, 7 app-script structure). The browser runner runs the 136 that need no file access.
+- `npm test` passes under Node 24: 180 tests (60 parser, 53 typing helpers, 23 library, 13 importing, 23 autocomplete, 8
+  app-script structure). The browser runner runs the 172 that need no file access.
+- **Autocomplete mutation-tested**: dropping the whole-name guard, the skip-own-line rule, the one-letter minimum, the
+  count ordering, the end-of-line rule and the option cap each fail unit tests; Shift+Tab accepting, an Esc that never
+  clears, an Esc that also frees Tab, no refresh before Tab, no hide on blur, `innerHTML` chips and an accept that
+  bypasses undo each fail an e2e check. Seen in the browser pane at desktop and 375px (four chips fit, long names
+  ellipsised). A lookup takes 8 ms on a 30,000-line script (unit-tested).
 - Library mutation-tested: removing the guard against autosave writing into a deleted script fails the two-tab
   test; reusing a deleted script's id on reload fails; a 30-day boundary off by one fails a unit test; hard-deleting
   instead of soft-deleting crashes the Library section (an exception), so it cannot pass. (The first attempt at the autosave-guard mutation failed *nothing*, which
   exposed that the two-tab scenario was untested; it now is.)
-- `npm run test:browser` passes: the same 136 unit tests + 330 app end-to-end checks (headless Edge, throwaway
+- `npm run test:browser` passes: the same 172 unit tests + 387 app end-to-end checks (headless Edge, throwaway
   profile). Frames: a 375px phone, the preview-column position at desktop/phone/1800px, tablets at 640-810px
   (one pane) and 1024-1366px (split, no clipping), a 1200px desktop frame for the typing helpers (Tab, Enter,
   Shift+Enter, auto-uppercase, buttons, undo, Esc+Tab, mode lifetime) and for the tour and Help (first launch,
@@ -104,7 +116,9 @@ _Last updated: 2026-09-20, session 9 (import done; autocomplete designed, not st
   `mousedown` for that). All of it is P2-09 territory.
 - Whether the new Enter / Tab behaviour *feels* right to a writer is a judgement only the user can make; P2-15
   (settings to turn parts off) exists in case it does not.
-- Phase 1 is complete (P1-01 to P1-10); P2-01, -02, -03, -05, -11, -12 are done.
+- **Autocomplete on real devices and with a screen reader** (nothing announces the chips; P2-21). Whether Tab taking a
+  suggestion feels right to a writer is the user's call.
+- Phase 1 is complete (P1-01 to P1-10); P2-01 to -05, -11, -12, -17 to -19 are done.
 
 **Gotchas for the next session**
 - Node 24.19.0 and Python 3.13.15 were installed via winget at the end of session 1. Sessions that were already
@@ -126,6 +140,18 @@ _Last updated: 2026-09-20, session 9 (import done; autocomplete designed, not st
   what follows before it will call something a cue or a transition. Change it with care; the property test in
   `test/editing.test.js` ("the parser agrees afterwards") is the safety net.
 - `frictionless_*` localStorage keys are legacy naming and must stay (D-005).
+- **The headless runner's `--virtual-time-budget` is 240000** (was 60000). The e2e suite had grown past the old budget
+  and the runner reported "the page never finished" with 0 passed, on a clean checkout too. If that message returns,
+  raise it again before suspecting the code.
+- **The e2e page has a timing trap.** Frames from early sections keep their text and a 2-second autosave timer, and
+  `openFrame` silences saving only in its own frame. Adding frames or waits moves the virtual clock, and a stale timer
+  can then write a script into storage during the Library section (the symptom: "library: choosing a script opens it"
+  opens the wrong script). The typing section now silences every existing frame before it starts. Do the same in any
+  new section that runs after long-lived frames and touches storage.
+- Autocomplete: `Suggest.at(text, caret)` needs no "mode" argument because it asks `Editing.kindAt`, so it sees a cue only
+  once the line is uppercase (Tab-chosen Character mode uppercases as you type). Chips use their own class
+  (`.suggest-chip`), not `.el-btn`, so the tests that count six element buttons still hold. `dismissedFor` clears itself
+  as soon as the caret leaves the dismissed word.
 - **Git and the repo:** `origin` is `https://github.com/aedmark/plainchant.git` (renamed on GitHub by the owner,
   who also re-cloned into a fresh `plainchant` folder). Everything through `4d9fe13` is pushed and in sync. The
   `gh` CLI is not installed, so GitHub-side changes (renames, settings) are the owner's to make. **Git working
@@ -173,20 +199,10 @@ _Last updated: 2026-09-20, session 9 (import done; autocomplete designed, not st
    (`src/app/tour.js` and the tour markup) was not changed then.
 2. **Ask the user how the typing helpers feel** (especially Enter starting a new paragraph after action, and cues
    needing a Tab). Adjust or add settings (P2-15) / cue suggestions (P2-14) accordingly.
-3. **P2-04 autocomplete (the user's next request; nothing written yet).** Agreed order: autocomplete, then PAUSE and
-   spec / plan PDF printing (P3-03) with the user BEFORE implementing any of it. Design sketch, for the user to react to:
-   - Suggestions live in the element bar's row (same height, so no layout shift and nothing over the caret line),
-     replacing the element buttons while a name is being typed. Tap a chip to accept (mousedown cancelled, as the bar
-     does now). **Tab accepts the first suggestion only while one is showing**, otherwise Tab cycles as before.
-     **Enter is never hijacked** (typing JOHN with JOHNNY in the script must not turn into JOHNNY). Esc dismisses.
-   - Only at the end of a line, only a strict prefix of a known name, nothing when the text already equals a name.
-   - New pure UMD module `src/suggest.js` (tests first in `test/suggest.test.js`; register it in `test/run.js`,
-     `test/index.html`, `index.html` and the module list in `test/structure.test.js`): `names(text)` from character
-     cues (strip `(V.O.)`, `(CONT'D)`, `^`, `@`; order by use count then recency), `locations(text)` from scene
-     headings (minus INT./EXT., scene number and the ` - DAY` part), `times(text)` (DAY, NIGHT... plus any used), and
-     `at(text, caret)` -> `{ kind, from, to, options }` or null. Wiring goes in `src/app/typing.js`. Undo must keep
-     working (use `applyEdit`).
-   - Open for the user: whether the time-of-day suggestion is wanted (small extension of the same mechanism).
+3. **Ask the user how autocomplete feels** (P2-04, D-017): Tab taking the first suggestion while chips show, needing a
+   first letter, chips replacing the element buttons while typing a name. Then P2-21 (time of day after `INT. PLACE - `,
+   names on an empty cue line, screen-reader announcements) only if wanted. The agreed order still stands:
+   autocomplete, then PAUSE.
 4. **P3-03 print stylesheet / PDF: spec and plan only, at the user's request, before any implementation.** Questions to
    settle: US Letter and A4, screenplay margins and Courier 12pt, about 55 lines a page, page numbers, `(MORE)` /
    `(CONT'D)`, title page on its own page, dual dialogue, scene numbers, and print-CSS versus a generated PDF (D-001 says
@@ -201,6 +217,7 @@ _Last updated: 2026-09-20, session 9 (import done; autocomplete designed, not st
 - Enter after an action line starts a new paragraph (Shift+Enter for a line break). Right default?
 - Cues need Tab or the Character button. Is that acceptable, or should "a short unpunctuated line after a blank
   line, then Enter" be treated as a cue automatically (P2-14)?
+- Autocomplete: is Tab-takes-the-first-suggestion right, and do you want the time of day (`- DAY`) suggested too (P2-21)?
 - Is a plain `<textarea>` editor acceptable long term, or is inline styling of the source text (P2-08) a must-have?
 
 ---
@@ -208,6 +225,30 @@ _Last updated: 2026-09-20, session 9 (import done; autocomplete designed, not st
 ## Session log
 
 Newest first. Copy the template for each new session.
+
+### Session 10: 2026-09-21: Autocomplete (P2-04)
+
+**Goal:** Build the autocomplete designed at the end of session 9.
+**Done:** P2-04 (D-017). New `src/suggest.js` (pure; `names`, `locations`, `at`, `edit`) with 23 unit tests written first
+and seen failing; chips in the element bar wired in `src/app/typing.js`; 29 new e2e checks (a desktop frame for showing,
+tap, Tab, Enter, Esc, undo, focus, XSS; a 375px frame for fit); Help (Keyboard and Touch); D-017; roadmap P2-04 ticked and
+P2-21 added. `test/run.js`, `test/index.html`, `index.html` and the structure test know the new module.
+**Changed:** the design sketch was followed except: a bare `INT. ` offers nothing (a suggestion there would steal the
+Tab that cycles to Transition), and the time of day is left out (the user had not decided). Esc dismisses only while the
+caret stays on that word; it does not free Tab (a second Esc does).
+**Decisions:** D-017.
+**Problems / surprises**
+- The headless runner reported "0 passed, the page never finished" on a clean checkout: the suite had outgrown the 60 s
+  virtual-time budget (session 9's import tests, probably). Raised to 240 s; the baseline then passed 358/358 three times.
+- Adding frames to the e2e page then made an old, unsilenced autosave timer leak a script into storage and break a Library
+  check. Traced by comparing with a clean worktree of HEAD (deterministic 358/0), fixed by silencing older frames first.
+- Two of my own e2e checks were wrong (a text search that matched text already in the fixture; a Shift key left "down"
+  after a synthetic Shift+Tab). One real flaw was found by the tests: Esc's dismissal outlived the caret leaving the word.
+**Left undone:** Real devices, iOS / Android soft keyboards and screen readers. Time-of-day suggestions (P2-21). Session 9
+has no log entry of its own; its work (import, P3-02, D-016) is in the git log and the "What works" list above.
+**Next session should start with:** "Next steps" above.
+
+---
 
 ### Session 8: 2026-09-20: Help copy proofed; stylesheet extracted (P4-09)
 

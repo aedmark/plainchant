@@ -79,6 +79,7 @@ function syncElementState() {
     let kind = Editing.kindAt(editor.value, idx);
     if (kind === 'blank') kind = elementMode || (Editing.inDialogueBlock(editor.value, idx) ? 'dialogue' : 'action');
     elementButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.el === kind)));
+    syncSuggestions();
 }
 function scheduleSync() {
     if (syncQueued) return;
@@ -86,8 +87,51 @@ function scheduleSync() {
     requestAnimationFrame(syncElementState);
 }
 
+// --- Autocomplete (P2-04, D-017). What to suggest is decided by src/suggest.js; this shows it and applies it. ---
+// While a name is being typed the suggestions take the place of the element buttons in the same bar (same height,
+// so nothing moves, and nothing covers the line being typed). Tab takes the first one; Enter never does.
+const suggestBox = elementBar.querySelector('.suggestions');
+let suggestion = null;      // the Suggest.at() result while chips are showing
+let dismissedFor = '';      // the word Esc waved away; a different word (or line) brings suggestions back
+
+function suggestionKey(hit) {
+    return caretLine() + ':' + editor.value.slice(hit.from, hit.to);
+}
+
+function showSuggestions(hit) {
+    const same = suggestion && hit && suggestion.options.join('\n') === hit.options.join('\n');
+    suggestion = hit;
+    if (same) return;
+    suggestBox.hidden = !hit;
+    elementBar.classList.toggle('suggesting', !!hit);
+    suggestBox.replaceChildren(...(hit ? hit.options : []).map((option, i) => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'suggest-chip';
+        chip.dataset.index = String(i);
+        chip.textContent = option;
+        return chip;
+    }));
+}
+
+function syncSuggestions() {
+    let hit = null;
+    if (document.activeElement === editor && editor.selectionStart === editor.selectionEnd) hit = Suggest.at(editor.value, editor.selectionStart);
+    const key = hit ? suggestionKey(hit) : '';
+    if (key !== dismissedFor) dismissedFor = '';   // Esc only holds while the caret stays on that word
+    showSuggestions(hit && key !== dismissedFor ? hit : null);
+}
+
+function acceptSuggestion(index) {
+    if (!suggestion || !suggestion.options[index]) return;
+    applyEdit(Suggest.edit(suggestion, suggestion.options[index]));
+    syncElementState();
+}
+
 elementBar.addEventListener('mousedown', (e) => e.preventDefault()); // a tap must not pull focus (and the keyboard) away
 elementBar.addEventListener('click', (e) => {
+    const chip = e.target.closest('.suggest-chip');
+    if (chip) { acceptSuggestion(Number(chip.dataset.index)); return; }
     const button = e.target.closest('.el-btn');
     if (button) setElement(button.dataset.el);
 });
@@ -95,17 +139,25 @@ elementBar.addEventListener('click', (e) => {
 editor.addEventListener('keydown', (e) => {
     shiftDown = e.shiftKey;
     if (e.isComposing) return;
-    if (e.key === 'Escape') { tabReleased = true; return; }
+    if (e.key === 'Escape') {
+        if (suggestion) { dismissedFor = suggestionKey(suggestion); syncSuggestions(); } // dismisses only; a second Esc frees Tab
+        else tabReleased = true;
+        return;
+    }
     if (e.key === 'Tab' && !e.ctrlKey && !e.altKey && !e.metaKey) {
         if (tabReleased) { tabReleased = false; return; } // Esc, Tab: move focus on as usual
         e.preventDefault();
+        if (!e.shiftKey) {
+            syncSuggestions(); // the bar is refreshed on the next frame; Tab may arrive before it
+            if (suggestion) { acceptSuggestion(0); return; }
+        }
         cycleElement(e.shiftKey ? -1 : 1);
         return;
     }
     if (e.key !== 'Shift') tabReleased = false;
 });
 editor.addEventListener('keyup', (e) => { shiftDown = e.shiftKey; scheduleSync(); });
-editor.addEventListener('blur', () => { tabReleased = false; shiftDown = false; });
+editor.addEventListener('blur', () => { tabReleased = false; shiftDown = false; dismissedFor = ''; showSuggestions(null); });
 ['click', 'focus', 'pointerup'].forEach((name) => editor.addEventListener(name, scheduleSync));
 
 // Enter. beforeinput rather than keydown: on-screen keyboards often send keydown as "Unidentified" but always

@@ -338,6 +338,9 @@ const W = () => f.contentWindow;
 
     // 14. Typing helpers (P2-01..03, P2-11): Tab, smart Enter, auto-uppercase, the element bar. Events are
     // dispatched the way a keyboard produces them (keydown for Tab, beforeinput for Enter, input for typing).
+    // Frames from the sections above still hold their text, and a pending autosave in one of them would write it
+    // into storage whenever enough time has passed, which is whenever a later section happens to run. Silence them.
+    document.querySelectorAll('iframe').forEach(fr => { try { fr.contentWindow.saveScript = () => {}; } catch (e) { /* frame gone */ } });
     const k = await openFrame(1200, 700);
     const kw = k.contentWindow, ke = fid(k, 'editor');
     const keyEvent = (name, opts) => { const ev = new kw.KeyboardEvent(name, Object.assign({ bubbles: true, cancelable: true }, opts)); ke.dispatchEvent(ev); return ev; };
@@ -472,7 +475,104 @@ const W = () => f.contentWindow;
     const afterEnter = ke.value;
     const undone2 = k.contentDocument.execCommand('undo');
     check('typing: a smart Enter is also one undo step', afterEnter === beforeTab + '\n\n' && undone2 && ke.value === beforeTab, [afterEnter, ke.value, undone2]);
+
+    // 14b. Autocomplete (P2-04, D-017): chips in the element bar's row while a name is being typed.
+    // What is suggested is unit-tested in test/suggest.test.js; this checks the page: showing, Tab, tap, Enter, Esc.
+    const CAST = 'INT. COFFEE SHOP - DAY\n\nJOHN\nHi.\n\nMARY\nHello.\n\nJOHN\nAgain.\n\n';
+    const chips = () => Array.from(k.contentDocument.querySelectorAll('.suggest-chip')).map(c => c.textContent);
+    const sceneBtn = () => fq(k, '.el-btn[data-el="scene"]');
+    const barHeight = () => rect(fq(k, '.element-bar')).height;
+    const suggestAt = (text) => { typeInto(text); settle(); };
+
+    suggestAt('He waits.\n\nJOHN\nHi.');
+    const plainBar = barHeight();
+    check('autocomplete: nothing is offered while typing action or dialogue; the element buttons stay', chips().length === 0 && shown(sceneBtn()) && !shown(fq(k, '.suggestions')));
+    suggestAt(CAST + 'JO');
+    check('autocomplete: a cue that starts a known name shows it in the bar, in place of the element buttons',
+      chips().join() === 'JOHN' && shown(fq(k, '.suggest-chip')) && !shown(sceneBtn()), [chips(), shown(sceneBtn())]);
+    check('autocomplete: the bar does not change height (nothing moves under the writer)', Math.abs(barHeight() - plainBar) < 0.5, [barHeight(), plainBar]);
+    check('autocomplete: the "?" help button is still in the bar', shown(fq(k, '.el-help')));
+
+    const tapDown = new kw.MouseEvent('mousedown', { bubbles: true, cancelable: true });
+    fq(k, '.suggest-chip').dispatchEvent(tapDown);
+    check('autocomplete: tapping a suggestion does not steal focus (the keyboard stays up)', tapDown.defaultPrevented);
+    fq(k, '.suggest-chip').click();
+    check('autocomplete: tapping a suggestion completes the name, caret after it', ke.value === CAST + 'JOHN' && caretAtEnd(), ke.value);
+    check('autocomplete: the chips go away and the element buttons come back', chips().length === 0 && shown(sceneBtn()) && pressed() === 'character', [chips(), pressed()]);
+    check('autocomplete: the editor keeps focus', k.contentDocument.activeElement === ke);
+
+    suggestAt(CAST + 'JO');
+    fq(k, '.suggest-chip').click();
+    check('autocomplete: accepting a suggestion is one undo step', k.contentDocument.execCommand('undo') && ke.value === CAST + 'JO', ke.value);
+
+    // Tab takes the first suggestion, and only while one is showing. It may arrive before the bar has refreshed.
+    typeInto(CAST + 'MA');
+    ev = pressTab();
+    check('autocomplete: Tab takes the suggestion (even before the bar has refreshed)', ev.defaultPrevented && ke.value === CAST + 'MARY' && caretAtEnd(), ke.value);
+    pressTab();
+    check('autocomplete: with nothing to suggest, Tab cycles the element as before', ke.value === CAST + 'INT. MARY', ke.value);
+    suggestAt(CAST + 'MAR');
+    pressTab(true);
+    keyEvent('keyup', { key: 'Shift', shiftKey: false });
+    check('autocomplete: Shift+Tab is not hijacked (it still cycles backwards, and does not complete)', ke.value === CAST + '!MAR', ke.value);
+
+    // Enter is never hijacked: what was typed is what stays
+    suggestAt(CAST + 'JO');
+    ev = pressEnter();
+    check('autocomplete: Enter does not take the suggestion (JO stays JO)', ev.defaultPrevented && ke.value === CAST + 'JO\n', ke.value);
+    check('autocomplete: after Enter the chips are gone', chips().length === 0);
+    suggestAt(CAST + 'JOHN');
+    check('autocomplete: nothing is offered once the text is a whole name', chips().length === 0);
+
+    // Esc dismisses (only), a different word brings suggestions back, and a second Esc frees Tab as before
+    suggestAt(CAST + 'JO');
+    keyEvent('keydown', { key: 'Escape' });
+    check('autocomplete: Esc dismisses the suggestions', chips().length === 0 && shown(sceneBtn()));
+    check('autocomplete: after that Esc, Tab still cycles (it did not free the Tab key)', pressTab().defaultPrevented === true);
+    suggestAt(CAST + 'JOH');
+    check('autocomplete: a different word brings them back', chips().join() === 'JOHN', chips());
+    suggestAt(CAST + 'JO');
+    keyEvent('keydown', { key: 'Escape' }); keyEvent('keydown', { key: 'Escape' });
+    check('autocomplete: a second Esc frees Tab to leave the editor, as before', pressTab().defaultPrevented === false);
+    pressTab();
+
+    // Scene locations
+    suggestAt(CAST + 'INT. COF');
+    check('autocomplete: after INT. a known location is offered', chips().join() === 'COFFEE SHOP', chips());
+    pressTab();
+    check('autocomplete: Tab completes the location', ke.value === CAST + 'INT. COFFEE SHOP', ke.value);
+    suggestAt(CAST + 'INT. ');
+    check('autocomplete: a bare "INT. " offers nothing (Tab keeps cycling)', chips().length === 0);
+
+    // Where it does not appear
+    suggestAt(CAST + 'JO');
+    ke.setSelectionRange(CAST.length + 1, CAST.length + 1); settle();
+    check('autocomplete: not with the caret inside the word', chips().length === 0);
+    ke.setSelectionRange(CAST.length, CAST.length + 2); settle();
+    check('autocomplete: not with text selected', chips().length === 0);
+    ke.setSelectionRange(CAST.length + 2, CAST.length + 2); settle();
+    check('autocomplete: it is back at the end of the word', chips().join() === 'JOHN', chips());
+    ke.blur();
+    check('autocomplete: it goes when the editor loses focus', chips().length === 0);
+    ke.focus(); settle();
+    check('autocomplete: and returns with focus', chips().join() === 'JOHN', chips());
+
+    // A name is text, never markup
+    suggestAt('ZED <IMG SRC=X ONERROR=ALERT(1)>\nHi.\n\nZE');
+    check('autocomplete: suggestions are shown as text, not HTML', chips().length === 1 && fq(k, '.suggest-chip').children.length === 0 && chips()[0].indexOf('<IMG') !== -1, chips());
     k.remove();
+
+    // The phone: four long names share the bar without scrolling sideways or clipping
+    const ph = await openFrame(375, 667);
+    const pe = fid(ph, 'editor');
+    pe.value = 'MARGARETHE\nx\n\nMARIA-ELENA\nx\n\nMARTHA JEAN\nx\n\nMARLENE\nx\n\nMAR';
+    pe.focus(); pe.setSelectionRange(pe.value.length, pe.value.length);
+    ph.contentWindow.syncElementState();
+    const pbar = fq(ph, '.element-bar');
+    check('autocomplete: on a phone, four suggestions fit the bar without scrolling', fq(ph, '.suggest-chip') && ph.contentDocument.querySelectorAll('.suggest-chip').length === 4 &&
+      pbar.scrollWidth <= pbar.clientWidth && Array.from(ph.contentDocument.querySelectorAll('.suggest-chip')).every(c => rect(c).right <= 375.5 && rect(c).left >= 0),
+      [pbar.scrollWidth, pbar.clientWidth]);
+    ph.remove();
 
     // 15. Onboarding tour and help windows (D-011): first launch, dialog behaviour, help accuracy, phone fit.
     const active = (fr) => Array.from(fr.contentDocument.querySelectorAll('.modal-overlay.active')).map(o => o.id);
@@ -610,7 +710,8 @@ const W = () => f.contentWindow;
     check('library: Esc closes it and returns focus to the Library button', active(lf).length === 0 && focusId(lf) === 'libraryBtn', focusId(lf));
     fid(lf, 'libraryBtn').click();
     fq(lf, '#library-list .script-open').click(); // a real button: Enter and Space activate it natively
-    check('library: choosing a script opens it and closes the dialog', fid(lf, 'editor').value === 'INT. ALPHA - DAY' && active(lf).length === 0);
+    check('library: choosing a script opens it and closes the dialog', fid(lf, 'editor').value === 'INT. ALPHA - DAY' && active(lf).length === 0,
+      [fid(lf, 'editor').value, active(lf), Array.from(lf.contentDocument.querySelectorAll('#library-list .script-open')).map(b => b.textContent.slice(0, 40))]);
     fid(lf, 'libraryBtn').click();
     fid(lf, 'library-modal').click();
     check('library: clicking the backdrop closes it', active(lf).length === 0);

@@ -61,7 +61,8 @@ Goal: the "just type" promise. The editor helps; it never interrupts.
   Shift+Enter is a plain line break. (Changes what Enter does after action: D-010.)
 - [x] P2-03 Auto-uppercase scene headings, character cues and transitions as they are typed (undoable). Scene
   prefixes and `... to:` are automatic; cues need Tab / the Character button first (D-010).
-- [ ] P2-04 Autocomplete character names and scene locations from the script
+- [x] P2-04 Autocomplete character names and scene locations from the script (D-017). Chips in the element bar; Tab
+  takes the first, Enter never does. Time of day is not suggested; not seen on a real device or with a screen reader.
 - [x] P2-05 Mobile layout: single pane with a write/preview toggle, no fixed 50/50 split, keyboard-safe. Verified at
   375px in a headless browser; real-device keyboard behaviour is P2-09.
 - [~] P2-06 Caret-anchored preview scroll (use the parser's `data-line` anchors instead of percentage sync). Done
@@ -93,6 +94,9 @@ Goal: the "just type" promise. The editor helps; it never interrupts.
   and the tour; Library items are keyboard-operable
 - [ ] P2-20 Contextual first-use hints (for example, the first time a writer types an UPPERCASE line, or first
   presses Tab), if the tour and Help prove not to be enough. Watch how new users actually get stuck first.
+- [ ] P2-21 Autocomplete follow-ups, if wanted after the writer has tried P2-04: suggest the time of day after
+  `INT. PLACE - ` (DAY, NIGHT, plus any already used); offer names on an empty cue line after Character is chosen;
+  announce suggestions to screen readers.
 
 ## Phase 3: Output and library
 

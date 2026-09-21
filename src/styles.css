@@ -139,7 +139,8 @@ textarea {
     border-top: 1px solid var(--border-void);
     background-color: var(--bg-void);
 }
-.el-btn {
+.el-btn,
+.suggest-chip {
     flex: 0 0 auto;
     padding: 0.35rem 0.7rem;
     border: 1px solid transparent;
@@ -150,9 +151,21 @@ textarea {
     cursor: pointer;
     touch-action: manipulation; /* no double-tap zoom on a fast second tap */
 }
-.el-btn:hover { color: var(--btn-text); }
+.el-btn:hover,
+.suggest-chip:hover { color: var(--btn-text); }
 .el-btn[aria-pressed="true"] { background-color: var(--btn-bg); border-color: var(--border-void); color: #f8fafc; }
 .el-btn .short { display: none; }
+/* Autocomplete: suggestions replace the element buttons while a name is being typed (P2-04). Chips are built like the
+   buttons, so the bar keeps its height. The first is the one Tab takes, so it looks selected. */
+.suggestions { display: flex; flex: 1 1 auto; gap: 0.25rem; min-width: 0; }
+.suggestions[hidden] { display: none; }
+.element-bar.suggesting .el-btn { display: none; }
+.suggest-chip { min-width: 0; max-width: 14rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.suggest-chip:first-child { background-color: var(--btn-bg); border-color: var(--border-void); color: #f8fafc; }
+/* A keyboard user is told which key takes it; a touch screen has no such key */
+@media (hover: hover) and (pointer: fine) {
+    .suggest-chip:first-child::after { content: "Tab"; margin-left: 0.6em; padding: 0 0.35em; border: 1px solid var(--border-void); border-radius: 0.25rem; font-size: 0.85em; opacity: 0.7; }
+}
 /* "?" at the end of the bar: help on the elements. Phones have no room; they use Help in the menu. */
 .el-help {
     flex: 0 0 auto;
@@ -171,12 +184,13 @@ textarea {
 @media (pointer: coarse) { .el-help { width: 44px; height: 44px; } }
 @media (max-width: 480px) { .el-help { display: none; } }
 @media (pointer: coarse) {
-    .el-btn { min-height: 44px; font-size: 0.85rem; padding: 0 0.9rem; }
+    .el-btn, .suggest-chip { min-height: 44px; font-size: 0.85rem; padding: 0 0.9rem; }
 }
 /* Phones: shorter names, sharing the row equally, so all six fit without scrolling sideways */
 @media (max-width: 480px) {
     .element-bar { padding-inline: 0.5rem; gap: 0.125rem; }
     .el-btn { flex: 1 1 auto; padding-inline: 0.3rem; text-align: center; }
+    .suggest-chip { flex: 1 1 0; padding-inline: 0.3rem; text-align: center; }
     .el-btn .long { display: none; }
     .el-btn .short { display: inline; }
 }
