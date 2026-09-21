@@ -4,8 +4,10 @@ const harness = require('./harness.js');
 globalThis.test = harness.test;
 globalThis.assert = harness.assert;
 globalThis.Fountain = require('../src/fountain.js');
+globalThis.Editing = require('../src/editing.js');
 
 require('./fountain.test.js');
+require('./editing.test.js');
 
 const results = harness.runTests();
 let failed = 0;

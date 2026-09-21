@@ -97,6 +97,74 @@ A desktop window narrower than 1024px switches to one-pane mode. The `@container
 Safari 16 / Firefox 110 or newer. `min-width: 0` is currently redundant with the container containment; it stays as
 a second guard.
 
+## D-010 Typing helpers: pure edit-returning module, applied through execCommand, explicit cues  (2026-09-20, status: accepted)
+**Context:** The "just type" promise (P2-01..P2-03, P2-11). The editor is a plain `<textarea>` (Q-001), which is best
+on touch, so the helpers are key handlers rather than a rich editor.
+**Decision:**
+1. `src/editing.js` is pure (D-003 style, UMD, no DOM). Each function takes text and caret and returns an *edit*
+   `{from, to, insert, selStart, selEnd}`. The page applies it with `document.execCommand('insertText')`, which keeps
+   the browser's undo history; assigning `.value` or `setRangeText` would wipe it. If `execCommand` fails the text
+   is still set correctly (without undo).
+2. What a line *is* comes from the real parser (`Fountain.classifyLines`), asked twice: once with a blank line after
+   the current line and once with text after it, because the parser needs to see what follows before it will call
+   something a cue or a transition. Sentence punctuation (`BANG!`, `SILENCE.`) reads as action, not a cue.
+3. **Enter** is smart only at the end of a block at the end of the script or before a blank line: after a cue or a
+   parenthetical it moves to the next line (the speech), after anything else it leaves a blank line (new element).
+   Mid-block, mid-line, selections and **Shift+Enter** are left to the browser. Implemented on `beforeinput`, not
+   `keydown`, because soft keyboards report Enter reliably only there. **This changes what Enter does after an action
+   line: it starts a new paragraph. Shift+Enter is the plain line break.**
+4. **Tab / Shift+Tab** cycle action -> character -> scene heading -> transition (inside a dialogue block: dialogue <->
+   parenthetical). Converting keeps the words and changes their markers: uppercase, `INT. `, `( )`, and a forced
+   marker (`!`, `@`, `.`, `> `) only when the plain form would parse as something else. A step that is impossible for
+   the text (a line ending in `TO:` cannot be a cue) is skipped, so Tab never stalls. `Esc` then `Tab` moves focus out
+   of the editor so keyboard users are not trapped.
+5. A **blank line cannot say what it is**, so choosing an element there sets a per-line *mode* held by the page
+   (`elementMode`): typed text is uppercased, `INT. ` is pre-filled for scenes, Enter finishes the line. Moving the
+   caret to another line drops the mode.
+6. **Cues are explicit.** There is no guessing that "john" is a character. The writer presses Tab (or the
+   Character button); after that, uppercasing and Enter are automatic. Auto-uppercase without a mode is limited to
+   what is unmistakable: `int.`/`ext.`/`est.`/`i/e` scene prefixes and `... to:` transitions, only at a line end,
+   only after a blank line, only when *typing* (not paste, undo or IME composition).
+7. The **element bar** under the editor shows the current element and changes it. It is shown in every layout, uses
+   short names on phones, never takes focus from the editor (`mousedown` is cancelled so the keyboard stays up), and
+   is hidden while previewing.
+**Consequences:** Enter and Tab behave differently from a plain textarea; a writer who dislikes that needs a setting
+(not built). Parsing for the current line runs on every caret move over a window of up to ~80 lines above it
+(cheap; the full re-render per keystroke is the bigger cost, P4-01). `execCommand('insertText')` is deprecated but
+has no replacement that preserves undo. Soft keyboards, Scribble and IME composition are handled by design
+(`beforeinput`, `isComposing` checks) but not yet observed on a device (P2-09).
+
+## D-011 Onboarding: a short welcome tour, a Help window, one shared dialog helper  (2026-09-20, status: accepted)
+**Context:** New writers need to learn what the app does, that Tab / the element bar tell it what they are writing,
+and that scripts live only in this browser. The app is meant to stay lightweight and out of the way.
+**Decision:**
+1. **Welcome tour**: four short steps in a dialog, shown once on first launch (localStorage `frictionless_onboarded`
+   holds the tour version seen; bump `TOUR_VERSION` to show a revised tour to everyone), skippable at any point
+   (Esc, x or Skip all count as seen), replayable from Help. It ends with **Start writing** or **Open the example
+   script**. Wording adapts by device with CSS only (`@media (pointer: coarse)` swaps the keyboard hint for the
+   touch hint). Its "You get" sample is rendered by the real parser. It is *not* shown if storage is unavailable
+   (it could never be remembered, so it would nag every load).
+2. **No spotlight / coach-mark tour.** Pointing at real UI elements would break across the three layouts (split,
+   one-pane tablet, phone) and is fragile to maintain. Dialogs work everywhere.
+3. **Help window** with four topics (Start here, Screenplay elements, Keys & touch, Troubleshooting). Opens from the
+   Help button (a `?` where actions sit in a row, the word "Help" in the phone menu), F1, Ctrl/Cmd+/, and a `?` at
+   the end of the element bar that jumps to the elements topic. In the Void/Canvas voice, but always with the plain
+   Write/Preview words too.
+4. **The cheat sheet is tested against the parser.** Every example carries `data-expect="scene,blank,..."` (the
+   parser's per-line type) and the e2e suite runs each through `Fountain.classifyLines`. If the parser changes, the
+   help must change with it or the build fails.
+5. **One dialog helper** (`openModal` / `closeModal`) for Library, Help and the tour: role=dialog, aria-modal and
+   labelled; focus moves in and Tab wraps; Esc or a backdrop click closes the top dialog; focus returns to the
+   opener (or the menu button / editor if the opener is hidden). The Library, which had none of this, was moved
+   onto it and its items became keyboard-operable.
+6. The **example script** is a real script (saved straight into the Library), edited freely, showing every element.
+   There is no delete yet, so examples accumulate until P3-07 (library management).
+7. Copy avoids the product name: the page title says "SLASH", the repo says "NeuroFountain", and the panes say
+   "Void" / "Canvas". Naming is the owner's call (open question in HANDOFF).
+**Consequences:** Every test frame must set the `frictionless_onboarded` key first or a tour opens in it (the e2e
+suite does). New user-visible features should get a line in Help. The inline app script keeps growing (~1500 lines):
+splitting it into files is P4-08.
+
 ## Open questions
 
 - Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

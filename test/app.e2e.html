@@ -14,7 +14,8 @@
 <pre id="out">RUNNING</pre>
 <script>
 const APP = '../index.html';
-const KEYS = ['frictionless_scripts', 'frictionless_current'];
+const KEYS = ['frictionless_scripts', 'frictionless_current', 'frictionless_onboarded'];
+const TOUR_KEY = 'frictionless_onboarded';
 const f = document.getElementById('f');
 const log = [];
 const check = (name, cond, extra) => log.push((cond ? 'PASS ' : 'FAIL ') + name + (cond ? '' : '  -> ' + JSON.stringify(extra)));
@@ -29,6 +30,8 @@ const W = () => f.contentWindow;
     f.src = APP; await load();
     snapshot = KEYS.map(k => [k, W().localStorage.getItem(k)]);
     KEYS.forEach(k => W().localStorage.removeItem(k));
+    // Every frame below would otherwise open the welcome tour first; the tour has its own tests (section 15)
+    W().localStorage.setItem(TOUR_KEY, '1');
     f.contentWindow.location.reload(); await load();
 
     // 1. Blank first run shows placeholder example, editor stays empty
@@ -134,9 +137,16 @@ const W = () => f.contentWindow;
 
     check('mobile: top bar shown, desktop pane headers hidden', shown(mq('.mobile-bar')) && !shown(mq('.pane-canvas .header')));
     check('mobile: only the Write pane is shown at first', shown($m('editor')) && !shown(mq('.pane-canvas')));
+    // The element bar sits under the editor, so together they fill the screen below the top bar
     check('mobile: Write pane fills the space under the bar',
-        Math.abs(rect($m('editor')).bottom - 667) <= 1 && rect($m('editor')).top >= 52 && rect($m('editor')).height > 500,
-        rect($m('editor')));
+        Math.abs(rect(mq('.element-bar')).bottom - 667) <= 1 && Math.abs(rect($m('editor')).bottom - rect(mq('.element-bar')).top) <= 1 &&
+        rect($m('editor')).top >= 52 && rect($m('editor')).height > 450,
+        [rect($m('editor')), rect(mq('.element-bar'))]);
+    check('mobile: element bar fits all six elements at 375px without scrolling sideways',
+        mq('.element-bar').querySelectorAll('.el-btn').length === 6 && mq('.element-bar').scrollWidth <= mq('.element-bar').clientWidth &&
+        Array.from(mq('.element-bar').querySelectorAll('.el-btn')).every(b => shown(b) && rect(b).right <= 375 + 0.5),
+        [mq('.element-bar').scrollWidth, mq('.element-bar').clientWidth]);
+    check('mobile: element bar uses the short names on a phone', shown(mq('.el-btn[data-el="transition"] .short')) && !shown(mq('.el-btn[data-el="transition"] .long')));
     check('mobile: editor font is 16px+ (stops iOS zoom-on-focus)', parseFloat(getComputedStyle($m('editor')).fontSize) >= 16);
     check('mobile: touch targets are at least 44px', rect($m('menuBtn')).width >= 44 && rect($m('menuBtn')).height >= 44 && rect($m('tabPreview')).height >= 40, [rect($m('menuBtn')), rect($m('tabPreview'))]);
     check('mobile: page does not scroll sideways', MD().documentElement.scrollWidth <= 375, MD().documentElement.scrollWidth);
@@ -149,7 +159,7 @@ const W = () => f.contentWindow;
     $m('editor').setSelectionRange(caret, caret);
 
     $m('tabPreview').click();
-    check('mobile: Preview shows the preview pane and hides the editor', shown(mq('.pane-canvas')) && !shown($m('editor')));
+    check('mobile: Preview shows the preview pane and hides the editor and element bar', shown(mq('.pane-canvas')) && !shown($m('editor')) && !shown(mq('.element-bar')));
     check('mobile: toggle state is exposed (aria-pressed)',
         $m('tabPreview').getAttribute('aria-pressed') === 'true' && $m('tabWrite').getAttribute('aria-pressed') === 'false');
     const anchor = mq('#render-target [data-line="150"]');
@@ -176,7 +186,8 @@ const W = () => f.contentWindow;
     // The menu stays reachable while previewing (the Void pane is display:contents then)
     $m('menuBtn').click();
     check('mobile: menu opens from Preview', shown(mq('.button-group')) && $m('menuBtn').getAttribute('aria-expanded') === 'true');
-    check('mobile: menu lists all five actions', ['newBtn', 'libraryBtn', 'saveBtn', 'exportBtn', 'copyBtn'].every(id => shown($m(id))));
+    check('mobile: menu lists all six actions, Help as a word', ['newBtn', 'libraryBtn', 'saveBtn', 'exportBtn', 'copyBtn', 'helpBtn'].every(id => shown($m(id))) &&
+        shown(mq('#helpBtn .txt-long')) && !shown(mq('#helpBtn .txt-short')));
     check('mobile: menu sits under the bar, on screen', rect(mq('.button-group')).top >= 52 && rect(mq('.button-group')).right <= 375, rect(mq('.button-group')));
     MD().dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     check('mobile: Escape closes the menu', !shown(mq('.button-group')) && $m('menuBtn').getAttribute('aria-expanded') === 'false');
@@ -261,9 +272,9 @@ const W = () => f.contentWindow;
       'BRICK', 'Screw you!', '', 'STEEL ^', 'Screw you more!', '',
       'SMASH CUT TO BLACK:', '', 'EXT. THE VOID - CONTINUOUS'
     ].join('\n');
-    const ACTIONS = ['newBtn', 'libraryBtn', 'saveBtn', 'exportBtn', 'copyBtn'];
+    const ACTIONS = ['newBtn', 'libraryBtn', 'saveBtn', 'exportBtn', 'copyBtn', 'helpBtn'];
 
-    for (const [w, h, label] of [[810, 1080, 'iPad 810x1080'], [768, 1024, 'iPad 768x1024'], [744, 1133, 'iPad mini 744x1133'], [1023, 768, '1023 wide']]) {
+    for (const [w, h, label] of [[810, 1080, 'iPad 810x1080'], [768, 1024, 'iPad 768x1024'], [744, 1133, 'iPad mini 744x1133'], [700, 900, 'smallest tablet tier 700x900'], [1023, 768, '1023 wide']]) {
       const t = await openFrame(w, h);
       setText(t, TABLET_SCRIPT);
       check('tablet ' + label + ': one pane with the top bar', shown(fq(t, '.mobile-bar')) && shown(fid(t, 'editor')) && !shown(fq(t, '.pane-canvas')));
@@ -295,6 +306,9 @@ const W = () => f.contentWindow;
       setText(s, TABLET_SCRIPT);
       const v = rect(fq(s, '.pane-void')), c = rect(fq(s, '.pane-canvas')), r = fid(s, 'render-target');
       check(w + 'px: split layout, no mobile bar', shown(fq(s, '.pane-void')) && shown(fq(s, '.pane-canvas')) && !shown(fq(s, '.mobile-bar')));
+      check(w + 'px: all six actions fit in the Void header on one row',
+        ACTIONS.every(i => shown(fid(s, i))) && rect(fid(s, 'helpBtn')).right <= v.right && rect(fq(s, '.pane-void .header')).height < 90,
+        [rect(fid(s, 'helpBtn')).right, v.right, rect(fq(s, '.pane-void .header')).height]);
       check(w + 'px: preview pane is not clipped', c.right <= w + 0.5 && v.right <= c.left + 1, [v, c]);
       check(w + 'px: panes are about equal', Math.abs(v.width - c.width) <= 2, [v.width, c.width]);
       check(w + 'px: preview has no horizontal overflow', r.scrollWidth <= r.clientWidth, [r.scrollWidth, r.clientWidth]);
@@ -319,6 +333,313 @@ const W = () => f.contentWindow;
       rect(fq(wordy, '.pane-canvas')).right <= 1024.5 && rect(fq(wordy, '.pane-void')).right <= rect(fq(wordy, '.pane-canvas')).left + 1,
       [rect(fq(wordy, '.pane-void')), rect(fq(wordy, '.pane-canvas'))]);
     wordy.remove();
+
+    // 14. Typing helpers (P2-01..03, P2-11): Tab, smart Enter, auto-uppercase, the element bar. Events are
+    // dispatched the way a keyboard produces them (keydown for Tab, beforeinput for Enter, input for typing).
+    const k = await openFrame(1200, 700);
+    const kw = k.contentWindow, ke = fid(k, 'editor');
+    const keyEvent = (name, opts) => { const ev = new kw.KeyboardEvent(name, Object.assign({ bubbles: true, cancelable: true }, opts)); ke.dispatchEvent(ev); return ev; };
+    const pressTab = (shift) => keyEvent('keydown', { key: 'Tab', shiftKey: !!shift });
+    const pressEnter = () => { const ev = new kw.InputEvent('beforeinput', { inputType: 'insertLineBreak', bubbles: true, cancelable: true }); ke.dispatchEvent(ev); return ev; };
+    /** Put the caret at the end of `text` and fire the input event a typed character produces. */
+    const typeInto = (text, inputType) => {
+      ke.focus();
+      ke.value = text;
+      ke.setSelectionRange(text.length, text.length);
+      ke.dispatchEvent(new kw.InputEvent('input', { inputType: inputType || 'insertText', bubbles: true }));
+    };
+    const caretAtEnd = () => ke.selectionStart === ke.value.length && ke.selectionEnd === ke.value.length;
+    const pressed = () => Array.from(k.contentDocument.querySelectorAll('.el-btn[aria-pressed="true"]')).map(b => b.dataset.el).join(',');
+    const settle = () => kw.syncElementState();
+
+    settle();
+    check('typing: element bar is shown with six buttons, Action highlighted on an empty script',
+      shown(fq(k, '.element-bar')) && k.contentDocument.querySelectorAll('.el-btn').length === 6 && pressed() === 'action', pressed());
+
+    // Tab on a blank line picks the element for the line about to be typed
+    typeInto('He waits.\n\n', 'insertLineBreak');
+    let ev = pressTab();
+    settle();
+    check('typing: Tab is captured (does not move focus)', ev.defaultPrevented);
+    check('typing: Tab on a blank line highlights Character and changes no text', pressed() === 'character' && ke.value === 'He waits.\n\n', [pressed(), ke.value]);
+    typeInto('He waits.\n\njohn');
+    check('typing: in Character mode, typed text is uppercased', ke.value === 'He waits.\n\nJOHN', ke.value);
+    check('typing: the caret stays at the end after auto-uppercase', caretAtEnd());
+    ev = pressEnter();
+    check('typing: Enter after a cue goes straight to dialogue (no blank line)', ev.defaultPrevented && ke.value === 'He waits.\n\nJOHN\n' && caretAtEnd(), ke.value);
+    settle();
+    check('typing: the new line under a cue is highlighted as Dialogue', pressed() === 'dialogue', pressed());
+    typeInto('He waits.\n\nJOHN\nHello there.');
+    check('typing: the preview shows a character block', fq(k, '#page .script-dialogue-block .script-character').textContent === 'JOHN');
+    ev = pressEnter();
+    check('typing: Enter after dialogue starts a new element with a blank line', ev.defaultPrevented && ke.value === 'He waits.\n\nJOHN\nHello there.\n\n', ke.value);
+    settle();
+    check('typing: after a dialogue block, the next line is highlighted as Action', pressed() === 'action', pressed());
+
+    // Shift+Enter and mid-text Enter are left to the browser
+    typeInto('He waits.');
+    keyEvent('keydown', { key: 'Shift', shiftKey: true });
+    check('typing: Shift+Enter is not intercepted (plain line break inside an element)', pressEnter().defaultPrevented === false);
+    keyEvent('keyup', { key: 'Shift', shiftKey: false });
+    ke.setSelectionRange(3, 3);
+    check('typing: Enter in the middle of a line is not intercepted', pressEnter().defaultPrevented === false);
+    check('typing: Enter after action starts a new paragraph', (typeInto('He waits.'), pressEnter().defaultPrevented) && ke.value === 'He waits.\n\n', ke.value);
+
+    // Tab on a line with text converts it, and cycles
+    typeInto('He waits.\n\nthe kitchen');
+    pressTab();
+    check('typing: Tab turns an action line into a character cue', ke.value === 'He waits.\n\nTHE KITCHEN' && caretAtEnd(), ke.value);
+    pressTab();
+    check('typing: Tab again makes it a scene heading', ke.value === 'He waits.\n\nINT. THE KITCHEN', ke.value);
+    pressTab();
+    check('typing: Tab again makes it a transition (forced with >)', ke.value === 'He waits.\n\n> THE KITCHEN', ke.value);
+    pressTab();
+    check('typing: Tab again comes back to action (forced with ! so it does not read as a cue)', ke.value === 'He waits.\n\n!THE KITCHEN', ke.value);
+    pressTab(true);
+    check('typing: Shift+Tab walks backwards', ke.value === 'He waits.\n\n> THE KITCHEN', ke.value);
+
+    // Scene mode on a blank line: INT. is pre-filled, typing is uppercased, Enter finishes the heading
+    typeInto('He waits.\n\n', 'insertLineBreak');
+    pressTab(); pressTab();
+    check('typing: two Tabs on a blank line pre-fill a scene heading', ke.value === 'He waits.\n\nINT. ' && pressed() === 'scene', [ke.value, pressed()]);
+    typeInto('He waits.\n\nINT. kitchen - day');
+    check('typing: scene headings are uppercased as typed', ke.value === 'He waits.\n\nINT. KITCHEN - DAY', ke.value);
+    pressEnter();
+    check('typing: Enter after a scene heading leaves a blank line', ke.value === 'He waits.\n\nINT. KITCHEN - DAY\n\n', ke.value);
+
+    // Auto-uppercase without any mode chosen
+    typeInto('He waits.\n\next. beach');
+    check('typing: "ext. beach" is uppercased on its own', ke.value === 'He waits.\n\nEXT. BEACH', ke.value);
+    typeInto('He waits.\n\ncut to:');
+    check('typing: "cut to:" is uppercased on its own', ke.value === 'He waits.\n\nCUT TO:', ke.value);
+    typeInto('He waits.\n\next. beach', 'insertFromPaste');
+    check('typing: pasted text is never auto-uppercased', ke.value === 'He waits.\n\next. beach', ke.value);
+    typeInto('JOHN\nint. is a strange thing to say');
+    check('typing: dialogue is never auto-uppercased', ke.value === 'JOHN\nint. is a strange thing to say', ke.value);
+
+    // Highlighting follows the caret
+    typeInto('INT. A - DAY\n\nHe waits.\n\nJOHN\n(quietly)\nHi.');
+    ke.setSelectionRange(3, 3); settle();
+    check('typing: highlight follows the caret: scene heading', pressed() === 'scene', pressed());
+    ke.setSelectionRange(ke.value.indexOf('quietly'), ke.value.indexOf('quietly')); settle();
+    check('typing: highlight follows the caret: parenthetical', pressed() === 'parenthetical', pressed());
+    ke.setSelectionRange(ke.value.length, ke.value.length); settle();
+    check('typing: highlight follows the caret: dialogue', pressed() === 'dialogue', pressed());
+
+    // The buttons
+    typeInto('He waits.\n\nsmash cut');
+    const mousedown = new kw.MouseEvent('mousedown', { bubbles: true, cancelable: true });
+    fq(k, '.el-btn[data-el="transition"]').dispatchEvent(mousedown);
+    check('typing: pressing a button does not steal focus from the editor (keyboard stays up)', mousedown.defaultPrevented);
+    fq(k, '.el-btn[data-el="transition"]').click();
+    check('typing: the Transition button converts the line', ke.value === 'He waits.\n\nSMASH CUT' && pressed() === 'transition', [ke.value, pressed()]);
+    fq(k, '.el-btn[data-el="character"]').click();
+    check('typing: the Character button converts it again (forced with @ because SMASH CUT is a known transition)',
+      ke.value === 'He waits.\n\n@SMASH CUT' && pressed() === 'character', [ke.value, pressed()]);
+    check('typing: the editor keeps focus after a button press', k.contentDocument.activeElement === ke);
+    typeInto('JOHN\nHi.');
+    fq(k, '.el-btn[data-el="parenthetical"]').click();
+    check('typing: the Paren button wraps dialogue in parentheses', ke.value === 'JOHN\n(Hi.)', ke.value);
+    typeInto('He waits.');
+    fq(k, '.el-btn[data-el="dialogue"]').click();
+    check('typing: Dialogue does nothing outside a character block', ke.value === 'He waits.', ke.value);
+
+    // Keyboard users can still leave the editor: Esc then Tab
+    typeInto('He waits.');
+    keyEvent('keydown', { key: 'Escape' });
+    check('typing: Esc then Tab is not captured, so focus can move on', pressTab().defaultPrevented === false);
+    check('typing: the next Tab is captured again', pressTab().defaultPrevented === true);
+    check('typing: Ctrl+Tab and Alt+Tab are left to the browser', keyEvent('keydown', { key: 'Tab', ctrlKey: true }).defaultPrevented === false && keyEvent('keydown', { key: 'Tab', altKey: true }).defaultPrevented === false);
+
+    // Mode belongs to one line: moving away drops it
+    typeInto('He waits.\n\n', 'insertLineBreak');
+    pressTab();
+    check('typing: mode is set on the blank line', pressed() === 'character', pressed());
+    ke.setSelectionRange(2, 2); settle();
+    check('typing: moving the caret to another line drops the mode', pressed() === 'action', pressed());
+
+    // Undo: the conversion is one step in the browser's own history
+    typeInto('He waits.\n\nthe kitchen');
+    const beforeTab = ke.value;
+    pressTab();
+    const converted = ke.value;
+    const undone = k.contentDocument.execCommand('undo');
+    check('typing: a Tab conversion is one step in the browser\'s own undo history', converted !== beforeTab && undone && ke.value === beforeTab, [beforeTab, converted, ke.value, undone]);
+    ke.setSelectionRange(ke.value.length, ke.value.length);
+    pressEnter();
+    const afterEnter = ke.value;
+    const undone2 = k.contentDocument.execCommand('undo');
+    check('typing: a smart Enter is also one undo step', afterEnter === beforeTab + '\n\n' && undone2 && ke.value === beforeTab, [afterEnter, ke.value, undone2]);
+    k.remove();
+
+    // 15. Onboarding tour and help windows (D-011): first launch, dialog behaviour, help accuracy, phone fit.
+    const active = (fr) => Array.from(fr.contentDocument.querySelectorAll('.modal-overlay.active')).map(o => o.id);
+    const keydown = (fr, target, key, opts) => {
+      const ev = new fr.contentWindow.KeyboardEvent('keydown', Object.assign({ key: key, bubbles: true, cancelable: true }, opts));
+      target.dispatchEvent(ev);
+      return ev;
+    };
+    const focusId = (fr) => { const a = fr.contentDocument.activeElement; return a ? (a.id || a.className || a.tagName) : ''; };
+    const visibleSteps = (fr) => Array.from(fr.contentDocument.querySelectorAll('.tour-step')).filter(s => !s.hidden).map(s => s.dataset.step).join(',');
+    const visibleHelp = (fr) => Array.from(fr.contentDocument.querySelectorAll('.help-section')).filter(s => !s.hidden).map(s => s.dataset.section).join(',');
+    const pressedHelp = (fr) => Array.from(fr.contentDocument.querySelectorAll('.help-nav [aria-pressed="true"]')).map(b => b.dataset.section).join(',');
+    const labelOf = (fr, sel) => { const d = fq(fr, sel); const l = d && fid(fr, d.getAttribute('aria-labelledby')); return l ? l.textContent.trim() : null; };
+    const reloadFrame = async (fr) => {
+      await new Promise(r => { fr.onload = () => setTimeout(r, 100); fr.contentWindow.location.reload(); });
+      fr.contentWindow.saveScript = () => {};
+    };
+
+    // First launch: the tour opens by itself
+    W().localStorage.removeItem(TOUR_KEY);
+    const tf = await openFrame(1200, 700);
+    check('tour: opens by itself on first launch', active(tf).join() === 'tour-modal', active(tf));
+    ['library-modal', 'help-modal', 'tour-modal'].forEach((id) => {
+      const d = fq(tf, '#' + id + ' .modal-content');
+      check('dialogs: ' + id + ' is a labelled modal dialog with a labelled close button',
+        d.getAttribute('role') === 'dialog' && d.getAttribute('aria-modal') === 'true' && !!labelOf(tf, '#' + id + ' .modal-content') &&
+        !!fq(tf, '#' + id + ' .modal-close').getAttribute('aria-label'));
+    });
+    check('tour: starts on step 1, Next focused, no Back', visibleSteps(tf) === '1' && focusId(tf) === 'tourNext' && !shown(fid(tf, 'tourBack')) && shown(fid(tf, 'tourNext')));
+    check('tour: the progress dot follows the step', fq(tf, '.tour-dots span[aria-current="step"]') === fq(tf, '.tour-dots span:nth-child(1)'));
+    check('tour: not counted as seen until it is dismissed', W().localStorage.getItem(TOUR_KEY) === null);
+    fid(tf, 'tourNext').click();
+    check('tour: Next shows step 2 and Back appears', visibleSteps(tf) === '2' && shown(fid(tf, 'tourBack')) && fq(tf, '.tour-dots span[aria-current="step"]') === fq(tf, '.tour-dots span:nth-child(2)'));
+    check('tour: step 2 shows a sample rendered by the real parser', !!fq(tf, '#tourRendered .script-scene-heading') && !!fq(tf, '#tourRendered .script-dialogue-block .script-parenthetical'));
+    fid(tf, 'tourBack').click();
+    check('tour: Back returns to step 1 and keeps focus on a visible control', visibleSteps(tf) === '1' && !shown(fid(tf, 'tourBack')) && focusId(tf) === 'tourNext');
+    fid(tf, 'tourNext').click(); fid(tf, 'tourNext').click(); fid(tf, 'tourNext').click();
+    check('tour: the last step offers Start and Example, and focus moves to Start',
+      visibleSteps(tf) === '4' && !shown(fid(tf, 'tourNext')) && !shown(fid(tf, 'tourSkip')) && shown(fid(tf, 'tourStart')) && shown(fid(tf, 'tourExample')) && focusId(tf) === 'tourStart', focusId(tf));
+
+    // Focus stays inside the dialog
+    const fi = tf.contentWindow.focusableIn(fid(tf, 'tour-modal'));
+    fi[fi.length - 1].focus();
+    const wrapFwd = keydown(tf, fi[fi.length - 1], 'Tab');
+    check('dialogs: Tab from the last control wraps to the first', wrapFwd.defaultPrevented && tf.contentDocument.activeElement === fi[0]);
+    const wrapBack = keydown(tf, fi[0], 'Tab', { shiftKey: true });
+    check('dialogs: Shift+Tab from the first control wraps to the last', wrapBack.defaultPrevented && tf.contentDocument.activeElement === fi[fi.length - 1]);
+
+    keydown(tf, tf.contentDocument.activeElement, 'Escape');
+    check('dialogs: Esc closes the dialog', active(tf).length === 0);
+    check('tour: dismissing it (even with Esc) marks it as seen', W().localStorage.getItem(TOUR_KEY) === '1');
+    check('tour: focus is not lost when it closes', ['editor', 'menuBtn'].indexOf(focusId(tf)) !== -1, focusId(tf));
+    await reloadFrame(tf);
+    check('tour: does not come back once seen', active(tf).length === 0);
+
+    // Help
+    const helpOpener = fid(tf, 'helpBtn');
+    helpOpener.focus();
+    helpOpener.click();
+    check('help: opens from the Help button on the Start here topic',
+      active(tf).join() === 'help-modal' && visibleHelp(tf) === 'start' && pressedHelp(tf) === 'start' && labelOf(tf, '#help-modal .modal-content') === 'Help');
+    check('help: focus moves to the current topic', fq(tf, '#help-modal .help-nav [aria-pressed="true"]') === tf.contentDocument.activeElement);
+    ['elements', 'keys', 'fixes', 'start'].forEach((name) => {
+      fq(tf, '#help-modal .help-nav [data-section="' + name + '"]').click();
+      check('help: topic "' + name + '" shows only itself', visibleHelp(tf) === name && pressedHelp(tf) === name);
+    });
+    fq(tf, '#help-modal .modal-body').click();
+    check('help: clicking inside the dialog does not close it', active(tf).join() === 'help-modal');
+    keydown(tf, tf.contentDocument.activeElement, 'Escape');
+    check('help: Esc closes it and focus returns to the Help button', active(tf).length === 0 && focusId(tf) === 'helpBtn', focusId(tf));
+
+    const helpEd = fid(tf, 'editor');
+    helpEd.focus();
+    const f1 = keydown(tf, helpEd, 'F1');
+    check('help: F1 opens it (and the browser\'s own help is suppressed)', f1.defaultPrevented && active(tf).join() === 'help-modal');
+    keydown(tf, helpEd, 'F1');
+    check('help: F1 again does not stack a second copy', active(tf).length === 1);
+    keydown(tf, tf.contentDocument.activeElement, 'Escape');
+    check('help: closing brings focus back to the editor when that is where it came from', focusId(tf) === 'editor', focusId(tf));
+    const cs2 = keydown(tf, helpEd, '/', { ctrlKey: true });
+    check('help: Ctrl+/ opens it too', cs2.defaultPrevented && active(tf).join() === 'help-modal');
+    fid(tf, 'help-modal').click();
+    check('help: clicking the backdrop closes it', active(tf).length === 0);
+    fq(tf, '.el-help').click();
+    check('help: the ? on the element bar opens the elements topic', active(tf).join() === 'help-modal' && visibleHelp(tf) === 'elements');
+    fq(tf, '#help-modal .modal-close').click();
+    check('help: the x button closes it', active(tf).length === 0);
+    fid(tf, 'helpBtn').click();
+    fq(tf, '#help-modal .modal-footer .btn.primary').click();
+    check('help: Done closes it', active(tf).length === 0);
+
+    // The cheat sheet must be true: every example is parsed by the real parser and must read as documented
+    const examples = Array.from(tf.contentDocument.querySelectorAll('[data-expect]'));
+    check('help: the cheat sheet has an example for each element type', examples.length >= 15, examples.length);
+    examples.forEach((c) => {
+      const got = tf.contentWindow.Fountain.classifyLines(c.textContent).join(',');
+      check('help example reads as documented: ' + JSON.stringify(c.textContent.split('\n')[0]) + ' is ' + c.dataset.expect, got === c.dataset.expect, got);
+    });
+
+    // Replay the tour from Help, and start writing
+    fid(tf, 'helpBtn').click();
+    fid(tf, 'helpTakeTour').click();
+    check('help: "Take the tour" swaps Help for the tour at step 1', active(tf).join() === 'tour-modal' && visibleSteps(tf) === '1');
+    fid(tf, 'tourNext').click(); fid(tf, 'tourNext').click(); fid(tf, 'tourNext').click();
+    fid(tf, 'tourStart').click();
+    check('tour: Start writing closes it and puts the cursor in the editor', active(tf).length === 0 && tf.contentDocument.activeElement === fid(tf, 'editor'));
+
+    // The example script
+    const idBefore = tf.contentWindow.eval('currentScriptId');
+    const saves = [];
+    tf.contentWindow.saveScript = (auto) => saves.push(auto);
+    setText(tf, 'my own draft');
+    fid(tf, 'helpBtn').click();
+    fid(tf, 'helpLoadExample').click();
+    const exText = fid(tf, 'editor').value;
+    check('example: opens as a new script and closes the dialog', exText.indexOf('Title: The Last Coffee') === 0 && tf.contentWindow.eval('currentScriptId') !== idBefore && active(tf).length === 0);
+    check('example: the draft that was open is saved first and the example is saved straight away', saves.length >= 2 && saves[saves.length - 1] === true, saves);
+    const exTypes = tf.contentWindow.Fountain.parse(exText).map(t => t.type + (t.dual ? ':' + t.dual : ''));
+    check('example: shows a title page, scene headings, dialogue, dual dialogue, a transition and a centered line',
+      ['title_page', 'scene', 'dialogue', 'dialogue:left', 'dialogue:right', 'transition', 'centered'].every(t => exTypes.indexOf(t) !== -1), exTypes);
+    const exHtml = fid(tf, 'page').innerHTML;
+    check('example: renders as a real script (dual dialogue, note, title page)', exHtml.indexOf('script-dual') !== -1 && exHtml.indexOf('script-note') !== -1 && exHtml.indexOf('script-title-page') !== -1);
+    check('example: the cursor and both panes start at the top', fid(tf, 'editor').selectionStart === 0 && fid(tf, 'editor').scrollTop === 0);
+    tf.remove();
+
+    // The Library uses the same dialog behaviour
+    W().localStorage.setItem('frictionless_scripts', JSON.stringify({ a: { id: 'a', title: 'Alpha', content: 'INT. ALPHA - DAY', updatedAt: 1 } }));
+    W().localStorage.setItem('frictionless_current', 'zzz');
+    const lf = await openFrame(1200, 700);
+    fid(lf, 'libraryBtn').focus();
+    fid(lf, 'libraryBtn').click();
+    check('library: opens as a dialog with its scripts keyboard-reachable', active(lf).join() === 'library-modal' && fq(lf, '#library-list .script-item').tabIndex === 0 && fq(lf, '#library-list .script-item').getAttribute('role') === 'button');
+    keydown(lf, lf.contentDocument.activeElement, 'Escape');
+    check('library: Esc closes it and returns focus to the Library button', active(lf).length === 0 && focusId(lf) === 'libraryBtn', focusId(lf));
+    fid(lf, 'libraryBtn').click();
+    keydown(lf, fq(lf, '#library-list .script-item'), 'Enter');
+    check('library: Enter on a script opens it and closes the dialog', fid(lf, 'editor').value === 'INT. ALPHA - DAY' && active(lf).length === 0);
+    fid(lf, 'libraryBtn').click();
+    fid(lf, 'library-modal').click();
+    check('library: clicking the backdrop closes it', active(lf).length === 0);
+    lf.remove();
+
+    // Phone: the dialogs fit a 375px screen, and Help lives in the menu
+    $m('tabWrite').click();
+    $m('menuBtn').click();
+    $m('helpBtn').focus(); // a real tap focuses the button it lands on
+    $m('helpBtn').click();
+    const phoneHelp = rect(fq(m, '#help-modal .modal-content'));
+    check('phone: Help opens from the menu and the menu closes', active(m).join() === 'help-modal' && !shown(mq('.button-group')));
+    check('phone: the Help dialog fits on the screen', phoneHelp.left >= 0 && phoneHelp.right <= 375 && phoneHelp.top >= 0 && phoneHelp.bottom <= 667, phoneHelp);
+    m.contentWindow.showHelpSection('elements');
+    const phoneBody = fq(m, '#help-modal .modal-body');
+    const phoneNav = fq(m, '#help-modal .help-nav');
+    check('phone: every Help topic is visible (the topic row wraps instead of scrolling)',
+      phoneNav.scrollWidth <= phoneNav.clientWidth && Array.from(phoneNav.querySelectorAll('.chip')).every(c => rect(c).right <= 375 && rect(c).left >= 0),
+      [phoneNav.scrollWidth, phoneNav.clientWidth]);
+    check('phone: the elements table stacks (no header row, no sideways scroll)', !shown(fq(m, '#help-modal .help-table thead')) && phoneBody.scrollWidth <= phoneBody.clientWidth, [phoneBody.scrollWidth, phoneBody.clientWidth]);
+    check('phone: long Help content scrolls inside the dialog and Done stays on screen', phoneBody.scrollHeight > phoneBody.clientHeight && rect(fq(m, '#help-modal .btn.primary')).bottom <= 667);
+    keydown(m, m.contentDocument.activeElement, 'Escape');
+    check('phone: closing Help returns focus to the menu button (its opener is hidden again)', active(m).length === 0 && focusId(m) === 'menuBtn', focusId(m));
+    check('phone: the element bar hides its ? (no room; Help is in the menu)', !shown(mq('.el-help')));
+    m.contentWindow.openTour();
+    m.contentWindow.showTourStep(1);
+    const phoneTour = rect(fq(m, '#tour-modal .modal-content'));
+    check('phone: the tour fits on the screen', phoneTour.left >= 0 && phoneTour.right <= 375 && phoneTour.top >= 0 && phoneTour.bottom <= 667, phoneTour);
+    check('phone: the tour sample stacks into one column', getComputedStyle(mq('.sample-io')).gridTemplateColumns.trim().split(/\s+/).length === 1, getComputedStyle(mq('.sample-io')).gridTemplateColumns);
+    check('phone: nothing in the tour scrolls sideways', fq(m, '#tour-modal .modal-body').scrollWidth <= fq(m, '#tour-modal .modal-body').clientWidth);
+    mq('#tour-modal .modal-close').click();
+    check('phone: the tour closes', active(m).length === 0);
 
     $m('tabWrite').click(); // the keyboard checks below need the editor showing
 

@@ -9,9 +9,29 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-20, end of session 2._
+_Last updated: 2026-09-20, end of session 4 (onboarding and help)._
 
 **What works**
+- **Onboarding and help** (D-011). **Welcome tour**: opens by itself on first launch (four skippable steps, wording
+  adapts to touch vs keyboard, live-rendered sample, ends with Start writing / Open the example script). Remembered
+  in `frictionless_onboarded`; replay it from Help. **Help window**: Start here, Screenplay elements (cheat sheet),
+  Keys & touch, Troubleshooting. Opens from the `?` button (the word "Help" in the phone menu), F1, Ctrl/Cmd+/, or
+  the `?` at the end of the element bar (jumps to the elements topic). Library, Help and the tour share one
+  accessible dialog helper (focus trap, Esc, backdrop click, focus return).
+- **Typing helpers** (D-010, `src/editing.js`, wired in `index.html`). **These change how Enter and Tab behave, so
+  the user should try them:**
+  - **Tab / Shift+Tab** cycle the current line action -> character -> scene heading -> transition. Inside dialogue
+    they toggle dialogue <-> parenthetical. On a blank line Tab *chooses* the element for what is about to be typed
+    (Character: typed text is uppercased; Scene: `INT. ` is pre-filled). `Esc` then `Tab` moves focus out.
+  - **Enter** at the end of a block: after a character cue or parenthetical -> next line (speech follows); after
+    anything else -> blank line (new element). **After an action line it now starts a new paragraph; Shift+Enter is
+    the plain line break.** Mid-line, mid-block and selections use the normal Enter.
+  - **Auto-uppercase** while typing: `int. `/`ext. `/`est. `/`i/e` scene headings and `... to:` transitions, only
+    after a blank line and only at the end of the line. Character cues are NOT guessed: press Tab (or the Character
+    button) first.
+  - **Element bar** under the editor: shows what the current line is and converts it on tap, without closing the
+    on-screen keyboard. Short names on phones. Hidden while previewing. This is the touch replacement for Tab.
+  - All edits go in through `execCommand('insertText')`, so Ctrl/Cmd+Z undoes each one (tested).
 - **1024px and wider** (desktop, iPad landscape): two panes side by side, raw Fountain text left, live preview right.
 - **Below 1024px** (phones, portrait tablets, narrow windows; also landscape coarse-pointer under 500px tall): one pane
   at a time. A top bar has a **Write | Preview** toggle. Opening Preview scrolls to where the caret was.
@@ -29,23 +49,42 @@ _Last updated: 2026-09-20, end of session 2._
 - Scroll sync no longer divides by zero.
 
 **Verified**
-- `npm test` passes under Node 24: 45 unit tests.
-- `npm run test:browser` passes: the same 45 unit tests + 137 app end-to-end checks (headless Edge, throwaway
-  profile). Frames: a 375px phone (31 checks), the preview-column position at desktop/phone/1800px (9), and
-  tablets at 744, 768, 810, 1023 and 640px (one-pane behaviour) plus 1024-1366px (split, no clipping) (70).
+- `npm test` passes under Node 24: 94 unit tests (45 parser, 49 typing helpers).
+- `npm run test:browser` passes: the same 94 unit tests + 265 app end-to-end checks (headless Edge, throwaway
+  profile). Frames: a 375px phone, the preview-column position at desktop/phone/1800px, tablets at 640-810px
+  (one pane) and 1024-1366px (split, no clipping), a 1200px desktop frame for the typing helpers (Tab, Enter,
+  Shift+Enter, auto-uppercase, buttons, undo, Esc+Tab, mode lifetime) and for the tour and Help (first launch,
+  step navigation, focus trap and return, Esc / backdrop / x / Done, F1 and Ctrl+/, replay, the example script,
+  Library on the shared dialog), and the phone frame for dialog fit.
+- The **Help cheat sheet is tested against the parser**: 15 examples, each carrying `data-expect` and each run
+  through `Fountain.classifyLines` in the e2e suite. Mutation-tested: a wrong example, a broken focus trap and a
+  tour that never remembers itself all fail tests.
 - Mutation-tested: a 14px editor font and an unreachable menu in Preview fail 4 checks; a shrink-to-fit column fails
-  6; disabling the container query fails 10. Removing `min-width: 0` alone fails nothing, because the container
-  containment is a second guard against the same clipping; removing both fails the broad set.
-- Visually checked at 375x667 (phone), iPad 810px (Write and Preview) and 1024x768 in headless Edge.
+  6; disabling the container query fails 10; bypassing `execCommand` fails the 2 undo checks; auto-uppercasing
+  paste fails 1; intercepting Shift+Enter fails 1. Removing `min-width: 0` alone fails nothing, because the
+  container containment is a second guard against the same clipping.
+- The Node unit run found two real bugs in the typing helpers before the page was wired up (Tab stalling on a line
+  ending in `TO:`; `@`-forced cues rejected). Both fixed and covered.
+- Visually checked at 375x667 (phone), iPad 810px (Write and Preview), 1024x768, and the element bar on desktop
+  and phone in headless Edge.
 
 **Not verified / not done**
-- **No real phone or tablet yet.** Keyboard behaviour is the risk: `fitToViewport()` is tested only with a fake
-  `visualViewport`, and `interactive-widget=resizes-content` / iOS Safari's behaviour is from documentation, not
-  observation. See P2-09 (roadmap) for how to test it.
+- **Real devices: the user reports everything works on their tablet and elsewhere** (2026-09-20, after the layout,
+  typing-helper and tablet work; no detail recorded on which devices, Split View, or Pencil). That covers P2-09 in
+  spirit but the specifics below remain unobserved by me. `fitToViewport()` itself is tested only with a fake
+  `visualViewport`. The **tour and Help have not been seen on a device**, and their wording has had no review from
+  anyone but me.
 - Only Edge (Chromium) has been used. Firefox and Safari are untested. iPad Safari's "desktop-class" browsing mode
   and Split View / Stage Manager window widths are reasoned about, not observed.
 - Apple Pencil handwriting and hardware-keyboard use on tablets are unchecked (P2-13).
-- Phase 1 is complete (P1-01 to P1-10); P2-05 is done.
+- **Typing helpers on real input methods.** Tests fire keyboard-shaped events (`keydown` Tab, `beforeinput`
+  insertLineBreak, `input` insertText). Not yet observed: iOS Safari and Android GBoard soft keyboards (Enter is
+  read from `beforeinput`; Android composition may delay auto-uppercase until a word is committed), predictive
+  text, Scribble, and whether the on-screen keyboard survives a tap on the element bar (the design cancels
+  `mousedown` for that). All of it is P2-09 territory.
+- Whether the new Enter / Tab behaviour *feels* right to a writer is a judgement only the user can make; P2-15
+  (settings to turn parts off) exists in case it does not.
+- Phase 1 is complete (P1-01 to P1-10); P2-01, -02, -03, -05, -11, -12 are done.
 
 **Gotchas for the next session**
 - Node 24.19.0 and Python 3.13.15 were installed via winget at the end of session 1. Sessions that were already
@@ -56,8 +95,29 @@ _Last updated: 2026-09-20, end of session 2._
   a space (`C:\Users\Gordon Knot\...`); use `--virtual-time-budget=NNNN` so timers fire; redirect stdout to a file
   rather than piping. `test/run-headless.ps1` already handles all of this.
 - Blank lines are structure, not spacers: the parser emits no spacer tokens, spacing is CSS margins only.
-- The parser is deliberately spec-strict (D-004). Lowercase cues are action until P2-03.
+- The parser is deliberately spec-strict (D-004). The editor, not the parser, adds leniency (D-010): text in the
+  document must already parse the way the writer means it. Where it cannot, the editor writes a forced marker
+  (`!`, `@`, `.`, `> `), which is valid Fountain.
+- Never assign `editor.value` or use `setRangeText` for a user-visible edit: it wipes the browser's undo history.
+  Go through `applyEdit()` (execCommand). Programmatic loads (Library, New, restore) may assign `.value`.
+- `applyingEdit` guards against our own edits re-triggering auto-uppercase; `elementMode` / `modeLine` are the
+  per-line "chosen element" state; `syncElementState()` is global on purpose (the e2e calls it).
+- `Editing.kindAt()` asks the parser twice (next line blank / next line has text) because the parser needs to see
+  what follows before it will call something a cue or a transition. Change it with care; the property test in
+  `test/editing.test.js` ("the parser agrees afterwards") is the safety net.
 - `frictionless_*` localStorage keys are legacy naming and must stay (D-005).
+- **Every e2e frame must set `frictionless_onboarded` first**, or the tour opens in it and blocks the test. The
+  e2e page does this once at the start (and snapshots/restores the key with the others). New test files that load
+  the app need the same.
+- **The Help cheat sheet must stay true.** Every example is a `<code data-expect="type,type,...">` in `index.html`
+  whose text is run through `Fountain.classifyLines` by the e2e suite. Change the parser, and the failing example
+  tells you which help line to update. Add a line to Help when adding a user-visible feature. Bump `TOUR_VERSION`
+  to re-show a revised tour to everyone.
+- Dialogs: use `openModal(overlay, {focus, onClose})` / `closeModal(overlay)`; a close control is any element with
+  `data-close`. Do not toggle `.active` by hand. `openModals` is a `const`, so tests read the DOM
+  (`.modal-overlay.active`), not the array.
+- Help's `?` (short) / "Help" (long) label switches at 700px, the same width where the actions move from the phone
+  menu to the tablet bar. If that breakpoint moves, move the label rule with it.
 - Two media queries each live in two places: the CSS "one pane" block and `MOBILE_QUERY`, and the CSS fixed-body
   rule and `FIT_QUERY` (both in the script). Change each pair together (D-008, D-009). The 1024px / 700px
   breakpoints and the 36rem / 26rem container thresholds are explained in D-009.
@@ -72,18 +132,25 @@ _Last updated: 2026-09-20, end of session 2._
 
 ## Next steps (in order)
 
-1. **P2-09 Real-device pass** (needs the user). Python is now installed, so from the project folder run
-   `python -m http.server 8000`, find the PC's LAN IP, and open `http://<ip>:8000` on a phone AND a tablet (same
-   Wi-Fi; Windows may prompt to allow Python through the firewall). Check: keyboard doesn't cover the caret line,
-   no zoom on focus, Write/Preview and the menu/inline actions feel right, rotate, and on an iPad try Split View.
-   Fix whatever it finds.
-2. **P2-01 / P2-02 / P2-03** (Tab cycling, smart Enter, auto-uppercase): the core "just type" experience. On a phone
-   there is no Tab key, so P2-01 needs an on-screen element-cycle button too. Design question to settle first: keep
-   the plain `<textarea>` (Q-001 in DECISIONS.md) and implement these as key handlers.
-3. **P3-01** `.fountain` export is a five-minute win worth taking early.
+1. **Get the user's eyes on the tour and Help** (read the copy; try the flow on the tablet, and as a first-time
+   user by clearing site data or `localStorage.removeItem('frictionless_onboarded')`). The wording is mine and
+   unreviewed. Adjust content, length and tone; decide whether a product name belongs in it.
+2. **Ask the user how the typing helpers feel** (especially Enter starting a new paragraph after action, and cues
+   needing a Tab). Adjust or add settings (P2-15) / cue suggestions (P2-14) accordingly.
+3. **P2-04** autocomplete of character names and locations. The natural next typing helper now that cues exist:
+   in Character mode, offer names already used in the script.
+4. **P3-01** `.fountain` export is a five-minute win worth taking early. **P3-07** library management (delete,
+   rename) is now more pressing: the example script adds a script nobody can delete.
+5. **P4-08** split the inline script out of `index.html` before it grows further.
 
 ## Open questions for the user
 
+- **What is the product called?** The page title says "SLASH Frictionless Screenwriter", the repo is NeuroFountain,
+  the panes are "The Void" and "The Canvas". The tour and Help deliberately avoid the name; it needs one.
+- Is the tour the right length and tone (four steps), and is showing it once to existing users too?
+- Enter after an action line starts a new paragraph (Shift+Enter for a line break). Right default?
+- Cues need Tab or the Character button. Is that acceptable, or should "a short unpunctuated line after a blank
+  line, then Enter" be treated as a cue automatically (P2-14)?
 - Is a plain `<textarea>` editor acceptable long term, or is inline styling of the source text (P2-08) a must-have?
 
 ---
@@ -91,6 +158,71 @@ _Last updated: 2026-09-20, end of session 2._
 ## Session log
 
 Newest first. Copy the template for each new session.
+
+### Session 4: 2026-09-20: Onboarding tour and Help (P2-17, P2-18, P2-19)
+
+**Goal:** Give new users an onboarding process and modal help windows.
+
+**Done:** P2-17 tour, P2-18 Help window, P2-19 shared dialog helper. P2-09 recorded as user-verified in spirit.
+
+**Changed**
+- `index.html`: three dialogs (Library retrofitted, Help, Tour) on `openModal` / `closeModal`; Help button in the
+  action group (`?` inline, "Help" in the phone menu) and a `?` on the element bar; F1 / Ctrl+/ shortcut; example
+  script; tour state in `frictionless_onboarded`; CSS for dialogs, help tables (stack on phones), kbd, callouts.
+- `test/app.e2e.html`: 85 new checks (265 total): tour lifecycle, dialog a11y and focus, Help topics and shortcuts,
+  15 cheat-sheet examples verified against the parser, the example script, Library on the shared helper, phone fit,
+  and a 700px tablet frame plus six-button header checks at 1024-1366px. Existing frames now pre-set the tour key.
+- Docs: D-011, roadmap P2-17..P2-20 and P4-08, this file.
+
+**Decisions:** D-011. Not a spotlight tour (fragile across three layouts). Tour wording avoids the product name.
+
+**Problems / surprises**
+- One test failure was my test: a programmatic `.click()` does not move focus like a real tap, so the "focus returns
+  to the menu button" case needed the opener focused first.
+- Mutation checks of the new tests caught a wrong help example, a broken focus trap and a forgetful tour.
+- The Help topic chips scrolled sideways on a phone and hid two topics; found in a screenshot, fixed by wrapping
+  them, now tested.
+
+**Left undone:** The copy has had no review beyond mine. Not seen on a real device. Library still cannot delete
+(the example script accumulates, P3-07). No contextual first-use hints (P2-20).
+
+**Next session should start with:** "Next steps" above.
+
+---
+
+### Session 3: 2026-09-20: Typing helpers (P2-01, P2-02, P2-03, P2-11)
+
+**Goal:** Start on the typing helpers while the user charged their tablet.
+
+**Done:** P2-01 Tab cycling, P2-02 smart Enter, P2-03 auto-uppercase, P2-11 on-screen element bar.
+
+**Changed**
+- New `src/editing.js` (pure): `kindAt`, `enter`, `tab` / `cycleTarget`, `setType`, `autoCase`.
+- `src/fountain.js`: dialogue lines now carry their source `line`; new `Fountain.classifyLines(text)` (one type per
+  source line) for the editor.
+- `index.html`: element bar markup + CSS (short labels under 480px), key/beforeinput/input handlers, `applyEdit`
+  (execCommand, keeps undo), `elementMode` state, `syncElementState`.
+- Tests: `test/editing.test.js` (49 tests incl. a property check that the parser agrees with every conversion, and
+  a never-stalls check on Tab), 43 new checks in `test/app.e2e.html`; phone-layout checks adjusted for the bar.
+- Docs: D-010, roadmap statuses and new items P2-14..P2-16, CLAUDE.md layout table.
+
+**Decisions:** D-010. The ones the user may want to reverse: Enter after action = new paragraph; cues are explicit
+(Tab / button), not guessed; Tab order is action -> character -> scene -> transition.
+
+**Problems / surprises**
+- The first Node run of the pure module failed 2 of 91 tests: one wrong expectation of mine (`SMASH CUT` is already a
+  known transition) and one real bug (converting `cut to:` to a character returned nothing, so Tab would have
+  stalled on such a line). Fixed by making Tab skip impossible steps.
+- All wiring tests passed on their first run, so I checked they could fail: probed `execCommand` / undo directly
+  (both work headless) and mutation-tested undo, paste and Shift+Enter (all caught).
+- The element bar overflowed at 375px (last button cut off); fixed with short labels.
+
+**Left undone:** Real devices and soft keyboards (P2-09). Cue suggestions (P2-14), settings (P2-15), keeping the
+caret above the keyboard in long scripts (P2-16). Autocomplete (P2-04).
+
+**Next session should start with:** "Next steps" above.
+
+---
 
 ### Session 2: 2026-09-20: Mobile layout (P2-05) and tablets (P2-12)
 

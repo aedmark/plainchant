@@ -55,9 +55,12 @@ Goal: a script is never lost, and the parser follows the Fountain spec so behavi
 
 Goal: the "just type" promise. The editor helps; it never interrupts.
 
-- [ ] P2-01 Tab cycles the current line's element type (action, character, scene heading, transition)
-- [ ] P2-02 Smart Enter: after a character line, move into dialogue; after dialogue, blank line + likely next element
-- [ ] P2-03 Auto-uppercase scene headings, character cues and transitions as they are typed (non-destructive, undoable)
+- [x] P2-01 Tab cycles the current line's element type (action, character, scene heading, transition); inside
+  dialogue it toggles dialogue / parenthetical. Verified in a headless browser; real keyboards are P2-09.
+- [x] P2-02 Smart Enter: after a character line or parenthetical, move into dialogue; otherwise a blank line.
+  Shift+Enter is a plain line break. (Changes what Enter does after action: D-010.)
+- [x] P2-03 Auto-uppercase scene headings, character cues and transitions as they are typed (undoable). Scene
+  prefixes and `... to:` are automatic; cues need Tab / the Character button first (D-010).
 - [ ] P2-04 Autocomplete character names and scene locations from the script
 - [x] P2-05 Mobile layout: single pane with a write/preview toggle, no fixed 50/50 split, keyboard-safe. Verified at
   375px in a headless browser; real-device keyboard behaviour is P2-09.
@@ -65,16 +68,31 @@ Goal: the "just type" promise. The editor helps; it never interrupts.
   for opening Preview on mobile; continuous desktop sync still uses percentage.
 - [ ] P2-07 Focus / typewriter mode (dim everything but the current block, keep the caret vertically centred)
 - [ ] P2-08 Editor styling that hints at structure (subtle per-element colour) without becoming a WYSIWYG editor
-- [ ] P2-09 Real-device pass for the mobile and tablet layouts (iPad and iPhone Safari, Android Chrome: keyboard vs.
+- [~] P2-09 Real-device pass for the mobile and tablet layouts (iPad and iPhone Safari, Android Chrome: keyboard vs.
   caret line, no zoom-on-focus, safe areas, rotation, iPad Split View / Stage Manager window sizes, hardware
-  keyboard attached). Serve the folder over LAN with `python -m http.server`.
+  keyboard attached). Serve the folder over LAN with `python -m http.server`. The user reported (2026-09-20) that
+  everything was functional on their tablet and other devices, before the typing helpers' soft-keyboard details or
+  the tour/help were looked at in particular; specifics (which devices, Split View, Pencil) were not recorded.
 - [x] P2-12 Tablet support (D-009): fix the preview being clipped below ~1110px wide, one pane below 1024px,
   inline actions from 700px, readable editor column, screenplay re-proportions by column width (container queries),
   touch-device viewport fitting. Verified at 640-1366px in a headless browser; real iPads are P2-09.
 - [ ] P2-13 Tablet input: check Apple Pencil handwriting (Scribble) and hardware-keyboard shortcuts in the editor;
   decide whether tablets in landscape want the preview to follow the caret continuously (P2-06)
 - [ ] P2-10 Tap a block in the mobile preview to jump to that line in the editor
-- [ ] P2-11 On-screen element-cycle control for touch (there is no Tab key on a phone); pairs with P2-01
+- [x] P2-11 On-screen element control for touch (there is no Tab key on a phone): the element bar under the editor
+  shows the current element and converts on tap, without dismissing the keyboard
+- [ ] P2-14 Suggest character cues without a Tab: after a blank line, a short unpunctuated line followed by Enter is
+  probably a cue. Try it only if writers find the explicit Tab / Character step a chore (D-010 chose explicit)
+- [ ] P2-15 Settings to switch off Enter-after-action-makes-a-paragraph and auto-uppercase for writers who dislike them
+- [ ] P2-16 Keep the caret line comfortably above the on-screen keyboard while typing in a long script
+- [x] P2-17 Welcome tour: four skippable steps on first launch, device-aware wording, live-rendered sample, ends
+  with Start writing / Open the example script; replayable from Help (D-011)
+- [x] P2-18 Help window: Start here, Screenplay elements cheat sheet (every example verified against the parser),
+  Keys & touch, Troubleshooting. Opens from ?, the phone menu, F1, Ctrl/Cmd+/, and the element bar's ?
+- [x] P2-19 Shared accessible dialog helper (labelled, focus trap, Esc, backdrop, focus return) for Library, Help
+  and the tour; Library items are keyboard-operable
+- [ ] P2-20 Contextual first-use hints (for example, the first time a writer types an UPPERCASE line, or first
+  presses Tab), if the tour and Help prove not to be enough. Watch how new users actually get stuck first.
 
 ## Phase 3: Output and library
 
@@ -97,6 +115,8 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
 - [ ] P4-04 Stats: page count, estimated runtime, scene count, per-character line counts
 - [ ] P4-05 Version snapshots and restore
 - [ ] P4-06 Themes and font-size controls; accessibility pass (keyboard, contrast, screen reader labels)
+- [ ] P4-08 Split the inline app script in `index.html` (~1500 lines) into classic script files (D-001 allows it),
+  e.g. persistence, layout/mobile, typing helpers wiring, dialogs/help. Behaviour-neutral; the e2e suite is the net.
 - [x] P4-07 Replace deprecated `document.execCommand('copy')` with the async Clipboard API (execCommand stays as the
   fallback for insecure origins)
 
@@ -111,4 +131,6 @@ Not committed. Decide only after Phase 3 ships. See open questions in DECISIONS.
 ## Known limitations (deliberate, revisit)
 
 - Notes (`[[...]]`) that span several lines are not recognised; single-line notes are.
-- The parser is spec-strict about uppercase: `cut to:` in lowercase is action until P2-03 auto-uppercases it.
+- The parser is spec-strict about uppercase (D-004); the editor covers for it: `cut to:` and `int. ...` are
+  uppercased as typed (P2-03), and other cues are set with Tab / the Character button. Text pasted in or typed
+  outside the app in lowercase is still action.

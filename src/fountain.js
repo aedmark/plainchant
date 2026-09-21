@@ -6,6 +6,7 @@
  *   Fountain.parse(text)      -> tokens
  *   Fountain.toHTML(tokens)   -> HTML string (all user text escaped)
  *   Fountain.extractTitle(t)  -> best-effort script title
+ *   Fountain.classifyLines(t) -> one type per source line, for the editor (see src/editing.js)
  *
  * Follows Fountain 1.1 (https://fountain.io/syntax). Deliberately strict about case: lowercase cues are action (D-004).
  * Known limitation: multi-line [[notes]] are not recognised.
@@ -14,7 +15,7 @@
  *   { type: 'title_page',   fields: [{ key, value }] }
  *   { type: 'scene',        text, number }
  *   { type: 'action',       text }                       text may contain '\n'; leading spaces preserved
- *   { type: 'dialogue',     character, lines: [{ type: 'parenthetical' | 'dialogue', text }], dual }
+ *   { type: 'dialogue',     character, lines: [{ type: 'parenthetical' | 'dialogue', text, line }], dual }
  *                           dual is false | 'left' | 'right'
  *   { type: 'transition',   text }
  *   { type: 'centered',     text }
@@ -116,7 +117,7 @@
                     flushDialogue();
                     continue;
                 }
-                dialogue.lines.push({ type: /^\(.*\)$/.test(line) ? 'parenthetical' : 'dialogue', text: line });
+                dialogue.lines.push({ type: /^\(.*\)$/.test(line) ? 'parenthetical' : 'dialogue', text: line, line: i });
                 continue;
             }
 
@@ -294,6 +295,31 @@
         return html;
     }
 
+    /**
+     * What each source line is, for the editor: one entry per line of `text`, 'blank' for empty lines, otherwise the
+     * token type. A dialogue block's cue line is 'character' and its other lines are 'parenthetical' / 'dialogue'.
+     * Lines that are part of an action paragraph are 'action'; title-page lines are 'title_page'.
+     */
+    function classifyLines(text) {
+        const count = String(text || '').replace(/\r\n?/g, '\n').split('\n').length;
+        const kinds = new Array(count).fill('blank');
+        parse(text).forEach(function (t) {
+            if (t.type === 'action') {
+                const span = t.text.split('\n').length;
+                for (let k = 0; k < span; k++) kinds[t.line + k] = 'action';
+            } else if (t.type === 'dialogue') {
+                kinds[t.line] = 'character';
+                t.lines.forEach(function (l) { kinds[l.line] = l.type; });
+            } else if (t.type === 'title_page') {
+                const lines = String(text).replace(/\r\n?/g, '\n').split('\n');
+                for (let k = 0; k < lines.length && lines[k].trim() !== ''; k++) kinds[k] = 'title_page';
+            } else {
+                kinds[t.line] = t.type;
+            }
+        });
+        return kinds;
+    }
+
     /** Title-page Title if present, otherwise the first scene heading or non-empty line, capped at 40 chars. */
     function extractTitle(text) {
         const tokens = parse(text);
@@ -312,5 +338,8 @@
         return title ? title.substring(0, 40) : 'Untitled Script';
     }
 
-    return { parse: parse, toHTML: toHTML, extractTitle: extractTitle, escapeHTML: escapeHTML, inline: inline };
+    return {
+        parse: parse, toHTML: toHTML, extractTitle: extractTitle, classifyLines: classifyLines,
+        escapeHTML: escapeHTML, inline: inline
+    };
 });

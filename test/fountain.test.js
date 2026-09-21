@@ -69,10 +69,11 @@ test('dialogue: cue, parenthetical and speech are one block', () => {
     const d = first('JOHN\n(nervous)\nI just wanted to type.');
     assert.equal(d.type, 'dialogue');
     assert.equal(d.character, 'JOHN');
-    assert.deepEqual(d.lines, [
+    assert.deepEqual(d.lines.map((l) => ({ type: l.type, text: l.text })), [
         { type: 'parenthetical', text: '(nervous)' },
         { type: 'dialogue', text: 'I just wanted to type.' }
     ]);
+    assert.deepEqual(d.lines.map((l) => l.line), [1, 2]); // source line numbers, for the editor
 });
 
 test('dialogue: block ends at a blank line; the next line is not dialogue', () => {

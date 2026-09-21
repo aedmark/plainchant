@@ -137,6 +137,58 @@
             line-height: 1.6;
         }
 
+        /* --- ELEMENT BAR: shows what the current line is, and changes it --- */
+        .element-bar {
+            display: flex;
+            flex-shrink: 0;
+            gap: 0.25rem;
+            padding: 0.375rem 0.75rem;
+            overflow-x: auto;
+            border-top: 1px solid var(--border-void);
+            background-color: var(--bg-void);
+        }
+        .el-btn {
+            flex: 0 0 auto;
+            padding: 0.35rem 0.7rem;
+            border: 1px solid transparent;
+            border-radius: 0.375rem;
+            background: transparent;
+            color: var(--text-void-muted);
+            font: 500 0.75rem var(--font-ui);
+            cursor: pointer;
+            touch-action: manipulation; /* no double-tap zoom on a fast second tap */
+        }
+        .el-btn:hover { color: var(--btn-text); }
+        .el-btn[aria-pressed="true"] { background-color: var(--btn-bg); border-color: var(--border-void); color: #f8fafc; }
+        .el-btn .short { display: none; }
+        /* "?" at the end of the bar: help on the elements. Phones have no room; they use Help in the menu. */
+        .el-help {
+            flex: 0 0 auto;
+            align-self: center;
+            width: 1.9rem;
+            height: 1.9rem;
+            margin-left: auto;
+            border: 1px solid var(--border-void);
+            border-radius: 50%;
+            background: transparent;
+            color: var(--text-void-muted);
+            font: 600 0.8rem var(--font-ui);
+            cursor: pointer;
+        }
+        .el-help:hover { color: var(--btn-text); }
+        @media (pointer: coarse) { .el-help { width: 44px; height: 44px; } }
+        @media (max-width: 480px) { .el-help { display: none; } }
+        @media (pointer: coarse) {
+            .el-btn { min-height: 44px; font-size: 0.85rem; padding: 0 0.9rem; }
+        }
+        /* Phones: shorter names, sharing the row equally, so all six fit without scrolling sideways */
+        @media (max-width: 480px) {
+            .element-bar { padding-inline: 0.5rem; gap: 0.125rem; }
+            .el-btn { flex: 1 1 auto; padding-inline: 0.3rem; text-align: center; }
+            .el-btn .long { display: none; }
+            .el-btn .short { display: inline; }
+        }
+
         /* --- THE CANVAS (Output) --- */
         .pane-canvas {
             flex: 1;
@@ -295,12 +347,14 @@
             border-radius: 0.5rem;
             width: 90%;
             max-width: 500px;
-            max-height: 80vh;
+            max-height: 85vh;
+            max-height: 85dvh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
+        .modal-content.wide { max-width: 46rem; }
         .modal-header {
             padding: 1rem 1.5rem;
             border-bottom: 1px solid var(--border-void);
@@ -309,12 +363,134 @@
             align-items: center;
         }
         .modal-header h2 { margin: 0; font-size: 1rem; color: #f8fafc; }
-        .modal-close { background: transparent; color: var(--text-void-muted); border: none; cursor: pointer; font-size: 1.25rem; }
+        .modal-close { min-width: 36px; min-height: 36px; border-radius: 0.375rem; background: transparent; color: var(--text-void-muted); border: none; cursor: pointer; font-size: 1.25rem; }
         .modal-close:hover { color: #f8fafc; }
         .modal-body {
             padding: 1rem;
             overflow-y: auto;
             flex: 1;
+        }
+        .modal-footer {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            border-top: 1px solid var(--border-void);
+        }
+        .btn.primary { background-color: #e2e8f0; color: #0f1115; font-weight: 600; }
+        .btn.primary:hover { background-color: #ffffff; }
+        .btn.ghost { background: transparent; color: var(--text-void-muted); }
+        .btn.ghost:hover { color: var(--btn-text); }
+        .script-item:focus-visible { outline: 2px solid #94a3b8; outline-offset: -2px; }
+
+        /* Help window */
+        /* Topics wrap onto a second row on a phone, rather than scrolling sideways and hiding some of them */
+        .help-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            flex-shrink: 0;
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid var(--border-void);
+        }
+        .chip {
+            flex: 0 0 auto;
+            padding: 0.4rem 0.8rem;
+            border: 1px solid transparent;
+            border-radius: 0.375rem;
+            background: transparent;
+            color: var(--text-void-muted);
+            font: 500 0.8125rem var(--font-ui);
+            cursor: pointer;
+        }
+        .chip:hover { color: var(--btn-text); }
+        .chip[aria-pressed="true"] { background-color: var(--btn-bg); border-color: var(--border-void); color: #f8fafc; }
+        .help-section h3, .tour-step h3 { margin: 1.25rem 0 0.5rem; font-size: 0.95rem; color: #f8fafc; }
+        .help-section h3:first-child { margin-top: 0; }
+        .help-section p, .help-section li, .tour-step p, .tour-step li {
+            margin: 0 0 0.6rem;
+            font-size: 0.875rem;
+            line-height: 1.55;
+            color: var(--text-void);
+        }
+        .help-section ul, .tour-step ul { margin: 0 0 0.6rem; padding-left: 1.2rem; }
+        .help-section a { color: #cbd5e1; }
+        kbd {
+            padding: 0.05rem 0.4rem;
+            border: 1px solid #334155;
+            border-bottom-width: 2px;
+            border-radius: 0.25rem;
+            background: #161a21;
+            color: #e2e8f0;
+            font: 0.8em ui-monospace, Consolas, monospace;
+            white-space: nowrap;
+        }
+        .callout {
+            margin: 0.75rem 0;
+            padding: 0.6rem 0.8rem;
+            border-left: 3px solid #475569;
+            border-radius: 0 0.375rem 0.375rem 0;
+            background: #12151b;
+        }
+        .callout p { margin: 0; }
+        .help-table { width: 100%; border-collapse: collapse; }
+        .help-table th {
+            padding: 0.4rem 0.6rem;
+            text-align: left;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-void-muted);
+        }
+        .help-table td { padding: 0.6rem; vertical-align: top; border-top: 1px solid var(--border-void); font-size: 0.8125rem; line-height: 1.5; }
+        .help-table td:first-child { width: 22%; color: #f8fafc; font-weight: 600; }
+        .help-table code, .sample {
+            display: block;
+            padding: 0.5rem 0.65rem;
+            border-radius: 0.375rem;
+            background: #0b0d11;
+            color: #cbd5e1;
+            font: 0.8125rem/1.5 ui-monospace, Consolas, monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        code.inline, .help-table code.inline {
+            display: inline;
+            padding: 0.05rem 0.35rem;
+            border-radius: 0.25rem;
+            background: #0b0d11;
+            color: #cbd5e1;
+            font: 0.85em ui-monospace, Consolas, monospace;
+            white-space: normal;
+        }
+        .help-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+
+        /* Welcome tour */
+        .tour-step[hidden], .help-section[hidden] { display: none; }
+        .tour-step h3 { margin-top: 0.25rem; font-size: 1.2rem; }
+        .tour-dots { display: flex; gap: 0.4rem; }
+        .tour-dots span { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #334155; }
+        .tour-dots span[aria-current="step"] { background: #e2e8f0; }
+        .sample-io { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin: 0.75rem 0; }
+        .sample-io h4 { margin: 0 0 0.3rem; font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-void-muted); }
+        .sample-io .sample { margin: 0; min-height: 11rem; }
+        .sample-sheet { container: sheet / inline-size; min-height: 11rem; padding: 0.75rem; border-radius: 0.375rem; background: #fff; color: #000; overflow: hidden; }
+        .sample-sheet .screenplay-font { font-size: 10px; line-height: 1.25; }
+        .hint-touch { display: none; }
+        /* Device-specific wording: touch devices see the touch hint, everything else sees the keyboard one */
+        @media (pointer: coarse) {
+            .hint-touch { display: revert; }
+            .hint-keys { display: none; }
+        }
+        @media (max-width: 560px) {
+            .sample-io { grid-template-columns: 1fr; }
+            .sample-io .sample, .sample-sheet { min-height: 0; }
+            .help-table thead { display: none; }
+            .help-table tr { display: block; padding: 0.5rem 0; border-top: 1px solid var(--border-void); }
+            .help-table td { display: block; width: auto !important; padding: 0.15rem 0.2rem; border: 0; }
         }
         .script-item {
             padding: 1rem;
@@ -327,6 +503,13 @@
         .script-title { font-weight: 600; color: #f8fafc; margin-bottom: 0.25rem; }
         .script-preview { font-size: 0.75rem; color: var(--text-void-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .button-group { display: flex; gap: 0.5rem; }
+        /* Help is "?" wherever the actions sit in a row, and the word "Help" in the phone drop-down menu */
+        .button-group .txt-long { display: none; }
+        .button-group .help-btn { padding-inline: 0.75rem; }
+        @media (max-width: 699px) {
+            .button-group .txt-long { display: inline; }
+            .button-group .txt-short { display: none; }
+        }
 
         /* --- MOBILE BAR (shown below 1024px; see the mobile block below) --- */
         .mobile-bar { display: none; }
@@ -382,7 +565,8 @@
             body[data-view="preview"] .pane-canvas { display: flex; }
             /* While previewing, the Void's box goes away but its menu (a fixed-position child) must stay reachable */
             body[data-view="preview"] .pane-void { display: contents; }
-            body[data-view="preview"] .pane-void textarea { display: none; }
+            body[data-view="preview"] .pane-void textarea,
+            body[data-view="preview"] .element-bar { display: none; }
 
             .pane-canvas > .header { display: none; }
 
@@ -471,9 +655,22 @@
             <button id="saveBtn" class="btn">Save</button>
             <button id="exportBtn" class="btn">Export</button>
             <button id="copyBtn" class="btn">Copy</button>
+            <button id="helpBtn" class="btn help-btn" aria-label="Help" title="Help (F1)"><span class="txt-short" aria-hidden="true">?</span><span class="txt-long">Help</span></button>
         </div>
     </div>
     <textarea id="editor" placeholder="FADE IN:&#10;&#10;INT. COFFEE SHOP - DAY&#10;&#10;The cafe is entirely empty.&#10;&#10;JOHN&#10;(nervous)&#10;I just wanted a program that let me type without thinking.&#10;&#10;THE ARTISAN&#10;It is done.&#10;&#10;CUT TO:&#10;&#10;EXT. THE VOID - CONTINUOUS"></textarea>
+    <!-- What the current line is, and a way to change it. Tab / Shift+Tab do the same from a keyboard; touch has
+         no Tab key. Buttons never take focus from the editor, so the on-screen keyboard stays up. -->
+    <div class="element-bar" role="toolbar" aria-label="Element type"
+         title="Tab / Shift+Tab cycles the element. To move focus out of the editor, press Esc and then Tab.">
+        <button type="button" class="el-btn" data-el="scene" aria-pressed="false">Scene</button>
+        <button type="button" class="el-btn" data-el="action" aria-pressed="true">Action</button>
+        <button type="button" class="el-btn" data-el="character" aria-pressed="false"><span class="long">Character</span><span class="short">Char</span></button>
+        <button type="button" class="el-btn" data-el="parenthetical" aria-pressed="false">Paren</button>
+        <button type="button" class="el-btn" data-el="dialogue" aria-pressed="false"><span class="long">Dialogue</span><span class="short">Dial</span></button>
+        <button type="button" class="el-btn" data-el="transition" aria-pressed="false"><span class="long">Transition</span><span class="short">Trans</span></button>
+        <button type="button" class="el-help" aria-label="Help with screenplay elements" title="Help with elements">?</button>
+    </div>
 </div>
 
 <!-- The Canvas (Output) -->
@@ -495,12 +692,15 @@
     </div>
 </div>
 
-<!-- Library Modal -->
+<!-- Dialogs. All three use the same helper (openModal / closeModal): focus moves in and is trapped, Esc or a click on
+     the backdrop closes, and focus returns to whatever opened it. -->
+
+<!-- Library -->
 <div id="library-modal" class="modal-overlay">
-    <div class="modal-content">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="library-title">
         <div class="modal-header">
-            <h2>Your Scripts</h2>
-            <button id="modal-close" class="modal-close">&times;</button>
+            <h2 id="library-title">Your Scripts</h2>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
         </div>
         <div id="library-list" class="modal-body">
             <!-- Scripts injected here -->
@@ -508,7 +708,221 @@
     </div>
 </div>
 
+<!-- Help -->
+<div id="help-modal" class="modal-overlay">
+    <div class="modal-content wide" role="dialog" aria-modal="true" aria-labelledby="help-title">
+        <div class="modal-header">
+            <h2 id="help-title">Help</h2>
+            <button type="button" class="modal-close" data-close aria-label="Close help">&times;</button>
+        </div>
+        <div class="help-nav" role="group" aria-label="Help topics">
+            <button type="button" class="chip" data-section="start" aria-pressed="true">Start here</button>
+            <button type="button" class="chip" data-section="elements" aria-pressed="false">Screenplay elements</button>
+            <button type="button" class="chip" data-section="keys" aria-pressed="false">Keys &amp; touch</button>
+            <button type="button" class="chip" data-section="fixes" aria-pressed="false">Troubleshooting</button>
+        </div>
+        <div class="modal-body">
+
+            <section class="help-section" data-section="start">
+                <h3>Just type</h3>
+                <p>Write your script as plain text in the <strong>Void</strong> (the <strong>Write</strong> view on a phone or
+                    portrait tablet). The <strong>Canvas</strong> (<strong>Preview</strong>) shows it formatted as a screenplay,
+                    live. There are no margins or styles to set up: the structure comes from what you type.</p>
+                <p>Tell the editor what you are writing with <kbd>Tab</kbd> or the bar under the text (Scene, Action,
+                    Character&hellip;), and <kbd>Enter</kbd> moves on to whatever normally comes next.</p>
+                <h3>Your work</h3>
+                <ul>
+                    <li>Every change is <strong>saved automatically</strong>, and your last script reopens where you left it.</li>
+                    <li><strong>New</strong> starts a blank script. <strong>Library</strong> lists every script you have.</li>
+                    <li><strong>Export</strong> downloads a text file in Fountain format, which other screenwriting apps can open.
+                        <strong>Copy</strong> puts the whole script on the clipboard.</li>
+                </ul>
+                <div class="callout"><p><strong>Scripts live only in this browser, on this device.</strong> Clearing the browser&rsquo;s
+                    site data deletes them, and another device or browser has its own library. Export anything you cannot lose.</p></div>
+                <div class="help-actions">
+                    <button type="button" class="btn" id="helpTakeTour">Take the tour</button>
+                    <button type="button" class="btn" id="helpLoadExample">Open the example script</button>
+                </div>
+            </section>
+
+            <section class="help-section" data-section="elements" hidden>
+                <p>A screenplay is a handful of element types. Type them like this:</p>
+                <table class="help-table">
+                    <thead><tr><th>Element</th><th>You type</th><th>Notes</th></tr></thead>
+                    <tbody>
+                        <tr><td>Scene heading</td>
+                            <td><code data-expect="scene">INT. KITCHEN - NIGHT</code></td>
+                            <td>Starts with <code class="inline">INT.</code>, <code class="inline">EXT.</code>, <code class="inline">EST.</code> or <code class="inline">I/E</code>, after a blank line. Typed in lowercase it is capitalised for you.</td></tr>
+                        <tr><td>Force a scene heading</td>
+                            <td><code data-expect="scene">.SNIPER SCOPE POV</code></td>
+                            <td>A leading <code class="inline">.</code> makes any line a scene heading.</td></tr>
+                        <tr><td>Action</td>
+                            <td><code data-expect="action,action,blank,action">Rain hits the window.
+He does not look up.
+
+Thunder.</code></td>
+                            <td>Any plain text. A blank line starts a new paragraph.</td></tr>
+                        <tr><td>Force action</td>
+                            <td><code data-expect="action,action">!SILENCE
+Nobody moves.</code></td>
+                            <td>A leading <code class="inline">!</code> stops an UPPERCASE line being read as a character.</td></tr>
+                        <tr><td>Character and dialogue</td>
+                            <td><code data-expect="character,parenthetical,dialogue">JOHN
+(quietly)
+I&rsquo;m home.</code></td>
+                            <td>An UPPERCASE name on its own line after a blank line, with the speech directly under it. A line in parentheses is a parenthetical. Extensions: <code class="inline">JOHN (V.O.)</code></td></tr>
+                        <tr><td>Mixed-case name</td>
+                            <td><code data-expect="character,dialogue">@McCLANE
+Yippee-ki-yay.</code></td>
+                            <td>A leading <code class="inline">@</code> makes any line a character.</td></tr>
+                        <tr><td>Dual dialogue</td>
+                            <td><code data-expect="character,dialogue,blank,character,dialogue">BRICK
+Screw you!
+
+STEEL ^
+Screw you!</code></td>
+                            <td><code class="inline">^</code> after the second name puts the two speeches side by side.</td></tr>
+                        <tr><td>Transition</td>
+                            <td><code data-expect="transition">CUT TO:</code></td>
+                            <td>An UPPERCASE line ending in <code class="inline">TO:</code>. For any other, start with <code class="inline">&gt;</code>: <code class="inline">&gt; FADE OUT.</code></td></tr>
+                        <tr><td>Centered</td>
+                            <td><code data-expect="centered">&gt; THE END &lt;</code></td>
+                            <td>Wrap the text in <code class="inline">&gt;</code> and <code class="inline">&lt;</code>.</td></tr>
+                        <tr><td>Title page</td>
+                            <td><code data-expect="title_page,title_page,title_page">Title: BIG FISH
+Credit: Written by
+Author: Jane Doe</code></td>
+                            <td>The first lines of the script. Also Source, Draft date and Contact.</td></tr>
+                        <tr><td>Notes</td>
+                            <td><code data-expect="action,blank">He waits. [[check the light]]
+/* cut this later */</code></td>
+                            <td><code class="inline">[[ ]]</code> shows as a highlighted note. <code class="inline">/* */</code> hides text completely.</td></tr>
+                        <tr><td>Emphasis</td>
+                            <td><code data-expect="action">*italic*  **bold**  _underline_</code></td>
+                            <td>Works inside any line.</td></tr>
+                        <tr><td>Outline</td>
+                            <td><code data-expect="section,blank,synopsis">## ACT TWO
+
+= Hero loses everything.</code></td>
+                            <td>Sections and synopses organise the script; they are not part of the screenplay itself.</td></tr>
+                        <tr><td>Page break</td>
+                            <td><code data-expect="page_break">===</code></td>
+                            <td></td></tr>
+                        <tr><td>Lyrics</td>
+                            <td><code data-expect="lyrics">~Willy Wonka! Willy Wonka!</code></td>
+                            <td></td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="help-section" data-section="keys" hidden>
+                <h3>Keyboard</h3>
+                <table class="help-table">
+                    <thead><tr><th>Keys</th><th>What they do</th></tr></thead>
+                    <tbody>
+                        <tr><td><kbd>Tab</kbd></td><td>Cycles the current line through Action &rarr; Character &rarr; Scene heading &rarr; Transition. Inside dialogue it switches between dialogue and parenthetical. On a blank line it chooses what you are about to type: a character (typed text is capitalised) or a scene heading (<code class="inline">INT.&nbsp;</code> is filled in).</td></tr>
+                        <tr><td><kbd>Shift</kbd>+<kbd>Tab</kbd></td><td>The same, backwards.</td></tr>
+                        <tr><td><kbd>Enter</kbd></td><td>Moves on to what comes next. After a character or a parenthetical you go straight to the speech; after anything else you get a blank line, so an action line ends its paragraph.</td></tr>
+                        <tr><td><kbd>Shift</kbd>+<kbd>Enter</kbd></td><td>A plain line break, to keep writing inside the same element.</td></tr>
+                        <tr><td><kbd>Esc</kbd>, then <kbd>Tab</kbd></td><td>Moves focus out of the editor. (<kbd>Tab</kbd> alone is used for cycling.)</td></tr>
+                        <tr><td><kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Z</kbd></td><td>Undo, including anything <kbd>Tab</kbd> or <kbd>Enter</kbd> just changed.</td></tr>
+                        <tr><td><kbd>F1</kbd> or <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>/</kbd></td><td>Opens this help.</td></tr>
+                    </tbody>
+                </table>
+                <h3>Touch</h3>
+                <ul>
+                    <li>The <strong>bar under the text</strong> shows what the current line is. Tap Scene, Action, Character, Paren, Dialogue or Transition to change it, or to choose what a blank line will be. It never closes the on-screen keyboard.</li>
+                    <li>On phones and portrait tablets, <strong>Write | Preview</strong> at the top switches between the text and the formatted script. Preview opens where you were writing.</li>
+                    <li>On phones the <strong>&hellip;</strong> button holds New, Library, Save, Export, Copy and Help.</li>
+                </ul>
+            </section>
+
+            <section class="help-section" data-section="fixes" hidden>
+                <h3>A character name shows up as ordinary action</h3>
+                <p>A character needs three things: an UPPERCASE line, a blank line above it, and the speech directly below. Press <kbd>Tab</kbd> (or Character) on the blank line first and the editor takes care of the capitals for you.</p>
+                <h3>An action line in capitals turned into a character</h3>
+                <p>An UPPERCASE line with text right under it looks like a character to every screenplay program. Put <code class="inline">!</code> in front of it, or leave a blank line below it.</p>
+                <h3>My scene heading is not bold</h3>
+                <p>It has to start with <code class="inline">INT.</code>, <code class="inline">EXT.</code>, <code class="inline">EST.</code> or <code class="inline">I/E</code> and have a blank line above it. Or start it with <code class="inline">.</code></p>
+                <h3>Text I pasted is in lowercase and is not formatted</h3>
+                <p>Capitals are added as you type, not to pasted text. Select the line and press <kbd>Tab</kbd> to convert it.</p>
+                <h3>Where did my script go?</h3>
+                <p>Open <strong>Library</strong>. Scripts are stored in this browser only, so a different browser, device or a private window shows a different (possibly empty) library.</p>
+                <h3>Blank lines</h3>
+                <p>Extra blank lines are ignored in the formatted script. Use them freely to see your text more clearly.</p>
+            </section>
+        </div>
+        <div class="modal-footer">
+            <span class="hint-keys" style="font-size:.75rem;color:var(--text-void-muted)"><kbd>Esc</kbd> closes</span>
+            <button type="button" class="btn primary" data-close>Done</button>
+        </div>
+    </div>
+</div>
+
+<!-- Welcome tour (shown once on first launch; replay from Help) -->
+<div id="tour-modal" class="modal-overlay">
+    <div class="modal-content wide" role="dialog" aria-modal="true" aria-labelledby="tour-title">
+        <div class="modal-header">
+            <h2 id="tour-title">Welcome</h2>
+            <button type="button" class="modal-close" data-close aria-label="Skip the tour">&times;</button>
+        </div>
+        <div class="modal-body tour-steps">
+
+            <section class="tour-step" data-step="1">
+                <h3>Just type. We handle the structure.</h3>
+                <p>Write your script as plain text. It appears beside your writing as a properly formatted screenplay, live: margins, capitals and spacing are taken care of.</p>
+                <p class="hint-keys">Your text is in the <strong>Void</strong> on the left; the <strong>Canvas</strong> on the right is the formatted script. If the window is narrow, use <strong>Write | Preview</strong> at the top to switch.</p>
+                <p class="hint-touch">Your text is in <strong>Write</strong>; tap <strong>Preview</strong> at the top to see it as a formatted script, and back to keep writing.</p>
+            </section>
+
+            <section class="tour-step" data-step="2" hidden>
+                <h3>Say what you are writing, then keep typing</h3>
+                <p class="hint-keys">Press <kbd>Tab</kbd> to cycle the current line: Action, Character, Scene heading, Transition. <kbd>Enter</kbd> then moves on to whatever normally comes next.</p>
+                <p class="hint-touch">Tap <strong>Scene</strong>, <strong>Action</strong>, <strong>Character</strong>&hellip; on the bar under your text. <strong>Enter</strong> then moves on to whatever normally comes next. (With a keyboard attached, <kbd>Tab</kbd> does the same.)</p>
+                <div class="sample-io">
+                    <div><h4>You type</h4><pre class="sample" id="tourSample">INT. COFFEE SHOP - DAY
+
+The cafe is empty.
+
+JOHN
+(nervous)
+Is anyone here?</pre></div>
+                    <div><h4>You get</h4><div class="sample-sheet"><div class="screenplay-font" id="tourRendered"></div></div></div>
+                </div>
+            </section>
+
+            <section class="tour-step" data-step="3" hidden>
+                <h3>Your work stays put</h3>
+                <ul>
+                    <li>Everything is <strong>saved automatically</strong> as you type, and reopens where you left off.</li>
+                    <li><strong>Library</strong> keeps all your scripts. <strong>Export</strong> saves a file you can take anywhere.</li>
+                </ul>
+                <div class="callout"><p>Scripts are stored <strong>in this browser, on this device</strong>. Clearing site data deletes them, so Export anything you cannot lose.</p></div>
+            </section>
+
+            <section class="tour-step" data-step="4" hidden>
+                <h3>Ready when you are</h3>
+                <p>Start with a blank page, or open a short example script that shows every element at work. You can edit it freely.</p>
+                <p>The <strong>?</strong> button (or <kbd class="hint-keys">F1</kbd><span class="hint-touch">the Help item in the menu</span>) opens the cheat sheet of screenplay elements and shortcuts any time, and can replay this tour.</p>
+                <div class="help-actions">
+                    <button type="button" class="btn primary" id="tourStart">Start writing</button>
+                    <button type="button" class="btn" id="tourExample">Open the example script</button>
+                </div>
+            </section>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn ghost" id="tourSkip" data-close>Skip</button>
+            <div class="tour-dots" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+            <div class="help-actions" style="margin:0">
+                <button type="button" class="btn" id="tourBack" hidden>Back</button>
+                <button type="button" class="btn primary" id="tourNext">Next</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="src/fountain.js"></script>
+<script src="src/editing.js"></script>
 <script>
     const editor = document.getElementById('editor');
     const renderTarget = document.getElementById('render-target'); // scroll container
@@ -519,7 +933,6 @@
     const libraryBtn = document.getElementById('libraryBtn');
     const newBtn = document.getElementById('newBtn');
     const libraryModal = document.getElementById('library-modal');
-    const modalClose = document.getElementById('modal-close');
     const libraryList = document.getElementById('library-list');
 
     const SCRIPTS_KEY = 'frictionless_scripts';   // legacy prefix kept on purpose (D-005)
@@ -565,10 +978,10 @@
     // Show the part of the script the writer was just typing, not the top of the page.
     // Uses the data-line anchors the renderer puts on every block.
     function scrollPreviewToCaret() {
-        const caretLine = editor.value.slice(0, editor.selectionStart).split('\n').length - 1;
+        const line = caretLine();
         let target = null;
         for (const el of renderTarget.querySelectorAll('[data-line]')) {
-            if (Number(el.dataset.line) > caretLine) break;
+            if (Number(el.dataset.line) > line) break;
             target = el;
         }
         if (!target) { renderTarget.scrollTop = 0; return; }
@@ -639,8 +1052,10 @@
         flushSave();
         currentScriptId = newId();
         editor.value = '';
+        elementMode = null;
         rememberCurrent();
         render();
+        syncElementState();
         // In one-pane mode the writer may be looking at the preview: bring them back to the blank page
         if (mobileMQ.matches) setView('write');
         else editor.focus();
@@ -709,6 +1124,11 @@
             scripts.forEach(script => {
                 const item = document.createElement('div');
                 item.className = 'script-item';
+                item.tabIndex = 0; // reachable and usable from the keyboard
+                item.setAttribute('role', 'button');
+                item.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.click(); }
+                });
 
                 const safeTitle = Fountain.escapeHTML(script.title);
                 const safePreview = Fountain.escapeHTML(script.content.substring(0, 60));
@@ -721,9 +1141,11 @@
                     flushSave();
                     currentScriptId = script.id;
                     editor.value = script.content;
+                    elementMode = null;
                     rememberCurrent();
                     render();
-                    libraryModal.classList.remove('active');
+                    syncElementState();
+                    closeModal(libraryModal);
                 });
                 libraryList.appendChild(item);
             });
@@ -732,6 +1154,198 @@
             libraryList.innerHTML = '<div class="script-item"><div class="script-preview">Error loading scripts.</div></div>';
         }
     }
+
+    // --- Dialogs: one helper for every modal window ---
+    // Focus moves into the dialog and stays there (Tab wraps), Esc or a click on the backdrop closes it, and focus
+    // goes back to whatever opened it. Dialogs can stack (Help opened over the tour, say); Esc closes the top one.
+    const openModals = [];
+    const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    function focusableIn(el) {
+        return Array.from(el.querySelectorAll(FOCUSABLE)).filter((n) => !n.hidden && n.getClientRects().length > 0);
+    }
+
+    function openModal(overlay, options = {}) {
+        if (openModals.some((m) => m.overlay === overlay)) return;
+        openModals.push({ overlay: overlay, opener: document.activeElement, onClose: options.onClose });
+        overlay.classList.add('active');
+        const target = (options.focus && overlay.querySelector(options.focus)) || focusableIn(overlay)[0];
+        if (target) target.focus({ preventScroll: true });
+    }
+
+    function closeModal(overlay) {
+        const i = openModals.findIndex((m) => m.overlay === overlay);
+        if (i === -1) return;
+        const entry = openModals.splice(i, 1)[0];
+        overlay.classList.remove('active');
+        if (entry.onClose) entry.onClose();
+        // Return focus to what opened the dialog. If that was an item in the phone menu it is hidden again by now,
+        // so fall back to the menu button, then the editor.
+        const visible = (el) => el && el !== document.body && document.contains(el) && el.getClientRects().length > 0;
+        const back = [entry.opener, menuBtn, editor].find(visible);
+        if (back) back.focus({ preventScroll: true });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (!openModals.length) return;
+        const top = openModals[openModals.length - 1].overlay;
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            closeModal(top);
+        } else if (e.key === 'Tab') {
+            // Keep Tab inside the dialog, and away from the editor's own Tab handling
+            e.stopPropagation();
+            const items = focusableIn(top);
+            if (!items.length) { e.preventDefault(); return; }
+            const first = items[0], last = items[items.length - 1];
+            if (!top.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+            else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+    }, true);
+
+    document.addEventListener('click', (e) => {
+        if (e.target.classList && e.target.classList.contains('modal-overlay')) { closeModal(e.target); return; } // backdrop
+        const closer = e.target.closest('[data-close]');
+        if (closer) closeModal(closer.closest('.modal-overlay'));
+    });
+
+    // --- Help ---
+    const helpModal = document.getElementById('help-modal');
+    const helpBody = helpModal.querySelector('.modal-body');
+    const helpSections = Array.from(helpModal.querySelectorAll('.help-section'));
+    const helpTabs = Array.from(helpModal.querySelectorAll('.help-nav [data-section]'));
+
+    function showHelpSection(name) {
+        helpSections.forEach((s) => { s.hidden = s.dataset.section !== name; });
+        helpTabs.forEach((t) => t.setAttribute('aria-pressed', String(t.dataset.section === name)));
+        helpBody.scrollTop = 0;
+    }
+
+    function openHelp(section) {
+        showHelpSection(section || 'start');
+        openModal(helpModal, { focus: '.help-nav [aria-pressed="true"]' });
+    }
+
+    helpTabs.forEach((t) => t.addEventListener('click', () => showHelpSection(t.dataset.section)));
+    document.getElementById('helpBtn').addEventListener('click', () => openHelp('start'));
+    document.querySelector('.el-help').addEventListener('click', () => openHelp('elements'));
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'F1' || ((e.ctrlKey || e.metaKey) && e.key === '/')) {
+            e.preventDefault(); // F1 would otherwise open the browser's own help
+            if (!openModals.length) openHelp('start');
+        }
+    });
+
+    // --- Example script: teaches by example, and every element in it is real ---
+    const EXAMPLE_SCRIPT = [
+        'Title: The Last Coffee',
+        'Credit: Written by',
+        'Author: Your Name Here',
+        '',
+        'FADE IN:',
+        '',
+        'INT. COFFEE SHOP - DAY',
+        '',
+        'Rain hits the window. The cafe is empty except for MARA (30s), who glares at a blinking cursor. [[A note to yourself: it shows highlighted here and never in the finished script.]]',
+        '',
+        'MARA',
+        '(to herself)',
+        'Just type. Don\'t think.',
+        '',
+        'The door BURSTS open. DEV (30s, soaked) stands there holding two coffees.',
+        '',
+        'DEV',
+        'You\'ve been here all night?',
+        '',
+        'MARA',
+        'I\'ve been here all *week*.',
+        '',
+        'DEV ^',
+        'Same.',
+        '',
+        'CUT TO:',
+        '',
+        'EXT. ROOFTOP - LATER',
+        '',
+        'They sit on the edge and share the coffees. The city hums below.',
+        '',
+        '> THE END <',
+        ''
+    ].join('\n');
+
+    function loadExampleScript() {
+        flushSave();
+        currentScriptId = newId();
+        editor.value = EXAMPLE_SCRIPT;
+        elementMode = null;
+        rememberCurrent();
+        render();
+        saveScript(true); // straight into the Library, so it is a real script from now on
+        editor.setSelectionRange(0, 0);
+        editor.scrollTop = 0;
+        renderTarget.scrollTop = 0;
+        syncElementState();
+        openModals.slice().forEach((m) => closeModal(m.overlay));
+        if (mobileMQ.matches) setView('write');
+    }
+
+    document.getElementById('helpLoadExample').addEventListener('click', loadExampleScript);
+    document.getElementById('tourExample').addEventListener('click', loadExampleScript);
+
+    // --- Welcome tour: once, on first launch; replayable from Help ---
+    const TOUR_KEY = 'frictionless_onboarded';  // holds the tour version the writer has seen
+    const TOUR_VERSION = '1';                   // bump to show an updated tour to everyone again
+    const tourModal = document.getElementById('tour-modal');
+    const tourSteps = Array.from(tourModal.querySelectorAll('.tour-step'));
+    const tourDots = Array.from(tourModal.querySelectorAll('.tour-dots span'));
+    const tourBack = document.getElementById('tourBack');
+    const tourNext = document.getElementById('tourNext');
+    const tourSkip = document.getElementById('tourSkip');
+    let tourIndex = 0;
+
+    // The tour's sample is rendered by the real parser, so what it shows is what the app does
+    document.getElementById('tourRendered').innerHTML =
+        Fountain.toHTML(Fountain.parse(document.getElementById('tourSample').textContent));
+
+    function showTourStep(n) {
+        tourIndex = Math.max(0, Math.min(tourSteps.length - 1, n));
+        const last = tourIndex === tourSteps.length - 1;
+        tourSteps.forEach((s, i) => { s.hidden = i !== tourIndex; });
+        tourDots.forEach((d, i) => { if (i === tourIndex) d.setAttribute('aria-current', 'step'); else d.removeAttribute('aria-current'); });
+        tourBack.hidden = tourIndex === 0;
+        tourNext.hidden = last;
+        tourSkip.hidden = last;
+        tourModal.querySelector('.modal-body').scrollTop = 0;
+        document.getElementById('tour-title').textContent = last ? 'You\'re set' : 'Welcome';
+    }
+
+    function markTourSeen() {
+        try { localStorage.setItem(TOUR_KEY, TOUR_VERSION); } catch (e) { /* storage unavailable */ }
+    }
+
+    function openTour() {
+        showTourStep(0);
+        openModal(tourModal, { focus: '#tourNext', onClose: markTourSeen });
+    }
+
+    function maybeShowTour() {
+        let seen;
+        try { seen = localStorage.getItem(TOUR_KEY); } catch (e) { return; } // cannot remember it: don't nag every load
+        if (seen !== TOUR_VERSION) openTour();
+    }
+
+    tourNext.addEventListener('click', () => { showTourStep(tourIndex + 1); (tourNext.hidden ? document.getElementById('tourStart') : tourNext).focus({ preventScroll: true }); });
+    tourBack.addEventListener('click', () => { showTourStep(tourIndex - 1); (tourBack.hidden ? tourNext : tourBack).focus({ preventScroll: true }); });
+    document.getElementById('tourStart').addEventListener('click', () => {
+        closeModal(tourModal);
+        editor.focus({ preventScroll: true });
+    });
+    document.getElementById('helpTakeTour').addEventListener('click', () => {
+        closeModal(helpModal);
+        openTour();
+    });
 
     // --- Event Listeners ---
     saveBtn.addEventListener('click', () => saveScript(false));
@@ -764,16 +1378,8 @@
     window.addEventListener('pagehide', flushSave);
 
     libraryBtn.addEventListener('click', () => {
-        libraryModal.classList.add('active');
         loadLibrary();
-    });
-
-    modalClose.addEventListener('click', () => {
-        libraryModal.classList.remove('active');
-    });
-
-    libraryModal.addEventListener('click', (e) => {
-        if (e.target === libraryModal) libraryModal.classList.remove('active');
+        openModal(libraryModal);
     });
 
     // Generate physical text file export dynamically
@@ -798,9 +1404,121 @@
         URL.revokeObjectURL(url);
     });
 
+    // --- Typing helpers (P2-01..P2-03, P2-11). What to do is decided by src/editing.js; this applies it. ---
+    // elementMode is the element chosen for a line that has no text yet ('character' | 'scene' | 'transition'):
+    // a blank line cannot say what it is, so the page remembers, and uppercases what is typed on that line.
+    let elementMode = null;
+    let modeLine = -1;
+    let applyingEdit = false;   // our own edits fire input events; don't react to them as if the writer typed
+    let tabReleased = false;    // Esc then Tab lets keyboard users leave the editor
+    let shiftDown = false;
+    const elementBar = document.querySelector('.element-bar');
+    const elementButtons = Array.from(elementBar.querySelectorAll('.el-btn'));
+    const AUTO_CASE_INPUTS = ['insertText', 'insertReplacementText']; // typing, never paste / undo / composition
+
+    function caretLine() {
+        return editor.value.slice(0, editor.selectionStart).split('\n').length - 1;
+    }
+
+    // Replace part of the text the way typing would, so Ctrl/Cmd+Z undoes it. Assigning editor.value or using
+    // setRangeText would wipe the undo history; execCommand keeps it (deprecated but universal, and the only way).
+    function applyEdit(edit) {
+        const before = editor.value;
+        const expected = before.slice(0, edit.from) + edit.insert + before.slice(edit.to);
+        applyingEdit = true;
+        try {
+            editor.focus({ preventScroll: true });
+            editor.setSelectionRange(edit.from, edit.to);
+            let done = false;
+            try { done = document.execCommand('insertText', false, edit.insert); } catch (e) { done = false; }
+            if (!done || editor.value !== expected) {
+                editor.value = expected; // last resort (no undo): still leaves the text correct
+                editor.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            editor.setSelectionRange(edit.selStart, edit.selEnd);
+        } finally {
+            applyingEdit = false;
+        }
+    }
+
+    function commitElement(result) {
+        if (result.edit) applyEdit(result.edit);
+        else editor.focus({ preventScroll: true });
+        elementMode = result.mode;
+        modeLine = caretLine();
+        syncElementState();
+    }
+
+    function setElement(target) {
+        const r = Editing.setType(editor.value, editor.selectionStart, target, elementMode);
+        if (r) commitElement({ edit: r.edit, mode: r.mode });
+    }
+
+    function cycleElement(direction) {
+        const r = Editing.tab(editor.value, editor.selectionStart, direction, elementMode);
+        if (r) commitElement(r);
+    }
+
+    // Highlight what the current line is (or, on a blank line, what it is set to become)
+    let syncQueued = false;
+    function syncElementState() {
+        syncQueued = false;
+        const idx = caretLine();
+        if (elementMode && idx !== modeLine) elementMode = null;
+        let kind = Editing.kindAt(editor.value, idx);
+        if (kind === 'blank') kind = elementMode || (Editing.inDialogueBlock(editor.value, idx) ? 'dialogue' : 'action');
+        elementButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.el === kind)));
+    }
+    function scheduleSync() {
+        if (syncQueued) return;
+        syncQueued = true;
+        requestAnimationFrame(syncElementState);
+    }
+
+    elementBar.addEventListener('mousedown', (e) => e.preventDefault()); // a tap must not pull focus (and the keyboard) away
+    elementBar.addEventListener('click', (e) => {
+        const button = e.target.closest('.el-btn');
+        if (button) setElement(button.dataset.el);
+    });
+
+    editor.addEventListener('keydown', (e) => {
+        shiftDown = e.shiftKey;
+        if (e.isComposing) return;
+        if (e.key === 'Escape') { tabReleased = true; return; }
+        if (e.key === 'Tab' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+            if (tabReleased) { tabReleased = false; return; } // Esc, Tab: move focus on as usual
+            e.preventDefault();
+            cycleElement(e.shiftKey ? -1 : 1);
+            return;
+        }
+        if (e.key !== 'Shift') tabReleased = false;
+    });
+    editor.addEventListener('keyup', (e) => { shiftDown = e.shiftKey; scheduleSync(); });
+    editor.addEventListener('blur', () => { tabReleased = false; shiftDown = false; });
+    ['click', 'focus', 'pointerup'].forEach((name) => editor.addEventListener(name, scheduleSync));
+
+    // Enter. beforeinput rather than keydown: on-screen keyboards often send keydown as "Unidentified" but always
+    // announce the line break here. Shift+Enter is left alone, for a plain line break inside an element.
+    editor.addEventListener('beforeinput', (e) => {
+        if (applyingEdit || e.isComposing) return;
+        if (e.inputType !== 'insertLineBreak' && e.inputType !== 'insertParagraph') return;
+        if (shiftDown) return;
+        const edit = Editing.enter(editor.value, editor.selectionStart, editor.selectionEnd, elementMode);
+        if (!edit) return;
+        e.preventDefault();
+        applyEdit(edit);
+        elementMode = null;
+        syncElementState();
+    });
+
     // Rendering is handled by src/fountain.js (see D-003); render() is defined above.
-    editor.addEventListener('input', () => {
+    editor.addEventListener('input', (e) => {
+        if (!applyingEdit && !e.isComposing && AUTO_CASE_INPUTS.indexOf(e.inputType) !== -1) {
+            const edit = Editing.autoCase(editor.value, editor.selectionStart, elementMode);
+            if (edit) applyEdit(edit);
+        }
         render();
+        scheduleSync();
 
         // Quietly auto-save after 2 seconds of typing inactivity
         clearTimeout(autoSaveTimer);
@@ -816,6 +1534,8 @@
         restoreLastScript();
         render();
         fitToViewport();
+        syncElementState();
+        maybeShowTour();
     });
 
     // Copy functionality
