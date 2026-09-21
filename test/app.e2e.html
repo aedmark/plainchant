@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<!--
+  End-to-end checks for the app shell: restore on reload, New, library, flush-on-hide, scroll sync, escaping.
+
+  Loads ../index.html in an iframe and drives it. Open in a browser served over http, or from disk with
+  --allow-file-access-from-files. Results appear in the banner; the same text is in <pre id="out">.
+
+  The app's localStorage is shared by every page on the same origin, so this page snapshots the app's two
+  keys first and puts them back when finished. Still prefer a throwaway browser profile for `file://` runs.
+-->
+<html><head><meta charset="UTF-8"><title>NeuroFountain app e2e</title></head><body>
+<div id="banner" style="font:600 14px system-ui;padding:.5rem 1rem;color:#fff;background:#64748b">Running...</div>
+<iframe id="f" style="width:1000px;height:700px"></iframe>
+<pre id="out">RUNNING</pre>
+<script>
+const APP = '../index.html';
+const KEYS = ['frictionless_scripts', 'frictionless_current'];
+const f = document.getElementById('f');
+const log = [];
+const check = (name, cond, extra) => log.push((cond ? 'PASS ' : 'FAIL ') + name + (cond ? '' : '  -> ' + JSON.stringify(extra)));
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+const load = () => new Promise(r => { f.onload = () => setTimeout(r, 50); });
+const $ = (id) => f.contentDocument.getElementById(id);
+const W = () => f.contentWindow;
+
+(async () => {
+  let snapshot = null;
+  try {
+    f.src = APP; await load();
+    snapshot = KEYS.map(k => [k, W().localStorage.getItem(k)]);
+    KEYS.forEach(k => W().localStorage.removeItem(k));
+    f.contentWindow.location.reload(); await load();
+
+    // 1. Blank first run shows placeholder example, editor stays empty
+    check('blank editor on first run', $('editor').value === '', $('editor').value);
+    check('placeholder example is rendered', $('render-target').innerHTML.includes('script-scene-heading'));
+    check('no console-breaking globals: Fountain loaded', typeof W().Fountain === 'object');
+
+    // 2. Typing renders through the new parser
+    const script = 'Title: Test Film\n\nINT. A - DAY\n\nJOHN\nHi there.\n\nCUT TO:\n\n';
+    $('editor').value = script;
+    $('editor').dispatchEvent(new Event('input'));
+    const html = $('render-target').innerHTML;
+    check('dialogue block rendered', html.includes('script-dialogue-block'));
+    check('title page rendered', html.includes('script-title-page'));
+    check('transition rendered', html.includes('script-transition'));
+    check('no spacer elements', !html.includes('script-spacer'));
+
+    // 3. Nothing saved yet (autosave is 2s away); pagehide flushes immediately
+    check('not saved before flush', !W().localStorage.getItem('frictionless_scripts'));
+    W().dispatchEvent(new Event('pagehide'));
+    const saved = JSON.parse(W().localStorage.getItem('frictionless_scripts') || '{}');
+    const ids = Object.keys(saved);
+    check('pagehide flush saved one script', ids.length === 1, ids);
+    check('saved title comes from title page', ids.length && saved[ids[0]].title === 'Test Film', ids.length && saved[ids[0]].title);
+    check('current pointer stored', W().localStorage.getItem('frictionless_current') === ids[0]);
+
+    // 4. Reload restores the script and renders it
+    f.contentWindow.location.reload(); await load();
+    check('editor restored after reload', $('editor').value === script, $('editor').value);
+    check('preview restored after reload', $('render-target').innerHTML.includes('script-dialogue-block'));
+
+    // 5. Editing after restore updates the SAME script (no duplicate)
+    $('editor').value = script + 'More action.';
+    $('editor').dispatchEvent(new Event('input'));
+    await sleep(2300); // wait out the 2s autosave
+    const afterEdit = JSON.parse(W().localStorage.getItem('frictionless_scripts'));
+    check('autosave after restore keeps a single script', Object.keys(afterEdit).length === 1, Object.keys(afterEdit));
+    check('autosave stored the edit', afterEdit[ids[0]].content.endsWith('More action.'));
+
+    // 6. New starts blank, keeps old script, and blank survives reload
+    $('newBtn').click();
+    check('New clears editor', $('editor').value === '');
+    check('New keeps old script in library', Object.keys(JSON.parse(W().localStorage.getItem('frictionless_scripts'))).length === 1);
+    f.contentWindow.location.reload(); await load();
+    check('blank after New + reload (not the old script)', $('editor').value === '', $('editor').value);
+
+    // 7. Library reopens the old script and remembers it
+    $('libraryBtn').click();
+    const item = f.contentDocument.querySelector('#library-list .script-item');
+    check('library lists the script', !!item && item.textContent.includes('Test Film'));
+    item.click();
+    check('library click loads script', $('editor').value.includes('INT. A - DAY'));
+    f.contentWindow.location.reload(); await load();
+    check('library selection restored on reload', $('editor').value.includes('INT. A - DAY'));
+
+    // 8. Upgrade path: scripts exist but no pointer -> most recent restored
+    W().localStorage.removeItem('frictionless_current');
+    f.contentWindow.location.reload(); await load();
+    check('no pointer -> most recent script restored', $('editor').value.includes('INT. A - DAY'));
+
+    // 9. Scroll sync does not blow up or produce NaN when nothing overflows
+    $('editor').value = 'Short.';
+    $('editor').dispatchEvent(new Event('input'));
+    let threw = false;
+    try { $('editor').dispatchEvent(new Event('scroll')); } catch (e) { threw = true; }
+    check('scroll with no overflow: no throw', !threw);
+    check('scroll with no overflow: scrollTop is a finite number', Number.isFinite($('render-target').scrollTop), $('render-target').scrollTop);
+
+    // 10. Scroll sync still works when both panes overflow
+    $('editor').value = Array.from({length: 300}, (_, i) => 'Line ' + i + ' of action.\n').join('\n');
+    $('editor').dispatchEvent(new Event('input'));
+    $('editor').scrollTop = 1e6;
+    $('editor').dispatchEvent(new Event('scroll'));
+    const rt = $('render-target');
+    check('scroll sync moves preview to the bottom', rt.scrollTop > 0 && Math.abs(rt.scrollTop - (rt.scrollHeight - rt.clientHeight)) < 2, [rt.scrollTop, rt.scrollHeight, rt.clientHeight]);
+
+    // 11. XSS: HTML typed into the editor never becomes markup
+    $('editor').value = '<img src=x onerror="window.__pwned=1">\n\nJOHN\n<script>window.__pwned=1<\/script>';
+    $('editor').dispatchEvent(new Event('input'));
+    check('no injected elements', !$('render-target').querySelector('img, script'));
+    check('no injected execution', !W().__pwned);
+  } catch (e) {
+    log.push('FAIL exception: ' + e.message);
+  }
+  // Put the writer's real data back exactly as it was
+  try {
+    (snapshot || []).forEach(([k, v]) => v === null ? W().localStorage.removeItem(k) : W().localStorage.setItem(k, v));
+  } catch (e) { log.push('FAIL could not restore localStorage: ' + e.message); }
+
+  const failed = log.filter(l => l.startsWith('FAIL')).length;
+  const banner = document.getElementById('banner');
+  banner.style.background = failed ? '#b91c1c' : '#15803d';
+  banner.textContent = failed ? failed + ' FAILED' : 'ALL ' + log.length + ' PASSED';
+  document.getElementById('out').textContent = 'DONE\n' + log.join('\n');
+})();
+</script>
+</body></html>

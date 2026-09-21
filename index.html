@@ -175,20 +175,49 @@
             text-align: left; /* Enforce rigid left alignment */
         }
 
-        .script-scene-heading { text-transform: uppercase; font-weight: 700; margin-top: 1.5rem; margin-bottom: 1rem; }
-        .script-action { margin-bottom: 1rem; width: 100%; }
-        .script-character { text-transform: uppercase; margin-left: 22ch; margin-top: 1rem; margin-bottom: 0; }
-        .script-parenthetical { margin-left: 16ch; max-width: 15ch; margin-bottom: 0; }
-        .script-dialogue { margin-left: 10ch; max-width: 35ch; margin-bottom: 1rem; }
+        /* Spacing comes from margins only: the parser emits no spacer elements. */
+        .script-scene-heading { text-transform: uppercase; font-weight: 700; margin: 1.5rem 0 1rem; }
+        .script-scene-num { float: right; font-weight: 400; color: #6b7280; }
+        .script-action { margin: 0 0 1rem; width: 100%; white-space: pre-wrap; }
+
+        .script-dialogue-block { margin: 0 0 1rem; }
+        .script-character { text-transform: uppercase; margin-left: 22ch; }
+        .script-parenthetical { margin-left: 16ch; max-width: 15ch; }
+        .script-dialogue { margin-left: 10ch; max-width: 35ch; }
+
+        /* Dual dialogue: two blocks side by side, indents scaled down to fit half width */
+        .script-dual { display: flex; gap: 2ch; margin-bottom: 1rem; }
+        .script-dual .script-dialogue-block { flex: 1; min-width: 0; margin: 0; }
+        .script-dual .script-character { margin-left: 8ch; }
+        .script-dual .script-parenthetical { margin-left: 4ch; max-width: none; }
+        .script-dual .script-dialogue { margin-left: 0; max-width: none; }
 
         /* The nowrap ensures CUT TO: does not collapse under responsive pressure */
         .script-transition {
             text-transform: uppercase;
-            margin-left: 40ch;
-            margin-bottom: 1rem;
+            margin: 0 0 1rem 40ch;
             white-space: nowrap;
         }
-        .script-spacer { height: 1rem; }
+        .script-centered { text-align: center; margin: 0 0 1rem; }
+        .script-lyrics { font-style: italic; margin: 0 0 1rem; }
+        .script-page-break { border: 0; border-top: 1px dashed #cbd5e1; margin: 1.5rem 0; }
+        .script-note {
+            font-family: var(--font-ui); font-size: 0.75em; background: #fef9c3; color: #713f12;
+            padding: 0 0.3em; border-radius: 0.2rem;
+        }
+
+        /* Outline aids: visible while writing, not part of the screenplay itself */
+        .script-section {
+            font-family: var(--font-ui); font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.08em; color: #94a3b8; border-bottom: 1px solid var(--border-paper);
+            margin: 1.5rem 0 0.75rem; padding-bottom: 0.25rem;
+        }
+        .script-synopsis { font-family: var(--font-ui); font-size: 0.75rem; font-style: italic; color: #6b7280; margin: 0 0 1rem; }
+
+        .script-title-page { text-align: center; padding: 4rem 0 3rem; margin-bottom: 2rem; border-bottom: 1px dashed #cbd5e1; }
+        .script-title-page .tp-title { text-transform: uppercase; font-weight: 700; margin-bottom: 2rem; }
+        .script-title-page .tp-author { margin-bottom: 2rem; }
+        .script-title-page .tp-meta { margin-top: 1rem; font-size: 10pt; }
 
         /* Custom Scrollbars */
         ::-webkit-scrollbar { width: 8px; }
@@ -259,6 +288,7 @@
             <p>Just type. We handle the structure.</p>
         </div>
         <div class="button-group">
+            <button id="newBtn" class="btn">New</button>
             <button id="libraryBtn" class="btn">Library</button>
             <button id="saveBtn" class="btn">Save</button>
             <button id="exportBtn" class="btn">Export</button>
@@ -295,6 +325,7 @@
     </div>
 </div>
 
+<script src="src/fountain.js"></script>
 <script>
     const editor = document.getElementById('editor');
     const renderTarget = document.getElementById('render-target');
@@ -302,16 +333,31 @@
     const saveBtn = document.getElementById('saveBtn');
     const exportBtn = document.getElementById('exportBtn');
     const libraryBtn = document.getElementById('libraryBtn');
+    const newBtn = document.getElementById('newBtn');
     const libraryModal = document.getElementById('library-modal');
     const modalClose = document.getElementById('modal-close');
     const libraryList = document.getElementById('library-list');
 
-    let currentScriptId = crypto.randomUUID();
+    const SCRIPTS_KEY = 'frictionless_scripts';   // legacy prefix kept on purpose (D-005)
+    const CURRENT_KEY = 'frictionless_current';   // id of the script that was open last
+
+    // crypto.randomUUID is unavailable on plain-http origins (e.g. testing from a phone on the LAN)
+    function newId() {
+        if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+        return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+    }
+
+    let currentScriptId = newId();
+    let autoSaveTimer;
+
+    function render() {
+        renderTarget.innerHTML = Fountain.toHTML(Fountain.parse(editor.value || editor.getAttribute('placeholder')));
+    }
 
     // --- Local Storage Persistence ---
     function getScripts() {
         try {
-            const data = localStorage.getItem('frictionless_scripts');
+            const data = localStorage.getItem(SCRIPTS_KEY);
             return data ? JSON.parse(data) : {};
         } catch (e) {
             console.error("Failed to parse local storage", e);
@@ -319,13 +365,52 @@
         }
     }
 
+    function rememberCurrent() {
+        try { localStorage.setItem(CURRENT_KEY, currentScriptId); } catch (e) { /* storage unavailable */ }
+    }
+
+    // Reopen whatever was open last. With no pointer at all (first run after upgrading from the prototype)
+    // fall back to the most recently saved script. A pointer to a script that was never saved means the
+    // writer had just hit New, so start blank.
+    function restoreLastScript() {
+        let pointer = null;
+        try { pointer = localStorage.getItem(CURRENT_KEY); } catch (e) { /* storage unavailable */ }
+        const scripts = getScripts();
+
+        let script = pointer ? scripts[pointer] : null;
+        if (!pointer) {
+            script = Object.values(scripts).sort((a, b) => b.updatedAt - a.updatedAt)[0] || null;
+        }
+
+        if (script) {
+            currentScriptId = script.id;
+            editor.value = script.content;
+        } else if (pointer) {
+            currentScriptId = pointer;
+        }
+        rememberCurrent();
+    }
+
+    function startNewScript() {
+        flushSave();
+        currentScriptId = newId();
+        editor.value = '';
+        rememberCurrent();
+        render();
+        editor.focus();
+    }
+
+    // Save immediately, skipping the autosave delay. Used when the page is about to go away.
+    function flushSave() {
+        clearTimeout(autoSaveTimer);
+        if (editor.value.trim()) saveScript(true);
+    }
+
     function saveScript(isAuto = false) {
         const rawText = editor.value;
         if (!rawText.trim()) return;
 
-        // Intelligently extract the first line as a title
-        const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-        const title = lines.length > 0 ? lines[0].substring(0, 40) : "Untitled Script";
+        const title = Fountain.extractTitle(rawText);
 
         const originalText = saveBtn.innerText;
         if (!isAuto) {
@@ -340,7 +425,8 @@
                 content: rawText,
                 updatedAt: Date.now()
             };
-            localStorage.setItem('frictionless_scripts', JSON.stringify(scripts));
+            localStorage.setItem(SCRIPTS_KEY, JSON.stringify(scripts));
+            rememberCurrent();
 
             if (!isAuto) {
                 saveBtn.innerText = "Saved!";
@@ -378,18 +464,19 @@
                 const item = document.createElement('div');
                 item.className = 'script-item';
 
-                // Basic HTML escaping for safety
-                const safeTitle = script.title.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                const safePreview = script.content.substring(0, 60).replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                const safeTitle = Fountain.escapeHTML(script.title);
+                const safePreview = Fountain.escapeHTML(script.content.substring(0, 60));
 
                 item.innerHTML = `
                     <div class="script-title">${safeTitle}</div>
                     <div class="script-preview">${safePreview}...</div>
                 `;
                 item.addEventListener('click', () => {
+                    flushSave();
                     currentScriptId = script.id;
                     editor.value = script.content;
-                    renderTarget.innerHTML = parseScript(script.content);
+                    rememberCurrent();
+                    render();
                     libraryModal.classList.remove('active');
                 });
                 libraryList.appendChild(item);
@@ -402,6 +489,13 @@
 
     // --- Event Listeners ---
     saveBtn.addEventListener('click', () => saveScript(false));
+    newBtn.addEventListener('click', startNewScript);
+
+    // The last 2 s of typing would otherwise be lost if the tab closes or the phone backgrounds the page
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') flushSave();
+    });
+    window.addEventListener('pagehide', flushSave);
 
     libraryBtn.addEventListener('click', () => {
         libraryModal.classList.add('active');
@@ -438,85 +532,9 @@
         URL.revokeObjectURL(url);
     });
 
-    // The Linguist's Parsing Engine
-    function parseScript(text) {
-        const lines = text.split('\n');
-        let htmlOutput = '';
-        let isDialogueBlock = false;
-
-        for (let i = 0; i < lines.length; i++) {
-            let line = lines[i].trim();
-
-            // Empty lines reset the dialogue state and add a blank space
-            if (line === '') {
-                htmlOutput += '<div class="script-spacer"></div>';
-                isDialogueBlock = false;
-                continue;
-            }
-
-            // Scene Headings: Starts with INT., EXT., INT/EXT.
-            if (/^(INT\.|EXT\.|INT\/EXT\.|EST\.)/i.test(line)) {
-                htmlOutput += `<div class="script-scene-heading">${escapeHTML(line)}</div>`;
-                isDialogueBlock = false;
-            }
-            // Opening Fade (Flush Left)
-            else if (/^FADE IN[:\.]?$/i.test(line)) {
-                htmlOutput += `<div class="script-action" style="text-transform: uppercase;">${escapeHTML(line)}</div>`;
-                isDialogueBlock = false;
-            }
-            // Transitions: Explicit (>), strict endings, or known cinematic transitions
-            else if (line.startsWith('>') ||
-                /^[A-Z\s]+(TO[:\.]|OUT[:\.]|CUT[:\.]|BLACK[:\.]|WHITE[:\.])$/.test(line) ||
-                /^(FADE OUT|CUT TO|DISSOLVE TO|SMASH CUT|MATCH CUT)/.test(line)) {
-                let text = line.startsWith('>') ? line.substring(1).trim() : line;
-                htmlOutput += `<div class="script-transition">${escapeHTML(text)}</div>`;
-                isDialogueBlock = false;
-            }
-            // Characters: All uppercase, not a scene heading or transition keyword, followed by a non-empty line
-            else if (/^[A-Z0-9\s\(\)\.\-]+$/.test(line) &&
-                /[A-Z]/.test(line) && // Must contain at least one letter
-                !/^(INT\.|EXT\.|EST\.|FADE\b|CUT\b|SMASH\b|MATCH\b|DISSOLVE\b)/i.test(line) &&
-                i + 1 < lines.length && lines[i+1].trim() !== '') {
-
-                htmlOutput += `<div class="script-character">${escapeHTML(line)}</div>`;
-                isDialogueBlock = true;
-            }
-            // Parenthetical: Must be inside a dialogue block, starts with (, ends with )
-            else if (isDialogueBlock && line.startsWith('(') && line.endsWith(')')) {
-                htmlOutput += `<div class="script-parenthetical">${escapeHTML(line)}</div>`;
-            }
-            // Dialogue: Anything immediately following a Character or Parenthetical
-            else if (isDialogueBlock) {
-                htmlOutput += `<div class="script-dialogue">${escapeHTML(line)}</div>`;
-            }
-            // Action: Everything else
-            else {
-                htmlOutput += `<div class="script-action">${escapeHTML(line)}</div>`;
-                isDialogueBlock = false; // Breaking the block just in case
-            }
-        }
-
-        return htmlOutput;
-    }
-
-    // Utility: Prevent XSS and format text safely
-    function escapeHTML(str) {
-        return str.replace(/[&<>'"]/g,
-            tag => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                "'": '&#39;',
-                '"': '&quot;'
-            }[tag] || tag)
-        );
-    }
-
-    let autoSaveTimer;
-
+    // Rendering is handled by src/fountain.js (see D-003); render() is defined above.
     editor.addEventListener('input', () => {
-        const rawText = editor.value || editor.getAttribute('placeholder');
-        renderTarget.innerHTML = parseScript(rawText);
+        render();
 
         // Quietly auto-save after 2 seconds of typing inactivity
         clearTimeout(autoSaveTimer);
@@ -527,11 +545,10 @@
         }, 2000);
     });
 
-    // Initialize with placeholder text on load
+    // Reopen the last script (or show the placeholder example on a blank editor)
     window.addEventListener('DOMContentLoaded', () => {
-        // Authenticate call removed. The system is entirely local.
-        const initialText = editor.value || editor.getAttribute('placeholder');
-        renderTarget.innerHTML = parseScript(initialText);
+        restoreLastScript();
+        render();
     });
 
     // Copy functionality
@@ -551,9 +568,12 @@
     });
 
     // Sync scrolling (Optional but helpful for large documents)
+    // A pane that does not overflow has a scroll range of 0; dividing by it produced NaN
     editor.addEventListener('scroll', () => {
-        const scrollPercentage = editor.scrollTop / (editor.scrollHeight - editor.clientHeight);
-        renderTarget.scrollTop = scrollPercentage * (renderTarget.scrollHeight - renderTarget.clientHeight);
+        const editorRange = editor.scrollHeight - editor.clientHeight;
+        const renderRange = renderTarget.scrollHeight - renderTarget.clientHeight;
+        if (editorRange <= 0 || renderRange <= 0) return;
+        renderTarget.scrollTop = (editor.scrollTop / editorRange) * renderRange;
     });
 </script>
 </body>

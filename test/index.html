@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NeuroFountain tests</title>
+    <style>
+        body { font: 14px/1.5 system-ui, sans-serif; margin: 2rem; max-width: 60rem; }
+        #banner { padding: .75rem 1rem; border-radius: .375rem; font-weight: 600; color: #fff; }
+        #banner.pass { background: #15803d; }
+        #banner.fail { background: #b91c1c; }
+        ul { list-style: none; padding: 0; }
+        li { padding: .2rem 0; }
+        li.ok::before { content: "\2713  "; color: #15803d; }
+        li.fail::before { content: "\2717  "; color: #b91c1c; }
+        li.fail { color: #b91c1c; }
+        .err { display: block; margin-left: 1.5rem; font-family: monospace; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+<h1>NeuroFountain tests</h1>
+<div id="banner">Running...</div>
+<ul id="results"></ul>
+
+<script src="harness.js"></script>
+<script src="../src/fountain.js"></script>
+<script src="fountain.test.js"></script>
+<script>
+    const results = runTests();
+    const failed = results.filter(r => !r.ok).length;
+    const banner = document.getElementById('banner');
+    banner.className = failed ? 'fail' : 'pass';
+    banner.textContent = failed
+        ? failed + ' of ' + results.length + ' FAILED'
+        : 'ALL ' + results.length + ' PASSED';
+    const list = document.getElementById('results');
+    results.forEach(r => {
+        const li = document.createElement('li');
+        li.className = r.ok ? 'ok' : 'fail';
+        li.textContent = r.name;
+        if (!r.ok) {
+            const e = document.createElement('span');
+            e.className = 'err';
+            e.textContent = r.error;
+            li.appendChild(e);
+        }
+        list.appendChild(li);
+    });
+</script>
+</body>
+</html>

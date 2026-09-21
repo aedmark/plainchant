@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.html",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/run.js",
+    "test:browser": "powershell -NoProfile -ExecutionPolicy Bypass -File test/run-headless.ps1"
   },
   "private": true
 }
