@@ -189,6 +189,8 @@ e2e check fails if "NeuroFountain" or "SLASH" reappears in `index.html`.
 **Deliberately unchanged:** the project folder is still `NeuroFountain` (renaming it disturbs the PyCharm project;
 the owner's call), the `frictionless_*` storage keys (D-005), and the Void / Canvas pane names.
 **Consequences:** Domain registration, trademark search and a logo are the owner's follow-ups (roadmap P6-01..03).
+**Update, same day:** the owner renamed the GitHub repo to `plainchant` and re-cloned into a `plainchant` folder, so
+the "deliberately unchanged" folder name above no longer applies (roadmap P6-04). The rest stands.
 
 ## Open questions
 

@@ -14,8 +14,9 @@ _Last updated: 2026-09-20, end of session 5 (naming)._
 **What works**
 - **The app is called Plainchant** (D-012): page title, the welcome dialog ("Welcome to Plainchant"), the first line
   of Help plus a one-line note on what the word means, `package.json` (`plainchant`), doc headings and test page
-  titles. An e2e check fails if "NeuroFountain" or "SLASH" reappears in `index.html`. The project *folder* is still
-  `NeuroFountain`.
+  titles. An e2e check fails if "NeuroFountain" or "SLASH" reappears in `index.html`. The GitHub repo is
+  `aedmark/plainchant` and the project now lives in a folder called `plainchant` (re-cloned 2026-09-20; the old
+  `NeuroFountain` folder is retired).
 - **Onboarding and help** (D-011). **Welcome tour**: opens by itself on first launch (four skippable steps, wording
   adapts to touch vs keyboard, live-rendered sample, ends with Start writing / Open the example script). Remembered
   in `frictionless_onboarded`; replay it from Help. **Help window**: Start here, Screenplay elements (cheat sheet),
@@ -110,14 +111,19 @@ _Last updated: 2026-09-20, end of session 5 (naming)._
   what follows before it will call something a cue or a transition. Change it with care; the property test in
   `test/editing.test.js` ("the parser agrees afterwards") is the safety net.
 - `frictionless_*` localStorage keys are legacy naming and must stay (D-005).
-- **Git remote:** `origin` is `https://github.com/aedmark/NeuroFountain.git`. As of the end of session 5 local
-  `master` is **5 commits ahead and nothing from sessions 1-5 has been pushed**. The `gh` CLI is not installed.
-  Commits are authored `gknot <oopismcgoopis@gmail.com>` (no git identity is configured; pass it with `-c`).
-  Renaming to Plainchant, in this order: (1) owner renames the repo on GitHub (Settings > General > Repository
-  name; GitHub redirects the old URL); (2) `git remote set-url origin https://github.com/aedmark/plainchant.git`;
-  (3) push (ask first: it publishes the code); (4) optionally rename the *folder* by closing the project in PyCharm
-  and using Refactor > Rename (it updates `.idea/`), not from a Claude session working in that folder, whose working
-  directory and project-memory path are tied to the old name. The docs in this repo carry the context across.
+- **Git and the repo:** `origin` is `https://github.com/aedmark/plainchant.git` (renamed on GitHub by the owner,
+  who also re-cloned into a fresh `plainchant` folder). Everything through `4d9fe13` is pushed and in sync. The
+  `gh` CLI is not installed, so GitHub-side changes (renames, settings) are the owner's to make. **Git working
+  agreement (owner's preference):** commit finished, tested work without asking, with a normal message; never
+  force-push or rewrite history; push when asked (it publishes the code). The fresh clone has a git identity
+  configured (`Gordon Knot`), so plain `git commit` works; early commits were authored `gknot
+  <oopismcgoopis@gmail.com>` from before that. The owner also commits and pushes from PyCharm, often with the
+  message "0"; expect that in `git log`.
+- Claude Code project memory is keyed by folder path, so the renamed folder starts with none. That is fine: the
+  docs in this repo (this file, ROADMAP, DECISIONS, CLAUDE.md) are the memory. Do not rely on anything else.
+- Do not run a bulk find-and-replace of "NeuroFountain" over the docs: the old name appears deliberately in D-012
+  and in the session logs as history, and a replace once turned two sentences there into nonsense (caught in the
+  retired folder before it was committed).
 - **Every e2e frame must set `frictionless_onboarded` first**, or the tour opens in it and blocks the test. The
   e2e page does this once at the start (and snapshots/restores the key with the others). New test files that load
   the app need the same.
@@ -157,8 +163,8 @@ _Last updated: 2026-09-20, end of session 5 (naming)._
 
 ## Open questions for the user
 
-- ~~What is the product called?~~ **Plainchant** (D-012). Still open for the owner: register a domain, do a proper
-  trademark search, make a logo (roadmap Phase 6), and whether to rename the project folder.
+- ~~What is the product called?~~ **Plainchant** (D-012). Repo and folder renamed. Still open for the owner:
+  register a domain, do a proper trademark search, make a logo (roadmap Phase 6).
 - Is the tour the right length and tone (four steps), and is showing it once to existing users too?
 - Enter after an action line starts a new paragraph (Shift+Enter for a line break). Right default?
 - Cues need Tab or the Character button. Is that acceptable, or should "a short unpunctuated line after a blank
@@ -192,7 +198,12 @@ Newest first. Copy the template for each new session.
 - An early domain check included `.write`, which is not a real TLD, so those rows meant nothing (noted at the time).
 - DNS "no answer" is a hint, not availability. No trademark clearance was done (D-012).
 
-**Left undone:** Domain, trademark search, logo, folder rename (Phase 6). Tour / Help copy still needs the user's read.
+**After the rename:** the user renamed the GitHub repo to `plainchant`, committed the doc corrections (`4d9fe13`),
+pushed, and re-cloned into a fresh `plainchant` folder, which is now the working directory. The fresh clone was
+verified from scratch: `npm test` 94/94, browser suites 94 unit + 267 e2e, clean tree. The user also said to be
+less protective about git (commit finished work without asking); recorded above under "Git working agreement".
+
+**Left undone:** Domain, trademark search, logo (Phase 6). Tour / Help copy still needs the user's read.
 
 **Next session should start with:** "Next steps" above.
 
