@@ -9,29 +9,47 @@
 const copyBtn = document.getElementById('copyBtn');
 const exportBtn = document.getElementById('exportBtn');
 
-// Generate physical text file export dynamically
-exportBtn.addEventListener('click', () => {
-    const rawText = editor.value;
-    if (!rawText.trim()) return;
+// Brief confirmation on a button ("Copied!", "Exported!"). The original label is remembered once, so clicking again
+// before it reverts cannot leave the button stuck on the confirmation.
+const flashTimers = new WeakMap();
+function flashButton(button, label, ok = true) {
+    if (!button.dataset.label) button.dataset.label = button.innerText;
+    button.innerText = label;
+    button.classList.toggle('success', ok);
+    clearTimeout(flashTimers.get(button));
+    flashTimers.set(button, setTimeout(() => {
+        button.innerText = button.dataset.label;
+        button.classList.remove('success');
+    }, 2000));
+}
 
-    const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-    const title = lines.length > 0 ? lines[0].substring(0, 40).replace(/[^a-z0-9]/gi, '_').toLowerCase() : "untitled_script";
-
-    const blob = new Blob([rawText], { type: 'text/plain' });
+// Hands `text` to the browser as a file download. Global on purpose: the e2e tests replace it to capture exports.
+function downloadText(filename, text) {
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
 
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${title}.txt`;
-
-    document.body.appendChild(a);
+    a.download = filename;
+    document.body.appendChild(a); // some browsers only honour the click on a link that is in the page
     a.click();
-
     document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-});
 
-// Copy functionality
+    // Some browsers (iOS Safari) start the download just after click() returns, so don't revoke at once
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// Export: the whole script as a .fountain file named after its title (P3-01). Fountain is plain text, so any text
+// editor opens the file too, and screenwriting apps that read Fountain open it as a script.
+function exportScript() {
+    const text = editor.value;
+    if (!text.trim()) { flashButton(exportBtn, 'Nothing to export', false); return; }
+    downloadText(Fountain.fileName(text), text.replace(/\n*$/, '\n')); // a text file ends with exactly one newline
+    flashButton(exportBtn, 'Exported!');
+}
+
+exportBtn.addEventListener('click', exportScript);
+
 // The async Clipboard API works even while the textarea is hidden (previewing on a phone) but needs a secure
 // context; fall back to selecting the textarea and execCommand elsewhere (e.g. plain http on a LAN).
 async function copyText(text) {
@@ -46,14 +64,5 @@ async function copyText(text) {
 
 copyBtn.addEventListener('click', async () => {
     const ok = await copyText(editor.value);
-
-    // Brief UI feedback
-    const originalText = copyBtn.innerText;
-    copyBtn.innerText = ok ? "Copied!" : "Copy failed";
-    copyBtn.classList.toggle('success', ok);
-
-    setTimeout(() => {
-        copyBtn.innerText = originalText;
-        copyBtn.classList.remove('success');
-    }, 2000);
+    flashButton(copyBtn, ok ? 'Copied!' : 'Copy failed', ok);
 });

@@ -7,6 +7,7 @@
  *   Fountain.toHTML(tokens)   -> HTML string (all user text escaped)
  *   Fountain.extractTitle(t)  -> best-effort script title, capped for list labels (Fountain.fullTitle: uncapped)
  *   Fountain.setTitle(t, s)   -> the text with its Title: line set to s (creates the title page if there is none)
+ *   Fountain.fileName(t, ext) -> a safe file name for exporting t, e.g. "big-fish.fountain"
  *   Fountain.classifyLines(t) -> one type per source line, for the editor (see src/editing.js)
  *
  * Follows Fountain 1.1 (https://fountain.io/syntax). Deliberately strict about case: lowercase cues are action (D-004).
@@ -372,8 +373,27 @@
         return lines.join('\n');
     }
 
+    /**
+     * A safe, readable file name for exporting `text`: its title in lowercase words joined by hyphens, plus the
+     * extension (default "fountain"). Letters from any language are kept; everything else, including path
+     * separators, becomes a hyphen. Long titles are cut at a word boundary. Names Windows reserves (CON, NUL,
+     * COM1...) get a "script-" prefix, and an empty result becomes "untitled".
+     */
+    function fileName(text, ext) {
+        const extension = String(ext || 'fountain').replace(/^\./, '');
+        let slug = fullTitle(text).replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').toLowerCase();
+        if (slug.length > 60) {
+            let cut = slug.slice(0, 60);
+            if (slug[60] !== '-' && cut.indexOf('-') !== -1) cut = cut.replace(/-[^-]*$/, ''); // don't end mid-word
+            slug = cut.replace(/-+$/, '');
+        }
+        if (!slug) slug = 'untitled';
+        if (/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/.test(slug)) slug = 'script-' + slug;
+        return slug + '.' + extension;
+    }
+
     return {
         parse: parse, toHTML: toHTML, extractTitle: extractTitle, fullTitle: fullTitle, setTitle: setTitle,
-        classifyLines: classifyLines, escapeHTML: escapeHTML, inline: inline
+        fileName: fileName, classifyLines: classifyLines, escapeHTML: escapeHTML, inline: inline
     };
 });

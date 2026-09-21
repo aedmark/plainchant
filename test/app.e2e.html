@@ -616,6 +616,50 @@ const W = () => f.contentWindow;
     check('library: clicking the backdrop closes it', active(lf).length === 0);
     lf.remove();
 
+    // 15b. Export and Copy (P3-01): the real download path is exercised, with the browser's file-saving swapped for
+    // a recorder in the page under test.
+    const xf = await openFrame(1200, 700);
+    const xw = xf.contentWindow;
+    let blobSeen = null, linkSeen = null;
+    xw.URL.createObjectURL = (b) => { blobSeen = b; return 'blob:test'; };
+    xw.URL.revokeObjectURL = () => {};
+    xw.HTMLAnchorElement.prototype.click = function () { linkSeen = { download: this.download, href: this.href, inPage: xw.document.body.contains(this) }; };
+    const exportBtnEl = fid(xf, 'exportBtn');
+
+    setText(xf, 'Title: Big Fish\n\nFADE IN:\n\n\n');
+    exportBtnEl.click();
+    check('export: downloads a .fountain file named after the script\'s title', !!linkSeen && linkSeen.download === 'big-fish.fountain', linkSeen);
+    check('export: the file is UTF-8 plain text holding exactly the script, ending in a single newline',
+      !!blobSeen && blobSeen.type === 'text/plain;charset=utf-8' && (await blobSeen.text()) === 'Title: Big Fish\n\nFADE IN:\n');
+    check('export: the temporary link is in the page while clicked and gone afterwards', linkSeen.inPage && !xf.contentDocument.querySelector('a[download]'));
+    check('export: the button confirms', exportBtnEl.innerText === 'Exported!' && exportBtnEl.classList.contains('success'));
+    await sleep(2100);
+    check('export: and goes back to its label', exportBtnEl.innerText === 'Export' && !exportBtnEl.classList.contains('success'), exportBtnEl.innerText);
+
+    linkSeen = null;
+    setText(xf, 'INT. HOUSE - DAY\nHe waits.');
+    exportBtnEl.click();
+    check('export: a script with no title page is named after its first line', linkSeen && linkSeen.download === 'int-house-day.fountain', linkSeen);
+    setText(xf, 'Title: Café Amélie / Part 2\n\nText');
+    exportBtnEl.click();
+    check('export: accents survive and slashes cannot reach the file system', linkSeen.download === 'café-amélie-part-2.fountain', linkSeen.download);
+
+    linkSeen = null;
+    setText(xf, '   \n ');
+    exportBtnEl.click();
+    check('export: an empty script downloads nothing and says so', linkSeen === null && exportBtnEl.innerText === 'Nothing to export' && !exportBtnEl.classList.contains('success'));
+    await sleep(2100);
+    check('export: then the label comes back', exportBtnEl.innerText === 'Export');
+
+    const copyBtnEl = fid(xf, 'copyBtn');
+    copyBtnEl.click();
+    copyBtnEl.click();
+    await sleep(150);
+    check('copy: confirms with a message', /Copied!|Copy failed/.test(copyBtnEl.innerText), copyBtnEl.innerText);
+    await sleep(2100);
+    check('copy: clicking twice quickly never leaves the button stuck on the confirmation', copyBtnEl.innerText === 'Copy' && !copyBtnEl.classList.contains('success'), copyBtnEl.innerText);
+    xf.remove();
+
     // 16. Library management (P3-07): search, rename, duplicate, delete with Recently deleted. These frames use the
     // app's real saving (the other sections neutralise it), because persistence is the point.
     // Earlier frames may still have an autosave pending and share this storage: silence them so they cannot write

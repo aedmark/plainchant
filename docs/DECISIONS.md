@@ -234,6 +234,20 @@ new file (or a section of the right one), not more lines in `index.html`. This i
 files can still touch each other's globals. If that becomes a problem, the next step is a single `App` namespace
 object, which would also mean changing what the tests reach for.
 
+## D-015 Export is a .fountain file named after the script's title  (2026-09-20, status: accepted)
+**Context:** Export produced a `.txt` file named after the first line, lowercased with underscores (P3-01). Writers
+moving a script to another screenwriting app need `.fountain`, and the name should be the script's, not a guess.
+**Decision:** Export downloads `<title>.fountain` (UTF-8, LF, ending in exactly one newline). The name comes from the
+title (the `Title:` line, else the first line) through `Fountain.fileName`: lowercase words joined by hyphens, letters
+from any language kept, everything else (including path separators) turned into hyphens, long titles cut at a word
+boundary (60 characters), Windows-reserved names such as CON or NUL prefixed with `script-`, an empty result named
+`untitled`. There is one Export action, not a `.txt` / `.fountain` choice: a `.fountain` file is plain text and opens
+in any editor.
+**Consequences:** Anyone who wanted `.txt` renames the file. `downloadText(filename, text)` is a global function so
+tests can replace the browser's file saving. The object URL is revoked after a second, not at once, because iOS Safari
+can start the download just after `click()` returns. The Export and Copy buttons share `flashButton`, which also fixed
+a bug where clicking Copy twice quickly could leave the label stuck on "Copied!".
+
 ## Open questions
 
 - Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

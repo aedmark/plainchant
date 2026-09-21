@@ -60,13 +60,13 @@ _Last updated: 2026-09-20, end of session 6 (Library management)._
 - Scroll sync no longer divides by zero.
 
 **Verified**
-- `npm test` passes under Node 24: 136 tests (53 parser incl. setTitle, 53 typing helpers incl. diffEdit, 23
-  library, 7 app-script structure). The browser runner runs the 129 that need no file access.
+- `npm test` passes under Node 24: 143 tests (60 parser incl. setTitle and fileName, 53 typing helpers incl.
+  diffEdit, 23 library, 7 app-script structure). The browser runner runs the 136 that need no file access.
 - Library mutation-tested: removing the guard against autosave writing into a deleted script fails the two-tab
   test; reusing a deleted script's id on reload fails; a 30-day boundary off by one fails a unit test; hard-deleting
   instead of soft-deleting crashes the Library section (an exception), so it cannot pass. (The first attempt at the autosave-guard mutation failed *nothing*, which
   exposed that the two-tab scenario was untested; it now is.)
-- `npm run test:browser` passes: the same 129 unit tests + 319 app end-to-end checks (headless Edge, throwaway
+- `npm run test:browser` passes: the same 136 unit tests + 330 app end-to-end checks (headless Edge, throwaway
   profile). Frames: a 375px phone, the preview-column position at desktop/phone/1800px, tablets at 640-810px
   (one pane) and 1024-1366px (split, no clipping), a 1200px desktop frame for the typing helpers (Tab, Enter,
   Shift+Enter, auto-uppercase, buttons, undo, Esc+Tab, mode lifetime) and for the tour and Help (first launch,
@@ -171,7 +171,7 @@ _Last updated: 2026-09-20, end of session 6 (Library management)._
    needing a Tab). Adjust or add settings (P2-15) / cue suggestions (P2-14) accordingly.
 3. **P2-04** autocomplete of character names and locations. The natural next typing helper now that cues exist:
    in Character mode, offer names already used in the script.
-4. **P3-01** `.fountain` export is a five-minute win worth taking early. (Library management, P3-07, is done.)
+4. **P3-03** print stylesheet / PDF is the next output step (P3-01 export and P3-07 library management are done).
 5. **P4-09** the inline stylesheet (~770 lines) is now what makes `index.html` long; extract it when convenient.
    (P4-08, splitting the script, is done.)
 
@@ -201,6 +201,22 @@ code line exists exactly once (826 in; 827 out = two section-comment lines repla
 "Wiring" markers). All 319 e2e checks and 129 unit tests passed unchanged. `index.html` went from 1,931 to 1,019
 lines. New `test/structure.test.js` (7 tests, Node only) guards the load list, duplicate declarations, inline
 scripts, syntax, file size and headers; each guard was mutation-checked.
+
+**Done (part 2, export):** P3-01 (D-015). Export now downloads `<title>.fountain` (was `.txt` named after the first
+line). New `Fountain.fileName` (7 tests, written first and seen failing): readable slug, any-language letters kept,
+path characters neutralised, 60-char word-boundary cap, Windows reserved names prefixed, `untitled` fallback.
+`downloadText` / `exportScript` / `flashButton` in `src/app/export.js`; 11 new e2e checks exercise the real download
+path (blob type and contents, the temporary link, naming from a title and from a first line, accents, the empty
+case, labels reverting). Help updated. Fixed a real Copy bug found on the way: two quick clicks could leave the
+button stuck on "Copied!" (reproduced by mutation, now tested).
+
+**Problems / surprises**
+- The editor reported `index.html` "modified on disk" mid-session; `git diff` showed only my own change, so no
+  concurrent edits were swept into a commit. Worth checking every time that note appears.
+- `.txt` is gone as an export format. If that matters to the user, P3-10 is the place to add a choice.
+
+**Left undone:** Export is untested on real iOS / Android downloads (the delayed `revokeObjectURL` is the
+precaution, not an observation). PDF / print (P3-03). The user is proofing the Tour / Help copy next.
 
 **Also this session:** pushed the Library commit (`cdafa4d`).
 

@@ -325,3 +325,48 @@ test('fullTitle is not truncated; extractTitle caps at 40 for list labels', () =
     assert.equal(Fountain.fullTitle('  \n '), '');
     assert.equal(Fountain.extractTitle('  \n '), 'Untitled Script');
 });
+
+// ---------- fileName (Export) ----------
+
+test('fileName: the title makes a readable file name', () => {
+    assert.equal(Fountain.fileName('Title: Big Fish\n\nFADE IN:'), 'big-fish.fountain');
+    assert.equal(Fountain.fileName('INT. KITCHEN - DAY\nHi.'), 'int-kitchen-day.fountain'); // no title page: the first line
+    assert.equal(Fountain.fileName('Title: _Big_ **Fish**\n\nX'), 'big-fish.fountain');
+});
+
+test('fileName: punctuation and slashes cannot reach the file system', () => {
+    assert.equal(Fountain.fileName('Title: A/B: "C"?*<>|\ D'), 'a-b-c-d.fountain');
+    assert.equal(Fountain.fileName('Title: ../../etc/passwd'), 'etc-passwd.fountain');
+});
+
+test('fileName: letters from any language are kept', () => {
+    assert.equal(Fountain.fileName('Title: Caf\u00e9 Am\u00e9lie'), 'caf\u00e9-am\u00e9lie.fountain');
+    assert.equal(Fountain.fileName('Title: \u5927\u9b5a'), '\u5927\u9b5a.fountain');
+});
+
+test('fileName: nothing usable gives "untitled"', () => {
+    assert.equal(Fountain.fileName(''), 'untitled.fountain');
+    assert.equal(Fountain.fileName('  \n  '), 'untitled.fountain');
+    assert.equal(Fountain.fileName('Title: !!! ???'), 'untitled.fountain');
+});
+
+test('fileName: names Windows will not accept are prefixed', () => {
+    assert.equal(Fountain.fileName('Title: CON'), 'script-con.fountain');
+    assert.equal(Fountain.fileName('Title: nul'), 'script-nul.fountain');
+    assert.equal(Fountain.fileName('Title: COM3'), 'script-com3.fountain');
+    assert.equal(Fountain.fileName('Title: Con Air'), 'con-air.fountain'); // only the bare reserved word
+});
+
+test('fileName: long titles are cut at a word boundary, never with a trailing hyphen', () => {
+    const name = Fountain.fileName('Title: ' + 'wonderful '.repeat(12));
+    const slug = name.replace('.fountain', '');
+    assert.ok(slug.length <= 60, slug.length + ' chars');
+    assert.ok(!/-$/.test(slug) && !/^-/.test(slug));
+    assert.ok(/^(wonderful-)*wonderful$/.test(slug), slug); // whole words only
+    assert.equal(Fountain.fileName('Title: ' + 'x'.repeat(100)).replace('.fountain', '').length, 60); // one huge word is cut at 60
+});
+
+test('fileName: the extension can be chosen, with or without the dot', () => {
+    assert.equal(Fountain.fileName('Title: Big Fish', 'txt'), 'big-fish.txt');
+    assert.equal(Fountain.fileName('Title: Big Fish', '.txt'), 'big-fish.txt');
+});
