@@ -5,7 +5,7 @@
     <!-- viewport-fit: draw under notches (padded via env(safe-area-*)); interactive-widget: the on-screen keyboard
          resizes the layout instead of covering it (Chromium; Safari is handled by the visualViewport code below) -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-    <title>SLASH Frictionless Screenwriter</title>
+    <title>Plainchant: screenwriting without the formatting</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
@@ -725,7 +725,7 @@
 
             <section class="help-section" data-section="start">
                 <h3>Just type</h3>
-                <p>Write your script as plain text in the <strong>Void</strong> (the <strong>Write</strong> view on a phone or
+                <p>Plainchant is for writing the scene and leaving the formatting to it. Write your script as plain text in the <strong>Void</strong> (the <strong>Write</strong> view on a phone or
                     portrait tablet). The <strong>Canvas</strong> (<strong>Preview</strong>) shows it formatted as a screenplay,
                     live. There are no margins or styles to set up: the structure comes from what you type.</p>
                 <p>Tell the editor what you are writing with <kbd>Tab</kbd> or the bar under the text (Scene, Action,
@@ -743,6 +743,7 @@
                     <button type="button" class="btn" id="helpTakeTour">Take the tour</button>
                     <button type="button" class="btn" id="helpLoadExample">Open the example script</button>
                 </div>
+                <p style="margin-top:1.25rem;font-size:.75rem;color:var(--text-void-muted)"><em>Plainchant</em> is music with no ornament: a single line, sung unaccompanied. Plain text works the same way.</p>
             </section>
 
             <section class="help-section" data-section="elements" hidden>
@@ -863,7 +864,7 @@ Author: Jane Doe</code></td>
 <div id="tour-modal" class="modal-overlay">
     <div class="modal-content wide" role="dialog" aria-modal="true" aria-labelledby="tour-title">
         <div class="modal-header">
-            <h2 id="tour-title">Welcome</h2>
+            <h2 id="tour-title">Welcome to Plainchant</h2>
             <button type="button" class="modal-close" data-close aria-label="Skip the tour">&times;</button>
         </div>
         <div class="modal-body tour-steps">
@@ -1318,7 +1319,7 @@ Is anyone here?</pre></div>
         tourNext.hidden = last;
         tourSkip.hidden = last;
         tourModal.querySelector('.modal-body').scrollTop = 0;
-        document.getElementById('tour-title').textContent = last ? 'You\'re set' : 'Welcome';
+        document.getElementById('tour-title').textContent = last ? 'You\'re set' : 'Welcome to Plainchant';
     }
 
     function markTourSeen() {

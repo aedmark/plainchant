@@ -1,7 +1,7 @@
 {
-  "name": "NeuroFountain",
+  "name": "plainchant",
   "version": "1.0.0",
-  "description": "",
+  "description": "A lightweight screenwriting app: type plain text (Fountain), get a formatted screenplay.",
   "main": "index.html",
   "scripts": {
     "test": "node test/run.js",

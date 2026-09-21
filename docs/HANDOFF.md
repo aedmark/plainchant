@@ -9,9 +9,13 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-20, end of session 4 (onboarding and help)._
+_Last updated: 2026-09-20, end of session 5 (naming)._
 
 **What works**
+- **The app is called Plainchant** (D-012): page title, the welcome dialog ("Welcome to Plainchant"), the first line
+  of Help plus a one-line note on what the word means, `package.json` (`plainchant`), doc headings and test page
+  titles. An e2e check fails if "NeuroFountain" or "SLASH" reappears in `index.html`. The project *folder* is still
+  `NeuroFountain`.
 - **Onboarding and help** (D-011). **Welcome tour**: opens by itself on first launch (four skippable steps, wording
   adapts to touch vs keyboard, live-rendered sample, ends with Start writing / Open the example script). Remembered
   in `frictionless_onboarded`; replay it from Help. **Help window**: Start here, Screenplay elements (cheat sheet),
@@ -50,7 +54,7 @@ _Last updated: 2026-09-20, end of session 4 (onboarding and help)._
 
 **Verified**
 - `npm test` passes under Node 24: 94 unit tests (45 parser, 49 typing helpers).
-- `npm run test:browser` passes: the same 94 unit tests + 265 app end-to-end checks (headless Edge, throwaway
+- `npm run test:browser` passes: the same 94 unit tests + 267 app end-to-end checks (headless Edge, throwaway
   profile). Frames: a 375px phone, the preview-column position at desktop/phone/1800px, tablets at 640-810px
   (one pane) and 1024-1366px (split, no clipping), a 1200px desktop frame for the typing helpers (Tab, Enter,
   Shift+Enter, auto-uppercase, buttons, undo, Esc+Tab, mode lifetime) and for the tour and Help (first launch,
@@ -145,8 +149,8 @@ _Last updated: 2026-09-20, end of session 4 (onboarding and help)._
 
 ## Open questions for the user
 
-- **What is the product called?** The page title says "SLASH Frictionless Screenwriter", the repo is NeuroFountain,
-  the panes are "The Void" and "The Canvas". The tour and Help deliberately avoid the name; it needs one.
+- ~~What is the product called?~~ **Plainchant** (D-012). Still open for the owner: register a domain, do a proper
+  trademark search, make a logo (roadmap Phase 6), and whether to rename the project folder.
 - Is the tour the right length and tone (four steps), and is showing it once to existing users too?
 - Enter after an action line starts a new paragraph (Shift+Enter for a line break). Right default?
 - Cues need Tab or the Character button. Is that acceptable, or should "a short unpunctuated line after a blank
@@ -158,6 +162,33 @@ _Last updated: 2026-09-20, end of session 4 (onboarding and help)._
 ## Session log
 
 Newest first. Copy the template for each new session.
+
+### Session 5: 2026-09-20: Naming (P6-00)
+
+**Goal:** Brainstorm and choose a name, then apply it.
+
+**Done:** Chose **Plainchant** and applied it (D-012). Roadmap Phase 6 added for the owner's brand follow-ups.
+
+**How it went**
+- The user set the brief: an app for neurodivergent writers and anyone who gets hung up on formatting; calm and
+  whimsical; liked Ebb, Lucid and Vellum. I brainstormed in the water / quiet / paper register and checked each
+  shortlisted name with web search and DNS lookups instead of guessing.
+- Dropped for real collisions: Vellum (a Mac book-formatting app), Deckle, Foolscap, Dormouse, Inkling, Rill, Paper
+  Boat (a beverage brand), and Plainsong (two apps already). The user then chose Plainchant, the same music under
+  its other name, precisely because Plainsong was taken. It came back clear in searches.
+- Renamed: `index.html` title and copy, `package.json`, doc and test-page headings. Two e2e checks added for the
+  name (page title and no leftover old names; welcome dialog title).
+
+**Problems / surprises**
+- The user wrote "Plainchant" while I had been discussing "Plainsong". I checked instead of assuming; they meant it.
+- An early domain check included `.write`, which is not a real TLD, so those rows meant nothing (noted at the time).
+- DNS "no answer" is a hint, not availability. No trademark clearance was done (D-012).
+
+**Left undone:** Domain, trademark search, logo, folder rename (Phase 6). Tour / Help copy still needs the user's read.
+
+**Next session should start with:** "Next steps" above.
+
+---
 
 ### Session 4: 2026-09-20: Onboarding tour and Help (P2-17, P2-18, P2-19)
 

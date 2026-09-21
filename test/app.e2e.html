@@ -8,7 +8,7 @@
   The app's localStorage is shared by every page on the same origin, so this page snapshots the app's two
   keys first and puts them back when finished. Still prefer a throwaway browser profile for `file://` runs.
 -->
-<html><head><meta charset="UTF-8"><title>NeuroFountain app e2e</title></head><body>
+<html><head><meta charset="UTF-8"><title>Plainchant app e2e</title></head><body>
 <div id="banner" style="font:600 14px system-ui;padding:.5rem 1rem;color:#fff;background:#64748b">Running...</div>
 <iframe id="f" style="width:1200px;height:700px"></iframe>
 <pre id="out">RUNNING</pre>
@@ -38,6 +38,8 @@ const W = () => f.contentWindow;
     check('blank editor on first run', $('editor').value === '', $('editor').value);
     check('placeholder example is rendered', $('render-target').innerHTML.includes('script-scene-heading'));
     check('no console-breaking globals: Fountain loaded', typeof W().Fountain === 'object');
+    check('name: the page is called Plainchant, and no former working name is left in it',
+      f.contentDocument.title.indexOf('Plainchant') === 0 && !/NeuroFountain|SLASH/.test(f.contentDocument.documentElement.outerHTML), f.contentDocument.title);
 
     // 1b. Desktop width is unchanged by the mobile work: both panes side by side, no mobile bar
     const shown = (el) => !!el && el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden';
@@ -499,6 +501,7 @@ const W = () => f.contentWindow;
         d.getAttribute('role') === 'dialog' && d.getAttribute('aria-modal') === 'true' && !!labelOf(tf, '#' + id + ' .modal-content') &&
         !!fq(tf, '#' + id + ' .modal-close').getAttribute('aria-label'));
     });
+    check('name: the welcome dialog greets the writer by the app\'s name', labelOf(tf, '#tour-modal .modal-content') === 'Welcome to Plainchant', labelOf(tf, '#tour-modal .modal-content'));
     check('tour: starts on step 1, Next focused, no Back', visibleSteps(tf) === '1' && focusId(tf) === 'tourNext' && !shown(fid(tf, 'tourBack')) && shown(fid(tf, 'tourNext')));
     check('tour: the progress dot follows the step', fq(tf, '.tour-dots span[aria-current="step"]') === fq(tf, '.tour-dots span:nth-child(1)'));
     check('tour: not counted as seen until it is dismissed', W().localStorage.getItem(TOUR_KEY) === null);
@@ -509,7 +512,7 @@ const W = () => f.contentWindow;
     check('tour: Back returns to step 1 and keeps focus on a visible control', visibleSteps(tf) === '1' && !shown(fid(tf, 'tourBack')) && focusId(tf) === 'tourNext');
     fid(tf, 'tourNext').click(); fid(tf, 'tourNext').click(); fid(tf, 'tourNext').click();
     check('tour: the last step offers Start and Example, and focus moves to Start',
-      visibleSteps(tf) === '4' && !shown(fid(tf, 'tourNext')) && !shown(fid(tf, 'tourSkip')) && shown(fid(tf, 'tourStart')) && shown(fid(tf, 'tourExample')) && focusId(tf) === 'tourStart', focusId(tf));
+      labelOf(tf, '#tour-modal .modal-content') === 'You\'re set' && visibleSteps(tf) === '4' && !shown(fid(tf, 'tourNext')) && !shown(fid(tf, 'tourSkip')) && shown(fid(tf, 'tourStart')) && shown(fid(tf, 'tourExample')) && focusId(tf) === 'tourStart', focusId(tf));
 
     // Focus stays inside the dialog
     const fi = tf.contentWindow.focusableIn(fid(tf, 'tour-modal'));

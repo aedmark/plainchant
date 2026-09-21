@@ -165,6 +165,31 @@ and that scripts live only in this browser. The app is meant to stay lightweight
 suite does). New user-visible features should get a line in Help. The inline app script keeps growing (~1500 lines):
 splitting it into files is P4-08.
 
+## D-012 The product is called Plainchant  (2026-09-20, status: accepted; resolves the naming point in D-011 item 7)
+**Context:** Three names were in circulation: the page title ("SLASH Frictionless Screenwriter"), the repo
+("NeuroFountain") and the pane names ("The Void" / "The Canvas"). A real app called "Fountain" already exists on the
+App Store, next to a crowded field (Slugline, Highland, Beat, Fade In, Arc Studio). The audience is writers, many
+neurodivergent, who get stuck on formatting and want to write; the tone is calm and whimsical.
+**Decision:** **Plainchant.** Plainchant is unornamented, single-line, unaccompanied singing; plain text (Fountain)
+works the same way, and the formatting is layered on afterwards. It is calm, a little whimsical, and it evokes
+vellum manuscripts without the collision below.
+**Considered and dropped, and why (web search, 2026-09-20):** Vellum (a well-known Mac book-*formatting* app, the
+opposite of the pitch), Deckle (novel writing and formatting app, launched June 2026), Foolscap and Dormouse (both
+already "quiet writing apps"), Inkling (novel apps), Rill (several apps), Paper Boat (a major Indian beverage brand;
+also little to do with screenwriting), Plainsong (the same music, but two apps already use it: a macOS Markdown
+editor and a dictation app). Ebb, Eddy and Lull surfaced nothing but are generic words that are hard to own.
+**Checks done, and their limits:** no writing or screenwriting app called Plainchant surfaced; the only software hit
+is a small open-source imageboard (GitHub `jgbyrne/plainchant`). `plainchant.com` and `.co` are registered;
+`plainchant.app`, `.io` and variants such as `getplainchant.*` returned no DNS answer (not proof of availability:
+confirm at a registrar). **No trademark clearance was done.** A search engine and a DNS lookup are a sanity check,
+not legal advice.
+**Where the name now appears:** page title ("Plainchant: screenwriting without the formatting"), the welcome dialog,
+the first line of Help and a one-line note on what the word means, `package.json`, doc headings, test page titles. An
+e2e check fails if "NeuroFountain" or "SLASH" reappears in `index.html`.
+**Deliberately unchanged:** the project folder is still `NeuroFountain` (renaming it disturbs the PyCharm project;
+the owner's call), the `frictionless_*` storage keys (D-005), and the Void / Canvas pane names.
+**Consequences:** Domain registration, trademark search and a logo are the owner's follow-ups (roadmap P6-01..03).
+
 ## Open questions
 
 - Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

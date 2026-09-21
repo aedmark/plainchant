@@ -1,4 +1,4 @@
-# NeuroFountain Roadmap
+# Plainchant Roadmap
 
 A lightweight, responsive screenwriting app that takes formatting out of the writer's way. The writer types plain
 text; the app handles structure, layout and output.
@@ -127,6 +127,15 @@ Not committed. Decide only after Phase 3 ships. See open questions in DECISIONS.
 - [ ] P5-01 File System Access API: open and save real files on disk
 - [ ] P5-02 Optional cloud sync
 - [ ] P5-03 Read-only share links / collaboration
+
+## Phase 6: Brand (owner follow-ups after the rename, D-012)
+
+- [x] P6-00 Choose and apply the name: Plainchant
+- [ ] P6-01 Confirm and register a domain (`plainchant.app` / `.io` showed no DNS answer; `.com` and `.co` are taken)
+- [ ] P6-02 Proper trademark search for "Plainchant" in software classes before investing in the brand
+- [ ] P6-03 Wordmark and icon (a page with fold lines was floated; plainchant notation is another source of shapes),
+  favicon, and a web-app manifest icon once P4-02 (PWA) happens
+- [ ] P6-04 Decide whether to rename the project folder from NeuroFountain, and set up a remote repository
 
 ## Known limitations (deliberate, revisit)
 

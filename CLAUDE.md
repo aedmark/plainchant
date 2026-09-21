@@ -1,7 +1,8 @@
-# NeuroFountain
+# Plainchant
 
 Lightweight, responsive screenwriting app: the writer types Fountain-style plain text, the app handles formatting.
-Static HTML/CSS/JS, no build step, no runtime dependencies (see docs/DECISIONS.md).
+Built for writers who would rather write than fuss over format. Static HTML/CSS/JS, no build step, no runtime
+dependencies (see docs/DECISIONS.md). The project folder is still called NeuroFountain (its former working name).
 
 ## Session protocol
 
