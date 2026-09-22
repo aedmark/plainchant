@@ -132,6 +132,10 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
   Byte-for-byte the same rules (de-indented); `test/structure.test.js` fails if an inline `<style>` returns.
 - [x] P4-07 Replace deprecated `document.execCommand('copy')` with the async Clipboard API (execCommand stays as the
   fallback for insecure origins)
+- [ ] P4-10 Migrate storage from localStorage to IndexedDB (spec: docs/SPEC-INDEXEDDB.md, D-018). Per-script records
+  in an object store, the in-memory library object kept as the working model, a synchronous localStorage "emergency
+  buffer" for the pagehide race, and a one-time idempotent migration that keeps the localStorage copy as a fallback.
+  Fixes the 5 MB cap and the whole-library rewrite on every autosave.
 
 ## Phase 5: Sync and share (open questions)
 

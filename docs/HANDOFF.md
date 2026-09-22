@@ -208,6 +208,9 @@ _Last updated: 2026-09-21, session 10 (autocomplete done; PDF printing is next, 
    `(CONT'D)`, title page on its own page, dual dialogue, scene numbers, and print-CSS versus a generated PDF (D-001 says
    no runtime dependencies). Write the result up as a decision plus roadmap items, then wait for the go-ahead.
 5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
+6. **P4-10 IndexedDB migration is specced, not scheduled** ([docs/SPEC-INDEXEDDB.md](SPEC-INDEXEDDB.md), D-018). It is
+   a Phase 4 item and comes after P3-03; do not start it without the user's go-ahead. Settle the spec's open questions
+   (§11) before implementing.
 
 ## Open questions for the user
 
@@ -225,6 +228,20 @@ _Last updated: 2026-09-21, session 10 (autocomplete done; PDF printing is next, 
 ## Session log
 
 Newest first. Copy the template for each new session.
+
+### Session 11: 2026-09-21: IndexedDB migration spec (P4-10)
+
+**Goal:** At the user's request, spec out moving storage from localStorage to IndexedDB (P4-10).
+**Done:** P4-10 added to the roadmap (Phase 4); D-018 decision; `docs/SPEC-INDEXEDDB.md` written; a "Next steps"
+pointer added to this file. No code, no tests — spec only.
+**Changed:** `ROADMAP.md` (P4-10), `docs/DECISIONS.md` (D-018), `docs/SPEC-INDEXEDDB.md` (new), `docs/HANDOFF.md`
+(next-steps item 6).
+**Decisions:** D-018. The two problems are separable (the ~5 MB cap vs. the whole-library rewrite per save); the
+migration is async and interacts with the pagehide flush, so it is specced, not scheduled, and comes after P3-03.
+**Problems / surprises:** None — the main finding is that this is a bigger change than a storage swap (async reads/writes
+ripple through persistence, and "never lose words" needs a synchronous emergency buffer to survive the unload race).
+**Left undone:** Implementation; settling the spec's §11 open questions; it is a Phase 4 item, after P3-03.
+**Next session should start with:** "Next steps" above.
 
 ### Session 10: 2026-09-21: Autocomplete (P2-04)
 

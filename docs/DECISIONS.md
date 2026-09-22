@@ -287,6 +287,35 @@ script, so there is nothing to store or migrate (D-005). Long names are ellipsis
 inserts the full name. The lookup parses the whole script per keystroke on a cue or heading line only: 8 ms for 30,000
 lines, and a unit test guards it. Screen-reader announcement of suggestions is not done.
 
+## D-018 Storage moves to IndexedDB, per-script records, with a localStorage emergency buffer  (2026-09-21, status: accepted)
+**Context:** Scripts live in one localStorage key (`frictionless_scripts`) as a single JSON blob `{ [id]: script }`,
+and every autosave re-serialises the *entire* library and writes it synchronously. Two problems: the ~5 MB
+localStorage cap (a feature-length script is ~100 KB, so a modest library outgrows it), and the O(total library)
+rewrite per save on the main thread. IndexedDB fixes the cap; per-script records fix the rewrite.
+**Decision:**
+1. **Per-script records in IndexedDB.** A `scripts` object store keyed by `id` (record: `{ id, title, content,
+   updatedAt, deletedAt? }`), plus a `meta` store for `currentScriptId`, the migration flag and a schema version.
+   Autosave writes only the changed script, not the library.
+2. **The in-memory `{ [id]: script }` object stays the working model.** On startup the whole library is read into
+   memory; `src/library.js` (pure, D-013) keeps operating on it unchanged, so all its unit tests stand. The refactor
+   lands in the persistence layer (`persistence.js`, `import.js`, `library-ui.js`), not in the pure modules.
+3. **A synchronous localStorage "emergency buffer" preserves "never lose words" (Principle 3).** IndexedDB writes are
+   async and cannot be awaited during `pagehide`, so the current synchronous `flushSave()` would regress. Instead,
+   `pagehide` / `visibilitychange` write *only the current script* (a small key, `frictionless_emergency`) to
+   localStorage synchronously; a successful async autosave clears it. On load, if the buffer is newer than the IDB
+   record, it is restored and cleared.
+4. **One-time, idempotent migration.** On first run, read `frictionless_scripts`, put each script into IDB, set the
+   `migrated` flag. Re-running is safe (puts overwrite the same keys). **The localStorage copy is kept** as a
+   fallback until the IDB path is proven, then removed in a later cleanup.
+5. **The deleted-script guard is re-checked inside the write transaction.** Today `saveScript` relies on
+   localStorage's synchronous cross-tab sharing to see another tab's delete. An in-memory cache goes stale, so the
+   write transaction re-reads the record and refuses to write into a `deletedAt` record (the words go to a new id,
+   as today).
+**Consequences:** Reads and writes become async, which ripples through `restoreLastScript`, `saveScript`, `flushSave`,
+import and the Library dialog. The e2e harness must snapshot/restore IDB state the way it does localStorage today.
+`navigator.storage.estimate()` / `persist()` become available for the capacity indicator (P3-09) and offline (P4-02).
+Full spec: docs/SPEC-INDEXEDDB.md. This is a Phase 4 item (P4-10), not the next step; P3-03 (print/PDF) remains next.
+
 ## Open questions
 
 - Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom
