@@ -109,8 +109,9 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
   becomes a new script and the first opens; nothing is overwritten (D-016). Final Draft `.fdx` import is P3-08.
 - [ ] P3-03 Print stylesheet and print-to-PDF at standard screenplay margins (spec: docs/SPEC-PRINT.md, D-021): Print / PDF
   button, `beforeprint` so Ctrl/Cmd+P prints the screenplay, Letter / A4, Help on saving as PDF
-- [ ] P3-04 Pagination (about 55 lines per page), page numbers, `(MORE)` / `(CONT'D)` handling: `src/paginate.js`, a
-  pure module on the Courier character grid, plus `Fountain.runs` (spec §4-§7). Do first; no UI
+- [x] P3-04 Pagination (about 55 lines per page), page numbers, `(MORE)` / `(CONT'D)` handling: `src/paginate.js`, a
+  pure module on the Courier character grid, plus `Fountain.runs` (spec §4-§7). Also lays out the title page (P3-05)
+  and dual dialogue (P3-06); nothing prints until P3-03
 - [ ] P3-05 Title page rendering as its own page
 - [ ] P3-06 Dual dialogue in print layout
 - [ ] P3-11 Direct `.pdf` download: a hand-written PDF writer (`src/pdf.js`) with PDF's built-in Courier fonts, fed by

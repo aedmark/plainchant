@@ -9,6 +9,7 @@
  *   Fountain.setTitle(t, s)   -> the text with its Title: line set to s (creates the title page if there is none)
  *   Fountain.fileName(t, ext) -> a safe file name for exporting t, e.g. "big-fish.fountain"
  *   Fountain.classifyLines(t) -> one type per source line, for the editor (see src/editing.js)
+ *   Fountain.runs(text)       -> [{ text, bold, italic, underline }]: inline emphasis as data, notes removed (print)
  *
  * Follows Fountain 1.1 (https://fountain.io/syntax). Deliberately strict about case: lowercase cues are action (D-004).
  * Known limitation: multi-line [[notes]] are not recognised.
@@ -233,6 +234,44 @@
         return s.replace(//g, '*').replace(//g, '_').replace(//g, '\\');
     }
 
+    /**
+     * The same emphasis rules as inline(), as data for print (P3-04): [{ text, bold, italic, underline }], plain text
+     * (nothing escaped), notes removed. Adjacent runs with the same style are merged; empty text gives [].
+     */
+    function runs(text) {
+        const LIT = { '*': '\u0011', '_': '\u0012', '\\': '\u0013' };
+        const MARK = { b: '\u0001', B: '\u0002', i: '\u0003', I: '\u0004', u: '\u0005', U: '\u0006' };
+        let s = String(text || '').replace(/\\([*_\\])/g, function (_, c) { return LIT[c]; });
+        s = s.replace(/\[\[[\s\S]*?\]\]/g, '');
+        s = s.replace(/\*\*\*([^\s*](?:[^*]*?[^\s*])?)\*\*\*/g, MARK.b + MARK.i + '$1' + MARK.I + MARK.B);
+        s = s.replace(/\*\*([^\s*](?:[^*]*?[^\s*])?)\*\*/g, MARK.b + '$1' + MARK.B);
+        s = s.replace(/\*([^\s*](?:[^*]*?[^\s*])?)\*/g, MARK.i + '$1' + MARK.I);
+        s = s.replace(/(^|\W)_([^\s_](?:[^_]*?[^\s_])?)_(?!\w)/g, '$1' + MARK.u + '$2' + MARK.U);
+
+        const out = [];
+        const style = { bold: 0, italic: 0, underline: 0 };
+        let buf = '';
+        const flush = function () {
+            if (!buf) return;
+            const run = { text: buf.replace(/\u0011/g, '*').replace(/\u0012/g, '_').replace(/\u0013/g, '\\'),
+                bold: style.bold > 0, italic: style.italic > 0, underline: style.underline > 0 };
+            const last = out[out.length - 1];
+            if (last && last.bold === run.bold && last.italic === run.italic && last.underline === run.underline) last.text += run.text;
+            else out.push(run);
+            buf = '';
+        };
+        for (const ch of s) {
+            const code = ch.charCodeAt(0);
+            if (code >= 1 && code <= 6) {
+                flush();
+                const key = code <= 2 ? 'bold' : code <= 4 ? 'italic' : 'underline';
+                style[key] += code % 2 ? 1 : -1;
+            } else buf += ch;
+        }
+        flush();
+        return out;
+    }
+
     // ---------- renderer ----------
 
     function attrs(token, cls) {
@@ -394,6 +433,6 @@
 
     return {
         parse: parse, toHTML: toHTML, extractTitle: extractTitle, fullTitle: fullTitle, setTitle: setTitle,
-        fileName: fileName, classifyLines: classifyLines, escapeHTML: escapeHTML, inline: inline
+        fileName: fileName, classifyLines: classifyLines, escapeHTML: escapeHTML, inline: inline, runs: runs
     };
 });

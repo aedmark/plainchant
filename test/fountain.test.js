@@ -370,3 +370,40 @@ test('fileName: the extension can be chosen, with or without the dot', () => {
     assert.equal(Fountain.fileName('Title: Big Fish', 'txt'), 'big-fish.txt');
     assert.equal(Fountain.fileName('Title: Big Fish', '.txt'), 'big-fish.txt');
 });
+
+// ---------- runs: emphasis as data, for print (P3-04) ----------
+
+const plainRun = (text) => ({ text: text, bold: false, italic: false, underline: false });
+
+test('runs: plain text is one plain run, and nothing is escaped (it is not HTML)', () => {
+    assert.deepEqual(Fountain.runs('Tom & Jerry <3'), [plainRun('Tom & Jerry <3')]);
+    assert.deepEqual(Fountain.runs(''), []);
+});
+
+test('runs: bold, italic, bold italic and underline, as in the preview', () => {
+    assert.deepEqual(Fountain.runs('a **b** c'), [plainRun('a '), { text: 'b', bold: true, italic: false, underline: false }, plainRun(' c')]);
+    assert.deepEqual(Fountain.runs('*b*'), [{ text: 'b', bold: false, italic: true, underline: false }]);
+    assert.deepEqual(Fountain.runs('***b***'), [{ text: 'b', bold: true, italic: true, underline: false }]);
+    assert.deepEqual(Fountain.runs('x _under *both*_'), [plainRun('x '), { text: 'under ', bold: false, italic: false, underline: true },
+        { text: 'both', bold: false, italic: true, underline: true }]);
+});
+
+test('runs: the same things are left alone as in the preview (escapes, snake_case, lone stars)', () => {
+    assert.deepEqual(Fountain.runs('2 \\* 3 \\* 4'), [plainRun('2 * 3 * 4')]);
+    assert.deepEqual(Fountain.runs('snake_case_name'), [plainRun('snake_case_name')]);
+    assert.deepEqual(Fountain.runs('5 * 6 * 7'), [plainRun('5 * 6 * 7')]);
+    assert.deepEqual(Fountain.runs('a \\\\ b'), [plainRun('a \\ b')]);
+});
+
+test('runs: notes are not printed, and the text either side of one is kept', () => {
+    assert.deepEqual(Fountain.runs('He waits. [[fix this]] Then leaves.'), [plainRun('He waits.  Then leaves.')]);
+    assert.deepEqual(Fountain.runs('[[only a note]]'), []);
+});
+
+test('runs: the visible text is exactly the preview\'s text content', () => {
+    ['a **b** *c* _d_ e', 'no emphasis here', 'it\'s *really* **so** _very_ ***much***', 'x \\*y\\* z'].forEach((t) => {
+        const visible = Fountain.runs(t).map((r) => r.text).join('');
+        const html = Fountain.inline(t).replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&#39;/g, '\'');
+        assert.equal(visible, html, t);
+    });
+});

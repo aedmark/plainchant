@@ -368,7 +368,7 @@ on the owner's machines (Arch Linux; Firefox; Safari) and none of them held an o
 localStorage under `frictionless_scripts`, readable from the console). The welcome tour shows once more, because its
 flag moved. `persistence.js` has one storage mode fewer; P4-11 is closed by this.
 
-## D-021 Print and PDF: pagination in a pure module on a character grid, output through print first  (2026-09-25, status: proposed)
+## D-021 Print and PDF: pagination in a pure module on a character grid, output through print first  (2026-09-25, status: accepted)
 **Context:** P3-03 to P3-06 (print, pagination, title page, dual dialogue). Browsers paginate print on their own
 terms: CSS page breaks know nothing of `(MORE)` / `(CONT'D)`, and page numbers in print CSS are not supported alike.
 **Decision (proposed, pending the owner's answers in docs/SPEC-PRINT.md §10):**
@@ -381,6 +381,10 @@ terms: CSS page breaks know nothing of `(MORE)` / `(CONT'D)`, and page numbers i
 3. The preview's indents change to match paper, so screen and page agree.
 **Consequences:** Page counts will be close to, not identical with, Final Draft. The direct PDF (if built) prints in
 classic Courier and Windows-1252 characters only. Full plan: docs/SPEC-PRINT.md.
+**Accepted 2026-09-25 with the spec's recommendations (§10):** US Letter by default with an A4 choice; the print
+dialog first (direct PDF, P3-11, later if the dialog annoys); scene headings plain on paper, and the preview follows;
+one blank line before a scene heading; no automatic `(CONT'D)` between speeches (only across page breaks); scene numbers
+only where written. The page view (P3-12) is a later feature.
 
 ## Open questions
 
