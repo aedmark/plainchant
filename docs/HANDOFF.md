@@ -124,12 +124,11 @@ only)._
   and phone in headless Edge.
 
 **Not verified / not done**
-- **IndexedDB storage (P4-10): the owner confirmed it on their Arch Linux machine (2026-09-25)**: a `plainchant`
-  database appears in IndexedDB, and the example script saves and loads. Which browser was not recorded, and that
-  machine had no old library, so the localStorage migration has still only run in the tests. Not yet seen: **Safari
-  (iPad / iPhone) and Firefox**, the app opened from `file://` in Firefox (IndexedDB there may be refused, which would
-  drop to the localStorage fallback), the Windows runner (`npm run test:browser:windows`), and a real tab closed
-  mid-write.
+- **IndexedDB storage (P4-10) is confirmed by the owner (2026-09-25)** on their Arch Linux machine: the tests pass
+  there (`npm run test:browser`), and the app works in their desktop browser, **Firefox and Safari** (a `plainchant`
+  database appears; the example script saves and loads). Still unobserved: an upgrade of a real existing localStorage
+  library (none was on these machines; only the tests have run the migration), a real tab closed mid-write, and the
+  Windows runner (`npm run test:browser:windows`).
 - **Real devices: the user reports everything works on their tablet and elsewhere** (2026-09-20, after the layout,
   typing-helper and tablet work; no detail recorded on which devices, Split View, or Pencil). That covers P2-09 in
   spirit but the specifics below remain unobserved by me. `fitToViewport()` itself is tested only with a fake
@@ -234,11 +233,9 @@ only)._
 
 ## Next steps (in order)
 
-0. **Finish checking P4-10 on real browsers.** Seen working on the owner's Arch Linux desktop (2026-09-25). Still to
-   try: the iPad (Safari) and Firefox. The owner is on **Arch Linux** now (not Windows); `npm run test:browser` runs
-   `bash test/run-headless.sh` (needs `chromium` or Chrome, about 40 s). On a browser that holds an older library,
-   every script should still be listed (copied in once; the localStorage copy stays as a fallback). If a browser falls
-   back to localStorage, `storageMode` in the console says `'local'`.
+0. (P4-10 is checked: tests pass on the owner's Arch Linux machine, and the app works in Firefox and Safari. P4-11,
+   removing the legacy localStorage copy, can wait a while longer.) The owner is on **Arch Linux** now (not Windows);
+   `npm run test:browser` runs `bash test/run-headless.sh`.
 1. **Try the tour as a first-time user on the tablet** (clear site data or
    `localStorage.removeItem('frictionless_onboarded')`). The user proofed the Help copy in session 8; the tour copy
    (`src/app/tour.js` and the tour markup) was not changed then.
