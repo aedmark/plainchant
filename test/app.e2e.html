@@ -5,31 +5,75 @@
   Loads ../index.html in an iframe and drives it. Open in a browser served over http, or from disk with
   --allow-file-access-from-files. Results appear in the banner; the same text is in <pre id="out">.
 
-  The app's localStorage is shared by every page on the same origin, so this page snapshots the app's two
-  keys first and puts them back when finished. Still prefer a throwaway browser profile for `file://` runs.
+  The app's storage (IndexedDB, and a few localStorage keys) is shared by every page on the same origin, so this page
+  snapshots it first and puts it back when finished. Still prefer a throwaway browser profile for `file://` runs.
 -->
 <html><head><meta charset="UTF-8"><title>Plainchant app e2e</title></head><body>
 <div id="banner" style="font:600 14px system-ui;padding:.5rem 1rem;color:#fff;background:#64748b">Running...</div>
 <iframe id="f" style="width:1200px;height:700px"></iframe>
 <pre id="out">RUNNING</pre>
+<script src="../src/store.js"></script>
 <script>
 const APP = '../index.html';
-const KEYS = ['frictionless_scripts', 'frictionless_current', 'frictionless_onboarded'];
+const EMERGENCY_KEY = 'frictionless_emergency';
+const KEYS = ['frictionless_scripts', 'frictionless_current', 'frictionless_onboarded', EMERGENCY_KEY];
 const TOUR_KEY = 'frictionless_onboarded';
 const f = document.getElementById('f');
 const log = [];
 const check = (name, cond, extra) => log.push((cond ? 'PASS ' : 'FAIL ') + name + (cond ? '' : '  -> ' + JSON.stringify(extra)));
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-const load = () => new Promise(r => { f.onload = () => setTimeout(r, 50); });
+// Load a frame (go() starts the navigation) and wait until the app in it has started: the library loads asynchronously
+const loaded = (fr, go, settleMs = 100) => new Promise(r => { fr.onload = r; go(); })
+  .then(() => fr.contentWindow.whenReady()).then(() => sleep(settleMs));
+const load = () => loaded(f, () => {}, 50);
 const $ = (id) => f.contentDocument.getElementById(id);
 const W = () => f.contentWindow;
 
+// IndexedDB as the app sees it (the scripts are stored there, D-018). Reads first wait for every frame's pending writes.
+let testDb = null;
+const idb = async () => testDb || (testDb = await Store.open(indexedDB));
+const settle = async () => {
+  for (const fr of Array.from(document.querySelectorAll('iframe'))) {
+    try { if (fr.contentWindow && typeof fr.contentWindow.whenSaved === 'function') await fr.contentWindow.whenSaved(); } catch (e) { /* frame gone */ }
+  }
+};
+const dbState = async () => { await settle(); return Store.loadAll(await idb()); };
+const stored = async () => (await dbState()).scripts;
+const storedMeta = async () => (await dbState()).meta;
+const setMeta = async (meta) => { await settle(); await Store.write(await idb(), { meta: meta }); };
+// Replace everything in IndexedDB: these scripts, and exactly these meta keys
+const setDb = async (scripts, meta) => {
+  const now = await dbState();
+  const clearMeta = {};
+  Object.keys(now.meta).forEach(k => { clearMeta[k] = null; });
+  await Store.write(await idb(), { remove: Object.keys(now.scripts), put: Object.values(scripts), meta: Object.assign(clearMeta, meta || {}) });
+};
+const buffer = (w) => JSON.parse(w.localStorage.getItem(EMERGENCY_KEY) || 'null');
+
+// The headless runners dump the page when its load event fires. Storage is IndexedDB (D-018), whose replies arrive in
+// real time, so the runners cannot use virtual time: instead this hidden frame's document is left open, which holds
+// the page's load event until the checks below are finished (or a real-time deadline passes).
+const hold = document.createElement('iframe');
+hold.style.display = 'none';
+document.body.appendChild(hold);
+hold.contentDocument.open();
+const release = () => { try { hold.contentDocument.close(); } catch (e) { /* already closed */ } };
+const DEADLINE_MS = 10 * 60 * 1000;
+setTimeout(() => {
+  if (document.getElementById('out').textContent.indexOf('DONE') === 0) return;
+  document.getElementById('out').textContent = 'TIMEOUT\n' + log.join('\n') + '\nFAIL the page did not finish within ' + (DEADLINE_MS / 60000) + ' minutes';
+  release();
+}, DEADLINE_MS);
+
 (async () => {
-  let snapshot = null;
+  let snapshot = null, dbSnapshot = null;
   try {
     f.src = APP; await load();
+    W().saveScript = () => {}; // a writer's real script, open in this first load, must not be saved again below
     snapshot = KEYS.map(k => [k, W().localStorage.getItem(k)]);
+    dbSnapshot = await dbState();
     KEYS.forEach(k => W().localStorage.removeItem(k));
+    await setDb({}, {}); // a first run: nothing stored, not even the migration flag
     // Every frame below would otherwise open the welcome tour first; the tour has its own tests (section 15)
     W().localStorage.setItem(TOUR_KEY, '1');
     f.contentWindow.location.reload(); await load();
@@ -62,13 +106,17 @@ const W = () => f.contentWindow;
     check('no spacer elements', !html.includes('script-spacer'));
 
     // 3. Nothing saved yet (autosave is 2s away); pagehide flushes immediately
-    check('not saved before flush', !W().localStorage.getItem('frictionless_scripts'));
+    check('not saved before flush', Object.keys(await stored()).length === 0);
     W().dispatchEvent(new Event('pagehide'));
-    const saved = JSON.parse(W().localStorage.getItem('frictionless_scripts') || '{}');
+    const inBuffer = Object.values(buffer(W()) || {});
+    check('pagehide: the words are in the emergency buffer at once, before IndexedDB has them', inBuffer.length === 1 && inBuffer[0].content === script, inBuffer);
+    const saved = await stored();
     const ids = Object.keys(saved);
     check('pagehide flush saved one script', ids.length === 1, ids);
     check('saved title comes from title page', ids.length && saved[ids[0]].title === 'Test Film', ids.length && saved[ids[0]].title);
-    check('current pointer stored', W().localStorage.getItem('frictionless_current') === ids[0]);
+    check('current pointer stored', (await storedMeta()).currentScriptId === ids[0]);
+    check('pagehide: once IndexedDB has the words, the buffer is cleared', buffer(W()) === null, buffer(W()));
+    check('storage: the old localStorage keys are no longer written', W().localStorage.getItem('frictionless_scripts') === null && W().localStorage.getItem('frictionless_current') === null);
 
     // 4. Reload restores the script and renders it
     f.contentWindow.location.reload(); await load();
@@ -79,14 +127,14 @@ const W = () => f.contentWindow;
     $('editor').value = script + 'More action.';
     $('editor').dispatchEvent(new Event('input'));
     await sleep(2300); // wait out the 2s autosave
-    const afterEdit = JSON.parse(W().localStorage.getItem('frictionless_scripts'));
+    const afterEdit = await stored();
     check('autosave after restore keeps a single script', Object.keys(afterEdit).length === 1, Object.keys(afterEdit));
     check('autosave stored the edit', afterEdit[ids[0]].content.endsWith('More action.'));
 
     // 6. New starts blank, keeps old script, and blank survives reload
     $('newBtn').click();
     check('New clears editor', $('editor').value === '');
-    check('New keeps old script in library', Object.keys(JSON.parse(W().localStorage.getItem('frictionless_scripts'))).length === 1);
+    check('New keeps old script in library', Object.keys(await stored()).length === 1);
     f.contentWindow.location.reload(); await load();
     check('blank after New + reload (not the old script)', $('editor').value === '', $('editor').value);
 
@@ -100,7 +148,7 @@ const W = () => f.contentWindow;
     check('library selection restored on reload', $('editor').value.includes('INT. A - DAY'));
 
     // 8. Upgrade path: scripts exist but no pointer -> most recent restored
-    W().localStorage.removeItem('frictionless_current');
+    await setMeta({ currentScriptId: null });
     f.contentWindow.location.reload(); await load();
     check('no pointer -> most recent script restored', $('editor').value.includes('INT. A - DAY'));
 
@@ -130,7 +178,7 @@ const W = () => f.contentWindow;
     const m = document.createElement('iframe');
     m.style.cssText = 'width:375px;height:667px';
     document.body.appendChild(m);
-    await new Promise(r => { m.onload = () => setTimeout(r, 100); m.src = APP; });
+    await loaded(m, () => { m.src = APP; });
     const MW = () => m.contentWindow, MD = () => m.contentDocument;
     const $m = (id) => MD().getElementById(id);
     const mq = (sel) => MD().querySelector(sel);
@@ -243,7 +291,7 @@ const W = () => f.contentWindow;
     const wide = document.createElement('iframe');
     wide.style.cssText = 'width:1800px;height:600px';
     document.body.appendChild(wide);
-    await new Promise(r => { wide.onload = () => setTimeout(r, 100); wide.src = APP; });
+    await loaded(wide, () => { wide.src = APP; });
     const wShort = columnFor(wide, SHORT_SCRIPT), wLong = columnFor(wide, LONG_SCRIPT);
     check('wide: column is capped at 60ch whatever the content', Math.abs(wShort.pageWidth - wShort.maxW) <= 1 && Math.abs(wLong.pageWidth - wLong.maxW) <= 1, [wShort, wLong]);
     check('wide: column is centred in the scroll area', Math.abs((wShort.pageLeft - wShort.scrollLeft) - (wShort.scrollWidth - wShort.pageWidth) / 2) <= 1, wShort);
@@ -255,7 +303,7 @@ const W = () => f.contentWindow;
       const fr = document.createElement('iframe');
       fr.style.cssText = 'width:' + w + 'px;height:' + h + 'px';
       document.body.appendChild(fr);
-      await new Promise(r => { fr.onload = () => setTimeout(r, 100); fr.src = APP; });
+      await loaded(fr, () => { fr.src = APP; });
       fr.contentWindow.saveScript = () => {};
       return fr;
     };
@@ -587,7 +635,7 @@ const W = () => f.contentWindow;
     const pressedHelp = (fr) => Array.from(fr.contentDocument.querySelectorAll('.help-nav [aria-pressed="true"]')).map(b => b.dataset.section).join(',');
     const labelOf = (fr, sel) => { const d = fq(fr, sel); const l = d && fid(fr, d.getAttribute('aria-labelledby')); return l ? l.textContent.trim() : null; };
     const reloadFrame = async (fr) => {
-      await new Promise(r => { fr.onload = () => setTimeout(r, 100); fr.contentWindow.location.reload(); });
+      await loaded(fr, () => fr.contentWindow.location.reload());
       fr.contentWindow.saveScript = () => {};
     };
 
@@ -700,8 +748,7 @@ const W = () => f.contentWindow;
     tf.remove();
 
     // The Library uses the same dialog behaviour
-    W().localStorage.setItem('frictionless_scripts', JSON.stringify({ a: { id: 'a', title: 'Alpha', content: 'INT. ALPHA - DAY', updatedAt: 1 } }));
-    W().localStorage.setItem('frictionless_current', 'zzz');
+    await setDb({ a: { id: 'a', title: 'Alpha', content: 'INT. ALPHA - DAY', updatedAt: 1 } }, { currentScriptId: 'zzz', migrated: '1' });
     const lf = await openFrame(1200, 700);
     fid(lf, 'libraryBtn').focus();
     fid(lf, 'libraryBtn').click();
@@ -770,11 +817,11 @@ const W = () => f.contentWindow;
       const fr = document.createElement('iframe');
       fr.style.cssText = 'width:' + w + 'px;height:' + h + 'px';
       document.body.appendChild(fr);
-      await new Promise(r => { fr.onload = () => setTimeout(r, 100); fr.src = APP; });
+      await loaded(fr, () => { fr.src = APP; });
       return fr;
     };
     const HOUR_MS = 3600000, DAY_MS = 24 * HOUR_MS;
-    const seedLibrary = (extra) => {
+    const seedLibrary = async (extra) => {
       const t = Date.now();
       const seed = Object.assign({
         a: { id: 'a', title: 'Alpha', content: 'Title: Alpha\nAuthor: Me\n\nINT. ALPHA - DAY\n\nRain falls on the roof.', updatedAt: t - 5 * 60000 },
@@ -783,12 +830,11 @@ const W = () => f.contentWindow;
         gone: { id: 'gone', title: 'Old draft', content: 'Title: Old draft\n\nGone.', updatedAt: t - 10 * DAY_MS, deletedAt: t - 2 * DAY_MS },
         ancient: { id: 'ancient', title: 'Ancient', content: 'Title: Ancient\n\nX', updatedAt: t - 90 * DAY_MS, deletedAt: t - 31 * DAY_MS }
       }, extra || {});
-      W().localStorage.setItem('frictionless_scripts', JSON.stringify(seed));
-      W().localStorage.setItem('frictionless_current', 'a');
+      await setDb(seed, { currentScriptId: 'a', migrated: '1' });
     };
-    const stored = () => JSON.parse(W().localStorage.getItem('frictionless_scripts') || '{}');
+    const byTitle = async (t) => Object.values(await stored()).find(x => x.title === t);
 
-    seedLibrary();
+    await seedLibrary();
     const lb = await openRealFrame(1200, 800);
     const lbe = fid(lb, 'editor');
     const rows = () => Array.from(lb.contentDocument.querySelectorAll('#library-list .script-item'));
@@ -803,7 +849,7 @@ const W = () => f.contentWindow;
     const trashChip = () => fid(lb, 'libViewTrash').textContent;
 
     check('library: the app opens on the last script', lbe.value.indexOf('Title: Alpha') === 0, lbe.value);
-    check('library: scripts deleted more than 30 days ago are removed for good on startup', !stored().ancient && !!stored().gone, Object.keys(stored()));
+    check('library: scripts deleted more than 30 days ago are removed for good on startup', !(await stored()).ancient && !!(await stored()).gone, Object.keys(await stored()));
 
     // Words typed a moment ago (before autosave) must show up: opening the Library saves first
     lbe.value += ' Extra words here now.';
@@ -835,18 +881,18 @@ const W = () => f.contentWindow;
     check('rename: turns the row into a labelled field with the title selected and focused', !!renameInput && renameInput.value === 'Beta' && renameInput.getAttribute('aria-label') === 'New title' && lb.contentDocument.activeElement === renameInput && renameInput.selectionStart === 0 && renameInput.selectionEnd === 4);
     renameInput.value = '   ';
     fq(lb, '#library-list .rename-form').requestSubmit();
-    check('rename: an empty title is refused and the field says so', fq(lb, '#library-list .rename-form input').getAttribute('aria-invalid') === 'true' && stored().b.title === 'Beta');
+    check('rename: an empty title is refused and the field says so', fq(lb, '#library-list .rename-form input').getAttribute('aria-invalid') === 'true' && (await stored()).b.title === 'Beta');
     const escEv = keydown(lb, fq(lb, '#library-list .rename-form input'), 'Escape');
     check('rename: Esc cancels the rename, leaves the Library open, and returns focus to Rename',
       escEv.defaultPrevented && active(lb).join() === 'library-modal' && !fq(lb, '#library-list .rename-form') && titles().indexOf('Beta') !== -1 &&
       lb.contentDocument.activeElement === act(rowFor('Beta'), 'rename'));
-    const betaEditedBefore = stored().b.updatedAt;
+    const betaEditedBefore = (await stored()).b.updatedAt;
     act(rowFor('Beta'), 'rename').click();
     fq(lb, '#library-list .rename-form input').value = 'Beta Prime';
     fq(lb, '#library-list .rename-form').requestSubmit();
-    check('rename: the script\'s own Title: line is rewritten', stored().b.content === 'Title: Beta Prime\n\nThe kettle sings.' && stored().b.title === 'Beta Prime', stored().b);
+    check('rename: the script\'s own Title: line is rewritten', (await stored()).b.content === 'Title: Beta Prime\n\nThe kettle sings.' && (await stored()).b.title === 'Beta Prime', (await stored()).b);
     check('rename: the list shows the new name (and it counts as edited now), and the writer stays in the dialog',
-      titles().indexOf('Beta Prime') !== -1 && titles().indexOf('Beta') === -1 && stored().b.updatedAt > betaEditedBefore && inDialog() && lb.contentDocument.activeElement === act(rowFor('Beta Prime'), 'rename'),
+      titles().indexOf('Beta Prime') !== -1 && titles().indexOf('Beta') === -1 && (await stored()).b.updatedAt > betaEditedBefore && inDialog() && lb.contentDocument.activeElement === act(rowFor('Beta Prime'), 'rename'),
       [titles(), inDialog(), lb.contentDocument.activeElement && (lb.contentDocument.activeElement.dataset.action + '/' + lb.contentDocument.activeElement.className)]);
 
     // Rename the script that IS open: edits the editor's own text, keeping the caret and undo history
@@ -856,7 +902,7 @@ const W = () => f.contentWindow;
     fq(lb, '#library-list .rename-form').requestSubmit();
     check('rename open script: the editor\'s Title: line changes and nothing else does', lbe.value.indexOf('Title: Alpha Prime Edition\nAuthor: Me\n\nINT. ALPHA - DAY') === 0 && /Extra words here now\.$/.test(lbe.value), lbe.value);
     check('rename open script: the caret keeps its place in the text', lbe.selectionStart === caretBefore + (lbe.value.length - lengthBefore), [lbe.selectionStart, caretBefore, lbe.value.length, lengthBefore]);
-    check('rename open script: saved at once, and focus stays in the dialog with the keyboard setting restored', stored().a.content === lbe.value && inDialog() && lbe.inputMode === '', [inDialog(), lbe.inputMode]);
+    check('rename open script: saved at once, and focus stays in the dialog with the keyboard setting restored', (await stored()).a.content === lbe.value && inDialog() && lbe.inputMode === '', [inDialog(), lbe.inputMode]);
     lbe.focus();
     const renameUndone = lb.contentDocument.execCommand('undo');
     check('rename open script: is one undo step in the editor', renameUndone && lbe.value.indexOf('Title: Alpha\nAuthor: Me') === 0 && /Extra words here now\.$/.test(lbe.value), lbe.value.slice(0, 40));
@@ -866,17 +912,17 @@ const W = () => f.contentWindow;
 
     // Duplicate
     act(rowFor('Beta Prime'), 'duplicate').click();
-    check('duplicate: makes a copy whose own text says (copy), and says so', !!rowFor('Beta Prime (copy)') && stored()[Object.keys(stored()).find(k => stored()[k].title === 'Beta Prime (copy)')].content === 'Title: Beta Prime (copy)\n\nThe kettle sings.' && /Duplicated as .Beta Prime \(copy\)./.test(status()), [titles(), status()]);
-    check('duplicate: leaves the original alone', stored().b.content === 'Title: Beta Prime\n\nThe kettle sings.');
+    check('duplicate: makes a copy whose own text says (copy), and says so', !!rowFor('Beta Prime (copy)') && (await byTitle('Beta Prime (copy)')).content === 'Title: Beta Prime (copy)\n\nThe kettle sings.' && /Duplicated as .Beta Prime \(copy\)./.test(status()), [titles(), status()]);
+    check('duplicate: leaves the original alone', (await stored()).b.content === 'Title: Beta Prime\n\nThe kettle sings.');
 
     // Delete, and undo
-    const copyId = Object.keys(stored()).find(k => stored()[k].title === 'Beta Prime (copy)');
+    const copyId = (await byTitle('Beta Prime (copy)')).id;
     act(rowFor('Beta Prime (copy)'), 'delete').click();
-    check('delete: the script leaves the list but is kept, with a timestamp', !rowFor('Beta Prime (copy)') && !!stored()[copyId].deletedAt && stored()[copyId].content.indexOf('(copy)') !== -1);
+    check('delete: the script leaves the list but is kept, with a timestamp', !rowFor('Beta Prime (copy)') && !!(await stored())[copyId].deletedAt && (await stored())[copyId].content.indexOf('(copy)') !== -1);
     check('delete: says what happened and offers Undo, and the tab count goes up', /Deleted .Beta Prime \(copy\)./.test(status()) && /Undo/.test(status()) && trashChip() === 'Recently deleted (2)', [status(), trashChip()]);
     check('delete: focus stays inside the dialog', inDialog());
     Array.from(fid(lb, 'library-status').querySelectorAll('button')).find(b => b.textContent === 'Undo').click();
-    check('delete: Undo puts it straight back', !!rowFor('Beta Prime (copy)') && !stored()[copyId].deletedAt && trashChip() === 'Recently deleted (1)');
+    check('delete: Undo puts it straight back', !!rowFor('Beta Prime (copy)') && !(await stored())[copyId].deletedAt && trashChip() === 'Recently deleted (1)');
     act(rowFor('Beta Prime (copy)'), 'delete').click();
 
     // Recently deleted
@@ -886,15 +932,15 @@ const W = () => f.contentWindow;
     check('trash: explains the 30 days and offers Restore / Delete forever', /kept for 30 days/.test(fid(lb, 'library-list').textContent) && !!act(rowFor('Old draft'), 'restore') && !!act(rowFor('Old draft'), 'purge'));
     check('trash: deleted scripts cannot be renamed or opened from here', !act(rowFor('Old draft'), 'rename') && !act(rowFor('Old draft'), 'open'));
     act(rowFor('Old draft'), 'restore').click();
-    check('trash: Restore returns it to Scripts with its text intact', !rowFor('Old draft') && !stored().gone.deletedAt && stored().gone.content === 'Title: Old draft\n\nGone.' && /Restored .Old draft./.test(status()));
+    check('trash: Restore returns it to Scripts with its text intact', !rowFor('Old draft') && !(await stored()).gone.deletedAt && (await stored()).gone.content === 'Title: Old draft\n\nGone.' && /Restored .Old draft./.test(status()));
     act(rowFor('Beta Prime (copy)'), 'purge').click();
     const armedBtn = act(rowFor('Beta Prime (copy)'), 'purge');
-    check('trash: Delete forever asks "Really delete?" first and removes nothing yet', armedBtn.textContent === 'Really delete?' && armedBtn.classList.contains('armed') && !!stored()[copyId]);
+    check('trash: Delete forever asks "Really delete?" first and removes nothing yet', armedBtn.textContent === 'Really delete?' && armedBtn.classList.contains('armed') && !!(await stored())[copyId]);
     await sleep(4300);
     check('trash: the question times out and disarms', act(rowFor('Beta Prime (copy)'), 'purge').textContent === 'Delete forever');
     act(rowFor('Beta Prime (copy)'), 'purge').click();
     act(rowFor('Beta Prime (copy)'), 'purge').click();
-    check('trash: a second click removes it for good', !stored()[copyId] && /Removed for good/.test(status()) && /Nothing has been deleted/.test(fid(lb, 'library-list').textContent), [Object.keys(stored()), fid(lb, 'library-list').textContent]);
+    check('trash: a second click removes it for good', !(await stored())[copyId] && /Removed for good/.test(status()) && /Nothing has been deleted/.test(fid(lb, 'library-list').textContent), [Object.keys(await stored()), fid(lb, 'library-list').textContent]);
     fid(lb, 'libViewScripts').click();
     check('trash: the tab is back to a plain label when it is empty', trashChip() === 'Recently deleted');
 
@@ -906,21 +952,21 @@ const W = () => f.contentWindow;
     fq(lb, '#library-list [data-action="purge-all"]').click();
     check('trash: "Delete all forever" also asks first', fq(lb, '#library-list [data-action="purge-all"]').textContent === 'Really delete all?' && titles().length === 2);
     fq(lb, '#library-list [data-action="purge-all"]').click();
-    check('trash: the second click empties it', titles().length === 0 && !stored().b && !stored().c);
+    check('trash: the second click empties it', titles().length === 0 && !(await stored()).b && !(await stored()).c);
 
     // Deleting the script that is open
     fid(lb, 'libViewScripts').click();
     const openIdBefore = lb.contentWindow.eval('currentScriptId');
     const openText = lbe.value;
     act(rowFor('Alpha Prime Edition'), 'delete').click();
-    check('delete open script: leaves the writer on a blank page in a new script', lbe.value === '' && lb.contentWindow.eval('currentScriptId') !== openIdBefore && stored()[openIdBefore].deletedAt > 0 && stored()[openIdBefore].content === openText);
+    check('delete open script: leaves the writer on a blank page in a new script', lbe.value === '' && lb.contentWindow.eval('currentScriptId') !== openIdBefore && (await stored())[openIdBefore].deletedAt > 0 && (await stored())[openIdBefore].content === openText);
     Array.from(fid(lb, 'library-status').querySelectorAll('button')).find(b => b.textContent === 'Undo').click();
-    check('delete open script: Undo puts the script back on the page if nothing else was started', lbe.value === openText && lb.contentWindow.eval('currentScriptId') === openIdBefore && !stored()[openIdBefore].deletedAt);
+    check('delete open script: Undo puts the script back on the page if nothing else was started', lbe.value === openText && lb.contentWindow.eval('currentScriptId') === openIdBefore && !(await stored())[openIdBefore].deletedAt);
     act(rowFor('Alpha Prime Edition'), 'delete').click();
     lbe.value = 'Brand new words.';
     lbe.dispatchEvent(new lb.contentWindow.Event('input', { bubbles: true }));
     lb.contentWindow.dispatchEvent(new lb.contentWindow.Event('pagehide'));
-    const afterDelete = stored();
+    const afterDelete = await stored();
     const newOne = Object.keys(afterDelete).find(k => afterDelete[k].content === 'Brand new words.');
     check('delete open script: words typed afterwards go into a new script, never back into the deleted one',
       !!newOne && newOne !== openIdBefore && !!afterDelete[openIdBefore].deletedAt && afterDelete[openIdBefore].content === openText);
@@ -929,38 +975,39 @@ const W = () => f.contentWindow;
     // A stale pointer to a deleted script must not bring it back. (The page being left saves whatever is in its
     // editor as it goes, and would move the pointer, so empty the editor first: an empty editor is never saved.)
     const blankOut = (fr) => { const e = fid(fr, 'editor'); e.value = ''; e.dispatchEvent(new fr.contentWindow.Event('input', { bubbles: true })); };
-    const reloadReal = async (fr) => { await new Promise(r => { fr.onload = () => setTimeout(r, 100); fr.contentWindow.location.reload(); }); };
+    const reloadReal = (fr) => loaded(fr, () => fr.contentWindow.location.reload());
     blankOut(lb);
-    W().localStorage.setItem('frictionless_current', openIdBefore);
+    await setMeta({ currentScriptId: openIdBefore });
     await reloadReal(lb);
     const lbe2 = fid(lb, 'editor');
     check('delete: reopening the app never resurrects the deleted script (starts blank, new id)', lbe2.value === '' && lb.contentWindow.eval('currentScriptId') !== openIdBefore);
     lbe2.value = 'Typed after the reload.';
     lbe2.dispatchEvent(new lb.contentWindow.Event('input', { bubbles: true }));
     lb.contentWindow.dispatchEvent(new lb.contentWindow.Event('pagehide'));
-    check('delete: and the deleted script is still deleted afterwards', !!stored()[openIdBefore].deletedAt && stored()[openIdBefore].content === openText);
+    check('delete: and the deleted script is still deleted afterwards', !!(await stored())[openIdBefore].deletedAt && (await stored())[openIdBefore].content === openText);
 
     // Two tabs: another tab deletes the script this one has open. Carrying on typing here must not bring it back;
     // the words are kept, as a new script.
     blankOut(lb);
-    seedLibrary();
+    await seedLibrary();
     await reloadReal(lb);
-    const twoTabs = stored();
-    twoTabs.a.deletedAt = Date.now();
-    W().localStorage.setItem('frictionless_scripts', JSON.stringify(twoTabs));
+    const deletedElsewhere = Object.assign({}, (await stored()).a, { deletedAt: Date.now() });
+    await Store.write(await idb(), { put: [deletedElsewhere] }); // another tab deleted it, and this tab was never told
     const tabEditor = fid(lb, 'editor');
     check('two tabs: this tab still has the script open when the other tab deletes it', tabEditor.value.indexOf('Title: Alpha') === 0);
     tabEditor.value += ' Words written after the other tab deleted it.';
     tabEditor.dispatchEvent(new lb.contentWindow.Event('input', { bubbles: true }));
     lb.contentWindow.dispatchEvent(new lb.contentWindow.Event('pagehide'));
-    const afterTwoTabs = stored();
+    const afterTwoTabs = await stored();
     const rescuedId = Object.keys(afterTwoTabs).find(k => afterTwoTabs[k].content.indexOf('Words written after the other tab deleted it.') !== -1);
     check('two tabs: the words are kept as a new script, and the deleted one stays deleted and unchanged',
       !!rescuedId && rescuedId !== 'a' && !!afterTwoTabs.a.deletedAt && afterTwoTabs.a.content.indexOf('Words written after') === -1, [rescuedId, afterTwoTabs.a]);
+    check('two tabs: and this tab now knows: it carries on in the new script, and its Library has the other one as deleted',
+      lb.contentWindow.eval('currentScriptId') === rescuedId && !!lb.contentWindow.getScripts().a.deletedAt, lb.contentWindow.eval('currentScriptId'));
 
     // Opening a script from the list still works, and a script's title is only ever text
     blankOut(lb);
-    seedLibrary({ x: { id: 'x', title: 'X', content: 'Title: <img src=x onerror="window.__pwned=1">\n\nHi.', updatedAt: Date.now() } });
+    await seedLibrary({ x: { id: 'x', title: 'X', content: 'Title: <img src=x onerror="window.__pwned=1">\n\nHi.', updatedAt: Date.now() } });
     await reloadReal(lb);
     openLib();
     const xssRow = rows().find(r => /<img/.test(rowTitle(r)));
@@ -968,31 +1015,32 @@ const W = () => f.contentWindow;
     act(rowFor('Alpha'), 'open').click();
     check('library: opening a script from the list loads it and closes the dialog', fid(lb, 'editor').value.indexOf('Title: Alpha') === 0 && active(lb).length === 0);
     fid(lb, 'newBtn').click();                            // saves Alpha, then starts a blank page
-    W().localStorage.setItem('frictionless_scripts', '{}'); // ...and now nothing is saved
+    await setDb({}, { migrated: '1' });                   // ...and now nothing is saved
+    await reloadReal(lb);
     openLib();
     check('library: with nothing saved it explains itself', /No saved scripts yet/.test(fid(lb, 'library-list').textContent));
     blankOut(lb);
     lb.remove();
 
     // 16b. Import (P3-02): a file becomes a NEW script, from the Library's picker or a drop anywhere on the page.
-    seedLibrary();
+    await seedLibrary();
     const ib = await openRealFrame(1200, 800);
     const iw = ib.contentWindow;
     const ie = fid(ib, 'editor');
     const makeFile = (name, content) => new iw.File([content], name);
     const notice = () => fid(ib, 'notice');
     const noticeText = () => notice().textContent.replace(/\s+/g, ' ').trim();
-    const activeCount = () => Object.values(stored()).filter(s => !s.deletedAt).length;
-    const byContent = (needle) => Object.values(stored()).filter(s => !s.deletedAt && s.content.indexOf(needle) !== -1);
-    const idOfOpen = () => W().localStorage.getItem('frictionless_current');
+    const activeCount = async () => Object.values(await stored()).filter(s => !s.deletedAt).length;
+    const byContent = async (needle) => Object.values(await stored()).filter(s => !s.deletedAt && s.content.indexOf(needle) !== -1);
+    const idOfOpen = async () => (await storedMeta()).currentScriptId;
 
     ie.value = 'Title: Alpha\n\nINT. ALPHA - DAY\n\nWords typed just before importing.'; // typed, autosave not yet fired
     ie.dispatchEvent(new iw.Event('input', { bubbles: true }));
     await iw.importFiles([makeFile('big-fish.fountain', 'Title: Big Fish\r\n\r\nINT. POND - DAY\r\nA fish.\r\n')]);
     check('import: the file opens in the editor, with plain newlines', ie.value === 'Title: Big Fish\n\nINT. POND - DAY\nA fish.\n', ie.value);
-    check('import: it is a new script in the Library, next to the ones already there', activeCount() === 4 && byContent('A fish.').length === 1, activeCount());
-    check('import: the words being typed when it happened were saved first, not lost', byContent('Words typed just before importing.').length === 1);
-    check('import: the open-script pointer follows the import', idOfOpen() === byContent('A fish.')[0].id);
+    check('import: it is a new script in the Library, next to the ones already there', (await activeCount()) === 4 && (await byContent('A fish.')).length === 1, (await activeCount()));
+    check('import: the words being typed when it happened were saved first, not lost', (await byContent('Words typed just before importing.')).length === 1);
+    check('import: the open-script pointer follows the import', (await idOfOpen()) === (await byContent('A fish.'))[0].id);
     check('import: it says what happened', noticeText() === 'Imported “Big Fish”.' && !notice().classList.contains('error'), noticeText());
     check('import: the preview shows it formatted', fid(ib, 'render-target').innerHTML.indexOf('INT. POND - DAY') !== -1);
     check('import: the caret is at the top, not the end', ie.selectionStart === 0 && ie.selectionEnd === 0 && ie.scrollTop === 0);
@@ -1000,21 +1048,21 @@ const W = () => f.contentWindow;
     await iw.importFiles([makeFile('film.fdx', '<FinalDraft/>')]);
     check('import: a Final Draft file is refused, and the message names it and says what to do',
       /Final Draft/.test(noticeText()) && /film\.fdx/.test(noticeText()) && notice().classList.contains('error'), noticeText());
-    check('import: a refused file changes nothing', activeCount() === 4 && ie.value.indexOf('Title: Big Fish') === 0);
+    check('import: a refused file changes nothing', (await activeCount()) === 4 && ie.value.indexOf('Title: Big Fish') === 0);
     await iw.importFiles([makeFile('junk.txt', '%PDF' + String.fromCharCode(0, 0) + 'binary')]);
-    check('import: a "text" file that is really binary is refused', /junk\.txt/.test(noticeText()) && /text file/.test(noticeText()) && activeCount() === 4, noticeText());
+    check('import: a "text" file that is really binary is refused', /junk\.txt/.test(noticeText()) && /text file/.test(noticeText()) && (await activeCount()) === 4, noticeText());
     await iw.importFiles([makeFile('empty.txt', '  \n')]);
-    check('import: an empty file is refused', /empty\.txt/.test(noticeText()) && /empty/.test(noticeText()) && activeCount() === 4, noticeText());
+    check('import: an empty file is refused', /empty\.txt/.test(noticeText()) && /empty/.test(noticeText()) && (await activeCount()) === 4, noticeText());
 
     await iw.importFiles([makeFile('one.fountain', 'Title: One\n\nFirst.'), makeFile('two.txt', 'Title: Two\n\nSecond.'), makeFile('bad.pdf', 'x')]);
     check('import: several files each become a script, and the first is opened',
-      activeCount() === 6 && ie.value === 'Title: One\n\nFirst.' && byContent('Second.').length === 1, [activeCount(), ie.value]);
+      (await activeCount()) === 6 && ie.value === 'Title: One\n\nFirst.' && (await byContent('Second.')).length === 1, [(await activeCount()), ie.value]);
     check('import: the message covers the good files and names the one that failed',
       /Imported 2 scripts/.test(noticeText()) && /“One”/.test(noticeText()) && /bad\.pdf/.test(noticeText()) && notice().classList.contains('error'), noticeText());
-    const sortedTitles = iw.Library.active(stored()).map(s => s.title);
+    const sortedTitles = iw.Library.active(await stored()).map(s => s.title);
     check('import: the first file of a batch is listed above the second', sortedTitles.indexOf('One') < sortedTitles.indexOf('Two'), sortedTitles);
     await iw.importFiles([makeFile('one.fountain', 'Title: One\n\nFirst.')]);
-    check('import: importing the same file again adds another copy, and replaces nothing', byContent('First.').length === 2, byContent('First.').length);
+    check('import: importing the same file again adds another copy, and replaces nothing', (await byContent('First.')).length === 2, (await byContent('First.')).length);
 
     // The Library's "Import a file..." button hands the chosen files to the same code
     const picker = fid(ib, 'importInput');
@@ -1023,7 +1071,7 @@ const W = () => f.contentWindow;
     picker.files = chosen.files;
     picker.dispatchEvent(new iw.Event('change', { bubbles: true }));
     await sleep(200);
-    check('import: choosing a file in the picker imports it', byContent('From the picker.').length === 1 && ie.value.indexOf('Title: Picked') === 0);
+    check('import: choosing a file in the picker imports it', (await byContent('From the picker.')).length === 1 && ie.value.indexOf('Title: Picked') === 0);
     check('import: the picker is cleared so the same file can be chosen twice', picker.files.length === 0 && picker.value === '');
     fid(ib, 'libraryBtn').click();
     check('import: the Library offers it as a button', !!fid(ib, 'libImport') && fid(ib, 'libImport').getClientRects().length > 0 && fid(ib, 'libImport').innerText.indexOf('Import') === 0);
@@ -1043,7 +1091,7 @@ const W = () => f.contentWindow;
     drag('dragenter', filesDt);
     const dropped = drag('drop', filesDt);
     await sleep(200);
-    check('drop: dropping a file imports it, and the browser does not open the file instead', dropped.defaultPrevented && byContent('Out of the sky.').length === 1 && ie.value.indexOf('Title: Dropped') === 0);
+    check('drop: dropping a file imports it, and the browser does not open the file instead', dropped.defaultPrevented && (await byContent('Out of the sky.')).length === 1 && ie.value.indexOf('Title: Dropped') === 0);
     check('drop: the hint goes away after the drop', dropHintEl.hidden);
 
     const textDt = new iw.DataTransfer();
@@ -1057,22 +1105,152 @@ const W = () => f.contentWindow;
     check('import: the message clears itself', noticeText() === '' && getComputedStyle(notice()).display === 'none', noticeText());
 
     // When the browser cannot store it, say so and change nothing
-    const realPut = iw.putScripts;
-    iw.putScripts = () => false;
-    const shape = () => JSON.stringify(Object.values(stored()).map(s => [s.id, s.content, s.deletedAt || 0]).sort()); // timestamps move on every save
-    const before = shape();
+    const realWrite = iw.Store.write;
+    iw.Store.write = () => Promise.reject(new iw.DOMException('The quota has been exceeded.', 'QuotaExceededError'));
+    const shape = async () => JSON.stringify(Object.values(await stored()).map(s => [s.id, s.content, s.deletedAt || 0]).sort()); // timestamps move on every save
+    const before = await shape();
     const editorBefore = ie.value;
     await iw.importFiles([makeFile('big.fountain', 'Title: Too Big\n\nNo room.')]);
-    iw.putScripts = realPut;
+    iw.Store.write = realWrite;
     check('import: when storage is full the writer is told, and the open script and the library are untouched',
-      /not enough room/.test(noticeText()) && notice().classList.contains('error') && ie.value === editorBefore && shape() === before, noticeText());
+      /not enough room/.test(noticeText()) && notice().classList.contains('error') && ie.value === editorBefore && (await shape()) === before, noticeText());
+    check('import: and the scripts that could not be stored are not left in memory either (the Library would list them)',
+      !Object.values(iw.getScripts()).some(s => s.content.indexOf('No room.') !== -1));
 
     check('help: Import is explained', /Import/.test(fid(ib, 'help-modal').textContent));
     iw.saveScript = () => {};
     ib.remove();
 
+    // 16c. Storage (P4-10, D-018): IndexedDB, the one-time migration, the emergency buffer, other tabs, the fallback.
+    // Uses the app's real saving, like section 16.
+    const appendText = (fr, words) => { const e = fid(fr, 'editor'); e.value += words; e.dispatchEvent(new fr.contentWindow.Event('input', { bubbles: true })); };
+    const hide = (fr) => fr.contentWindow.dispatchEvent(new fr.contentWindow.Event('pagehide'));
+    const libRow = (fr, title) => Array.from(fr.contentDocument.querySelectorAll('#library-list .script-item')).find(r => r.querySelector('.script-title').textContent === title);
+    const T0 = Date.now();
+    const LEGACY = {
+      old1: { id: 'old1', title: 'Old One', content: 'Title: Old One\n\nFrom before.', updatedAt: T0 - 60000 },
+      old2: { id: 'old2', title: 'Old Two', content: 'Title: Old Two\n\nOpen last.', updatedAt: T0 - 120000 },
+      oldgone: { id: 'oldgone', title: 'Old Gone', content: 'Title: Old Gone\n\nBinned.', updatedAt: T0 - 5 * DAY_MS, deletedAt: T0 - DAY_MS }
+    };
+    const legacyJson = JSON.stringify(LEGACY);
+
+    // An upgrade from the version that kept everything in one localStorage key
+    await setDb({}, {});
+    W().localStorage.setItem('frictionless_scripts', legacyJson);
+    W().localStorage.setItem('frictionless_current', 'old2');
+    const sf = await openRealFrame(1200, 700);
+    let dbNow = await dbState();
+    check('migration: every old script is copied into IndexedDB, deleted ones included',
+      JSON.stringify(Object.keys(dbNow.scripts).sort()) === '["old1","old2","oldgone"]' && dbNow.scripts.oldgone.deletedAt === LEGACY.oldgone.deletedAt && dbNow.scripts.old1.content === LEGACY.old1.content, Object.keys(dbNow.scripts));
+    check('migration: the script that was open reopens, and the pointer moves over too',
+      fid(sf, 'editor').value === LEGACY.old2.content && dbNow.meta.currentScriptId === 'old2' && dbNow.meta.migrated === '1', [fid(sf, 'editor').value, dbNow.meta]);
+    check('migration: the old localStorage copy is left exactly as it was (a fallback)',
+      W().localStorage.getItem('frictionless_scripts') === legacyJson && W().localStorage.getItem('frictionless_current') === 'old2');
+    check('storage: this browser uses IndexedDB', sf.contentWindow.eval('storageMode') === 'idb');
+
+    // Autosave writes the one script being edited: not the library
+    const writes = [];
+    const sw = sf.contentWindow;
+    const realSaveOne = sw.Store.saveScript, realWriteMany = sw.Store.write;
+    sw.Store.saveScript = function (d, r) { writes.push('save ' + r.id); return realSaveOne.apply(this, arguments); };
+    sw.Store.write = function (d, change) { if ((change.put || []).length || (change.remove || []).length) writes.push('write ' + (change.put || []).length + '/' + (change.remove || []).length); return realWriteMany.apply(this, arguments); };
+    appendText(sf, ' More.');
+    await sleep(2300);
+    check('autosave: writes only the script being edited', writes.join() === 'save old2', writes);
+    sw.Store.saveScript = realSaveOne;
+    sw.Store.write = realWriteMany;
+    check('autosave: the edit is in IndexedDB, and the old localStorage copy is not rewritten',
+      (await stored()).old2.content === LEGACY.old2.content + ' More.' && W().localStorage.getItem('frictionless_scripts') === legacyJson);
+
+    // The migration runs once: an old copy of the app writing to localStorage later is not copied in again
+    W().localStorage.setItem('frictionless_scripts', JSON.stringify(Object.assign({ late: { id: 'late', title: 'Late', content: 'Title: Late\n\nToo late.', updatedAt: Date.now() } }, LEGACY)));
+    await reloadReal(sf);
+    check('migration: runs once only', !(await stored()).late && (await stored()).old2.content === LEGACY.old2.content + ' More.');
+    W().localStorage.setItem('frictionless_scripts', legacyJson);
+
+    // The emergency buffer: the tab closes before IndexedDB has finished writing
+    sf.contentWindow.Store.saveScript = () => new Promise(() => {}); // this write never lands
+    appendText(sf, ' The last words before the tab closed.');
+    hide(sf);
+    const lastWords = fid(sf, 'editor').value;
+    check('buffer: on pagehide the words go into the emergency buffer at once', !!buffer(W()) && !!buffer(W()).old2 && buffer(W()).old2.content === lastWords, buffer(W()));
+    check('buffer: (and in this test IndexedDB never gets them)', (await Store.loadAll(await idb())).scripts.old2.content !== lastWords);
+    await reloadReal(sf);
+    check('buffer: after a reload the words are back in the editor', fid(sf, 'editor').value === lastWords, fid(sf, 'editor').value);
+    check('buffer: they are stored in IndexedDB now, and the buffer is empty again', (await stored()).old2.content === lastWords && buffer(W()) === null, buffer(W()));
+    W().localStorage.setItem(EMERGENCY_KEY, JSON.stringify({ old1: { id: 'old1', title: 'Old One', content: 'Stale words', updatedAt: 1 } }));
+    await reloadReal(sf);
+    check('buffer: an entry older than the stored script is thrown away, never written over newer words',
+      (await stored()).old1.content === LEGACY.old1.content && buffer(W()) === null);
+
+    // A save the browser refuses (full) says so, and keeps the words in the buffer
+    const realSaveSf = sf.contentWindow.Store.saveScript;
+    sf.contentWindow.Store.saveScript = () => Promise.reject(new sf.contentWindow.DOMException('The quota has been exceeded.', 'QuotaExceededError'));
+    appendText(sf, ' Nowhere to put these.');
+    fid(sf, 'saveBtn').click();
+    await sleep(100);
+    check('save: when the browser refuses, Save says Error and the words wait in the buffer',
+      fid(sf, 'saveBtn').innerText === 'Error' && buffer(W()).old2.content === fid(sf, 'editor').value, [fid(sf, 'saveBtn').innerText, buffer(W())]);
+    sf.contentWindow.Store.saveScript = realSaveSf;
+    fid(sf, 'saveBtn').click();
+    await settle();
+    check('save: the next save that works stores them and empties the buffer', (await stored()).old2.content.endsWith(' Nowhere to put these.') && buffer(W()) === null);
+    await sleep(2100); // the Save button's label comes back
+
+    // Two tabs open at once: each keeps the library in memory, and tells the other what it changed
+    const tb = await openRealFrame(1200, 700);
+    check('two tabs: both open on the same script', fid(tb, 'editor').value === fid(sf, 'editor').value && sf.contentWindow.eval('currentScriptId') === 'old2' && tb.contentWindow.eval('currentScriptId') === 'old2');
+    fid(sf, 'libraryBtn').click();
+    act(libRow(sf, 'Old One'), 'rename').click();
+    fq(sf, '#library-list .rename-form input').value = 'Renamed In Tab A';
+    fq(sf, '#library-list .rename-form').requestSubmit();
+    await settle();
+    await sleep(50);
+    fid(tb, 'libraryBtn').click();
+    check('two tabs: a rename in one tab shows in the other tab\'s Library without a reload', !!libRow(tb, 'Renamed In Tab A') && !libRow(tb, 'Old One'));
+    fq(tb, '#library-modal .modal-close').click();
+    act(libRow(sf, 'Old Two'), 'delete').click();
+    await settle();
+    await sleep(50);
+    appendText(tb, ' Typed in tab B after tab A deleted it.');
+    hide(tb);
+    check('two tabs: a delete in one tab is known in the other at once: its next save starts a new script straight away',
+      tb.contentWindow.eval('currentScriptId') !== 'old2' && !!tb.contentWindow.getScripts().old2.deletedAt);
+    const afterTabs = await stored();
+    check('two tabs: so the deleted script stays deleted and unchanged, and the words are kept',
+      !!afterTabs.old2.deletedAt && afterTabs.old2.content.indexOf('Typed in tab B') === -1 && Object.values(afterTabs).some(x => !x.deletedAt && x.content.indexOf('Typed in tab B') !== -1));
+    fq(sf, '#library-modal .modal-close').click();
+    [sf, tb].forEach(fr => { blankOut(fr); fr.contentWindow.saveScript = () => {}; fr.remove(); });
+
+    // No IndexedDB (some private windows): the app keeps working on the old localStorage key, as it always did
+    W().localStorage.setItem('frictionless_scripts', legacyJson);
+    W().localStorage.setItem('frictionless_current', 'old1');
+    const nf = await openRealFrame(1200, 700);
+    const nw = nf.contentWindow;
+    blankOut(nf);
+    await nw.restoreLastScript(null);
+    nw.render();
+    const idbBefore = JSON.stringify(await stored());
+    check('fallback: without IndexedDB the app opens the scripts kept in localStorage', nw.eval('storageMode') === 'local' && fid(nf, 'editor').value === LEGACY.old1.content, [nw.eval('storageMode'), fid(nf, 'editor').value]);
+    appendText(nf, ' Fallback words.');
+    hide(nf);
+    const legacyNow = () => JSON.parse(W().localStorage.getItem('frictionless_scripts'));
+    check('fallback: a save lands in localStorage at once (synchronously)', legacyNow().old1.content === LEGACY.old1.content + ' Fallback words.' && W().localStorage.getItem('frictionless_current') === 'old1');
+    check('fallback: and IndexedDB and the emergency buffer are left alone', JSON.stringify(await stored()) === idbBefore && buffer(W()) === null);
+    const deletedByOtherTab = legacyNow();
+    deletedByOtherTab.old1.deletedAt = Date.now();
+    W().localStorage.setItem('frictionless_scripts', JSON.stringify(deletedByOtherTab));
+    appendText(nf, ' After the delete.');
+    hide(nf);
+    check('fallback: another tab\'s delete is still seen at once, and the words go to a new script',
+      legacyNow().old1.content.indexOf('After the delete.') === -1 && Object.values(legacyNow()).some(x => !x.deletedAt && x.content.indexOf('After the delete.') !== -1));
+    blankOut(nf);
+    nw.saveScript = () => {};
+    nf.remove();
+    ['frictionless_scripts', 'frictionless_current', EMERGENCY_KEY].forEach(k => W().localStorage.removeItem(k));
+
     // Phone: the Library fits a 375px screen and every action is reachable
-    seedLibrary();
+    await seedLibrary();
     await reloadFrame(m);
     $m('libraryBtn').click();
     const pl = rect(fq(m, '#library-modal .modal-content')), plist = fq(m, '#library-list');
@@ -1134,6 +1312,9 @@ const W = () => f.contentWindow;
 
   // Put the writer's real data back exactly as it was
   try {
+    if (dbSnapshot) await setDb(dbSnapshot.scripts, dbSnapshot.meta);
+  } catch (e) { log.push('FAIL could not restore IndexedDB: ' + e.message); }
+  try {
     (snapshot || []).forEach(([k, v]) => v === null ? W().localStorage.removeItem(k) : W().localStorage.setItem(k, v));
   } catch (e) { log.push('FAIL could not restore localStorage: ' + e.message); }
 
@@ -1142,6 +1323,7 @@ const W = () => f.contentWindow;
   banner.style.background = failed ? '#b91c1c' : '#15803d';
   banner.textContent = failed ? failed + ' FAILED' : 'ALL ' + log.length + ' PASSED';
   document.getElementById('out').textContent = 'DONE\n' + log.join('\n');
+  release();
 })();
 </script>
 </body></html>

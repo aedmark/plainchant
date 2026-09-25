@@ -18,11 +18,13 @@ if (-not $browser) { Write-Error 'No Edge or Chrome found.'; exit 2 }
 $work = Join-Path ([IO.Path]::GetTempPath()) ('nf-test-' + [Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory $work | Out-Null
 
+# Real time, not --virtual-time-budget: IndexedDB replies arrive in real time and virtual time races past them (D-019).
+# --dump-dom waits for the page's load event, and the e2e page holds that event until its checks are done.
 function Invoke-Page([string]$relativePage) {
     $url = ([Uri](Join-Path $root $relativePage)).AbsoluteUri
     $dump = Join-Path $work ([IO.Path]::GetFileName($relativePage) + '.dom.html')
     $args = @('--headless=new', '--disable-gpu', '--allow-file-access-from-files', "--user-data-dir=`"$work\profile`"",
-              '--virtual-time-budget=240000', '--dump-dom', $url)
+              '--dump-dom', $url)
     Start-Process -FilePath $browser -ArgumentList $args -RedirectStandardOutput $dump `
         -RedirectStandardError (Join-Path $work 'err.txt') -Wait -NoNewWindow
     Get-Content $dump -Raw

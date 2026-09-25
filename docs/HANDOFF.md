@@ -9,9 +9,19 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-21, session 10 (autocomplete done; PDF printing is next, as a spec only)._
+_Last updated: 2026-09-25, session 12 (P4-10 IndexedDB storage implemented; PDF printing is still next, as a spec
+only)._
 
 **What works**
+- **Storage is IndexedDB** (P4-10, D-018, D-019; `src/store.js` + `src/app/persistence.js`). Database `plainchant`,
+  one record per script in `scripts`, the open-script pointer and a `migrated` flag in `meta`. The whole library is
+  held in memory; an autosave writes **only the script being edited**. On the first run after the upgrade the old
+  `frictionless_scripts` / `frictionless_current` localStorage keys are copied in once, and **left in place** (P4-11
+  removes them later). Every save first puts its words in a small synchronous localStorage buffer
+  (`frictionless_emergency`), cleared once IndexedDB has them, so a tab closed mid-write loses nothing: the next load
+  puts them back. Other open tabs are told of every change (BroadcastChannel); a save into a script another tab
+  deleted still goes to a new script, checked again inside the write. With no IndexedDB (or it fails to open) the app
+  runs on the old localStorage key exactly as before. Startup is asynchronous now (`whenReady()`).
 - **Import** (D-016, `src/importing.js` + `src/app/import.js`). The Library's `Import a file...` button, or drop a file
   anywhere on the page. `.fountain` / `.txt` / `.md` (any UTF-8 / UTF-16 / Windows-1252 text) become NEW scripts, the
   first opens, nothing is overwritten; `.fdx` / PDF / Word are refused with a reason. Messages show in `#notice`.
@@ -71,8 +81,20 @@ _Last updated: 2026-09-21, session 10 (autocomplete done; PDF printing is next, 
 - Scroll sync no longer divides by zero.
 
 **Verified**
-- `npm test` passes under Node 24: 180 tests (60 parser, 53 typing helpers, 23 library, 13 importing, 23 autocomplete, 8
-  app-script structure). The browser runner runs the 172 that need no file access.
+- `npm test` passes (Node 22 in the session-12 cloud container): 196 tests (60 parser, 53 typing helpers, 23 library,
+  13 importing, 23 autocomplete, 16 storage rules, 8 app-script structure). The browser runner runs the 188 that need
+  no file access.
+- **Storage (P4-10) end to end**, `bash test/run-headless.sh` in headless Chromium on Linux: 188 unit + **414 e2e**
+  (was 387). Section 16c covers the migration (copied, pointer moved, legacy key untouched, runs once), an autosave
+  writing one record, the emergency buffer (written synchronously on pagehide; a write that never lands is restored on
+  reload; a stale entry is ignored; a refused save shows Error and keeps the words), two live tabs (a rename and a
+  delete reach the other tab at once), and the localStorage fallback. Every existing storage check now reads IndexedDB.
+- **Storage mutation-tested:** writing the buffer after the write instead of synchronously, never clearing it, a
+  migration that ignores its flag, no delete guard inside the transaction, ignoring other tabs' messages, never
+  reconciling the buffer, keeping refused writes in memory, and a fallback that stops re-reading localStorage each
+  fail at least one e2e check. Twelve mutations of the pure rules in `src/store.js` each fail a unit test (two
+  survived at first: an ordering test that could not tell "newest" from "last", and a guard with no input that
+  exercised it; both tests fixed).
 - **Autocomplete mutation-tested**: dropping the whole-name guard, the skip-own-line rule, the one-letter minimum, the
   count ordering, the end-of-line rule and the option cap each fail unit tests; Shift+Tab accepting, an Esc that never
   clears, an Esc that also frees Tab, no refresh before Tab, no hide on blur, `innerHTML` chips and an accept that
@@ -82,8 +104,9 @@ _Last updated: 2026-09-21, session 10 (autocomplete done; PDF printing is next, 
   test; reusing a deleted script's id on reload fails; a 30-day boundary off by one fails a unit test; hard-deleting
   instead of soft-deleting crashes the Library section (an exception), so it cannot pass. (The first attempt at the autosave-guard mutation failed *nothing*, which
   exposed that the two-tab scenario was untested; it now is.)
-- `npm run test:browser` passes: the same 172 unit tests + 387 app end-to-end checks (headless Edge, throwaway
-  profile). Frames: a 375px phone, the preview-column position at desktop/phone/1800px, tablets at 640-810px
+- `npm run test:browser` (Windows) last passed in session 10/11: 172 unit tests + 387 app end-to-end checks (headless
+  Edge, throwaway profile). **Session 12 changed it to real time and has not run it on Windows** (see "Not verified").
+  Frames: a 375px phone, the preview-column position at desktop/phone/1800px, tablets at 640-810px
   (one pane) and 1024-1366px (split, no clipping), a 1200px desktop frame for the typing helpers (Tab, Enter,
   Shift+Enter, auto-uppercase, buttons, undo, Esc+Tab, mode lifetime) and for the tour and Help (first launch,
   step navigation, focus trap and return, Esc / backdrop / x / Done, F1 and Ctrl+/, replay, the example script,
@@ -101,6 +124,11 @@ _Last updated: 2026-09-21, session 10 (autocomplete done; PDF printing is next, 
   and phone in headless Edge.
 
 **Not verified / not done**
+- **IndexedDB storage (P4-10) has only run in headless Chromium on Linux.** Not yet seen: the Windows runner
+  (`npm run test:browser`, now real time; its logic matches the Linux runner, which passes), Edge, **Safari (iPad /
+  iPhone) and Firefox**, the app opened from `file://` in Firefox (IndexedDB there may be refused, which would drop to
+  the localStorage fallback), a real upgrade of the owner's existing library, and a real tab closed mid-write. The
+  owner should open the app in their usual browser once and check their scripts are all there.
 - **Real devices: the user reports everything works on their tablet and elsewhere** (2026-09-20, after the layout,
   typing-helper and tablet work; no detail recorded on which devices, Split View, or Pencil). That covers P2-09 in
   spirit but the specifics below remain unobserved by me. `fitToViewport()` itself is tested only with a fake
@@ -126,8 +154,8 @@ _Last updated: 2026-09-21, session 10 (autocomplete done; PDF printing is next, 
 - PyCharm may still need its interpreter pointed at `%LOCALAPPDATA%\Programs\Python\Python313\python.exe`
   (Settings > Project > Python Interpreter) if the user wants Python features there. The project is JavaScript.
 - Headless Edge quirks on Windows: pass URL unquoted via `Start-Process -ArgumentList`; quote any path that contains
-  a space (`C:\Users\Gordon Knot\...`); use `--virtual-time-budget=NNNN` so timers fire; redirect stdout to a file
-  rather than piping. `test/run-headless.ps1` already handles all of this.
+  a space (`C:\Users\Gordon Knot\...`); redirect stdout to a file rather than piping. `test/run-headless.ps1` already
+  handles all of this.
 - Blank lines are structure, not spacers: the parser emits no spacer tokens, spacing is CSS margins only.
 - The parser is deliberately spec-strict (D-004). The editor, not the parser, adds leniency (D-010): text in the
   document must already parse the way the writer means it. Where it cannot, the editor writes a forced marker
@@ -140,11 +168,20 @@ _Last updated: 2026-09-21, session 10 (autocomplete done; PDF printing is next, 
   what follows before it will call something a cue or a transition. Change it with care; the property test in
   `test/editing.test.js` ("the parser agrees afterwards") is the safety net.
 - `frictionless_*` localStorage keys are legacy naming and must stay (D-005).
-- **The headless runner's `--virtual-time-budget` is 240000** (was 60000). The e2e suite had grown past the old budget
-  and the runner reported "the page never finished" with 0 passed, on a clean checkout too. If that message returns,
-  raise it again before suspecting the code.
+- **Storage (D-019).** The library is the in-memory `library` object in `persistence.js`; `getScripts()` returns it,
+  `putScripts(next)` stores the difference and returns a promise. Never write to IndexedDB or the old keys directly:
+  other tabs would not be told and the emergency buffer would go wrong. The global is `Store`, never `Storage` (that is
+  the browser's). Each IndexedDB write must create its transaction synchronously (see D-019 point 4); do not put an
+  `await` in front of one.
+- **The headless runners run in real time now (no `--virtual-time-budget`).** IndexedDB never answers under virtual
+  time. The e2e page holds its own load event open until it is done (the hidden `hold` iframe), which is what makes
+  `--dump-dom` wait; it gives up after 10 real minutes. A run takes about 40 s. "The page never finished" now means a
+  script error or a hung `await`: open the page in a browser, or in Playwright with `waitUntil: 'commit'` (the page
+  holds its load event, so waiting for "load" times out).
+- **In the e2e page, a stubbed write that never resolves hangs `stored()`** (it waits on every frame's `whenSaved()`).
+  Section 16c reads IndexedDB directly (`Store.loadAll(await idb())`) while such a stub is in place, then reloads.
 - **The e2e page has a timing trap.** Frames from early sections keep their text and a 2-second autosave timer, and
-  `openFrame` silences saving only in its own frame. Adding frames or waits moves the virtual clock, and a stale timer
+  `openFrame` silences saving only in its own frame. Adding frames or waits moves the clock, and a stale timer
   can then write a script into storage during the Library section (the symptom: "library: choosing a script opens it"
   opens the wrong script). The typing section now silences every existing frame before it starts. Do the same in any
   new section that runs after long-lived frames and touches storage.
@@ -194,6 +231,10 @@ _Last updated: 2026-09-21, session 10 (autocomplete done; PDF printing is next, 
 
 ## Next steps (in order)
 
+0. **Check the IndexedDB upgrade on the owner's machine (P4-10).** Run `npm run test:browser` on Windows (now real time,
+   about 40 s; first run since session 12). Then open the app in the browser that holds the real library: every script
+   should still be listed (they are copied in once; the old localStorage copy stays as a fallback). Then try it on the
+   iPad (Safari). If any browser falls back to localStorage, `storageMode` in the console says `'local'`.
 1. **Try the tour as a first-time user on the tablet** (clear site data or
    `localStorage.removeItem('frictionless_onboarded')`). The user proofed the Help copy in session 8; the tour copy
    (`src/app/tour.js` and the tour markup) was not changed then.
@@ -208,9 +249,8 @@ _Last updated: 2026-09-21, session 10 (autocomplete done; PDF printing is next, 
    `(CONT'D)`, title page on its own page, dual dialogue, scene numbers, and print-CSS versus a generated PDF (D-001 says
    no runtime dependencies). Write the result up as a decision plus roadmap items, then wait for the go-ahead.
 5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
-6. **P4-10 IndexedDB migration is specced, not scheduled** ([docs/SPEC-INDEXEDDB.md](SPEC-INDEXEDDB.md), D-018). It is
-   a Phase 4 item and comes after P3-03; do not start it without the user's go-ahead. Settle the spec's open questions
-   (§11) before implementing.
+6. (P4-10, IndexedDB storage, is done: D-018, D-019. P4-11, removing the legacy localStorage copy, waits until it has
+   run in the owner's browsers without trouble.)
 
 ## Open questions for the user
 
@@ -228,6 +268,31 @@ _Last updated: 2026-09-21, session 10 (autocomplete done; PDF printing is next, 
 ## Session log
 
 Newest first. Copy the template for each new session.
+
+### Session 12: 2026-09-25: IndexedDB storage (P4-10)
+
+**Goal:** At the owner's request ("pick up the baton"), implement the IndexedDB migration specced in session 11. This
+was a cloud session (Linux container, Chromium, Node 22), not the owner's Windows machine.
+**Done:** P4-10. New `src/store.js` (global `Store`: pure rules + thin IndexedDB calls) with 16 unit tests;
+`persistence.js` rewritten around an in-memory library, per-script writes, the emergency buffer, BroadcastChannel and
+the localStorage fallback; asynchronous start-up (`whenReady`) in `main.js`; `import.js` awaits its write. Every
+storage check in `test/app.e2e.html` now reads IndexedDB, and a new section 16c adds 22 checks. Both headless runners
+now run in real time; `test/run-headless.sh` is new. Docs: D-019, roadmap (P4-10 ticked, P4-11 and P4-12 added, P3-09
+reworded), CLAUDE.md, the spec's status line.
+**Changed from the spec (all in D-019):** the module is `Store` (not `Storage`), the buffer is written on every save
+and keyed by script id, writes create their transaction at once instead of queueing, BroadcastChannel is in now, and
+the fallback keeps the old behaviour exactly.
+**Decisions:** D-019.
+**Problems / surprises**
+- **IndexedDB never completes under headless Chrome's `--virtual-time-budget`**: virtual time runs past its replies.
+  A probe page never saw even one transaction finish. So the runners dropped virtual time. The e2e page now holds its
+  own load event open (an iframe whose document stays open) so `--dump-dom` waits for it. The unchanged suite passed
+  in real time (387/387, 32 s) before any app change.
+- The storage section's `typeInto` helper clashed with one already declared in the typing section (one shared script
+  scope); renamed `appendText`.
+**Left undone:** Running anything on Windows, Edge, Safari or Firefox; the owner's real library upgrade. P4-11 (remove
+the legacy copy) and P4-12 (persistent storage) are new roadmap items. P3-03 (print/PDF spec) is still the next feature.
+**Next session should start with:** "Next steps" above, item 0.
 
 ### Session 11: 2026-09-21: IndexedDB migration spec (P4-10)
 

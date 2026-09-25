@@ -41,7 +41,7 @@ async function importFiles(fileList) {
                 scripts = added.scripts;
                 ids.push(added.id);
             });
-            if (putScripts(scripts)) {
+            if (await putScripts(scripts)) {
                 opened = scripts[ids[0]];
                 openScriptById(ids[0]);
                 editor.setSelectionRange(0, 0);

@@ -1,10 +1,11 @@
 # Spec: migrate storage from localStorage to IndexedDB
 
-Roadmap item **P4-10**. Decision **D-018**. Status: **spec only — not implemented**.
+Roadmap item **P4-10**. Decision **D-018**. Status: **implemented 2026-09-25** (session 12). The §11 questions are
+settled, and the places where the build departs from this plan are listed, in **D-019**. Read D-019 first; this file
+is kept as the plan that was followed.
 
-This spec is the plan for moving Plainchant's script storage off localStorage and onto IndexedDB. It is written to
-be implemented later (it is *not* the next step; P3-03 print/PDF is). Read it alongside D-018, which records the
-decisions this spec depends on.
+This spec is the plan for moving Plainchant's script storage off localStorage and onto IndexedDB. Read it alongside
+D-018, which records the decisions this spec depends on.
 
 ---
 

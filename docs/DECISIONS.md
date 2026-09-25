@@ -316,6 +316,43 @@ import and the Library dialog. The e2e harness must snapshot/restore IDB state t
 `navigator.storage.estimate()` / `persist()` become available for the capacity indicator (P3-09) and offline (P4-02).
 Full spec: docs/SPEC-INDEXEDDB.md. This is a Phase 4 item (P4-10), not the next step; P3-03 (print/PDF) remains next.
 
+## D-019 How P4-10 was built: the spec's open questions, and where it departs from the spec  (2026-09-25, status: accepted)
+**Context:** Implementing D-018 at the owner's request. The spec left four questions open (§11), and building it
+showed where the plan needed changes.
+**Decision:**
+1. **Names as specced:** database `plainchant`, stores `scripts` (keyPath `id`) and `meta` (keyPath `key`). The module
+   is `src/store.js` with the global **`Store`**, not `Storage`: `window.Storage` is the browser's own Web Storage
+   interface, and replacing it would break `localStorage instanceof Storage`.
+2. **The in-memory library is the source of truth** (§11): read whole at startup, then only deltas are written
+   (`Store.diff`). `getScripts()` / `putScripts()` keep their names, so `library-ui.js` is unchanged; `putScripts` now
+   returns a promise of success, and takes back out of memory whatever the browser refused to store.
+3. **The emergency buffer is written on every save, not only on pagehide,** and cleared per script when that save's
+   IndexedDB write lands (unless newer words arrived since). The rule is then simply "words not yet confirmed in
+   IndexedDB are in the buffer", which also covers a crash with a write in flight. It costs one script's worth of
+   synchronous localStorage per save, not the library. `frictionless_emergency` holds `{ [id]: entry }`, not one entry,
+   so two tabs closing at once cannot overwrite each other's words. On startup `Store.reconcile` restores an entry only
+   if it is newer than the stored script and different; one for a deleted script becomes a new script.
+4. **Every write creates its IndexedDB transaction synchronously** instead of queueing behind the previous write.
+   IndexedDB already runs read-write transactions in creation order, and a queued write would not start before a
+   `pagehide` handler returns. The pointer (`meta.currentScriptId`) is written in the same transaction as the save.
+5. **BroadcastChannel now, not deferred** (§8, §11). Without it a second tab's Library shows stale titles and a rename
+   there writes a stale copy. The in-transaction delete guard stays as the safety net for tabs that were not told.
+6. **The fallback is the old behaviour, exactly:** with no IndexedDB (or it fails to open) the app reads and writes
+   `frictionless_scripts` / `frictionless_current` synchronously, re-reading on every access so other tabs' deletes
+   are seen. No emergency buffer there (writes are already synchronous).
+7. **Migration** is one read-write transaction that checks the `migrated` flag first (two tabs cannot both run it)
+   and never overwrites a newer IndexedDB record. The legacy keys are left untouched; removing them is P4-11 (§11).
+8. **Startup is asynchronous.** `main.js` exposes `whenReady()`; saves before storage has opened are skipped (there is
+   nothing loaded to save over). Persistence exposes `whenSaved()`. Both are for the e2e tests.
+9. **Tests run in real time.** Headless Chromium's `--virtual-time-budget` races past IndexedDB (virtual time does not
+   wait for its replies; a probe never saw one complete), so both runners dropped it. The e2e page holds its own load
+   event (a hidden iframe whose document stays open) until its checks finish, so `--dump-dom` still waits for them;
+   a 10-minute real-time deadline stops a hung run. Added `test/run-headless.sh` for Linux/macOS. The IndexedDB layer
+   has no fake for Node: its pure rules are unit-tested, the plumbing only against a real browser (e2e section 16c).
+**Consequences:** The e2e suite takes about 40 s instead of about 13 s. If IndexedDB starts failing in a profile where
+it once worked, the fallback shows the old (stale) localStorage copy until P4-11 decides otherwise. Browsers without
+BroadcastChannel (Safari before 15.4) show other tabs' changes only after a reload. Only Chromium has run any of this.
+
 ## Open questions
 
 - Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

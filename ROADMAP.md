@@ -114,7 +114,7 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
 - [x] P3-07 Library management: search, rename (rewrites the script's own `Title:` line), duplicate, delete with
   Undo and a 30-day Recently deleted, restore, delete forever (two clicks) (D-013)
 - [ ] P3-09 Library extras, if wanted: sort options (name, date created), multi-select, export a single script
-  from its row, and a storage-usage indicator (localStorage is about 5 MB and Recently deleted holds space)
+  from its row, and a storage-usage indicator (`navigator.storage.estimate()`; Recently deleted holds space)
 - [ ] P3-08 Final Draft `.fdx` export (stretch)
 
 ## Phase 4: Scale and polish
@@ -132,10 +132,16 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
   Byte-for-byte the same rules (de-indented); `test/structure.test.js` fails if an inline `<style>` returns.
 - [x] P4-07 Replace deprecated `document.execCommand('copy')` with the async Clipboard API (execCommand stays as the
   fallback for insecure origins)
-- [ ] P4-10 Migrate storage from localStorage to IndexedDB (spec: docs/SPEC-INDEXEDDB.md, D-018). Per-script records
-  in an object store, the in-memory library object kept as the working model, a synchronous localStorage "emergency
-  buffer" for the pagehide race, and a one-time idempotent migration that keeps the localStorage copy as a fallback.
-  Fixes the 5 MB cap and the whole-library rewrite on every autosave.
+- [x] P4-10 Migrate storage from localStorage to IndexedDB (spec: docs/SPEC-INDEXEDDB.md, D-018, D-019). Per-script
+  records in an object store (`src/store.js`), the in-memory library object kept as the working model, a synchronous
+  localStorage "emergency buffer" for the pagehide race, and a one-time idempotent migration that keeps the
+  localStorage copy as a fallback. Other tabs are told of changes (BroadcastChannel); no IndexedDB means the old
+  localStorage behaviour. Fixes the 5 MB cap and the whole-library rewrite on every autosave. The headless runners now
+  run in real time (`test/run-headless.sh` added for Linux/macOS).
+- [ ] P4-11 Remove the legacy `frictionless_scripts` / `frictionless_current` localStorage copy once IndexedDB has run
+  in the wild without trouble (D-018 step 4). Needs a decision on what the fallback then reads (nothing: start empty).
+- [ ] P4-12 Ask for persistent storage (`navigator.storage.persist()`) so the browser does not evict the library under
+  disk pressure; pairs with P4-02 (installed PWAs are granted it more readily)
 
 ## Phase 5: Sync and share (open questions)
 

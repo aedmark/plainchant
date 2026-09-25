@@ -1,7 +1,8 @@
 /*
  * Library management (P3-07): pure functions over the saved-scripts object.
  *
- * The page keeps scripts in localStorage as { [id]: { id, title, content, updatedAt, deletedAt? } }. Every function
+ * The page keeps scripts in memory as { [id]: { id, title, content, updatedAt, deletedAt? } } (stored in IndexedDB
+ * one record per script, D-018). Every function
  * here takes that object and returns a new one; none mutate their input and none touch the DOM or storage, so all
  * of it is unit-tested. Loads as window.Library (after fountain.js) in the browser and via require() in Node.
  *

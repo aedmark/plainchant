@@ -39,7 +39,8 @@ Sessions are short-lived and context resets between them, so the repo carries th
 | `src/library.js` | Library data rules (search, soft delete, restore, purge, duplicate, rename): scripts object in, new object out. Pure, UMD (D-013) |
 | `src/importing.js` | Import rules: which files to accept, decoding (UTF-8/16, Windows-1252), line endings. Pure, UMD (D-016) |
 | `src/suggest.js` | Autocomplete rules: names and locations from the script, what to offer for the word being typed. Pure, UMD, uses `Fountain` and `Editing` (D-017) |
-| `test/` | `fountain.test.js` (parser), `editing.test.js` (typing helpers), `library.test.js` (library rules), `importing.test.js` (import rules), `suggest.test.js` (autocomplete rules), `structure.test.js` (app script structure, Node only), `app.e2e.html` (app behaviour), `harness.js`, runners: `index.html`, `run-headless.ps1`, `run.js` |
+| `src/store.js` | Storage in IndexedDB, global `Store`: pure rules (migration, diff, delete guard, emergency-buffer reconcile) plus thin IndexedDB calls that take the database as an argument. UMD (D-018, D-019) |
+| `test/` | `fountain.test.js` (parser), `editing.test.js` (typing helpers), `library.test.js` (library rules), `importing.test.js` (import rules), `suggest.test.js` (autocomplete rules), `store.test.js` (storage rules), `structure.test.js` (app script structure, Node only), `app.e2e.html` (app behaviour), `harness.js`, runners: `index.html`, `run-headless.ps1` (Windows), `run-headless.sh` (Linux/macOS), `run.js` |
 | `ROADMAP.md` | The plan, with stable item IDs |
 | `docs/HANDOFF.md` | Current state, next steps, session log |
 | `docs/DECISIONS.md` | Append-only decision record |
@@ -54,19 +55,19 @@ use what an earlier file already defined. Code inside functions runs later and c
 | --- | --- |
 | `core.js` | `editor` / `renderTarget` / `page` references, `newId`, `currentScriptId`, `autoSaveTimer`, `showNotice`, `render()` |
 | `layout.js` | One pane at a time, the phone menu, keyboard-safe sizing (`fitToViewport`), scroll sync |
-| `persistence.js` | Saving, restoring the last script, New, the trash purge, save on hide |
+| `persistence.js` | The in-memory library, IndexedDB writes and the emergency buffer, the localStorage fallback, restoring the last script, New, the trash purge, save on hide (D-019) |
 | `dialogs.js` | `openModal` / `closeModal`: the one accessible helper for every modal window |
 | `library-ui.js` | The Library dialog (data rules are in `src/library.js`) |
 | `example.js`, `help.js`, `tour.js` | The example script, the Help window, the welcome tour |
 | `typing.js` | Tab, smart Enter, auto-uppercase, the element bar, autocomplete chips (rules are in `src/editing.js` and `src/suggest.js`) |
 | `export.js` | Export and Copy |
 | `import.js` | Import: the Library's picker and drag-and-drop onto the page; `showNotice` messages (defined in `core.js`) |
-| `main.js` | Start-up on `DOMContentLoaded`. Always last |
+| `main.js` | Start-up on `DOMContentLoaded` (asynchronous: the library loads first; `whenReady()`). Always last |
 
 Rules: add a new file to `index.html` in the right place (`test/structure.test.js` fails if the folder and the page
 disagree, if a name is declared twice across files, if an inline script or `<style>` comes back, or if a file passes 500 lines).
 Keep each file's own listeners in that file. Functions the e2e tests call (`saveScript`, `setView`, `openTour`,
-`syncElementState`, `flushSave`, ...) must stay top-level function declarations, and `currentScriptId` a top-level
+`syncElementState`, `flushSave`, `whenReady`, `whenSaved`, `restoreLastScript`, ...) must stay top-level function declarations, and `currentScriptId` a top-level
 `let`: tests reach them as globals. Do not use ES modules (D-001).
 
 ## Conventions
@@ -75,18 +76,24 @@ Keep each file's own listeners in that file. Functions the e2e tests call (`save
 - Classic `<script>` files, not ES modules (`file://` blocks module imports).
 - The parser must never touch the DOM, `window` or Node-only APIs. Escape all user text before it reaches HTML.
 - Match existing CSS variable names and class names (`script-*` for rendered screenplay elements).
-- Do not change the localStorage keys without a migration (D-005).
+- Do not change the storage keys, database or store names without a migration (D-005, D-018). Scripts live in
+  IndexedDB; the `frictionless_*` localStorage keys are the migration source, the fallback and the emergency buffer.
+- Every storage write goes through `putScripts` / `saveScript` / `rememberCurrent` in `persistence.js`, never straight
+  to IndexedDB or localStorage, so other tabs are told and the emergency buffer stays right.
 
 ## Running and testing
 
 - App: open `index.html` directly in a browser, or serve the folder statically.
 - Tests (Windows, nothing to install): `npm run test:browser`, or directly
   `powershell -NoProfile -ExecutionPolicy Bypass -File test/run-headless.ps1`. Runs the unit suite and the app e2e in
-  headless Edge/Chrome with a throwaway profile; exit code 0 = pass.
+  headless Edge/Chrome with a throwaway profile; exit code 0 = pass. On Linux/macOS: `bash test/run-headless.sh`
+  (Chromium or Chrome; `BROWSER=...` to choose). Both run in real time, about 40 s: never add `--virtual-time-budget`
+  back, IndexedDB does not work under it (D-019).
 - Or open `test/index.html` (unit) / `test/app.e2e.html` (app, needs http or `--allow-file-access-from-files`) in a
   browser; a green banner means pass.
 - `npm test` runs `test/run.js` under Node (unit suite only; needs Node 18+, developed on 24). If `node` is not
   found in a session that was already open when Node was installed, refresh PATH or restart the session.
 - Never run a headless browser against `file://` pages with your real profile. See D-007.
 - When you add a parser rule, add a test in `test/fountain.test.js` first. When you change app behaviour (restore,
-  save, library), extend `test/app.e2e.html`.
+  save, library), extend `test/app.e2e.html`. There, wait for `loaded(frame, go)` after any navigation, and read storage
+  with `await stored()` / `await storedMeta()` (they wait for every frame's pending writes first).
