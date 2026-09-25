@@ -107,10 +107,15 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
 - [ ] P3-10 Export choices, if wanted: `.txt`, PDF (P3-03), and exporting a script straight from its Library row
 - [x] P3-02 Import `.fountain` / `.txt` / `.md` (the Library's `Import a file...` picker, and drag-drop anywhere on the page). Each file
   becomes a new script and the first opens; nothing is overwritten (D-016). Final Draft `.fdx` import is P3-08.
-- [ ] P3-03 Print stylesheet and print-to-PDF at standard screenplay margins
-- [ ] P3-04 Pagination (about 55 lines per page), page numbers, `(MORE)` / `(CONT'D)` handling
+- [ ] P3-03 Print stylesheet and print-to-PDF at standard screenplay margins (spec: docs/SPEC-PRINT.md, D-021): Print / PDF
+  button, `beforeprint` so Ctrl/Cmd+P prints the screenplay, Letter / A4, Help on saving as PDF
+- [ ] P3-04 Pagination (about 55 lines per page), page numbers, `(MORE)` / `(CONT'D)` handling: `src/paginate.js`, a
+  pure module on the Courier character grid, plus `Fountain.runs` (spec §4-§7). Do first; no UI
 - [ ] P3-05 Title page rendering as its own page
 - [ ] P3-06 Dual dialogue in print layout
+- [ ] P3-11 Direct `.pdf` download: a hand-written PDF writer (`src/pdf.js`) with PDF's built-in Courier fonts, fed by
+  the same page layout (spec §8b). Only if the owner chooses it (spec §10.2)
+- [ ] P3-12 Page view in the preview: the paginated sheets, page numbers and breaks while writing (spec §8c). Optional
 - [x] P3-07 Library management: search, rename (rewrites the script's own `Title:` line), duplicate, delete with
   Undo and a 30-day Recently deleted, restore, delete forever (two clicks) (D-013)
 - [ ] P3-09 Library extras, if wanted: sort options (name, date created), multi-select, export a single script

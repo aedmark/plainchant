@@ -244,10 +244,10 @@ only)._
    first letter, chips replacing the element buttons while typing a name. Then P2-21 (time of day after `INT. PLACE - `,
    names on an empty cue line, screen-reader announcements) only if wanted. The agreed order still stands:
    autocomplete, then PAUSE.
-4. **P3-03 print stylesheet / PDF: spec and plan only, at the user's request, before any implementation.** Questions to
-   settle: US Letter and A4, screenplay margins and Courier 12pt, about 55 lines a page, page numbers, `(MORE)` /
-   `(CONT'D)`, title page on its own page, dual dialogue, scene numbers, and print-CSS versus a generated PDF (D-001 says
-   no runtime dependencies). Write the result up as a decision plus roadmap items, then wait for the go-ahead.
+4. **Print / PDF is specced, waiting on the owner** ([docs/SPEC-PRINT.md](SPEC-PRINT.md), D-021 proposed). Get answers
+   to the spec's §10 questions (paper, print dialog vs direct PDF, bold headings, spacing, automatic CONT'D, scene
+   numbers, page view), mark D-021 accepted with them, then build in the §11 order: P3-04 pagination module first
+   (tests first, no UI), then P3-03 the print path, then P3-11 / P3-12 if chosen.
 5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
 6. (P4-10 and P4-11 are done: D-018, D-019, D-020.)
 
@@ -295,6 +295,8 @@ the legacy copy) and P4-12 (persistent storage) are new roadmap items. P3-03 (pr
 Windows (`npm run test:browser` now runs the Linux runner), and asked to drop legacy support: D-020 removed the
 migration, the localStorage fallback and the `frictionless_` prefix, closing P4-11. Tests after that: 191 Node,
 183 unit + 409 e2e in the browser.
+Then, at the owner's request, the **print / PDF plan**: `docs/SPEC-PRINT.md`, D-021 (proposed), roadmap P3-03/P3-04
+reworded and P3-11 (direct PDF) / P3-12 (page view) added. No code; waiting on the spec's §10 answers.
 **Next session should start with:** "Next steps" above.
 
 ### Session 11: 2026-09-21: IndexedDB migration spec (P4-10)

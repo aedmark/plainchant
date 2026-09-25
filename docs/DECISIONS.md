@@ -368,6 +368,20 @@ on the owner's machines (Arch Linux; Firefox; Safari) and none of them held an o
 localStorage under `frictionless_scripts`, readable from the console). The welcome tour shows once more, because its
 flag moved. `persistence.js` has one storage mode fewer; P4-11 is closed by this.
 
+## D-021 Print and PDF: pagination in a pure module on a character grid, output through print first  (2026-09-25, status: proposed)
+**Context:** P3-03 to P3-06 (print, pagination, title page, dual dialogue). Browsers paginate print on their own
+terms: CSS page breaks know nothing of `(MORE)` / `(CONT'D)`, and page numbers in print CSS are not supported alike.
+**Decision (proposed, pending the owner's answers in docs/SPEC-PRINT.md §10):**
+1. Pagination is computed by a new pure module, `src/paginate.js`, from the parser's tokens on the screenplay grid
+   (Courier 12pt = 10 characters per inch, 6 lines per inch; 60 columns, 54 lines on Letter, 58 on A4), with explicit
+   break rules (§5 of the spec). No DOM measuring; unit-tested under Node like the other pure modules.
+2. Output reads that layout: first as fixed-size sheets sent to the browser's print dialog (Save as PDF), later if
+   wanted as a direct `.pdf` download from a small hand-written PDF writer using PDF's built-in Courier fonts.
+   No runtime dependencies either way (D-001).
+3. The preview's indents change to match paper, so screen and page agree.
+**Consequences:** Page counts will be close to, not identical with, Final Draft. The direct PDF (if built) prints in
+classic Courier and Windows-1252 characters only. Full plan: docs/SPEC-PRINT.md.
+
 ## Open questions
 
 - Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom
