@@ -39,7 +39,7 @@ the *editor* fixes the text (P2-03) so the parser can stay strict.
 **Consequences:** Until P2-03 ships, lowercase transitions and character cues render as action. Small allowlist of
 common transitions (`FADE OUT.`, `SMASH CUT:` and similar) is kept because writers expect them without a `>` prefix.
 
-## D-005 Keep the existing localStorage keys  (2026-09-20, status: accepted)
+## D-005 Keep the existing localStorage keys  (2026-09-20, status: superseded by D-020)
 **Context:** Users may already have scripts saved by the prototype.
 **Decision:** Library stays at `frictionless_scripts`. The last-open pointer is `frictionless_current`.
 **Consequences:** The `frictionless_` prefix is legacy naming. Renaming needs a migration.
@@ -287,7 +287,7 @@ script, so there is nothing to store or migrate (D-005). Long names are ellipsis
 inserts the full name. The lookup parses the whole script per keystroke on a cue or heading line only: 8 ms for 30,000
 lines, and a unit test guards it. Screen-reader announcement of suggestions is not done.
 
-## D-018 Storage moves to IndexedDB, per-script records, with a localStorage emergency buffer  (2026-09-21, status: accepted)
+## D-018 Storage moves to IndexedDB, per-script records, with a localStorage emergency buffer  (2026-09-21, status: accepted; step 4, the migration, superseded by D-020)
 **Context:** Scripts live in one localStorage key (`frictionless_scripts`) as a single JSON blob `{ [id]: script }`,
 and every autosave re-serialises the *entire* library and writes it synchronously. Two problems: the ~5 MB
 localStorage cap (a feature-length script is ~100 KB, so a modest library outgrows it), and the O(total library)
@@ -316,7 +316,7 @@ import and the Library dialog. The e2e harness must snapshot/restore IDB state t
 `navigator.storage.estimate()` / `persist()` become available for the capacity indicator (P3-09) and offline (P4-02).
 Full spec: docs/SPEC-INDEXEDDB.md. This is a Phase 4 item (P4-10), not the next step; P3-03 (print/PDF) remains next.
 
-## D-019 How P4-10 was built: the spec's open questions, and where it departs from the spec  (2026-09-25, status: accepted)
+## D-019 How P4-10 was built: the spec's open questions, and where it departs from the spec  (2026-09-25, status: accepted; points 6 and 7, the fallback and the migration, superseded by D-020)
 **Context:** Implementing D-018 at the owner's request. The spec left four questions open (§11), and building it
 showed where the plan needed changes.
 **Decision:**
@@ -352,6 +352,21 @@ showed where the plan needed changes.
 **Consequences:** The e2e suite takes about 40 s instead of about 13 s. If IndexedDB starts failing in a profile where
 it once worked, the fallback shows the old (stale) localStorage copy until P4-11 decides otherwise. Browsers without
 BroadcastChannel (Safari before 15.4) show other tabs' changes only after a reload. Only Chromium has run any of this.
+
+## D-020 No legacy support: no migration, no localStorage fallback, `plainchant_*` keys  (2026-09-25, status: accepted)
+**Context:** The owner: "don't worry about legacy support, this isn't a production release." IndexedDB was confirmed
+on the owner's machines (Arch Linux; Firefox; Safari) and none of them held an old localStorage library.
+**Decision:** Remove everything that existed only for older versions of the app:
+1. **No migration.** `Store.migrate`, `parseLegacy`, `mergeLegacy` and the `migrated` meta flag are gone.
+   `frictionless_scripts` / `frictionless_current` are never read or written.
+2. **No localStorage fallback.** Without IndexedDB (site data blocked, a very old browser) the app says so at start-up
+   (an error notice pointing at Export), Save shows "Error", and nothing is stored anywhere. Every browser the owner
+   uses has IndexedDB, including private windows in current Firefox and Safari.
+3. **The remaining keys drop the legacy prefix** (supersedes D-005): `plainchant_onboarded` (the tour) and
+   `plainchant_emergency` (the buffer). The IndexedDB names (`plainchant`, `scripts`, `meta`) are unchanged.
+**Consequences:** Anyone with scripts saved by a pre-P4-10 build no longer sees them (they are still in that browser's
+localStorage under `frictionless_scripts`, readable from the console). The welcome tour shows once more, because its
+flag moved. `persistence.js` has one storage mode fewer; P4-11 is closed by this.
 
 ## Open questions
 

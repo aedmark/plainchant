@@ -1,8 +1,9 @@
 # Spec: migrate storage from localStorage to IndexedDB
 
 Roadmap item **P4-10**. Decision **D-018**. Status: **implemented 2026-09-25** (session 12). The §11 questions are
-settled, and the places where the build departs from this plan are listed, in **D-019**. Read D-019 first; this file
-is kept as the plan that was followed.
+settled, and the places where the build departs from this plan are listed, in **D-019**. **D-020 then removed the
+migration (§7) and the localStorage fallback**: there is no legacy support. Read D-019 and D-020 first; this file is
+kept as the plan that was followed.
 
 This spec is the plan for moving Plainchant's script storage off localStorage and onto IndexedDB. Read it alongside
 D-018, which records the decisions this spec depends on.

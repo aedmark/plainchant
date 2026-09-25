@@ -138,8 +138,8 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
   localStorage copy as a fallback. Other tabs are told of changes (BroadcastChannel); no IndexedDB means the old
   localStorage behaviour. Fixes the 5 MB cap and the whole-library rewrite on every autosave. The headless runners now
   run in real time (`test/run-headless.sh` added for Linux/macOS).
-- [ ] P4-11 Remove the legacy `frictionless_scripts` / `frictionless_current` localStorage copy once IndexedDB has run
-  in the wild without trouble (D-018 step 4). Needs a decision on what the fallback then reads (nothing: start empty).
+- [x] P4-11 Remove the legacy `frictionless_scripts` / `frictionless_current` localStorage copy (D-018 step 4). Done
+  sooner and further than planned (D-020): no migration, no localStorage fallback, `plainchant_*` keys.
 - [ ] P4-12 Ask for persistent storage (`navigator.storage.persist()`) so the browser does not evict the library under
   disk pressure; pairs with P4-02 (installed PWAs are granted it more readily)
 

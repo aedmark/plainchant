@@ -7,7 +7,7 @@
  */
 
 // --- Welcome tour: once, on first launch; replayable from Help ---
-const TOUR_KEY = 'frictionless_onboarded';  // holds the tour version the writer has seen
+const TOUR_KEY = 'plainchant_onboarded';  // holds the tour version the writer has seen
 const TOUR_VERSION = '1';                   // bump to show an updated tour to everyone again
 const tourModal = document.getElementById('tour-modal');
 const tourSteps = Array.from(tourModal.querySelectorAll('.tour-step'));

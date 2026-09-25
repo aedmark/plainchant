@@ -1,37 +1,28 @@
 /*
- * Plainchant app script: persistence: saving, restoring the last script, New, the trash purge, save on hide
+ * Plainchant app script: persistence: the library in IndexedDB, saving, restoring the last script, New, the trash purge, save on hide
  *
  * One of the classic scripts loaded by index.html, in order (see CLAUDE.md, "App scripts"). They share the
  * page's global scope, so top-level functions and consts here are visible to the files after it, and anything
  * that runs at load time may only use what an earlier file (or a src/*.js module) already defined.
  */
 
-// Storage (D-018). The whole library lives in memory as { [id]: script } (the shape src/library.js works on) and each
-// change writes only the scripts it touched, to IndexedDB (src/store.js). IndexedDB writes finish later, so every
-// save also leaves its words in a small synchronous localStorage "emergency buffer" until the write has landed:
-// words typed just before the tab closes survive even if the write never finishes. Where IndexedDB is unavailable
-// the app keeps using the old single localStorage key, exactly as before.
-const SCRIPTS_KEY = 'frictionless_scripts';     // legacy prefix kept on purpose (D-005); now the migration source and the fallback
-const CURRENT_KEY = 'frictionless_current';     // id of the script that was open last (fallback only; IndexedDB keeps it in `meta`)
-const EMERGENCY_KEY = 'frictionless_emergency'; // { [id]: { id, title, content, updatedAt } } not yet confirmed in IndexedDB
+// Storage (D-018, D-020). The whole library lives in memory as { [id]: script } (the shape src/library.js works on)
+// and each change writes only the scripts it touched, to IndexedDB (src/store.js). IndexedDB writes finish later, so
+// every save also leaves its words in a small synchronous localStorage "emergency buffer" until the write has landed:
+// words typed just before the tab closes survive even if the write never finishes. Without IndexedDB nothing can be
+// stored, and the writer is told so.
+const EMERGENCY_KEY = 'plainchant_emergency'; // { [id]: { id, title, content, updatedAt } } not yet confirmed in IndexedDB
 
 const saveBtn = document.getElementById('saveBtn');
 const newBtn = document.getElementById('newBtn');
 
 let library = {};         // every script, in memory: the working model
 let scriptDb = null;      // the IndexedDB connection
-let storageMode = null;   // 'idb' | 'local' (the fallback) | null while starting up
+let storageMode = null;   // 'idb' | 'none' (this browser will not store anything) | null while starting up
 const pendingWrites = new Set();
 const libraryChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('plainchant-library') : null;
 
-function readLegacyLibrary() {
-    try { return Store.parseLegacy(localStorage.getItem(SCRIPTS_KEY)); }
-    catch (e) { console.error('Failed to read local storage', e); return {}; }
-}
-
-// The fallback reads storage every time, as the app always did, so it sees another tab's changes at once
 function getScripts() {
-    if (storageMode === 'local') library = readLegacyLibrary();
     return library;
 }
 
@@ -68,10 +59,6 @@ async function whenSaved() {
     while (pendingWrites.size) await Promise.all(Array.from(pendingWrites));
 }
 
-function writeLegacy() {
-    localStorage.setItem(SCRIPTS_KEY, JSON.stringify(library));
-}
-
 // Other tabs keep their own copy of the library in memory; tell them what changed so theirs does not go stale
 function announce(change) {
     if (libraryChannel && ((change.put && change.put.length) || (change.remove && change.remove.length))) {
@@ -81,13 +68,6 @@ function announce(change) {
 
 // Writes one change ({ put, remove, meta }) and resolves true once it is stored, false if the browser refused
 function persist(change) {
-    if (storageMode === 'local') {
-        try {
-            if ((change.put && change.put.length) || (change.remove && change.remove.length)) writeLegacy();
-            if (change.meta && 'currentScriptId' in change.meta) localStorage.setItem(CURRENT_KEY, change.meta.currentScriptId);
-            return Promise.resolve(true);
-        } catch (e) { console.error('Save error:', e); return Promise.resolve(false); }
-    }
     if (storageMode !== 'idb') return Promise.resolve(false);
     let written;
     try { written = Store.write(scriptDb, change); } catch (e) { written = Promise.reject(e); }
@@ -127,27 +107,26 @@ function receiveLibraryChange(e) {
 }
 
 // Open storage and load the library into memory; resolves the id of the script that was open last (or null).
-// With IndexedDB unavailable (some private windows, very old browsers) the app runs on localStorage as before.
-// `factory` is the IDBFactory; left out, it is the page's own (reading it can throw where site data is blocked).
+// Without IndexedDB (site data blocked, a very old browser) nothing can be kept: the writer is told, and can still
+// write and Export. `factory` is the IDBFactory; left out, it is the page's own (reading it can throw).
 async function openStorage(factory) {
     let pointer = null;
     try {
         const db = await Store.open(factory === undefined ? window.indexedDB : factory);
-        let legacy = { scripts: null, current: null };
-        try { legacy = { scripts: localStorage.getItem(SCRIPTS_KEY), current: localStorage.getItem(CURRENT_KEY) }; } catch (e) { /* none to move */ }
-        await Store.migrate(db, legacy); // once only; the localStorage copy is left in place (D-018)
         const all = await Store.loadAll(db);
         scriptDb = db;
         storageMode = 'idb';
         library = all.scripts;
         pointer = typeof all.meta.currentScriptId === 'string' ? all.meta.currentScriptId : null;
     } catch (e) {
-        console.warn('IndexedDB is unavailable; scripts are kept in localStorage instead.', e);
-        storageMode = 'local';
-        library = readLegacyLibrary();
-        try { pointer = localStorage.getItem(CURRENT_KEY); } catch (err) { /* storage unavailable */ }
+        console.error('IndexedDB is unavailable, so nothing can be saved.', e);
+        storageMode = 'none';
+        library = {};
+        showNotice('This browser is not letting Plainchant save anything, so your scripts will not be kept here. ' +
+            'Use Export to keep what you write.', true);
+        return null; // the emergency buffer is left alone, for when storage works again
     }
-    if (libraryChannel) libraryChannel.onmessage = storageMode === 'idb' ? receiveLibraryChange : null;
+    if (libraryChannel) libraryChannel.onmessage = receiveLibraryChange;
 
     // Words that were typed as the page went away last time, and never reached storage: put them back
     const buffered = readEmergency();
@@ -163,12 +142,11 @@ async function openStorage(factory) {
     return pointer;
 }
 
-// Reopen whatever was open last. With no pointer at all (first run after upgrading from the prototype)
-// fall back to the most recently saved script. A pointer to a script that was never saved means the
+// Reopen whatever was open last. With no pointer at all, fall back to the most recently saved script. A pointer to a script that was never saved means the
 // writer had just hit New, so start blank.
 // A pointer to a deleted script means the writer deleted the script that was open: start blank, and never reuse
 // its id, or the next autosave would write into the Recently deleted copy.
-// Takes the IndexedDB factory so the e2e tests can start it without one (null: the fallback).
+// Takes the IndexedDB factory so the e2e tests can start it without one (null: no storage at all).
 async function restoreLastScript(factory) {
     const pointer = await openStorage(factory);
     purgeTrash();
@@ -234,6 +212,8 @@ function saveScript(isAuto = false) {
         }, 2000);
     };
 
+    if (storageMode === 'none') { finish(false); return; } // nowhere to keep it (the writer was told at start-up)
+
     const scripts = getScripts();
     // Never write into a script that has been deleted (it would quietly bring it back); if this id has been deleted,
     // the words in the editor are saved as a new script instead. Store.saveScript checks again as it writes, for a
@@ -246,14 +226,6 @@ function saveScript(isAuto = false) {
         updatedAt: Date.now()
     });
     library = Object.assign({}, scripts, { [record.id]: record });
-
-    if (storageMode === 'local') {
-        let ok = true;
-        try { writeLegacy(); localStorage.setItem(CURRENT_KEY, currentScriptId); }
-        catch (e) { console.error("Save error:", e); ok = false; }
-        finish(ok);
-        return;
-    }
 
     // First, synchronously, the words go into the emergency buffer: the page may be gone before IndexedDB is done
     const entries = readEmergency();

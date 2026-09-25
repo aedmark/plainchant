@@ -9,24 +9,6 @@ const idsFrom = (list) => list.map((s) => s.id).sort();
 let freshIds = 0;
 const makeId = () => 'fresh-' + (++freshIds);
 
-// ---------- parseLegacy: the old localStorage library ----------
-
-test('parseLegacy: reads the old { [id]: script } blob as it was', () => {
-    const blob = { a: rec('a', 'Alpha', 5), b: rec('b', 'Beta', 6, { deletedAt: 7 }) };
-    assert.deepEqual(Store.parseLegacy(JSON.stringify(blob)), blob);
-});
-
-test('parseLegacy: nothing stored, or something unreadable, is an empty library (never an exception)', () => {
-    [null, '', 'not json', '[]', '"text"', '42', 'null'].forEach((json) => assert.deepEqual(Store.parseLegacy(json), {}, String(json)));
-});
-
-test('parseLegacy: an entry without text is left out; one without an id takes its key; a missing time counts as 0', () => {
-    const got = Store.parseLegacy(JSON.stringify({ a: { title: 'A', content: 'Words', updatedAt: 3 }, b: { title: 'no text' }, c: 'junk', d: { id: 'd', content: 'D' } }));
-    assert.deepEqual(Object.keys(got).sort(), ['a', 'd']);
-    assert.equal(got.a.id, 'a');
-    assert.equal(got.d.updatedAt, 0);
-});
-
 // ---------- diff: what an in-memory change has to write ----------
 
 test('diff: only records that changed are written, and removed ones are deleted', () => {
@@ -44,23 +26,6 @@ test('diff: no change writes nothing', () => {
     const lib = freezeDeep({ a: rec('a', 'A', 1) });
     assert.deepEqual(Store.diff(lib, lib), { put: [], remove: [] });
     assert.deepEqual(Store.diff({}, {}), { put: [], remove: [] });
-});
-
-// ---------- mergeLegacy: the one-time migration never goes backwards ----------
-
-test('mergeLegacy: copies what IndexedDB lacks or holds an older version of, never over a newer one', () => {
-    const existing = freezeDeep({ same: rec('same', 'kept', 10), newer: rec('newer', 'IDB is newer', 20), older: rec('older', 'IDB is older', 5) });
-    const legacy = freezeDeep({ same: rec('same', 'legacy', 10), newer: rec('newer', 'legacy', 15), older: rec('older', 'legacy wins', 9), only: rec('only', 'only in legacy', 1) });
-    assert.deepEqual(idsFrom(Store.mergeLegacy(existing, legacy)), ['older', 'only']);
-});
-
-test('mergeLegacy: run twice, the second run copies nothing (the migration is idempotent)', () => {
-    const legacy = freezeDeep({ a: rec('a', 'A', 1), b: rec('b', 'B', 2, { deletedAt: 3 }) });
-    const first = Store.mergeLegacy({}, legacy);
-    assert.deepEqual(idsFrom(first), ['a', 'b'], 'deleted scripts move too: they are still in Recently deleted');
-    const nowInIdb = {};
-    first.forEach((s) => { nowInIdb[s.id] = s; });
-    assert.deepEqual(Store.mergeLegacy(freezeDeep(nowInIdb), legacy), []);
 });
 
 // ---------- guardSave: never write into a deleted script ----------

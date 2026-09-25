@@ -13,15 +13,14 @@ _Last updated: 2026-09-25, session 12 (P4-10 IndexedDB storage implemented; PDF 
 only)._
 
 **What works**
-- **Storage is IndexedDB** (P4-10, D-018, D-019; `src/store.js` + `src/app/persistence.js`). Database `plainchant`,
-  one record per script in `scripts`, the open-script pointer and a `migrated` flag in `meta`. The whole library is
-  held in memory; an autosave writes **only the script being edited**. On the first run after the upgrade the old
-  `frictionless_scripts` / `frictionless_current` localStorage keys are copied in once, and **left in place** (P4-11
-  removes them later). Every save first puts its words in a small synchronous localStorage buffer
-  (`frictionless_emergency`), cleared once IndexedDB has them, so a tab closed mid-write loses nothing: the next load
-  puts them back. Other open tabs are told of every change (BroadcastChannel); a save into a script another tab
-  deleted still goes to a new script, checked again inside the write. With no IndexedDB (or it fails to open) the app
-  runs on the old localStorage key exactly as before. Startup is asynchronous now (`whenReady()`).
+- **Storage is IndexedDB** (P4-10, D-018, D-019, D-020; `src/store.js` + `src/app/persistence.js`). Database
+  `plainchant`, one record per script in `scripts`, the open-script pointer in `meta`. The whole library is held in
+  memory; an autosave writes **only the script being edited**. Every save first puts its words in a small synchronous
+  localStorage buffer (`plainchant_emergency`), cleared once IndexedDB has them, so a tab closed mid-write loses
+  nothing: the next load puts them back. Other open tabs are told of every change (BroadcastChannel); a save into a
+  script another tab deleted still goes to a new script, checked again inside the write. **No legacy support**
+  (D-020): old `frictionless_*` data is neither migrated nor read, and without IndexedDB the app shows an error notice
+  (pointing at Export) and stores nothing. Startup is asynchronous (`whenReady()`).
 - **Import** (D-016, `src/importing.js` + `src/app/import.js`). The Library's `Import a file...` button, or drop a file
   anywhere on the page. `.fountain` / `.txt` / `.md` (any UTF-8 / UTF-16 / Windows-1252 text) become NEW scripts, the
   first opens, nothing is overwritten; `.fdx` / PDF / Word are refused with a reason. Messages show in `#notice`.
@@ -39,7 +38,7 @@ only)._
   `NeuroFountain` folder is retired).
 - **Onboarding and help** (D-011). **Welcome tour**: opens by itself on first launch (four skippable steps, wording
   adapts to touch vs keyboard, live-rendered sample, ends with Start writing / Open the example script). Remembered
-  in `frictionless_onboarded`; replay it from Help. **Help window**: Start here, Screenplay elements (cheat sheet),
+  in `plainchant_onboarded` (was `frictionless_onboarded` until D-020); replay it from Help. **Help window**: Start here, Screenplay elements (cheat sheet),
   Keys & touch, Troubleshooting. Opens from the `?` button (the word "Help" in the phone menu), F1, Ctrl/Cmd+/, or
   the `?` at the end of the element bar (jumps to the elements topic). Library, Help and the tour share one
   accessible dialog helper (focus trap, Esc, backdrop click, focus return).
@@ -84,15 +83,14 @@ only)._
 - `npm test` passes (Node 22 in the session-12 cloud container): 196 tests (60 parser, 53 typing helpers, 23 library,
   13 importing, 23 autocomplete, 16 storage rules, 8 app-script structure). The browser runner runs the 188 that need
   no file access.
-- **Storage (P4-10) end to end**, `bash test/run-headless.sh` in headless Chromium on Linux: 188 unit + **414 e2e**
-  (was 387). Section 16c covers the migration (copied, pointer moved, legacy key untouched, runs once), an autosave
-  writing one record, the emergency buffer (written synchronously on pagehide; a write that never lands is restored on
-  reload; a stale entry is ignored; a refused save shows Error and keeps the words), two live tabs (a rename and a
-  delete reach the other tab at once), and the localStorage fallback. Every existing storage check now reads IndexedDB.
-- **Storage mutation-tested:** writing the buffer after the write instead of synchronously, never clearing it, a
-  migration that ignores its flag, no delete guard inside the transaction, ignoring other tabs' messages, never
-  reconciling the buffer, keeping refused writes in memory, and a fallback that stops re-reading localStorage each
-  fail at least one e2e check. Twelve mutations of the pure rules in `src/store.js` each fail a unit test (two
+- **Storage (P4-10) end to end**, `bash test/run-headless.sh` in headless Chromium on Linux: 183 unit + **409 e2e**.
+  Section 16c covers loading from IndexedDB, an autosave writing one record, the emergency buffer (written
+  synchronously on pagehide; a write that never lands is restored on reload; a stale entry is ignored; a refused save
+  shows Error and keeps the words), two live tabs (a rename and a delete reach the other tab at once), and no
+  IndexedDB at all (notice, Save says Error, nothing written). Every storage check reads IndexedDB.
+- **Storage mutation-tested (before D-020 removed the migration and fallback):** writing the buffer after the write
+  instead of synchronously, never clearing it, no delete guard inside the transaction, ignoring other tabs' messages,
+  never reconciling the buffer and keeping refused writes in memory each fail at least one e2e check. Mutations of the pure rules in `src/store.js` each fail a unit test (two
   survived at first: an ordering test that could not tell "newest" from "last", and a guard with no input that
   exercised it; both tests fixed).
 - **Autocomplete mutation-tested**: dropping the whole-name guard, the skip-own-line rule, the one-letter minimum, the
@@ -126,9 +124,9 @@ only)._
 **Not verified / not done**
 - **IndexedDB storage (P4-10) is confirmed by the owner (2026-09-25)** on their Arch Linux machine: the tests pass
   there (`npm run test:browser`), and the app works in their desktop browser, **Firefox and Safari** (a `plainchant`
-  database appears; the example script saves and loads). Still unobserved: an upgrade of a real existing localStorage
-  library (none was on these machines; only the tests have run the migration), a real tab closed mid-write, and the
-  Windows runner (`npm run test:browser:windows`).
+  database appears; the example script saves and loads). Still unobserved: a real tab closed mid-write, and the
+  Windows runner (`npm run test:browser:windows`). The D-020 clean-up (no migration, no fallback, renamed keys) has
+  only run in the tests.
 - **Real devices: the user reports everything works on their tablet and elsewhere** (2026-09-20, after the layout,
   typing-helper and tablet work; no detail recorded on which devices, Split View, or Pencil). That covers P2-09 in
   spirit but the specifics below remain unobserved by me. `fitToViewport()` itself is tested only with a fake
@@ -169,7 +167,8 @@ only)._
 - `Editing.kindAt()` asks the parser twice (next line blank / next line has text) because the parser needs to see
   what follows before it will call something a cue or a transition. Change it with care; the property test in
   `test/editing.test.js` ("the parser agrees afterwards") is the safety net.
-- `frictionless_*` localStorage keys are legacy naming and must stay (D-005).
+- **No legacy support (D-020).** The `frictionless_*` keys are dead; do not read them. Storage names may change without
+  a migration while this is not a production release, but record it in DECISIONS.
 - **Storage (D-019).** The library is the in-memory `library` object in `persistence.js`; `getScripts()` returns it,
   `putScripts(next)` stores the difference and returns a promise. Never write to IndexedDB or the old keys directly:
   other tabs would not be told and the emergency buffer would go wrong. The global is `Store`, never `Storage` (that is
@@ -204,7 +203,7 @@ only)._
 - Do not run a bulk find-and-replace of "NeuroFountain" over the docs: the old name appears deliberately in D-012
   and in the session logs as history, and a replace once turned two sentences there into nonsense (caught in the
   retired folder before it was committed).
-- **Every e2e frame must set `frictionless_onboarded` first**, or the tour opens in it and blocks the test. The
+- **Every e2e frame must set `plainchant_onboarded` first**, or the tour opens in it and blocks the test. The
   e2e page does this once at the start (and snapshots/restores the key with the others). New test files that load
   the app need the same.
 - **The Help cheat sheet must stay true.** Every example is a `<code data-expect="type,type,...">` in `index.html`
@@ -233,11 +232,11 @@ only)._
 
 ## Next steps (in order)
 
-0. (P4-10 is checked: tests pass on the owner's Arch Linux machine, and the app works in Firefox and Safari. P4-11,
-   removing the legacy localStorage copy, can wait a while longer.) The owner is on **Arch Linux** now (not Windows);
-   `npm run test:browser` runs `bash test/run-headless.sh`.
+0. (P4-10 is checked: tests pass on the owner's Arch Linux machine, and the app works in Firefox and Safari. P4-11 is
+   closed by D-020: no legacy support.) The owner is on **Arch Linux** now (not Windows); `npm run test:browser` runs
+   `bash test/run-headless.sh`. The tour will show once more for the owner (its flag was renamed).
 1. **Try the tour as a first-time user on the tablet** (clear site data or
-   `localStorage.removeItem('frictionless_onboarded')`). The user proofed the Help copy in session 8; the tour copy
+   `localStorage.removeItem('plainchant_onboarded')`). The user proofed the Help copy in session 8; the tour copy
    (`src/app/tour.js` and the tour markup) was not changed then.
 2. **Ask the user how the typing helpers feel** (especially Enter starting a new paragraph after action, and cues
    needing a Tab). Adjust or add settings (P2-15) / cue suggestions (P2-14) accordingly.
@@ -250,8 +249,7 @@ only)._
    `(CONT'D)`, title page on its own page, dual dialogue, scene numbers, and print-CSS versus a generated PDF (D-001 says
    no runtime dependencies). Write the result up as a decision plus roadmap items, then wait for the go-ahead.
 5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
-6. (P4-10, IndexedDB storage, is done: D-018, D-019. P4-11, removing the legacy localStorage copy, waits until it has
-   run in the owner's browsers without trouble.)
+6. (P4-10 and P4-11 are done: D-018, D-019, D-020.)
 
 ## Open questions for the user
 
@@ -293,7 +291,11 @@ the fallback keeps the old behaviour exactly.
   scope); renamed `appendText`.
 **Left undone:** Running anything on Windows, Edge, Safari or Firefox; the owner's real library upgrade. P4-11 (remove
 the legacy copy) and P4-12 (persistent storage) are new roadmap items. P3-03 (print/PDF spec) is still the next feature.
-**Next session should start with:** "Next steps" above, item 0.
+**Later the same session:** the owner confirmed it on Arch Linux (tests pass; Firefox and Safari work), moved off
+Windows (`npm run test:browser` now runs the Linux runner), and asked to drop legacy support: D-020 removed the
+migration, the localStorage fallback and the `frictionless_` prefix, closing P4-11. Tests after that: 191 Node,
+183 unit + 409 e2e in the browser.
+**Next session should start with:** "Next steps" above.
 
 ### Session 11: 2026-09-21: IndexedDB migration spec (P4-10)
 

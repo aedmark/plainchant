@@ -15,9 +15,9 @@
 <script src="../src/store.js"></script>
 <script>
 const APP = '../index.html';
-const EMERGENCY_KEY = 'frictionless_emergency';
-const KEYS = ['frictionless_scripts', 'frictionless_current', 'frictionless_onboarded', EMERGENCY_KEY];
-const TOUR_KEY = 'frictionless_onboarded';
+const EMERGENCY_KEY = 'plainchant_emergency';
+const TOUR_KEY = 'plainchant_onboarded';
+const KEYS = [TOUR_KEY, EMERGENCY_KEY];
 const f = document.getElementById('f');
 const log = [];
 const check = (name, cond, extra) => log.push((cond ? 'PASS ' : 'FAIL ') + name + (cond ? '' : '  -> ' + JSON.stringify(extra)));
@@ -73,7 +73,7 @@ setTimeout(() => {
     snapshot = KEYS.map(k => [k, W().localStorage.getItem(k)]);
     dbSnapshot = await dbState();
     KEYS.forEach(k => W().localStorage.removeItem(k));
-    await setDb({}, {}); // a first run: nothing stored, not even the migration flag
+    await setDb({}, {}); // a first run: nothing stored
     // Every frame below would otherwise open the welcome tour first; the tour has its own tests (section 15)
     W().localStorage.setItem(TOUR_KEY, '1');
     f.contentWindow.location.reload(); await load();
@@ -116,7 +116,7 @@ setTimeout(() => {
     check('saved title comes from title page', ids.length && saved[ids[0]].title === 'Test Film', ids.length && saved[ids[0]].title);
     check('current pointer stored', (await storedMeta()).currentScriptId === ids[0]);
     check('pagehide: once IndexedDB has the words, the buffer is cleared', buffer(W()) === null, buffer(W()));
-    check('storage: the old localStorage keys are no longer written', W().localStorage.getItem('frictionless_scripts') === null && W().localStorage.getItem('frictionless_current') === null);
+    check('storage: no old frictionless_* key is written any more', !Object.keys(W().localStorage).some(k => /^frictionless_/.test(k)), Object.keys(W().localStorage));
 
     // 4. Reload restores the script and renders it
     f.contentWindow.location.reload(); await load();
@@ -748,7 +748,7 @@ setTimeout(() => {
     tf.remove();
 
     // The Library uses the same dialog behaviour
-    await setDb({ a: { id: 'a', title: 'Alpha', content: 'INT. ALPHA - DAY', updatedAt: 1 } }, { currentScriptId: 'zzz', migrated: '1' });
+    await setDb({ a: { id: 'a', title: 'Alpha', content: 'INT. ALPHA - DAY', updatedAt: 1 } }, { currentScriptId: 'zzz' });
     const lf = await openFrame(1200, 700);
     fid(lf, 'libraryBtn').focus();
     fid(lf, 'libraryBtn').click();
@@ -830,7 +830,7 @@ setTimeout(() => {
         gone: { id: 'gone', title: 'Old draft', content: 'Title: Old draft\n\nGone.', updatedAt: t - 10 * DAY_MS, deletedAt: t - 2 * DAY_MS },
         ancient: { id: 'ancient', title: 'Ancient', content: 'Title: Ancient\n\nX', updatedAt: t - 90 * DAY_MS, deletedAt: t - 31 * DAY_MS }
       }, extra || {});
-      await setDb(seed, { currentScriptId: 'a', migrated: '1' });
+      await setDb(seed, { currentScriptId: 'a' });
     };
     const byTitle = async (t) => Object.values(await stored()).find(x => x.title === t);
 
@@ -1015,7 +1015,7 @@ setTimeout(() => {
     act(rowFor('Alpha'), 'open').click();
     check('library: opening a script from the list loads it and closes the dialog', fid(lb, 'editor').value.indexOf('Title: Alpha') === 0 && active(lb).length === 0);
     fid(lb, 'newBtn').click();                            // saves Alpha, then starts a blank page
-    await setDb({}, { migrated: '1' });                   // ...and now nothing is saved
+    await setDb({}, {});                                  // ...and now nothing is saved
     await reloadReal(lb);
     openLib();
     check('library: with nothing saved it explains itself', /No saved scripts yet/.test(fid(lb, 'library-list').textContent));
@@ -1121,32 +1121,23 @@ setTimeout(() => {
     iw.saveScript = () => {};
     ib.remove();
 
-    // 16c. Storage (P4-10, D-018): IndexedDB, the one-time migration, the emergency buffer, other tabs, the fallback.
+    // 16c. Storage (P4-10, D-018, D-020): IndexedDB, the emergency buffer, other tabs, no IndexedDB at all.
     // Uses the app's real saving, like section 16.
     const appendText = (fr, words) => { const e = fid(fr, 'editor'); e.value += words; e.dispatchEvent(new fr.contentWindow.Event('input', { bubbles: true })); };
     const hide = (fr) => fr.contentWindow.dispatchEvent(new fr.contentWindow.Event('pagehide'));
     const libRow = (fr, title) => Array.from(fr.contentDocument.querySelectorAll('#library-list .script-item')).find(r => r.querySelector('.script-title').textContent === title);
     const T0 = Date.now();
-    const LEGACY = {
+    const SEED = {
       old1: { id: 'old1', title: 'Old One', content: 'Title: Old One\n\nFrom before.', updatedAt: T0 - 60000 },
       old2: { id: 'old2', title: 'Old Two', content: 'Title: Old Two\n\nOpen last.', updatedAt: T0 - 120000 },
       oldgone: { id: 'oldgone', title: 'Old Gone', content: 'Title: Old Gone\n\nBinned.', updatedAt: T0 - 5 * DAY_MS, deletedAt: T0 - DAY_MS }
     };
-    const legacyJson = JSON.stringify(LEGACY);
 
-    // An upgrade from the version that kept everything in one localStorage key
-    await setDb({}, {});
-    W().localStorage.setItem('frictionless_scripts', legacyJson);
-    W().localStorage.setItem('frictionless_current', 'old2');
+    await setDb(SEED, { currentScriptId: 'old2' });
     const sf = await openRealFrame(1200, 700);
-    let dbNow = await dbState();
-    check('migration: every old script is copied into IndexedDB, deleted ones included',
-      JSON.stringify(Object.keys(dbNow.scripts).sort()) === '["old1","old2","oldgone"]' && dbNow.scripts.oldgone.deletedAt === LEGACY.oldgone.deletedAt && dbNow.scripts.old1.content === LEGACY.old1.content, Object.keys(dbNow.scripts));
-    check('migration: the script that was open reopens, and the pointer moves over too',
-      fid(sf, 'editor').value === LEGACY.old2.content && dbNow.meta.currentScriptId === 'old2' && dbNow.meta.migrated === '1', [fid(sf, 'editor').value, dbNow.meta]);
-    check('migration: the old localStorage copy is left exactly as it was (a fallback)',
-      W().localStorage.getItem('frictionless_scripts') === legacyJson && W().localStorage.getItem('frictionless_current') === 'old2');
-    check('storage: this browser uses IndexedDB', sf.contentWindow.eval('storageMode') === 'idb');
+    check('storage: the library loads from IndexedDB and the script that was open reopens',
+      sf.contentWindow.eval('storageMode') === 'idb' && fid(sf, 'editor').value === SEED.old2.content && Object.keys(sf.contentWindow.getScripts()).sort().join() === 'old1,old2,oldgone',
+      [sf.contentWindow.eval('storageMode'), fid(sf, 'editor').value]);
 
     // Autosave writes the one script being edited: not the library
     const writes = [];
@@ -1159,14 +1150,7 @@ setTimeout(() => {
     check('autosave: writes only the script being edited', writes.join() === 'save old2', writes);
     sw.Store.saveScript = realSaveOne;
     sw.Store.write = realWriteMany;
-    check('autosave: the edit is in IndexedDB, and the old localStorage copy is not rewritten',
-      (await stored()).old2.content === LEGACY.old2.content + ' More.' && W().localStorage.getItem('frictionless_scripts') === legacyJson);
-
-    // The migration runs once: an old copy of the app writing to localStorage later is not copied in again
-    W().localStorage.setItem('frictionless_scripts', JSON.stringify(Object.assign({ late: { id: 'late', title: 'Late', content: 'Title: Late\n\nToo late.', updatedAt: Date.now() } }, LEGACY)));
-    await reloadReal(sf);
-    check('migration: runs once only', !(await stored()).late && (await stored()).old2.content === LEGACY.old2.content + ' More.');
-    W().localStorage.setItem('frictionless_scripts', legacyJson);
+    check('autosave: the edit is in IndexedDB', (await stored()).old2.content === SEED.old2.content + ' More.');
 
     // The emergency buffer: the tab closes before IndexedDB has finished writing
     sf.contentWindow.Store.saveScript = () => new Promise(() => {}); // this write never lands
@@ -1181,7 +1165,7 @@ setTimeout(() => {
     W().localStorage.setItem(EMERGENCY_KEY, JSON.stringify({ old1: { id: 'old1', title: 'Old One', content: 'Stale words', updatedAt: 1 } }));
     await reloadReal(sf);
     check('buffer: an entry older than the stored script is thrown away, never written over newer words',
-      (await stored()).old1.content === LEGACY.old1.content && buffer(W()) === null);
+      (await stored()).old1.content === SEED.old1.content && buffer(W()) === null);
 
     // A save the browser refuses (full) says so, and keeps the words in the buffer
     const realSaveSf = sf.contentWindow.Store.saveScript;
@@ -1222,32 +1206,26 @@ setTimeout(() => {
     fq(sf, '#library-modal .modal-close').click();
     [sf, tb].forEach(fr => { blankOut(fr); fr.contentWindow.saveScript = () => {}; fr.remove(); });
 
-    // No IndexedDB (some private windows): the app keeps working on the old localStorage key, as it always did
-    W().localStorage.setItem('frictionless_scripts', legacyJson);
-    W().localStorage.setItem('frictionless_current', 'old1');
+    // No IndexedDB at all (site data blocked): the writer is told, nothing breaks, and nothing pretends to be saved
     const nf = await openRealFrame(1200, 700);
     const nw = nf.contentWindow;
     blankOut(nf);
     await nw.restoreLastScript(null);
     nw.render();
     const idbBefore = JSON.stringify(await stored());
-    check('fallback: without IndexedDB the app opens the scripts kept in localStorage', nw.eval('storageMode') === 'local' && fid(nf, 'editor').value === LEGACY.old1.content, [nw.eval('storageMode'), fid(nf, 'editor').value]);
-    appendText(nf, ' Fallback words.');
+    check('no storage: the writer is told scripts cannot be kept here, and pointed at Export',
+      nw.eval('storageMode') === 'none' && /not letting Plainchant save/.test(fid(nf, 'notice').textContent) && /Export/.test(fid(nf, 'notice').textContent) && fid(nf, 'notice').classList.contains('error'),
+      [nw.eval('storageMode'), fid(nf, 'notice').textContent]);
+    appendText(nf, 'Words with nowhere to go.');
+    fid(nf, 'saveBtn').click();
+    check('no storage: Save says Error rather than Saved', fid(nf, 'saveBtn').innerText === 'Error', fid(nf, 'saveBtn').innerText);
     hide(nf);
-    const legacyNow = () => JSON.parse(W().localStorage.getItem('frictionless_scripts'));
-    check('fallback: a save lands in localStorage at once (synchronously)', legacyNow().old1.content === LEGACY.old1.content + ' Fallback words.' && W().localStorage.getItem('frictionless_current') === 'old1');
-    check('fallback: and IndexedDB and the emergency buffer are left alone', JSON.stringify(await stored()) === idbBefore && buffer(W()) === null);
-    const deletedByOtherTab = legacyNow();
-    deletedByOtherTab.old1.deletedAt = Date.now();
-    W().localStorage.setItem('frictionless_scripts', JSON.stringify(deletedByOtherTab));
-    appendText(nf, ' After the delete.');
-    hide(nf);
-    check('fallback: another tab\'s delete is still seen at once, and the words go to a new script',
-      legacyNow().old1.content.indexOf('After the delete.') === -1 && Object.values(legacyNow()).some(x => !x.deletedAt && x.content.indexOf('After the delete.') !== -1));
+    check('no storage: the words stay on the page, and nothing is written anywhere',
+      fid(nf, 'editor').value === 'Words with nowhere to go.' && JSON.stringify(await stored()) === idbBefore && buffer(W()) === null && Object.keys(nw.getScripts()).length === 0);
     blankOut(nf);
     nw.saveScript = () => {};
     nf.remove();
-    ['frictionless_scripts', 'frictionless_current', EMERGENCY_KEY].forEach(k => W().localStorage.removeItem(k));
+    W().localStorage.removeItem(EMERGENCY_KEY);
 
     // Phone: the Library fits a 375px screen and every action is reachable
     await seedLibrary();

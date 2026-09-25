@@ -39,7 +39,7 @@ Sessions are short-lived and context resets between them, so the repo carries th
 | `src/library.js` | Library data rules (search, soft delete, restore, purge, duplicate, rename): scripts object in, new object out. Pure, UMD (D-013) |
 | `src/importing.js` | Import rules: which files to accept, decoding (UTF-8/16, Windows-1252), line endings. Pure, UMD (D-016) |
 | `src/suggest.js` | Autocomplete rules: names and locations from the script, what to offer for the word being typed. Pure, UMD, uses `Fountain` and `Editing` (D-017) |
-| `src/store.js` | Storage in IndexedDB, global `Store`: pure rules (migration, diff, delete guard, emergency-buffer reconcile) plus thin IndexedDB calls that take the database as an argument. UMD (D-018, D-019) |
+| `src/store.js` | Storage in IndexedDB, global `Store`: pure rules (diff, delete guard, emergency-buffer reconcile) plus thin IndexedDB calls that take the database as an argument. UMD (D-018, D-019, D-020) |
 | `test/` | `fountain.test.js` (parser), `editing.test.js` (typing helpers), `library.test.js` (library rules), `importing.test.js` (import rules), `suggest.test.js` (autocomplete rules), `store.test.js` (storage rules), `structure.test.js` (app script structure, Node only), `app.e2e.html` (app behaviour), `harness.js`, runners: `index.html`, `run-headless.ps1` (Windows), `run-headless.sh` (Linux/macOS), `run.js` |
 | `ROADMAP.md` | The plan, with stable item IDs |
 | `docs/HANDOFF.md` | Current state, next steps, session log |
@@ -55,7 +55,7 @@ use what an earlier file already defined. Code inside functions runs later and c
 | --- | --- |
 | `core.js` | `editor` / `renderTarget` / `page` references, `newId`, `currentScriptId`, `autoSaveTimer`, `showNotice`, `render()` |
 | `layout.js` | One pane at a time, the phone menu, keyboard-safe sizing (`fitToViewport`), scroll sync |
-| `persistence.js` | The in-memory library, IndexedDB writes and the emergency buffer, the localStorage fallback, restoring the last script, New, the trash purge, save on hide (D-019) |
+| `persistence.js` | The in-memory library, IndexedDB writes and the emergency buffer, the no-storage notice, restoring the last script, New, the trash purge, save on hide (D-019) |
 | `dialogs.js` | `openModal` / `closeModal`: the one accessible helper for every modal window |
 | `library-ui.js` | The Library dialog (data rules are in `src/library.js`) |
 | `example.js`, `help.js`, `tour.js` | The example script, the Help window, the welcome tour |
@@ -76,8 +76,10 @@ Keep each file's own listeners in that file. Functions the e2e tests call (`save
 - Classic `<script>` files, not ES modules (`file://` blocks module imports).
 - The parser must never touch the DOM, `window` or Node-only APIs. Escape all user text before it reaches HTML.
 - Match existing CSS variable names and class names (`script-*` for rendered screenplay elements).
-- Do not change the storage keys, database or store names without a migration (D-005, D-018). Scripts live in
-  IndexedDB; the `frictionless_*` localStorage keys are the migration source, the fallback and the emergency buffer.
+- Scripts live in IndexedDB (database `plainchant`, stores `scripts` and `meta`). localStorage holds only
+  `plainchant_onboarded` (the tour) and `plainchant_emergency` (the buffer). There is no legacy support and no
+  localStorage fallback (D-020): this is not a production release, so storage names may change without a migration,
+  but say so in DECISIONS when they do.
 - Every storage write goes through `putScripts` / `saveScript` / `rememberCurrent` in `persistence.js`, never straight
   to IndexedDB or localStorage, so other tabs are told and the emergency buffer stays right.
 
