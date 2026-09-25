@@ -776,6 +776,9 @@ setTimeout(() => {
 
     setText(xf, 'Title: Big Fish\n\nFADE IN:\n\n\n');
     exportBtnEl.click();
+    check('export: opens a choice between the .fountain file and print / PDF, the file first', active(xf).join() === 'export-modal' && focusId(xf) === 'exportFountain', [active(xf), focusId(xf)]);
+    fid(xf, 'exportFountain').click();
+    check('export: choosing the file closes the dialog', active(xf).length === 0);
     check('export: downloads a .fountain file named after the script\'s title', !!linkSeen && linkSeen.download === 'big-fish.fountain', linkSeen);
     check('export: the file is UTF-8 plain text holding exactly the script, ending in a single newline',
       !!blobSeen && blobSeen.type === 'text/plain;charset=utf-8' && (await blobSeen.text()) === 'Title: Big Fish\n\nFADE IN:\n');
@@ -787,9 +790,11 @@ setTimeout(() => {
     linkSeen = null;
     setText(xf, 'INT. HOUSE - DAY\nHe waits.');
     exportBtnEl.click();
+    fid(xf, 'exportFountain').click();
     check('export: a script with no title page is named after its first line', linkSeen && linkSeen.download === 'int-house-day.fountain', linkSeen);
     setText(xf, 'Title: Café Amélie / Part 2\n\nText');
     exportBtnEl.click();
+    fid(xf, 'exportFountain').click();
     check('export: accents survive and slashes cannot reach the file system', linkSeen.download === 'café-amélie-part-2.fountain', linkSeen.download);
 
     linkSeen = null;
@@ -800,6 +805,9 @@ setTimeout(() => {
     check('export: then the label comes back', exportBtnEl.innerText === 'Export');
 
     const copyBtnEl = fid(xf, 'copyBtn');
+    // Headless Chrome asks for clipboard permission when the page has focus and no real gesture, and never answers.
+    // The check is about the button, so the page gets a clipboard that answers.
+    try { Object.defineProperty(xw.navigator, 'clipboard', { value: { writeText: () => Promise.resolve() }, configurable: true }); } catch (e) { /* keep the real one */ }
     copyBtnEl.click();
     copyBtnEl.click();
     await sleep(150);
@@ -1226,6 +1234,64 @@ setTimeout(() => {
     nw.saveScript = () => {};
     nf.remove();
     W().localStorage.removeItem(EMERGENCY_KEY);
+
+    // 16d. Print / save as PDF (P3-03, D-021). window.print is replaced in the page under test; the sheets it would print
+    // are checked in the page, at their real size.
+    const pf = await openFrame(1800, 800); // wide enough for a full 60-character preview column
+    const pw = pf.contentWindow;
+    let printCalls = 0;
+    pw.print = () => { printCalls++; };
+    pw.localStorage.removeItem('plainchant_paper');
+    const speech = Array.from({ length: 100 }, (_, i) => 'Sentence ' + i + ' goes here.').join('\n'); // 3 pages on Letter, 2 on A4
+    const PRINTED = 'Title: Big <b>Fish</b>\nAuthor: Jane Doe\n\nINT. POND - DAY #7#\n\nA fish waits. [[a note]]\n\nJOHN (V.O.)\n' + speech + '\n\nCUT TO:\n\nEXT. SHORE - NIGHT\n\n' + 'The *water* is still.';
+    setText(pf, PRINTED);
+    const expectPages = (paper) => pw.Paginate.layout(pw.Fountain.parse(PRINTED), { paper: paper }).pages.length;
+    const printRoot = fid(pf, 'print-root');
+    check('print: nothing of the pages shows on screen', pw.getComputedStyle(printRoot).display === 'none');
+    fid(pf, 'exportBtn').click();
+    const summaryText = () => fid(pf, 'printSummary').textContent;
+    check('print: Export offers it, says how many pages it makes, and US Letter is the default',
+      active(pf).join() === 'export-modal' && summaryText() === '“Big <b>Fish</b>”: ' + expectPages('letter') + ' pages, plus a title page.' && fq(pf, 'input[name="paper"][value="letter"]').checked,
+      summaryText());
+    fq(pf, 'input[name="paper"][value="a4"]').click();
+    check('print: choosing A4 recounts the pages', summaryText().indexOf(expectPages('a4') + ' pages') !== -1 && expectPages('a4') < expectPages('letter'), [summaryText(), expectPages('a4'), expectPages('letter')]);
+    fid(pf, 'printGo').click();
+    for (let i = 0; i < 40 && !printCalls; i++) await sleep(100); // it waits for the font first (at most 2 s)
+    check('print: opens the browser\'s print window once, closes the dialog, and remembers A4', printCalls === 1 && active(pf).length === 0 && pw.localStorage.getItem('plainchant_paper') === 'a4', [printCalls, active(pf)]);
+    const sheets = () => Array.from(printRoot.querySelectorAll('.print-page'));
+    check('print: one sheet per page, plus the title page', sheets().length === expectPages('a4') + 1, sheets().length);
+    printRoot.style.display = 'block'; // measure the sheets as they will print
+    const px = (el) => el.getBoundingClientRect();
+    const MM = 96 / 25.4;
+    check('print: A4 sheets are 210 mm wide and (a hair under) 297 mm tall', Math.abs(px(sheets()[1]).width - 210 * MM) < 1 && Math.abs(px(sheets()[1]).height - 297 * MM) < 2, px(sheets()[1]));
+    const firstLine = sheets()[1].querySelector('.print-line:not(.print-margin):not(.print-num)');
+    const sheetBox = px(sheets()[1]), lineBox = px(firstLine);
+    check('print: the text starts 1 inch from the top and 1.5 inches from the left', Math.abs(lineBox.top - sheetBox.top - 96) < 1 && Math.abs(lineBox.left - sheetBox.left - 144) < 1, [lineBox.top - sheetBox.top, lineBox.left - sheetBox.left]);
+    const sheetText = (i) => sheets()[i].textContent;
+    check('print: the title page comes first, unnumbered, and so is the first script page', /BIG <B>FISH<\/B>/.test(sheetText(0)) && /Jane Doe/.test(sheetText(0)) && !sheets()[0].querySelector('.print-num') && !sheets()[1].querySelector('.print-num'), sheetText(0).slice(0, 80));
+    check('print: later pages are numbered "2." and so on, half an inch from the top', sheets()[2].querySelector('.print-num').textContent === '2.' && Math.abs(px(sheets()[2].querySelector('.print-num')).top - px(sheets()[2]).top - 48) < 1);
+    check('print: a speech that runs over a page carries (MORE) and (CONT\'D)', /\(MORE\)/.test(sheetText(1)) && /JOHN \(V\.O\.\) \(CONT'D\)/.test(sheetText(2)));
+    check('print: the scene number is in both margins; notes are left out; emphasis is kept',
+      Array.from(sheets()[1].querySelectorAll('.print-margin')).filter(n => n.textContent === '7').length === 2 && !/a note/.test(printRoot.textContent) && !!Array.from(printRoot.querySelectorAll('.pr-i')).find(n => n.textContent === 'water'));
+    check('print: the writer\'s text is only ever text (no markup gets in)', !printRoot.querySelector('b, img, script'));
+    printRoot.style.display = '';
+    setText(pf, 'Short and new.');
+    pw.dispatchEvent(new pw.Event('beforeprint'));
+    check('print: Ctrl/Cmd+P (any print) rebuilds the pages from what is written now', sheets().length === 1 && /Short and new\./.test(printRoot.textContent));
+    const printRules = [];
+    Array.from(pf.contentDocument.styleSheets).forEach(sh => { try { Array.from(sh.cssRules).forEach(r => { if (r.media && /print/.test(r.media.mediaText)) printRules.push(r.cssText); }); } catch (e) { /* another origin */ } });
+    check('print: the print stylesheet shows the pages and nothing else', printRules.some(t => /body > :not\(#print-root\)/.test(t) && /display: none/.test(t)) && printRules.some(t => /#print-root \{ display: block/.test(t)), printRules);
+    setText(pf, 'INT. A - DAY\n\nJOHN\n(quietly)\nHi.\n\n> SMASH CUT TO BLACK:\n\nEXT. B - DAY');
+    const pcs = (sel) => pw.getComputedStyle(fq(pf, sel));
+    check('print: the preview matches paper: plain scene headings, transitions flush right, 20-character parentheticals',
+      pcs('.script-scene-heading').fontWeight === '400' && pcs('.script-transition').textAlign === 'right' &&
+      Math.abs(parseFloat(pcs('.script-parenthetical').maxWidth) / parseFloat(pcs('.script-character').marginLeft) - 20 / 22) < 0.01,
+      [pcs('.script-scene-heading').fontWeight, pcs('.script-transition').textAlign, pcs('.script-parenthetical').maxWidth, pcs('.script-character').marginLeft]);
+    setText(pf, '   ');
+    fid(pf, 'exportBtn').click();
+    check('print: with nothing written, Export says so and opens nothing', fid(pf, 'exportBtn').innerText === 'Nothing to export' && active(pf).length === 0);
+    check('help: saving as PDF is explained', /Save as PDF/.test(fid(pf, 'help-modal').textContent) && /Headers and footers/.test(fid(pf, 'help-modal').textContent));
+    pf.remove();
 
     // Phone: the Library fits a 375px screen and every action is reachable
     await seedLibrary();

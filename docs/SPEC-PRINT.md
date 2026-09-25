@@ -1,7 +1,9 @@
 # Spec: print and PDF (paginated screenplay pages)
 
-Roadmap items **P3-03, P3-04, P3-05, P3-06** (and new **P3-11, P3-12**). Decision **D-021** (proposed). Status:
-**spec only, not implemented. Waiting for the owner's answers to §10 and the go-ahead.**
+Roadmap items **P3-03, P3-04, P3-05, P3-06** (and new **P3-11, P3-12**). Decisions **D-021**, **D-022**. Status:
+**P3-03 to P3-06 implemented 2026-09-25** with the recommended answers to §10. Two changes from this plan, both in
+D-022: printing lives in the **Export** dialog rather than on a button of its own, and a page may break at **any
+sentence end** (the rest is re-wrapped), not only where a sentence ends a wrapped line. P3-11 and P3-12 are not built.
 
 ---
 

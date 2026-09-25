@@ -104,16 +104,18 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
 
 - [x] P3-01 Export as `.fountain`, named after the script's title (D-015). There is no separate `.txt` option: a
   `.fountain` file is plain text and any editor opens it. Add a choice only if someone asks (P3-10).
-- [ ] P3-10 Export choices, if wanted: `.txt`, PDF (P3-03), and exporting a script straight from its Library row
+- [ ] P3-10 Export choices, if wanted: `.txt`, and exporting a script straight from its Library row (PDF is done: the
+  Export dialog, D-022)
 - [x] P3-02 Import `.fountain` / `.txt` / `.md` (the Library's `Import a file...` picker, and drag-drop anywhere on the page). Each file
   becomes a new script and the first opens; nothing is overwritten (D-016). Final Draft `.fdx` import is P3-08.
-- [ ] P3-03 Print stylesheet and print-to-PDF at standard screenplay margins (spec: docs/SPEC-PRINT.md, D-021): Print / PDF
-  button, `beforeprint` so Ctrl/Cmd+P prints the screenplay, Letter / A4, Help on saving as PDF
+- [x] P3-03 Print stylesheet and print-to-PDF at standard screenplay margins (spec: docs/SPEC-PRINT.md, D-021, D-022):
+  in the Export dialog (with the paper choice and page count), `beforeprint` so Ctrl/Cmd+P prints the screenplay,
+  Letter / A4, Help on saving as PDF. The preview now matches paper (plain headings, transitions flush right)
 - [x] P3-04 Pagination (about 55 lines per page), page numbers, `(MORE)` / `(CONT'D)` handling: `src/paginate.js`, a
   pure module on the Courier character grid, plus `Fountain.runs` (spec §4-§7). Also lays out the title page (P3-05)
   and dual dialogue (P3-06); nothing prints until P3-03
-- [ ] P3-05 Title page rendering as its own page
-- [ ] P3-06 Dual dialogue in print layout
+- [x] P3-05 Title page rendering as its own page (unnumbered, not counted; spec §6)
+- [x] P3-06 Dual dialogue in print layout (side by side, never split)
 - [ ] P3-11 Direct `.pdf` download: a hand-written PDF writer (`src/pdf.js`) with PDF's built-in Courier fonts, fed by
   the same page layout (spec §8b). Only if the owner chooses it (spec §10.2)
 - [ ] P3-12 Page view in the preview: the paginated sheets, page numbers and breaks while writing (spec §8c). Optional

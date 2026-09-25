@@ -7,7 +7,7 @@
  *
  *   Paginate.layout(tokens, { paper })  -> { paper, linesPerPage, columns, titlePage: [line] | null,
  *                                            pages: [{ number, lines: [line] }] }   number is null on page 1
- *   Paginate.wrap(runs, width)          -> [{ runs, breakAfter }]  word-wrapped visual lines
+ *   Paginate.wrap(runs, width)          -> [{ runs, start, end }]  word-wrapped lines, with where each sits in the text
  *
  *   line = { row, col, width, align: 'left' | 'center' | 'right', runs: [{ text, bold, italic, underline }], kind,
  *            side?: 'left' | 'right' (dual dialogue), number?: scene number }
@@ -41,100 +41,122 @@
         left: 0, right: 32,
         character: { col: 6, width: 22 }, parenthetical: { col: 3, width: 22 }, dialogue: { col: 0, width: 28 }
     };
-    const SENTENCE_END = /[.!?…]["'”’)\]]*$/;
+    // A sentence ends at . ! ? or … (and any closing quotes or brackets) followed by more text
+    const SENTENCE_END = /[.!?…]["'”’)\]]*(?=\s+\S)/g;
 
-    // ---------- wrapping ----------
+    // ---------- styled text ----------
 
-    const sameStyle = (a, b) => a.bold === b.bold && a.italic === b.italic && a.underline === b.underline;
+    const textOf = (runs) => runs.map((r) => r.text).join('');
+    const visible = (runs) => /\S/.test(textOf(runs));
+    const restyle = (runs, change) => runs.map((r) => Object.assign({}, r, change(r)));
+    const upper = (runs) => restyle(runs, (r) => ({ text: r.text.toUpperCase() }));
+    const italic = (runs) => restyle(runs, () => ({ italic: true }));
 
-    function toRuns(chars) {
+    /** The runs covering characters [from, to) of their text. */
+    function sliceRuns(runs, from, to) {
         const out = [];
-        chars.forEach((c) => {
-            const last = out[out.length - 1];
-            if (last && sameStyle(last, c.s)) last.text += c.ch;
-            else out.push({ text: c.ch, bold: c.s.bold, italic: c.s.italic, underline: c.s.underline });
+        let at = 0;
+        runs.forEach((r) => {
+            const a = Math.max(from, at), b = Math.min(to, at + r.text.length);
+            if (a < b) out.push(Object.assign({}, r, { text: r.text.slice(a - at, b - at) }));
+            at += r.text.length;
         });
         return out;
     }
 
-    function trimEnd(chars) {
-        let end = chars.length;
-        while (end > 0 && chars[end - 1].ch === ' ') end--;
-        return chars.slice(0, end);
-    }
-
-    /** Word-wraps styled text to `width` columns. Each line says whether a page may break after it. */
-    function wrap(runs, width) {
-        const paragraphs = [[]];
-        (runs || []).forEach((r) => {
-            for (const ch of String(r.text).replace(/\t/g, '    ')) {
-                if (ch === '\n') paragraphs.push([]);
-                else paragraphs[paragraphs.length - 1].push({ ch: ch, s: r });
-            }
-        });
-        const out = [];
-        paragraphs.forEach((p) => {
-            const lines = [];
-            let start = 0;
-            while (start < p.length) {
-                if (p.length - start <= width) { lines.push(p.slice(start)); break; }
-                let cut = -1;
-                for (let i = start + width; i > start; i--) {
-                    if (p[i].ch === ' ') { cut = i; break; }                                   // at a space
-                    if (p[i - 1].ch === '-' && i - 1 > start && p[i - 2].ch !== ' ') { cut = i; break; } // after a hyphen
-                }
-                if (cut === -1 || !trimEnd(p.slice(start, cut)).length) cut = start + width;     // one long word: cut it
-                lines.push(p.slice(start, cut));
-                start = cut;
-                while (start < p.length && p[start].ch === ' ') start++;                        // the spaces broken at
-            }
-            if (!lines.length) lines.push([]);
-            lines.forEach((chars, i) => {
-                const kept = trimEnd(chars);
-                const text = kept.map((c) => c.ch).join('');
-                out.push({ runs: toRuns(kept), breakAfter: i === lines.length - 1 || SENTENCE_END.test(text) });
+    /** Splits styled text at its newlines: one entry per paragraph. Tabs become four spaces. */
+    function paragraphsOf(runs) {
+        const out = [[]];
+        runs.forEach((r) => {
+            r.text.replace(/\t/g, '    ').split('\n').forEach((piece, i) => {
+                if (i) out.push([]);
+                if (piece) out[out.length - 1].push(Object.assign({}, r, { text: piece }));
             });
         });
         return out;
     }
 
+    // ---------- wrapping ----------
+
+    const sameStyle = (a, b) => a.bold === b.bold && a.italic === b.italic && a.underline === b.underline;
+
+    /** Word-wraps styled text to `width` columns: at spaces, after a hyphen, or (one long word) anywhere. */
+    function wrap(runs, width) {
+        const chars = [];
+        (runs || []).forEach((r) => { for (const ch of String(r.text).replace(/\t/g, '    ')) chars.push({ ch: ch, s: r }); });
+        const out = [];
+        const push = (from, to) => {
+            let end = to;
+            while (end > from && chars[end - 1].ch === ' ') end--;
+            const kept = [];
+            chars.slice(from, end).forEach((c) => {
+                const last = kept[kept.length - 1];
+                if (last && sameStyle(last, c.s)) last.text += c.ch;
+                else kept.push({ text: c.ch, bold: !!c.s.bold, italic: !!c.s.italic, underline: !!c.s.underline });
+            });
+            out.push({ runs: kept, start: from, end: end });
+        };
+        let para = 0;
+        for (let i = 0; i <= chars.length; i++) {
+            if (i < chars.length && chars[i].ch !== '\n') continue;
+            let start = para;
+            if (start === i) push(start, i); // an empty paragraph is one empty line
+            while (start < i) {
+                if (i - start <= width) { push(start, i); break; }
+                let cut = -1;
+                for (let j = start + width; j > start; j--) {
+                    if (chars[j].ch === ' ') { cut = j; break; }                                          // at a space
+                    if (chars[j - 1].ch === '-' && j - 1 > start && chars[j - 2].ch !== ' ') { cut = j; break; } // after a hyphen
+                }
+                let blank = cut !== -1;
+                for (let j = start; blank && j < cut; j++) if (chars[j].ch !== ' ') blank = false;
+                if (cut === -1 || blank) cut = start + width;                                            // one long word: cut it
+                push(start, cut);
+                start = cut;
+                while (start < i && chars[start].ch === ' ') start++;                                     // the spaces broken at
+            }
+            para = i + 1;
+        }
+        return out;
+    }
+
     // ---------- elements to blocks ----------
 
-    const upper = (runs) => runs.map((r) => Object.assign({}, r, { text: r.text.toUpperCase() }));
-    const italic = (runs) => runs.map((r) => Object.assign({}, r, { italic: true }));
-    const visible = (runs) => runs.some((r) => r.text.trim());
+    // A paragraph: styled text with no newline, in one position. A block is made of paragraphs (and, for dialogue,
+    // a cue above them), so a page can break inside one and re-wrap the rest.
+    function para(kind, runs, geo, extra) { return { kind: kind, runs: runs, geo: geo, extra: extra || null }; }
 
-    function lines(kind, runs, geo, extra) {
-        return wrap(runs, geo.width).map((l) => Object.assign({
-            kind: kind, col: geo.col, width: geo.width, align: geo.align || 'left', runs: l.runs, breakAfter: l.breakAfter
-        }, extra || {}));
+    function linesOf(paras) {
+        const out = [];
+        paras.forEach((p) => wrap(p.runs, p.geo.width).forEach((l) => {
+            out.push(Object.assign({ kind: p.kind, col: p.geo.col, width: p.geo.width, align: p.geo.align || 'left', runs: l.runs }, p.extra || {}));
+        }));
+        return out;
     }
 
-    function cueLines(text, geo, extra) {
-        return lines('character', Fountain.runs(text), geo, extra);
+    function parasOf(kind, runs, geo, extra) {
+        return paragraphsOf(runs).map((r) => para(kind, r, geo, extra));
     }
 
-    function speechLines(entries, geoFor, extra) {
+    function speechParas(entries, geoFor, extra) {
         const out = [];
         entries.forEach((e) => {
             const runs = Fountain.runs(e.text);
-            if (visible(runs)) out.push.apply(out, lines(e.type, runs, geoFor(e.type), extra));
+            if (visible(runs)) out.push.apply(out, parasOf(e.type, runs, geoFor(e.type), extra));
         });
         return out;
     }
 
-    function dialogueBlock(t) {
-        const head = cueLines(t.character, GEO.character);
-        return { type: 'dialogue', character: t.character, head: head.length,
-            lines: head.concat(speechLines(t.lines, (k) => GEO[k])) };
+    function dialogueBlock(character, speech, printedCue) {
+        const head = linesOf(parasOf('character', Fountain.runs(printedCue || character), GEO.character));
+        return { type: 'dialogue', character: character, head: head, paras: speech, lines: head.concat(linesOf(speech)) };
     }
 
     function dualBlock(left, right) {
         const side = (t, name) => {
-            const x = DUAL[name];
-            const shift = (g) => ({ col: g.col + x, width: g.width });
-            return cueLines(t.character, shift(DUAL.character), { side: name })
-                .concat(speechLines(t.lines, (k) => shift(DUAL[k]), { side: name }));
+            const shift = (g) => ({ col: g.col + DUAL[name], width: g.width });
+            return linesOf(parasOf('character', Fountain.runs(t.character), shift(DUAL.character), { side: name }))
+                .concat(linesOf(speechParas(t.lines, (k) => shift(DUAL[k]), { side: name })));
         };
         const l = side(left, 'left'), r = side(right, 'right');
         return { type: 'dual', lines: l.concat(r), height: Math.max(l.length, r.length), parts: [left, right] };
@@ -146,7 +168,7 @@
             const t = tokens[i];
             switch (t.type) {
                 case 'scene': {
-                    const ls = lines('scene', upper(Fountain.runs(t.text)), GEO.scene);
+                    const ls = linesOf(parasOf('scene', upper(Fountain.runs(t.text)), GEO.scene));
                     if (t.number) ls[0].number = t.number;
                     blocks.push({ type: 'scene', lines: ls });
                     break;
@@ -155,14 +177,15 @@
                     if (t.dual === 'left' && tokens[i + 1] && tokens[i + 1].type === 'dialogue' && tokens[i + 1].dual === 'right') {
                         blocks.push(dualBlock(t, tokens[i + 1]));
                         i++;
-                    } else blocks.push(dialogueBlock(t));
+                    } else blocks.push(dialogueBlock(t.character, speechParas(t.lines, (k) => GEO[k])));
                     break;
                 case 'action': case 'transition': case 'centered': case 'lyrics': {
                     let runs = Fountain.runs(t.text);
                     if (!visible(runs)) break; // a note on its own prints nothing, and leaves no gap
                     if (t.type === 'transition') runs = upper(runs);
                     if (t.type === 'lyrics') runs = italic(runs);
-                    blocks.push({ type: t.type, lines: lines(t.type, runs, GEO[t.type]) });
+                    const paras = parasOf(t.type, runs, GEO[t.type]);
+                    blocks.push({ type: t.type, paras: paras, lines: linesOf(paras) });
                     break;
                 }
                 case 'page_break': blocks.push({ type: 'break', lines: [] }); break;
@@ -175,22 +198,58 @@
     // ---------- where a page may break (spec §5) ----------
 
     const height = (b) => (b.type === 'dual' ? b.height : b.lines.length);
+    const splittable = (b) => ['action', 'lyrics', 'centered', 'dialogue'].indexOf(b.type) !== -1;
 
-    /** Action-like: the ways to keep k lines here and the rest on the next page, two lines each side at least. */
-    function actionSplits(b) {
-        const ks = [];
-        for (let k = 2; k <= b.lines.length - 2; k++) if (b.lines[k - 1].breakAfter) ks.push(k);
-        return ks;
+    /** Cuts paragraphs at character `o` of paragraph `p` (o null: after the whole paragraph) into [first, rest]. */
+    function cut(paras, p, o) {
+        if (o === null) return [paras.slice(0, p + 1), paras.slice(p + 1)];
+        const text = textOf(paras[p].runs);
+        let from = o;
+        while (from < text.length && /\s/.test(text[from])) from++;
+        const head = Object.assign({}, paras[p], { runs: sliceRuns(paras[p].runs, 0, o) });
+        const tail = Object.assign({}, paras[p], { runs: sliceRuns(paras[p].runs, from, text.length) });
+        return [paras.slice(0, p).concat([head]), [tail].concat(paras.slice(p + 1))];
     }
 
-    /** Dialogue: k speech lines here (after the cue), ending on a sentence of speech, two lines each side at least. */
-    function dialogueSplits(b) {
-        const speech = b.lines.slice(b.head);
-        const ks = [];
-        for (let k = 2; k <= speech.length - 2; k++) {
-            if (speech[k - 1].kind === 'dialogue' && speech[k - 1].breakAfter) ks.push(k);
+    /**
+     * The proper ways to break a splittable block, in reading order: after a sentence or a paragraph, keeping at
+     * least two lines on each side. Dialogue may not end a page on a parenthetical. Each option: { k, first, rest },
+     * k being the lines (after the cue) that stay on this page.
+     */
+    function splits(b) {
+        if (b.options) return b.options;
+        const out = [];
+        b.paras.forEach((pa, p) => {
+            if (b.type === 'dialogue' && pa.kind !== 'dialogue') return;
+            const text = textOf(pa.runs);
+            const points = [];
+            let m;
+            SENTENCE_END.lastIndex = 0;
+            while ((m = SENTENCE_END.exec(text))) points.push(m.index + m[0].length);
+            if (p < b.paras.length - 1) points.push(null);
+            points.forEach((o) => {
+                const parts = cut(b.paras, p, o);
+                const k = linesOf(parts[0]).length, rest = linesOf(parts[1]).length;
+                if (k >= 2 && rest >= 2) out.push({ k: k, first: parts[0], rest: parts[1] });
+            });
+        });
+        b.options = out;
+        return out;
+    }
+
+    /** A break where the page ends, for a block taller than a page with no proper place to break. */
+    function forcedSplit(b, k) {
+        let seen = 0;
+        for (let p = 0; p < b.paras.length; p++) {
+            const lines = wrap(b.paras[p].runs, b.paras[p].geo.width);
+            if (seen + lines.length >= k) {
+                const at = lines[k - seen - 1].end;
+                const parts = at >= textOf(b.paras[p].runs).length ? cut(b.paras, p, null) : cut(b.paras, p, at);
+                return { k: k, first: parts[0], rest: parts[1] };
+            }
+            seen += lines.length;
         }
-        return ks;
+        return { k: seen, first: b.paras, rest: [] };
     }
 
     // The fewest rows the block can leave at the foot of a page (its whole height if it cannot split)
@@ -201,19 +260,12 @@
             const next = blocks[j + 1];
             return b.lines.length + (next && next.type !== 'break' ? 1 + minRows(blocks, j + 1) : 0);
         }
-        if (b.type === 'action' || b.type === 'lyrics' || b.type === 'centered') {
-            const ks = actionSplits(b);
-            return ks.length ? ks[0] : b.lines.length;
-        }
-        if (b.type === 'dialogue') {
-            const ks = dialogueSplits(b);
-            return ks.length ? b.head + ks[0] + 1 : b.lines.length;
-        }
-        return height(b);
+        if (!splittable(b) || !splits(b).length) return height(b);
+        return b.type === 'dialogue' ? b.head.length + splits(b)[0].k + 1 : splits(b)[0].k;
     }
 
-    function contd(b) {
-        return b.character.replace(/\s*\(CONT['’]D\)\s*$/i, '') + ' (CONT\'D)';
+    function contd(character) {
+        return character.replace(/\s*\(CONT['’]D\)\s*$/i, '') + ' (CONT\'D)';
     }
 
     function layout(tokens, options) {
@@ -232,32 +284,29 @@
             page.push(line);
         };
         const gap = () => (row === 0 ? 0 : 1);
-        const placeAll = (b) => {
+        const free = () => N - row - gap();
+        const place = (lines, rows) => {
             const top = row + gap();
-            if (b.type === 'dual') {
+            if (rows !== undefined) { // dual dialogue: each side from the same top row
                 let l = 0, r = 0;
-                b.lines.forEach((x) => emit(x, top + (x.side === 'left' ? l++ : r++)));
-            } else b.lines.forEach((x, i) => emit(x, top + i));
-            row = top + height(b);
-        };
-        const placeFirst = (b, k) => { // the first k lines of b, which fit here
-            const top = row + gap();
-            b.lines.slice(0, k).forEach((x, i) => emit(x, top + i));
-            row = top + k;
+                lines.forEach((x) => emit(x, top + (x.side === 'left' ? l++ : r++)));
+            } else lines.forEach((x, i) => emit(x, top + i));
+            row = top + (rows !== undefined ? rows : lines.length);
         };
 
         for (let i = 0; i < blocks.length; i++) {
             let b = blocks[i];
             if (b.type === 'break') { newPage(); continue; }
             if (b.type === 'dual' && b.height > N) { // taller than a page: print the two speeches one after the other
-                blocks.splice(i, 1, dialogueBlock(b.parts[0]), dialogueBlock(b.parts[1]));
+                const l = b.parts[0], r = b.parts[1];
+                blocks.splice(i, 1, dialogueBlock(l.character, speechParas(l.lines, (k) => GEO[k])),
+                    dialogueBlock(r.character, speechParas(r.lines, (k) => GEO[k])));
                 b = blocks[i];
             }
-            const free = () => N - row - gap();
 
             if (b.type === 'scene') { // never the last thing on a page: it needs some of what follows under it
                 if (row > 0 && minRows(blocks, i) > free()) newPage();
-                placeAll(b);
+                place(b.lines);
                 continue;
             }
 
@@ -268,33 +317,25 @@
                     // both go over (when they fit together on a page).
                     const next = blocks[i + 1];
                     if (row > 0 && next && next.type === 'transition' && h + 1 + height(next) > free() && h + 1 + height(next) <= N) newPage();
-                    placeAll(b);
+                    place(b.lines, b.type === 'dual' ? b.height : undefined);
                     break;
                 }
-                if (b.type === 'action' || b.type === 'lyrics' || b.type === 'centered') {
-                    let k = actionSplits(b).filter((x) => x <= free()).pop() || 0;
-                    if (!k && row > 0) { newPage(); continue; }
-                    if (!k) k = free(); // taller than a page with nowhere proper to break: break where the page ends
-                    placeFirst(b, k);
-                    newPage();
-                    b = { type: b.type, lines: b.lines.slice(k) };
-                    continue;
+                if (!splittable(b)) { // transitions and dual dialogue move whole
+                    if (row > 0) { newPage(); continue; }
+                    place(b.lines, b.type === 'dual' ? b.height : undefined);
+                    break;
                 }
-                if (b.type === 'dialogue') {
-                    let k = dialogueSplits(b).filter((x) => b.head + x + 1 <= free()).pop() || 0;
-                    if (!k && row > 0) { newPage(); continue; }
-                    if (!k) k = Math.max(1, free() - b.head - 1);
-                    placeFirst(b, b.head + k);
-                    emit(Object.assign({ runs: [{ text: '(MORE)', bold: false, italic: false, underline: false }], kind: 'more', align: 'left' }, GEO.more), row);
-                    newPage();
-                    const head = cueLines(contd(b), GEO.character);
-                    b = { type: 'dialogue', character: b.character, head: head.length, lines: head.concat(b.lines.slice(b.head + k)) };
-                    continue;
-                }
-                // Scene numbers aside, everything else (transitions, dual dialogue) moves whole
-                if (row > 0) { newPage(); continue; }
-                placeAll(b);
-                break;
+                const isDialogue = b.type === 'dialogue';
+                const extra = isDialogue ? b.head.length + 1 : 0; // the cue above, (MORE) below
+                let option = splits(b).filter((s) => s.k + extra <= free()).pop();
+                if (!option && row > 0) { newPage(); continue; }
+                if (!option) option = forcedSplit(b, Math.max(1, free() - extra)); // taller than a page, nowhere proper to break
+                place((isDialogue ? b.head : []).concat(linesOf(option.first)));
+                if (isDialogue) emit(Object.assign({ runs: [{ text: '(MORE)', bold: false, italic: false, underline: false }], kind: 'more', align: 'left' }, GEO.more), row);
+                newPage();
+                b = isDialogue
+                    ? dialogueBlock(b.character, option.rest, contd(b.character))
+                    : { type: b.type, paras: option.rest, lines: linesOf(option.rest) };
             }
         }
         newPage();
@@ -324,14 +365,14 @@
             if (!v || (key === 'authors' && get('author'))) return;
             let runs = Fountain.runs(v);
             if (key === 'title') runs = upper(runs);
-            const ls = lines(kind, runs, { col: 0, width: COLUMNS, align: 'center' });
+            const ls = linesOf(parasOf(kind, runs, { col: 0, width: COLUMNS, align: 'center' }));
             put(ls, row);
             row += ls.length + 1;
         });
 
         const bottom = (keys, geo) => {
             let ls = [];
-            keys.forEach(([key, kind]) => { const v = get(key); if (v) ls = ls.concat(lines(kind, Fountain.runs(v), geo)); });
+            keys.forEach(([key, kind]) => { const v = get(key); if (v) ls = ls.concat(linesOf(parasOf(kind, Fountain.runs(v), geo))); });
             put(ls, N - ls.length);
         };
         bottom([['notes', 'notes'], ['contact', 'contact']], { col: 0, width: 30 });

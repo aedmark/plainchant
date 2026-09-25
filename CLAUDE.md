@@ -61,7 +61,8 @@ use what an earlier file already defined. Code inside functions runs later and c
 | `library-ui.js` | The Library dialog (data rules are in `src/library.js`) |
 | `example.js`, `help.js`, `tour.js` | The example script, the Help window, the welcome tour |
 | `typing.js` | Tab, smart Enter, auto-uppercase, the element bar, autocomplete chips (rules are in `src/editing.js` and `src/suggest.js`) |
-| `export.js` | Export and Copy |
+| `export.js` | The Export dialog (the `.fountain` download), and Copy |
+| `print.js` | Print / save as PDF: draws the `src/paginate.js` pages as paper-sized sheets in `#print-root`, the paper choice, `beforeprint` (D-021, D-022) |
 | `import.js` | Import: the Library's picker and drag-and-drop onto the page; `showNotice` messages (defined in `core.js`) |
 | `main.js` | Start-up on `DOMContentLoaded` (asynchronous: the library loads first; `whenReady()`). Always last |
 

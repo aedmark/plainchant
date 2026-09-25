@@ -136,7 +136,7 @@
                     <li>Every change is <strong>saved automatically</strong>, and your last script reopens where you left it.</li>
                     <li><strong>New</strong> starts a blank script. <strong>Library</strong> lists every script you have, and lets you search them, <strong>rename</strong> one (this rewrites its <code class="inline">Title:</code> line), <strong>duplicate</strong> it, or <strong>delete</strong> it.</li>
                     <li>A deleted script is not gone: it waits in <strong>Recently deleted</strong> for 30 days, and you can restore it from there.</li>
-                    <li><strong>Export</strong> downloads your script as a <code class="inline">.fountain</code> file, named after its title. It is plain text, so any text editor opens it, and screenwriting apps that understand Fountain open it as a script.</li>
+                    <li><strong>Export</strong> offers two things. <strong>Download .fountain</strong> saves your script as a file named after its title: plain text, so any text editor opens it, and screenwriting apps that understand Fountain open it as a script. <strong>Print or save as PDF</strong> lays it out as standard screenplay pages (Courier 12pt, numbered, a title page of its own, <em>(MORE)</em> and <em>(CONT&rsquo;D)</em> where a speech runs over a page) and opens your browser&rsquo;s print window; choose <strong>Save as PDF</strong> there to make a PDF. Notes, sections and synopses are left out of the pages.</li>
                     <li><strong>Import</strong> (in the Library, or drop a file anywhere on the page) adds a <code class="inline">.fountain</code> or <code class="inline">.txt</code> file as a new script. Nothing you already have is replaced.</li>
                     <li><strong>Copy</strong> puts the whole script on the clipboard.</li>
                 </ul>
@@ -234,6 +234,7 @@ Author: Jane Doe</code></td>
                         <tr><td><kbd>Esc</kbd>, then <kbd>Tab</kbd></td><td>Moves focus out of the editor. (<kbd>Tab</kbd> alone is used for cycling.)</td></tr>
                         <tr><td><kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Z</kbd></td><td>Undo, including anything <kbd>Tab</kbd> or <kbd>Enter</kbd> just changed.</td></tr>
                         <tr><td><kbd>F1</kbd> or <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>/</kbd></td><td>Opens this help.</td></tr>
+                        <tr><td><kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>P</kbd></td><td>Prints the screenplay pages (never the app itself), on the paper chosen last in Export.</td></tr>
                     </tbody>
                 </table>
                 <h3>Touch</h3>
@@ -250,12 +251,16 @@ Author: Jane Doe</code></td>
                 <p>A character needs three things: an UPPERCASE line, a blank line above it, and the speech directly below. Press <kbd>Tab</kbd> (or Character) on the blank line first and the editor takes care of the capitals for you.</p>
                 <h3>An action line in capitals turned into a character</h3>
                 <p>An UPPERCASE line with text right under it looks like a character to every screenplay program. Put <code class="inline">!</code> in front of it, or leave a blank line below it.</p>
-                <h3>My scene heading is not bold</h3>
-                <p>It has to start with <code class="inline">INT.</code>, <code class="inline">EXT.</code>, <code class="inline">EST.</code> or <code class="inline">I/E</code> and have a blank line above it. Or start it with <code class="inline">.</code></p>
+                <h3>My scene heading is not recognised</h3>
+                <p>A scene heading shows in capitals, and the bar under the text says <strong>Scene</strong> while the cursor is on it. It has to start with <code class="inline">INT.</code>, <code class="inline">EXT.</code>, <code class="inline">EST.</code> or <code class="inline">I/E</code> and have a blank line above it. Or start it with <code class="inline">.</code></p>
                 <h3>Text I pasted is in lowercase and is not formatted</h3>
                 <p>Capitals are added as you type, not to pasted text. Select the line and press <kbd>Tab</kbd> to convert it.</p>
                 <h3>Where did my script go?</h3>
                 <p>Open <strong>Library</strong>, and check <strong>Recently deleted</strong> if you removed it. Scripts are stored in this browser only, so a different browser, device or a private window shows a different (possibly empty) library.</p>
+                <h3>My PDF has a date or a web address on it</h3>
+                <p>That is the browser&rsquo;s own header and footer. In its print window, open <strong>More settings</strong> (or <strong>Show details</strong>) and turn off <strong>Headers and footers</strong>.</p>
+                <h3>The page count is not the same as in another program</h3>
+                <p>Every screenwriting program breaks pages a little differently. A page or two either way on a feature is normal.</p>
                 <h3>Blank lines</h3>
                 <p>Extra blank lines are ignored in the formatted script. Use them freely to see your text more clearly.</p>
             </section>
@@ -263,6 +268,35 @@ Author: Jane Doe</code></td>
         <div class="modal-footer">
             <span class="hint-keys" style="font-size:.75rem;color:var(--text-void-muted)"><kbd>Esc</kbd> closes</span>
             <button type="button" class="btn primary" data-close>Done</button>
+        </div>
+    </div>
+</div>
+
+<!-- Export (P3-01, P3-03, D-021): the .fountain file, or screenplay pages to print or save as PDF -->
+<div id="export-modal" class="modal-overlay">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="export-title">
+        <div class="modal-header">
+            <h2 id="export-title">Export</h2>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <section class="export-option">
+                <h3>Fountain file</h3>
+                <p>Plain text, named after the title. Any text editor opens it, and so does any screenwriting app that reads Fountain.</p>
+                <button type="button" class="btn" id="exportFountain">Download .fountain</button>
+            </section>
+            <section class="export-option">
+                <h3>PDF or paper</h3>
+                <p id="printSummary" class="print-summary"></p>
+                <fieldset class="paper-choice">
+                    <legend>Paper</legend>
+                    <label><input type="radio" name="paper" value="letter"> US Letter</label>
+                    <label><input type="radio" name="paper" value="a4"> A4</label>
+                </fieldset>
+                <p class="print-tip">Your browser&rsquo;s print window opens next. To make a PDF, choose <strong>Save as PDF</strong>
+                    as the printer. If the pages show a date or a web address, turn off <strong>Headers and footers</strong> there.</p>
+                <button type="button" class="btn primary" id="printGo">Print or save as PDF&hellip;</button>
+            </section>
         </div>
     </div>
 </div>
@@ -332,11 +366,14 @@ Is anyone here?</pre></div>
 <!-- Shown while a file is dragged over the page (import), and for short messages such as "Imported ..." -->
 <div id="dropHint" class="drop-hint" hidden>Drop a script here to import it</div>
 <div id="notice" class="notice" role="status" aria-live="polite"></div>
+<!-- The screenplay pages, drawn just before printing; only this shows on paper (src/app/print.js) -->
+<div id="print-root" aria-hidden="true"></div>
 
 <script src="src/fountain.js"></script>
 <script src="src/editing.js"></script>
 <script src="src/library.js"></script>
 <script src="src/store.js"></script>
+<script src="src/paginate.js"></script>
 <script src="src/importing.js"></script>
 <script src="src/suggest.js"></script>
 <!-- The app itself, split by concern. Classic scripts (D-001: no build step, and modules cannot load over file://),
@@ -353,6 +390,7 @@ Is anyone here?</pre></div>
 <script src="src/app/typing.js"></script>
 <script src="src/app/export.js"></script>
 <script src="src/app/import.js"></script>
+<script src="src/app/print.js"></script>
 <script src="src/app/main.js"></script>
 </body>
 </html>

@@ -40,10 +40,10 @@ test('wrap: emphasis survives across the break', () => {
     assert.equal(lines[2].runs[0].bold, false);
 });
 
-test('wrap: marks where a sentence or a paragraph ends (the only places a page may break inside an element)', () => {
-    const lines = Paginate.wrap(Fountain.runs('He runs. She\nwaits "Why?"\nand then'), 9);
-    assert.deepEqual(lines.map(pgText), ['He runs.', 'She', 'waits', '"Why?"', 'and then']);
-    assert.deepEqual(lines.map((l) => l.breakAfter), [true, true, false, true, true]);
+test('wrap: says where each line starts and ends in the text, so a page can break inside a paragraph', () => {
+    const lines = Paginate.wrap(Fountain.runs('He runs. She waits.'), 10);
+    assert.deepEqual(lines.map(pgText), ['He runs.', 'She waits.']);
+    assert.deepEqual(lines.map((l) => [l.start, l.end]), [[0, 8], [9, 19]]);
 });
 
 // ---------- the grid ----------
@@ -119,6 +119,27 @@ test('dialogue: splits between sentences, with (MORE) at the foot and the cue pl
     assert.equal(end[6].row, PG_ROWS - 1);
     assert.equal(l.pages[0].lines.find((x) => x.kind === 'more').col, 22);
     assert.deepEqual(pgPage(l, 1).slice(0, 4).map((x) => x.row + ':' + x.text), ['0:JOHN (CONT\'D)', '1:Six.', '2:Seven.', '3:Eight.']);
+});
+
+test('dialogue: breaks at a sentence end in the middle of a line, and the rest is re-wrapped on the next page', () => {
+    const para = Array.from({ length: 12 }, (_, i) => 'Sentence ' + i + ' is right here.').join(' ');
+    const l = pgLayout(pgFill(PG_ROWS - 5) + '\n\nJOHN\n' + para);
+    const onFirst = pgPage(l, 0).filter((x) => x.kind === 'dialogue').map((x) => x.text);
+    assert.equal(onFirst.length, 2, 'two lines fit above (MORE)');
+    assert.ok(/here\.$/.test(onFirst[1]), 'page 1 ends at the end of a sentence: ' + onFirst[1]);
+    const onNext = pgPage(l, 1).filter((x) => x.kind === 'dialogue').map((x) => x.text);
+    assert.ok(/^Sentence \d+ is/.test(onNext[0]), 'page 2 starts with the next sentence, at the start of a line: ' + onNext[0]);
+    assert.equal(onFirst.concat(onNext).join(' '), para, 'every word, once, in order');
+});
+
+test('action: breaks at a sentence end in the middle of a line too', () => {
+    const para = Array.from({ length: 12 }, (_, i) => 'Rain number ' + i + ' falls on the glass.').join(' ');
+    const l = pgLayout(pgFill(PG_ROWS - 4) + '\n\n' + para);
+    const first = pgPage(l, 0).slice(-3).map((x) => x.text);
+    assert.equal(pgLast(l, 0).row, PG_ROWS - 1, 'the page is filled to the last row');
+    assert.equal(first.length, 3);
+    assert.ok(/glass\.$/.test(first[2]), first[2]);
+    assert.equal(first.concat(pgPage(l, 1).map((x) => x.text)).join(' '), para);
 });
 
 test('dialogue: (CONT\'D) follows an extension', () => {
@@ -210,6 +231,12 @@ test('title page: on its own sheet, not counted; title a third of the way down, 
     assert.deepEqual(tp.filter((x) => x.align === 'right').map((x) => x.row + ':' + x.text), [(PG_ROWS - 1) + ':1 May 2026']);
     assert.equal(l.pages[0].number, null, 'the first script page is still unnumbered');
     assert.equal(pgText(l.pages[0].lines[0]), 'INT. POND - DAY');
+});
+
+test('title page: Authors: is used when there is no Author:, never both', () => {
+    const texts = (src) => pgLayout(src).titlePage.map(pgText);
+    assert.deepEqual(texts('Title: X\nAuthors: Ann and Bob\n\nHi.'), ['X', 'Ann and Bob']);
+    assert.deepEqual(texts('Title: X\nAuthor: Ann\nAuthors: Ann and Bob\n\nHi.'), ['X', 'Ann']);
 });
 
 test('title page: none when the script has no Title: block', () => {

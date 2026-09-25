@@ -386,6 +386,22 @@ dialog first (direct PDF, P3-11, later if the dialog annoys); scene headings pla
 one blank line before a scene heading; no automatic `(CONT'D)` between speeches (only across page breaks); scene numbers
 only where written. The page view (P3-12) is a later feature.
 
+## D-022 Print lives in the Export dialog; page breaks can fall mid-line  (2026-09-25, status: accepted)
+**Context:** Building P3-03. The spec (§8a) put a Print button next to Export, but the header bar holds six actions
+at 1024px and the tablet widths (a test guards it); a seventh overflowed. And the first printed pages showed that
+breaking a speech only where a sentence happens to end a wrapped line leaves several empty lines at the foot of a page.
+**Decision:**
+1. **Export opens a dialog with two choices:** *Download .fountain* (what Export did before, one click further away)
+   and *Print or save as PDF*, with the paper choice and the page count. P3-10 had already planned PDF as an export
+   choice. **Ctrl/Cmd+P** prints the screenplay directly (a `beforeprint` handler rebuilds the pages).
+2. **A page may break at any sentence end, not just at the end of a wrapped line.** The block is kept as paragraphs;
+   the part that stays is wrapped up to the sentence end, and the rest is re-wrapped from the start of a line on the
+   next page, as screenwriting programs do. A block taller than a page with no sentence end at all is cut where the
+   page ends, between words.
+**Consequences:** One more click for a `.fountain` export. Pages fill properly (the example with a long speech went
+from 4 sheets to 3). The e2e page fakes the clipboard in the Copy check: once focus returns into the frame after a
+dialog, headless Chrome waits forever on a clipboard permission prompt.
+
 ## Open questions
 
 - Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

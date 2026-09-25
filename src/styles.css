@@ -240,11 +240,11 @@ textarea {
 .screenplay-font {
     --ind-char: 22ch;
     --ind-paren: 16ch;
-    --w-paren: 15ch;
+    --w-paren: 20ch;
     --ind-dialogue: 10ch;
     --w-dialogue: 35ch;
-    --ind-transition: 40ch;
-    --transition-align: left;
+    --ind-transition: 0;          /* flush right, as on paper (D-021) */
+    --transition-align: right;
 
     font-family: var(--font-screenplay);
     font-size: 12pt; /* Standard 12pt Courier */
@@ -258,7 +258,7 @@ textarea {
 }
 
 /* Spacing comes from margins only: the parser emits no spacer elements. */
-.script-scene-heading { text-transform: uppercase; font-weight: 700; margin: 1.5rem 0 1rem; }
+.script-scene-heading { text-transform: uppercase; margin: 1.5rem 0 1rem; } /* plain, as on paper (D-021) */
 .script-scene-num { float: right; font-weight: 400; color: #6b7280; }
 .script-action { margin: 0 0 1rem; width: 100%; white-space: pre-wrap; }
 
@@ -274,12 +274,11 @@ textarea {
 }
 .script-dual .script-dialogue-block { flex: 1; min-width: 0; margin: 0; }
 
-/* The nowrap ensures CUT TO: does not collapse under responsive pressure (mobile lets it wrap) */
+/* Flush right, so even a long one (SMASH CUT TO BLACK:) ends at the right margin and wraps rather than overflowing */
 .script-transition {
     text-transform: uppercase;
     margin: 0 0 1rem var(--ind-transition);
     text-align: var(--transition-align);
-    white-space: nowrap;
 }
 /* A true page is 60ch of text (6 inches at 10-pitch). When the column is narrower than that, re-proportion the
    indents as percentages of the column instead of fixed character counts: nothing overflows, nothing forces
@@ -295,7 +294,6 @@ textarea {
         --ind-transition: 0;
         --transition-align: right;
     }
-    .script-transition { white-space: normal; }
     /* Two half-width columns would be unreadably narrow: stack dual dialogue instead */
     .script-dual {
         flex-direction: column;
@@ -731,3 +729,41 @@ code.inline, .help-table code.inline {
 }
 .notice.error { border-color: #b91c1c; }
 .notice:empty { display: none; }
+/* --- Print / save as PDF (P3-03, D-021): src/app/print.js draws #print-root; nothing else reaches paper --- */
+.export-option + .export-option { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border-void); }
+.export-option h3 { margin: 0 0 0.35rem; font-size: 0.875rem; color: #f8fafc; }
+.export-option p { margin: 0 0 0.75rem; font-size: 0.8125rem; color: var(--text-void-muted); }
+.print-summary { color: #f8fafc !important; }
+.paper-choice { display: flex; gap: 1.25rem; margin: 0 0 0.75rem; padding: 0.5rem 0.75rem; border: 1px solid var(--border-void); border-radius: 0.375rem; }
+.paper-choice legend { padding: 0 0.25rem; font-size: 0.75rem; color: var(--text-void-muted); }
+.paper-choice label { display: flex; align-items: center; gap: 0.4rem; min-height: 32px; cursor: pointer; }
+
+
+#print-root { display: none; }
+.print-page {
+    position: relative;
+    overflow: hidden;
+    background: #fff;
+    color: #000;
+    font-family: var(--font-screenplay);
+    font-size: 12pt;
+    line-height: 12pt;
+    break-after: page;
+}
+.print-page:last-child { break-after: auto; }
+/* A hair under the paper's height, so rounding can never spill a blank page after each sheet */
+.print-page.letter { width: 8.5in; height: 10.99in; }
+.print-page.a4 { width: 210mm; height: 296.8mm; }
+.print-line { position: absolute; height: 12pt; white-space: pre; }
+.print-line .pr-b { font-weight: 700; }
+.print-line .pr-i { font-style: italic; }
+.print-line .pr-u { text-decoration: underline; }
+
+@media print {
+    html, body {
+        display: block !important; position: static !important; height: auto !important; width: auto !important;
+        overflow: visible !important; background: #fff !important; margin: 0 !important; padding: 0 !important;
+    }
+    body > :not(#print-root) { display: none !important; }
+    #print-root { display: block; }
+}

@@ -1,5 +1,5 @@
 /*
- * Plainchant app script: export: Export and Copy
+ * Plainchant app script: export: the Export dialog, the .fountain download, and Copy
  *
  * One of the classic scripts loaded by index.html, in order (see CLAUDE.md, "App scripts"). They share the
  * page's global scope, so top-level functions and consts here are visible to the files after it, and anything
@@ -39,16 +39,27 @@ function downloadText(filename, text) {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+const exportModal = document.getElementById('export-modal');
+
+// Export opens a choice: the .fountain file, or screenplay pages to print / save as PDF (src/app/print.js)
+function openExport() {
+    if (!editor.value.trim()) { flashButton(exportBtn, 'Nothing to export', false); return; }
+    preparePrintChoice();
+    openModal(exportModal, { focus: '#exportFountain' });
+}
+
 // Export: the whole script as a .fountain file named after its title (P3-01). Fountain is plain text, so any text
 // editor opens the file too, and screenwriting apps that read Fountain open it as a script.
 function exportScript() {
     const text = editor.value;
+    closeModal(exportModal);
     if (!text.trim()) { flashButton(exportBtn, 'Nothing to export', false); return; }
     downloadText(Fountain.fileName(text), text.replace(/\n*$/, '\n')); // a text file ends with exactly one newline
     flashButton(exportBtn, 'Exported!');
 }
 
-exportBtn.addEventListener('click', exportScript);
+exportBtn.addEventListener('click', openExport);
+document.getElementById('exportFountain').addEventListener('click', exportScript);
 
 // The async Clipboard API works even while the textarea is hidden (previewing on a phone) but needs a secure
 // context; fall back to selecting the textarea and execCommand elsewhere (e.g. plain http on a LAN).

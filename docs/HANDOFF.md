@@ -9,10 +9,17 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-25, session 12 (P4-10 IndexedDB storage implemented; PDF printing is still next, as a spec
-only)._
+_Last updated: 2026-09-25, session 12 (IndexedDB storage; no legacy support; print / save as PDF built)._
 
 **What works**
+- **Print / save as PDF** (P3-03 to P3-06, D-021, D-022; `src/paginate.js` + `src/app/print.js`). **Export** opens a
+  dialog: *Download .fountain*, or *Print or save as PDF* with US Letter / A4 (remembered in `plainchant_paper`) and
+  the page count. The pages are laid out on the Courier grid (60 columns; 54 rows Letter, 58 A4; standard margins),
+  numbered top right from page 2, with a separate unnumbered title page, `(MORE)` / `(CONT'D)` when a speech runs over,
+  breaks only at sentence ends (mid-line, with the rest re-wrapped), no heading left at a page foot, transitions kept
+  off the top of a page, dual dialogue side by side and never split. Notes, sections and synopses are not printed.
+  The browser's print window does the rest (Save as PDF). **Ctrl/Cmd+P** prints the screenplay too, never the app.
+  The preview now matches paper: plain (not bold) scene headings, transitions flush right, 20-column parentheticals.
 - **Storage is IndexedDB** (P4-10, D-018, D-019, D-020; `src/store.js` + `src/app/persistence.js`). Database
   `plainchant`, one record per script in `scripts`, the open-script pointer in `meta`. The whole library is held in
   memory; an autosave writes **only the script being edited**. Every save first puts its words in a small synchronous
@@ -80,7 +87,14 @@ only)._
 - Scroll sync no longer divides by zero.
 
 **Verified**
-- `npm test` passes (Node 22 in the session-12 cloud container): 196 tests (60 parser, 53 typing helpers, 23 library,
+- **Print, end of session 12:** `npm test` 228 (adds 5 `Fountain.runs` and 32 pagination tests, among them a
+  no-words-lost property test over 25 generated scripts, a "no page ends on a heading, lone cue or parenthetical"
+  test, and a speed guard); `bash test/run-headless.sh` 220 unit + **428 e2e** (section 16d: the Export dialog, page
+  count per paper, A4 remembered, sheets at real size, text at 1 in / 1.5 in, numbering, (MORE)/(CONT'D), scene
+  numbers, no markup, `beforeprint` rebuild, the print stylesheet, the preview matching paper). 15 mutations of the
+  pagination rules each fail a unit test. **Real PDFs** from headless Chromium (Playwright `page.pdf`, print media):
+  page count equals the sheets (no blank pages), MediaBox 612×792 (Letter) / 595×842 (A4); the sheets were looked at.
+- `npm test` passed at the IndexedDB stage (Node 22 in the session-12 cloud container): 196 tests (60 parser, 53 typing helpers, 23 library,
   13 importing, 23 autocomplete, 16 storage rules, 8 app-script structure). The browser runner runs the 188 that need
   no file access.
 - **Storage (P4-10) end to end**, `bash test/run-headless.sh` in headless Chromium on Linux: 183 unit + **409 e2e**.
@@ -122,6 +136,10 @@ only)._
   and phone in headless Edge.
 
 **Not verified / not done**
+- **Printing has only run in headless Chromium.** Not seen: the print window in Firefox and Safari (their own headers
+  and footers, `@page` size support), the iPad (Share → Print → PDF), a real printer, and a real feature-length
+  script compared with another program's page count. P3-11 (direct PDF download) is the fallback if print windows
+  prove awkward; P3-12 (page view in the preview) is a later feature, at the owner's request.
 - **IndexedDB storage (P4-10) is confirmed by the owner (2026-09-25)** on their Arch Linux machine: the tests pass
   there (`npm run test:browser`), and the app works in their desktop browser, **Firefox and Safari** (a `plainchant`
   database appears; the example script saves and loads). Still unobserved: a real tab closed mid-write, and the
@@ -147,6 +165,15 @@ only)._
 - Phase 1 is complete (P1-01 to P1-10); P2-01 to -05, -11, -12, -17 to -19 are done.
 
 **Gotchas for the next session**
+- **Test fixtures: a line in capitals parses as a character cue.** `A.` or `B.` alone on a line after a blank line is a
+  cue, not action; use lowercase words in action fixtures (it cost two false failures in session 12).
+- **The e2e page is one shared script scope.** New helpers need new names: `typeInto` and `cs2` already exist and
+  broke the whole page ("the page never finished") when declared again. A syntax check that finds this in a second:
+  `node -e "..."` compiling each `<script>` block of `test/app.e2e.html` with `new Function`.
+- **Printing:** `buildPrintPages()` / `printScript()` are globals the e2e calls; `window.print` is replaced in the frame.
+  `#print-root` is `display: none` on screen, so measure sheets by showing it first. The `@page` size comes from a
+  `<style>` that `print.js` creates (not in `index.html`). To see real output: Playwright's `page.emulateMedia({ media:
+  'print' })` then `page.pdf({ preferCSSPageSize: true })` (Playwright is installed globally in the cloud container).
 - **The owner moved from Windows to Arch Linux (2026-09-25).** `npm run test:browser` now runs the Linux runner;
   the Windows one is `npm run test:browser:windows`. The Windows notes below are kept for if that machine returns.
 - (Windows) Node 24.19.0 and Python 3.13.15 were installed via winget at the end of session 1. Sessions that were already
@@ -244,10 +271,10 @@ only)._
    first letter, chips replacing the element buttons while typing a name. Then P2-21 (time of day after `INT. PLACE - `,
    names on an empty cue line, screen-reader announcements) only if wanted. The agreed order still stands:
    autocomplete, then PAUSE.
-4. **Print / PDF is specced, waiting on the owner** ([docs/SPEC-PRINT.md](SPEC-PRINT.md), D-021 proposed). Get answers
-   to the spec's §10 questions (paper, print dialog vs direct PDF, bold headings, spacing, automatic CONT'D, scene
-   numbers, page view), mark D-021 accepted with them, then build in the §11 order: P3-04 pagination module first
-   (tests first, no UI), then P3-03 the print path, then P3-11 / P3-12 if chosen.
+4. **Try Print / save as PDF in Firefox, Safari and on the iPad** (Export → Print or save as PDF, and Ctrl/Cmd+P).
+   Check the browser adds no header or footer, the paper size is right, and a real script's page count looks sane.
+   If a print window is awkward (most likely the iPad), P3-11 (direct `.pdf` download) is the next step. P3-12 (page
+   view in the preview) is wanted later, not now.
 5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
 6. (P4-10 and P4-11 are done: D-018, D-019, D-020.)
 
@@ -295,8 +322,11 @@ the legacy copy) and P4-12 (persistent storage) are new roadmap items. P3-03 (pr
 Windows (`npm run test:browser` now runs the Linux runner), and asked to drop legacy support: D-020 removed the
 migration, the localStorage fallback and the `frictionless_` prefix, closing P4-11. Tests after that: 191 Node,
 183 unit + 409 e2e in the browser.
-Then, at the owner's request, the **print / PDF plan**: `docs/SPEC-PRINT.md`, D-021 (proposed), roadmap P3-03/P3-04
-reworded and P3-11 (direct PDF) / P3-12 (page view) added. No code; waiting on the spec's §10 answers.
+Then, at the owner's request, the **print / PDF plan** (`docs/SPEC-PRINT.md`, D-021), accepted with the recommended
+answers; the page view (P3-12) deferred. Built: **P3-04** `src/paginate.js` + `Fountain.runs` (tests first), then
+**P3-03** the print path with **P3-05** (title page) and **P3-06** (dual dialogue). D-022 records the two departures:
+Print lives in the Export dialog (a seventh button broke the six-action bar at 1024px and on tablets), and pages break
+at any sentence end with the rest re-wrapped (the first real PDF showed six empty lines at a page foot otherwise).
 **Next session should start with:** "Next steps" above.
 
 ### Session 11: 2026-09-21: IndexedDB migration spec (P4-10)
