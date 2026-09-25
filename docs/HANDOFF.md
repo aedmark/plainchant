@@ -149,7 +149,9 @@ only)._
 - Phase 1 is complete (P1-01 to P1-10); P2-01 to -05, -11, -12, -17 to -19 are done.
 
 **Gotchas for the next session**
-- Node 24.19.0 and Python 3.13.15 were installed via winget at the end of session 1. Sessions that were already
+- **The owner moved from Windows to Arch Linux (2026-09-25).** `npm run test:browser` now runs the Linux runner;
+  the Windows one is `npm run test:browser:windows`. The Windows notes below are kept for if that machine returns.
+- (Windows) Node 24.19.0 and Python 3.13.15 were installed via winget at the end of session 1. Sessions that were already
   running need PATH refreshed (or a restart) before `node`/`npm`/`python` resolve. Neither is needed to run the app.
 - PyCharm may still need its interpreter pointed at `%LOCALAPPDATA%\Programs\Python\Python313\python.exe`
   (Settings > Project > Python Interpreter) if the user wants Python features there. The project is JavaScript.
@@ -231,8 +233,8 @@ only)._
 
 ## Next steps (in order)
 
-0. **Check the IndexedDB upgrade on the owner's machine (P4-10).** Run `npm run test:browser` on Windows (now real time,
-   about 40 s; first run since session 12). Then open the app in the browser that holds the real library: every script
+0. **Check the IndexedDB upgrade on the owner's machine (P4-10).** The owner is on **Arch Linux** now (not Windows).
+   Run `npm run test:browser` (now `bash test/run-headless.sh`; needs `chromium` or Chrome, about 40 s). Then open the app in the browser that holds the real library: every script
    should still be listed (they are copied in once; the old localStorage copy stays as a fallback). Then try it on the
    iPad (Safari). If any browser falls back to localStorage, `storageMode` in the console says `'local'`.
 1. **Try the tour as a first-time user on the tablet** (clear site data or

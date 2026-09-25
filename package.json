@@ -5,7 +5,8 @@
   "main": "index.html",
   "scripts": {
     "test": "node test/run.js",
-    "test:browser": "powershell -NoProfile -ExecutionPolicy Bypass -File test/run-headless.ps1"
+    "test:browser": "bash test/run-headless.sh",
+    "test:browser:windows": "powershell -NoProfile -ExecutionPolicy Bypass -File test/run-headless.ps1"
   },
   "private": true
 }

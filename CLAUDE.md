@@ -84,11 +84,11 @@ Keep each file's own listeners in that file. Functions the e2e tests call (`save
 ## Running and testing
 
 - App: open `index.html` directly in a browser, or serve the folder statically.
-- Tests (Windows, nothing to install): `npm run test:browser`, or directly
-  `powershell -NoProfile -ExecutionPolicy Bypass -File test/run-headless.ps1`. Runs the unit suite and the app e2e in
-  headless Edge/Chrome with a throwaway profile; exit code 0 = pass. On Linux/macOS: `bash test/run-headless.sh`
-  (Chromium or Chrome; `BROWSER=...` to choose). Both run in real time, about 40 s: never add `--virtual-time-budget`
-  back, IndexedDB does not work under it (D-019).
+- Tests: `npm run test:browser` (or `bash test/run-headless.sh`) on Linux/macOS, the owner's machine since
+  2026-09-25 (Arch Linux). It runs the unit suite and the app e2e in headless Chromium/Chrome with a throwaway profile;
+  `BROWSER=/path/to/chrome` picks the browser; exit code 0 = pass. On Windows: `npm run test:browser:windows`
+  (`test/run-headless.ps1`, Edge/Chrome, nothing to install). Both run in real time, about 40 s: never add
+  `--virtual-time-budget` back, IndexedDB does not work under it (D-019).
 - Or open `test/index.html` (unit) / `test/app.e2e.html` (app, needs http or `--allow-file-access-from-files`) in a
   browser; a green banner means pass.
 - `npm test` runs `test/run.js` under Node (unit suite only; needs Node 18+, developed on 24). If `node` is not
