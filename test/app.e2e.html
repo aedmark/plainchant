@@ -2005,6 +2005,163 @@ setTimeout(() => {
     verP.remove();
     await setDb({}, {});
 
+    // 16o. Themes, text size and the accessibility sweep (P4-06): every state of the app, in both themes, on a desktop
+    // and a phone, has text that meets 4.5:1 against its background (3:1 when large; the boneyard is dim on purpose),
+    // a name for every control, no reference to a missing id, no duplicate id and no unnamed graphic.
+    // Runs inside the frame, so its free names are the frame's.
+    const A11Y_SWEEP = function () {
+  const problems = [];
+  const parse = (c) => { const m = c.match(/rgba?\(([^)]+)\)/); if (!m) return [0, 0, 0, 0]; const p = m[1].split(/[ ,/]+/).filter(Boolean).map(Number); return [p[0], p[1], p[2], p.length > 3 ? p[3] : 1]; };
+  const lum = ([r, g, b]) => { const f = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+  const over = (top, under) => { const a = top[3]; return [top[0] * a + under[0] * (1 - a), top[1] * a + under[1] * (1 - a), top[2] * a + under[2] * (1 - a), 1]; };
+  const bgOf = (el) => {
+    const layers = [];
+    for (let n = el; n && n.nodeType === 1; n = n.parentElement) {
+      const c = parse(getComputedStyle(n).backgroundColor);
+      if (c[3] > 0) { layers.push(c); if (c[3] >= 1) break; }
+    }
+    let base = [255, 255, 255, 1];
+    for (let i = layers.length - 1; i >= 0; i--) base = over(layers[i], base);
+    return base;
+  };
+  const visible = (el) => { if (!el.getClientRects().length) return false; const cs = getComputedStyle(el); return cs.visibility !== 'hidden' && cs.display !== 'none' && parseFloat(cs.opacity) > 0; };
+  const label = (el) => (el.id ? '#' + el.id : '') + '.' + String(el.className || '').split(' ')[0] + '<' + el.tagName.toLowerCase() + '>' + ' "' + (el.textContent || '').trim().slice(0, 30) + '"';
+  const shownAll = (el) => { for (let n = el; n && n.nodeType === 1; n = n.parentElement) { const cs = getComputedStyle(n); if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) === 0) return false; } return el.getClientRects().length > 0; };
+  // Contrast: elements that hold text directly
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  const seen = new Set();
+  for (let t = walker.nextNode(); t; t = walker.nextNode()) {
+    const el = t.parentElement;
+    if (!t.textContent.replace(/​/g, '').trim() || seen.has(el)) continue;
+    seen.add(el);
+    if (el.closest('#print-root, script, style, noscript, .modal-overlay:not(.active), [hidden]') || !shownAll(el)) continue;
+    const cs = getComputedStyle(el);
+    const fg = parse(cs.color);
+    if (fg[3] === 0) continue;
+    const bg = bgOf(el);
+    const col = over(fg, bg);
+    const L1 = lum(col), L2 = lum(bg);
+    const ratio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+    const size = parseFloat(cs.fontSize), bold = parseInt(cs.fontWeight, 10) >= 700;
+    let need = size >= 24 || (bold && size >= 18.66) ? 3 : 4.5;
+    if (el.closest('.sh-boneyard')) need = 3;
+    if (ratio < need - 0.01) problems.push('contrast ' + ratio.toFixed(2) + ' < ' + need + ': ' + label(el) + ' ' + cs.color + ' on rgb(' + bg.slice(0, 3).map(Math.round) + ')');
+  }
+  // Names of controls
+  const nameOf = (el) => {
+    if (el.getAttribute('aria-label')) return el.getAttribute('aria-label').trim();
+    if (el.getAttribute('aria-labelledby')) return el.getAttribute('aria-labelledby').split(/\s+/).map(id => (document.getElementById(id) || {}).textContent || '').join(' ').trim();
+    if (el.labels && el.labels.length) return Array.from(el.labels).map(l => l.textContent).join(' ').trim();
+    if (/^(input|select|textarea)$/i.test(el.tagName)) return (el.getAttribute('title') || '').trim();
+    return (el.textContent || '').trim() || (el.getAttribute('title') || '').trim();
+  };
+  document.querySelectorAll('button, a[href], input:not([type="hidden"]), select, textarea, [role="button"], [tabindex]:not([tabindex="-1"])').forEach((el) => {
+    if (!shownAll(el) || el.closest('.modal-overlay:not(.active)')) return;
+    if (!nameOf(el)) problems.push('no name: ' + label(el));
+  });
+  // References and ids
+  document.querySelectorAll('[aria-labelledby], [aria-describedby], [aria-controls]').forEach((el) => {
+    ['aria-labelledby', 'aria-describedby', 'aria-controls'].forEach((a) => {
+      (el.getAttribute(a) || '').split(/\s+/).filter(Boolean).forEach((id) => { if (!document.getElementById(id)) problems.push(a + ' points nowhere: ' + id + ' on ' + label(el)); });
+    });
+  });
+  const ids = {};
+  document.querySelectorAll('[id]').forEach((el) => { ids[el.id] = (ids[el.id] || 0) + 1; });
+  Object.keys(ids).forEach((id) => { if (ids[id] > 1) problems.push('duplicate id: ' + id); });
+  document.querySelectorAll('svg, img').forEach((g) => {
+    if (!shownAll(g)) return;
+    if (g.closest('[aria-hidden="true"]') || g.getAttribute('role') === 'presentation') return;
+    if (g.tagName === 'IMG' && g.hasAttribute('alt')) return;
+    if (g.getAttribute('aria-label') || g.getAttribute('role') === 'img' && g.getAttribute('aria-label')) return;
+    problems.push('graphic without a name or aria-hidden: ' + label(g));
+  });
+  return problems;
+};
+    const sweepIn = (fr) => fr.contentWindow.eval('(' + A11Y_SWEEP.toString() + ')()');
+    W().localStorage.removeItem('plainchant_settings');
+    const af = await openFrame(1200, 800);
+    const aw = af.contentWindow, ae = fid(af, 'editor');
+    const rootTheme = () => af.contentDocument.documentElement.dataset.theme;
+    check('theme: dark by default', rootTheme() === 'dark' && getComputedStyle(af.contentDocument.body).backgroundColor === 'rgb(15, 17, 21)', getComputedStyle(af.contentDocument.body).backgroundColor);
+    fid(af, 'settingsBtn').click();
+    fq(af, '#settings-modal input[name="theme"][value="light"]').click();
+    check('theme: Light from Settings turns the app light at once, and is remembered',
+      rootTheme() === 'light' && getComputedStyle(af.contentDocument.body).backgroundColor === 'rgb(248, 250, 252)' &&
+      JSON.parse(aw.localStorage.getItem('plainchant_settings')).theme === 'light' &&
+      af.contentDocument.querySelector('meta[name="theme-color"]').getAttribute('content') === '#f8fafc',
+      [rootTheme(), getComputedStyle(af.contentDocument.body).backgroundColor, aw.localStorage.getItem('plainchant_settings')]);
+    check('theme: the preview stays white paper', getComputedStyle(fid(af, 'render-target')).backgroundColor === 'rgb(255, 255, 255)');
+    fq(af, '#settings-modal input[name="theme"][value="system"]').click();
+    check('theme: "Match the system" follows it', rootTheme() === (aw.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'), rootTheme());
+    const size14 = parseFloat(getComputedStyle(ae).fontSize);
+    keydown(af, af.contentDocument.activeElement, 'Escape');
+    setText(af, 'INT. KITCHEN - DAY\n\n' + 'Words that wrap across the editor at a larger size. '.repeat(30));
+    aw.setSetting('size', 'larger'); // nothing typed after: the colour layer must follow at once
+    const sized = parseFloat(getComputedStyle(ae).fontSize);
+    check('text size: Larger makes the editor\'s text 1.3 times the size, and the colour layer follows it exactly',
+      Math.abs(sized - size14 * 1.3) < 0.01 && getComputedStyle(fq(af, '.editor-shade')).fontSize === getComputedStyle(ae).fontSize &&
+      af.contentDocument.body.classList.contains('shaded') && !aw.eval('shadeBroken') && JSON.parse(aw.localStorage.getItem('plainchant_settings')).size === 'larger',
+      [size14, sized, getComputedStyle(fq(af, '.editor-shade')).fontSize]);
+    af.remove();
+    const af2 = await openFrame(1200, 800);
+    const sysTheme = af2.contentWindow.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    check('theme and text size: both kept after a reload, applied as the page loads',
+      af2.contentDocument.documentElement.dataset.theme === sysTheme && af2.contentWindow.eval('settings.theme') === 'system' &&
+      Math.abs(parseFloat(getComputedStyle(fid(af2, 'editor')).fontSize) - size14 * 1.3) < 0.01, [af2.contentDocument.documentElement.dataset.theme, sysTheme]);
+    af2.remove();
+    W().localStorage.setItem('plainchant_settings', JSON.stringify({ size: 'small' }));
+    const ap = await openFrame(375, 667);
+    check('text size: on a phone the editor never goes under 16px (iOS would zoom the page)', parseFloat(getComputedStyle(fid(ap, 'editor')).fontSize) >= 16,
+      getComputedStyle(fid(ap, 'editor')).fontSize);
+    ap.remove();
+
+    const SWEEP_TEXT = 'Title: Sweep\nAuthor: Me\n\nFADE IN:\n\n# ACT ONE\n\n= The start. [[a note]]\n\nINT. KITCHEN - DAY #4#\n\nShe waits. /* gone */\n\n' +
+      'MARA\n(quietly)\nHi.\n\nDEV ^\nHello.\n\n> THE END <\n\n===\n\nCUT TO:';
+    const sweepStates = [
+      ['main', () => {}],
+      ['library', (w) => w.document.getElementById('libraryBtn').click()],
+      ['recently deleted', (w) => w.document.getElementById('libViewTrash').click()],
+      ['versions', async (w) => { w.closeModal(w.document.getElementById('library-modal')); await w.openVersions(w.eval('currentScriptId')); }],
+      ['help', (w) => { w.closeModal(w.document.getElementById('versions-modal')); w.openHelp('start'); }],
+      ['help: elements', (w) => w.showHelpSection('elements')],
+      ['help: keys', (w) => w.showHelpSection('keys')],
+      ['help: troubleshooting', (w) => w.showHelpSection('fixes')],
+      ['export', (w) => { w.closeModal(w.document.getElementById('help-modal')); w.openExport(); }],
+      ['stats', (w) => { w.closeModal(w.document.getElementById('export-modal')); w.openStats(); }],
+      ['outline', (w) => { w.closeModal(w.document.getElementById('stats-modal')); w.openOutline(); }],
+      ['settings', (w) => { w.closeModal(w.document.getElementById('outline-modal')); w.openSettings(); }],
+      ['tour', (w) => { w.closeModal(w.document.getElementById('settings-modal')); w.openTour(); }],
+      ['tour 2', (w) => w.showTourStep(1)], ['tour 3', (w) => w.showTourStep(2)], ['tour 4', (w) => w.showTourStep(3)],
+      ['focus mode', (w) => { w.closeModal(w.document.getElementById('tour-modal')); w.setFocusMode(true); }],
+      ['suggestions', (w) => { w.setFocusMode(false); const e = w.document.getElementById('editor'); e.value += '\n\nMA'; e.focus();
+        e.setSelectionRange(e.value.length, e.value.length); e.dispatchEvent(new w.Event('input')); w.syncElementState(); }]
+    ];
+    const phoneStates = [
+      ['main', () => {}], ['menu', (w) => w.document.getElementById('menuBtn').click()],
+      ['preview', (w) => w.setView('preview')], ['library', (w) => { w.setView('write'); w.document.getElementById('libraryBtn').click(); }],
+      ['settings', (w) => { w.closeModal(w.document.getElementById('library-modal')); w.openSettings(); }]
+    ];
+    for (const theme of ['dark', 'light']) {
+      for (const [width, height, states] of [[1200, 800, sweepStates], [375, 667, phoneStates]]) {
+        W().localStorage.setItem('plainchant_settings', JSON.stringify({ theme: theme }));
+        const sf3 = await openRealFrame(width, height);
+        const sw3 = sf3.contentWindow;
+        setText(sf3, SWEEP_TEXT);
+        sw3.flushSave(); await sw3.whenSaved(); sw3.updateStatsBadge();
+        const found = [];
+        for (const [name, go] of states) {
+          await go(sw3);
+          await sleep(60);
+          sweepIn(sf3).forEach(pr => found.push(name + ': ' + pr));
+        }
+        check('accessibility sweep, ' + theme + ' theme, ' + width + 'px: every state passes (contrast, names, references, ids, graphics)', found.length === 0, found.slice(0, 6));
+        sw3.saveScript = () => {};
+        sf3.remove();
+      }
+    }
+    W().localStorage.removeItem('plainchant_settings');
+    await setDb({}, {});
+
     // Phone: the Library fits a 375px screen and every action is reachable
     await seedLibrary();
     await reloadFrame(m);

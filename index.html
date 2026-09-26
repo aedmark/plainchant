@@ -32,7 +32,7 @@
 </div>
 
 <!-- The Void (Input) -->
-<div class="pane-void">
+<div class="pane-void" role="main" aria-label="Editor">
     <div class="header">
         <div>
             <h1>The Void</h1>
@@ -48,7 +48,7 @@
             <button id="helpBtn" class="btn help-btn" aria-label="Help" title="Help (F1)"><span class="txt-short" aria-hidden="true">?</span><span class="txt-long">Help</span></button>
         </div>
     </div>
-    <textarea id="editor" placeholder="FADE IN:&#10;&#10;INT. COFFEE SHOP - DAY&#10;&#10;The cafe is entirely empty.&#10;&#10;JOHN&#10;(nervous)&#10;I just wanted a program that let me type without thinking.&#10;&#10;THE ARTISAN&#10;It is done.&#10;&#10;CUT TO:&#10;&#10;EXT. THE VOID - CONTINUOUS"></textarea>
+    <textarea id="editor" aria-label="Script" placeholder="FADE IN:&#10;&#10;INT. COFFEE SHOP - DAY&#10;&#10;The cafe is entirely empty.&#10;&#10;JOHN&#10;(nervous)&#10;I just wanted a program that let me type without thinking.&#10;&#10;THE ARTISAN&#10;It is done.&#10;&#10;CUT TO:&#10;&#10;EXT. THE VOID - CONTINUOUS"></textarea>
     <!-- What the current line is, and a way to change it. Tab / Shift+Tab do the same from a keyboard; touch has
          no Tab key. Buttons never take focus from the editor, so the on-screen keyboard stays up. -->
     <div class="element-bar" role="toolbar" aria-label="Element type"
@@ -68,7 +68,7 @@
 </div>
 
 <!-- The Canvas (Output) -->
-<div class="pane-canvas">
+<div class="pane-canvas" role="region" aria-label="Preview">
     <div class="header">
         <div>
             <h2>The Canvas</h2>
@@ -176,7 +176,7 @@
                     <li><strong>Import</strong> (in the Library, or drop a file anywhere on the page) adds a <code class="inline">.fountain</code> or <code class="inline">.txt</code> file as a new script. Nothing you already have is replaced.</li>
                     <li><strong>Copy</strong> puts the whole script on the clipboard.</li>
                     <li><strong>Colours in the editor</strong> show what each line is: scene headings warm, character names blue, dialogue a little brighter than action, notes muted. They are only hints; the formatted script is what prints.</li>
-                    <li><strong>Settings</strong> (the gear; <strong>Settings</strong> in the phone menu) can turn off the colours, the blank line Enter adds after action, and capitals as you type.</li>
+                    <li><strong>Settings</strong> (the gear; <strong>Settings</strong> in the phone menu) chooses a dark or light look (or your system's), the size of the editor's text, and can turn off the colours, the blank line Enter adds after action, and capitals as you type.</li>
                     <li><strong>No connection needed.</strong> Plainchant works offline. Opened from a web address, your browser can also install it as an app: look for <strong>Install</strong> or <strong>Add to Home Screen</strong>.</li>
                     <li><strong>Outline</strong> (above the formatted script) lists your sections (<code class="inline"># Act One</code>), scenes and synopses (<code class="inline">= ...</code>), with the page each scene starts on. Choose one to jump there; type to find one.</li>
                     <li>The page count above the formatted script (<strong>3 pages &middot; ~3 min</strong>) opens <strong>Script stats</strong>: pages, screen time (about a minute a page), scenes, words, how much each character speaks, the mix of interior and exterior, day and night scenes, each location, and every scene with its page, its length in eighths of a page and who speaks in it (choose one to go there).</li>
@@ -407,7 +407,7 @@ Author: Jane Doe</code></td>
     </div>
 </div>
 
-<!-- Settings (P2-15, D-032): each on by default, remembered in this browser (settings.js) -->
+<!-- Settings (P2-15, P4-06; D-032, D-035): remembered in this browser (settings.js) -->
 <div id="settings-modal" class="modal-overlay">
     <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="settings-title">
         <div class="modal-header">
@@ -415,6 +415,19 @@ Author: Jane Doe</code></td>
             <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
         </div>
         <div class="modal-body">
+            <fieldset class="setting-choice">
+                <legend>Theme</legend>
+                <label><input type="radio" name="theme" value="dark" checked> Dark</label>
+                <label><input type="radio" name="theme" value="light"> Light</label>
+                <label><input type="radio" name="theme" value="system"> Match the system</label>
+            </fieldset>
+            <fieldset class="setting-choice">
+                <legend>Text size in the editor</legend>
+                <label><input type="radio" name="size" value="small"> Small</label>
+                <label><input type="radio" name="size" value="normal" checked> Normal</label>
+                <label><input type="radio" name="size" value="large"> Large</label>
+                <label><input type="radio" name="size" value="larger"> Larger</label>
+            </fieldset>
             <label class="setting"><input type="checkbox" id="setColours" checked>
                 <span><strong>Colours in the editor</strong>
                 <span class="setting-note">Scene headings, character names, dialogue and notes each in their own colour. Off: plain text, as in any text editor.</span></span></label>
@@ -424,7 +437,7 @@ Author: Jane Doe</code></td>
             <label class="setting"><input type="checkbox" id="setCapitals" checked>
                 <span><strong>Capitals as you type</strong>
                 <span class="setting-note">Scene headings (<code class="inline">int.</code>, <code class="inline">ext.</code>) and transitions (<code class="inline">cut to:</code>) turn to capitals by themselves. Off: only what you choose with <kbd>Tab</kbd> or the bar under the text.</span></span></label>
-            <p class="setting-more">Focus mode is the <strong>Focus</strong> button (or <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd>); the paper size is in <strong>Export</strong>. Settings are kept in this browser.</p>
+            <p class="setting-more">Focus mode is the <strong>Focus</strong> button (or <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd>); the paper size is in <strong>Export</strong>. Settings are kept in this browser. The preview is always white paper, like the printed page.</p>
         </div>
         <div class="modal-footer">
             <span class="hint-keys"><kbd>Esc</kbd> closes</span>
