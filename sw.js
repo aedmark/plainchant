@@ -32,6 +32,7 @@ const APP_FILES = [
     'src/app/example.js',
     'src/app/help.js',
     'src/app/tour.js',
+    'src/app/settings.js',
     'src/app/typing.js',
     'src/app/shade.js',
     'src/app/focus.js',

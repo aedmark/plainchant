@@ -155,6 +155,24 @@ test('enter with a mode but nothing typed yet: plain newline', () => {
     assert.equal(enterAtEnd('X.\n\nINT. ', 'scene'), null);
 });
 
+test('enter with blank lines switched off (settings): a plain line break everywhere, the browser\'s own', () => {
+    const off = { paragraphs: false };
+    ['INT. A - DAY', 'He waits.', 'X.\n\nCUT TO:', 'X.\n\nJOHN', 'JOHN\nHi.'].forEach((t) => {
+        assert.equal(Editing.enter(t, t.length, t.length, null, off), null, t);
+    });
+    assert.ok(Editing.enter('He waits.', 9, 9, null, { paragraphs: true }) !== null, 'on is the default');
+});
+
+test('enter with blank lines switched off: a chosen element is still finished, with one line break', () => {
+    const off = { paragraphs: false };
+    const scene = 'He waits.\n\nint. kitchen - day';
+    assert.equal(applied(scene, Editing.enter(scene, scene.length, scene.length, 'scene', off)).text, 'He waits.\n\nINT. KITCHEN - DAY\n');
+    const cue = 'He waits.\n\njohn';
+    assert.equal(applied(cue, Editing.enter(cue, cue.length, cue.length, 'character', off)).text, 'He waits.\n\nJOHN\n');
+    const tr = 'X.\n\nmeanwhile';
+    assert.equal(applied(tr, Editing.enter(tr, tr.length, tr.length, 'transition', off)).text, 'X.\n\n> MEANWHILE\n');
+});
+
 // ---------- Tab: which element next ----------
 
 test('cycleTarget: action -> character -> scene -> transition -> action', () => {
@@ -338,6 +356,14 @@ test('autoCase: a chosen mode uppercases whatever is typed', () => {
         assert.equal(applied(t, Editing.autoCase(t, t.length, m)).text, 'X.\n\nSOME WORDS', m);
     });
     assert.equal(Editing.autoCase('X.\n\nsome words', 14, null), null);
+});
+
+test('autoCase with capitals switched off (settings): no guessing, but a chosen element is still uppercased', () => {
+    const off = { guess: false };
+    ['X.\n\nint. kitchen', 'X.\n\ncut to:'].forEach((t) => assert.equal(Editing.autoCase(t, t.length, null, off), null, t));
+    const t = 'X.\n\nsome words';
+    assert.equal(applied(t, Editing.autoCase(t, t.length, 'character', off)).text, 'X.\n\nSOME WORDS');
+    assert.ok(Editing.autoCase('X.\n\nint. kitchen', 16, null, { guess: true }) !== null, 'on is the default');
 });
 
 test('autoCase: caret stays where it was', () => {

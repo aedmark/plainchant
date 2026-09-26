@@ -64,6 +64,7 @@ use what an earlier file already defined. Code inside functions runs later and c
 | `dialogs.js` | `openModal` / `closeModal`: the one accessible helper for every modal window |
 | `library-ui.js` | The Library dialog (data rules are in `src/library.js`) |
 | `example.js`, `help.js`, `tour.js` | The example script, the Help window, the welcome tour |
+| `settings.js` | The Settings window and `settings` (colours, blank lines on Enter, capitals as you type; `setSetting`), stored in `plainchant_settings` (D-032) |
 | `typing.js` | Tab, smart Enter, auto-uppercase, the element bar, autocomplete chips (rules are in `src/editing.js` and `src/suggest.js`) |
 | `shade.js` | The editor's colour hints: a coloured copy of the text behind the textarea (whose own text is transparent), redrawn line by line from `render()`'s parse, with a wrap check that switches it off if it ever misaligns (D-031) |
 | `focus.js` | Focus mode: the veils around the current block, typewriter scrolling, the toggle and Ctrl/Cmd+Shift+F (D-025) |
@@ -88,11 +89,14 @@ Keep each file's own listeners in that file. Functions the e2e tests call (`save
 - Classic `<script>` files, not ES modules (`file://` blocks module imports).
 - The parser must never touch the DOM, `window` or Node-only APIs. Escape all user text before it reaches HTML.
 - Match existing CSS variable names and class names (`script-*` for rendered screenplay elements).
+- A new writer's choice goes in Settings (`settings.js`, `SETTING_DEFAULTS`), and a pure rule it changes takes it as
+  an option (as `Editing.enter` / `autoCase` do), so the rule stays testable in Node.
 - The editor's line height must stay a length (`1.6em`), never unitless, and anything copying the editor's text must use
   `copyEditorType` (layout.js): the colour hints only line up if the copies lay out exactly like the textarea (D-031).
 - Scripts live in IndexedDB (database `plainchant`, stores `scripts` and `meta`). localStorage holds only
   `plainchant_onboarded` (the tour), `plainchant_emergency` (the buffer), `plainchant_paper` (Letter / A4),
-  `plainchant_focus` (focus mode) and `plainchant_keep_asked` (the browser said no to keeping the library, D-027). There is no legacy support and no
+  `plainchant_focus` (focus mode), `plainchant_keep_asked` (the browser said no to keeping the library, D-027) and
+  `plainchant_settings` (the Settings switches that differ from their defaults, D-032). There is no legacy support and no
   localStorage fallback (D-020): this is not a production release, so storage names may change without a migration,
   but say so in DECISIONS when they do.
 - Every storage write goes through `putScripts` / `saveScript` / `rememberCurrent` in `persistence.js`, never straight

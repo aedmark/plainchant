@@ -183,6 +183,22 @@ body.shaded #editor::selection { color: transparent; background: rgba(148, 163, 
 .sh-note { color: #7a8597; }
 .sh-boneyard { color: #5f6675; }
 
+/* Split view on a narrow desktop (1024-1199px): the seven actions need the header's whole width, so the pane's
+   "The Void" label steps aside (P2-15 added the settings gear) */
+@media (min-width: 1024px) and (max-width: 1199px) {
+    .pane-void > .header > div:first-child { display: none; }
+    .pane-void > .header { padding-inline: 1rem; justify-content: flex-end; }
+}
+
+/* --- SETTINGS (P2-15) --- */
+.button-group .gear { display: block; }
+.setting { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.75rem 0; border-bottom: 1px solid var(--border-void); cursor: pointer; }
+.setting input { flex: 0 0 auto; width: 1.15rem; height: 1.15rem; margin: 0.15rem 0 0; accent-color: #94a3b8; cursor: pointer; }
+.setting strong { color: #f8fafc; font-weight: 600; }
+.setting-note { display: block; margin-top: 0.2rem; font-size: 0.8125rem; line-height: 1.5; color: var(--text-void-muted); }
+.setting-more { margin: 0.9rem 0 0; font-size: 0.8125rem; line-height: 1.5; color: var(--text-void-muted); }
+@media (pointer: coarse) { .setting input { width: 1.4rem; height: 1.4rem; } }
+
 /* --- ELEMENT BAR: shows what the current line is, and changes it --- */
 .element-bar {
     display: flex;
@@ -783,6 +799,12 @@ code.inline, .help-table code.inline {
     /* Full-width box (the whole screen stays tappable) with the text held to ~44rem in the middle */
     textarea { padding-inline: max(1.5rem, calc((100vw - 44rem) / 2)); padding-block: 1.5rem; }
     #render-target { padding: 2rem; }
+}
+
+/* The narrowest tablets (and landscape phones) of that tier: a slimmer Write | Preview switch leaves the seven actions
+   room beside it */
+@media (min-width: 700px) and (max-width: 799px) {
+    .seg { flex-basis: 14rem; }
 }
 
 /* --- Import: the drop target while a file is dragged over the page, and the message afterwards --- */
