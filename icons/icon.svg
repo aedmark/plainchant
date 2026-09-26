@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Plainchant placeholder icon (P4-02; a real mark is P6-03): a screenplay page with a folded corner -->
+  <rect width="512" height="512" rx="96" fill="#0f1115"/>
+  <path d="M148 92 H304 L372 160 V420 H148 Z" fill="#f8fafc"/>
+  <path d="M304 92 V160 H372 Z" fill="#cbd5e1"/>
+  <rect x="180" y="194" width="124" height="14" rx="4" fill="#0f1115"/>
+  <rect x="180" y="234" width="160" height="10" rx="4" fill="#94a3b8"/>
+  <rect x="180" y="256" width="136" height="10" rx="4" fill="#94a3b8"/>
+  <rect x="244" y="298" width="56" height="10" rx="4" fill="#0f1115"/>
+  <rect x="212" y="320" width="116" height="10" rx="4" fill="#94a3b8"/>
+  <rect x="212" y="342" width="96" height="10" rx="4" fill="#94a3b8"/>
+</svg>

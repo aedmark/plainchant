@@ -66,3 +66,44 @@ test('structure: the stylesheet is a linked file and no inline <style> has crept
     assert.ok(fs.existsSync(path.join(root, 'src', 'styles.css')), 'src/styles.css is linked but missing');
     assert.ok(!/<style[\s>]/.test(html), 'an inline <style> block is back');
 });
+
+// ---------- Offline (P4-02, D-026): nothing from the network, and the service worker's copy is complete ----------
+
+const readRoot = (f) => fs.readFileSync(path.join(root, f), 'utf8');
+const css = readRoot('src/styles.css');
+const fontUrls = Array.from(css.matchAll(/url\('\.\.\/(fonts\/[^']+)'\)/g)).map((m) => m[1]);
+const manifest = JSON.parse(readRoot('manifest.webmanifest'));
+
+test('offline: the page and the stylesheet load nothing from another site (the app needs no network)', () => {
+    assert.ok(!/(?:src|href)="(?:https?:)?\/\//i.test(html), 'index.html links to another site');
+    assert.ok(!/url\(\s*['"]?(?:https?:)?\/\//i.test(css), 'styles.css loads something from another site');
+    assert.ok(!/@import/.test(css), 'styles.css imports another stylesheet');
+});
+
+test('offline: every font the stylesheet names is in fonts/, and every font file there is used', () => {
+    assert.ok(fontUrls.length >= 12, fontUrls.length + ' font files');
+    fontUrls.forEach((f) => assert.ok(fs.existsSync(path.join(root, f)), f + ' is missing'));
+    const onDisk = fs.readdirSync(path.join(root, 'fonts')).filter((f) => f.endsWith('.woff2')).map((f) => 'fonts/' + f).sort();
+    assert.deepEqual(Array.from(new Set(fontUrls)).sort(), onDisk);
+    ['Courier Prime', 'Inter'].forEach((family) => assert.includes(css, "font-family: '" + family + "'"));
+});
+
+test('offline: the service worker keeps a copy of exactly the files the app uses, and all of them exist', () => {
+    const sw = readRoot('sw.js');
+    const listed = Array.from(sw.match(/const APP_FILES = \[([\s\S]*?)\];/)[1].matchAll(/'([^']+)'/g)).map((m) => m[1]);
+    assert.equal(new Set(listed).size, listed.length, 'a file is listed twice');
+    const pageLinks = Array.from(html.matchAll(/<link [^>]*href="([^"]+)"/g)).map((m) => m[1]);
+    const scripts = Array.from(html.matchAll(/<script src="([^"]+)"><\/script>/g)).map((m) => m[1]);
+    const expected = ['./', 'index.html', 'manifest.webmanifest'].concat(pageLinks, scripts, fontUrls, manifest.icons.map((i) => i.src));
+    assert.deepEqual(listed.slice().sort(), Array.from(new Set(expected)).sort());
+    listed.filter((f) => f !== './').forEach((f) => assert.ok(fs.existsSync(path.join(root, f)), f + ' is listed but missing'));
+});
+
+test('offline: the manifest makes the app installable (name, start, standalone, 192 and 512 icons, a maskable one)', () => {
+    assert.equal(manifest.name, 'Plainchant');
+    assert.equal(manifest.start_url, './');
+    assert.equal(manifest.display, 'standalone');
+    const has = (size, purpose) => manifest.icons.some((i) => i.sizes === size && i.type === 'image/png' && (i.purpose || 'any').split(' ').indexOf(purpose) !== -1);
+    assert.ok(has('192x192', 'any') && has('512x512', 'any') && has('512x512', 'maskable'));
+    manifest.icons.forEach((i) => assert.ok(fs.existsSync(path.join(root, i.src)), i.src + ' is missing'));
+});

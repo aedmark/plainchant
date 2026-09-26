@@ -32,6 +32,8 @@ Sessions are short-lived and context resets between them, so the repo carries th
 | Path | Purpose |
 | --- | --- |
 | `index.html` | The page: markup, and the links to the stylesheet and scripts (no inline style or script) |
+| `fonts/` | Courier Prime and Inter as `woff2` (OFL, licences alongside), declared at the top of `src/styles.css`. The app loads nothing from the network (D-026) |
+| `icons/`, `manifest.webmanifest`, `sw.js` | The placeholder icon (SVG + PNG sizes), the web app manifest and the service worker: offline and installable when served over http(s). `sw.js`'s file list must match what the page loads (`test/structure.test.js` checks) (D-026) |
 | `src/styles.css` | All the CSS. Desktop-first; the mobile block mirrors `MOBILE_QUERY` / `FIT_QUERY` in `src/app/layout.js` |
 | `src/app/*.js` | The app itself, one file per concern, loaded in order by `index.html` (see "App scripts" below, D-014) |
 | `src/fountain.js` | Fountain parser + HTML renderer. Pure, UMD, no DOM (D-003) |
@@ -69,6 +71,7 @@ use what an earlier file already defined. Code inside functions runs later and c
 | `print.js` | Print / save as PDF: draws the `src/paginate.js` pages as paper-sized sheets in `#print-root`, the paper choice, `beforeprint` (D-021, D-022) |
 | `stats-ui.js` | The live page count in the preview's header (`scheduleStats`, called by `render()`) and the Script stats window (D-023) |
 | `outline-ui.js` | The Outline window and `jumpToLine` (caret to a line, the line near the top of the editor, the preview following) (D-024) |
+| `offline.js` | Registers `sw.js` and links the manifest, only when served over http(s) (`offlineState`) (D-026) |
 | `main.js` | Start-up on `DOMContentLoaded` (asynchronous: the library loads first; `whenReady()`). Always last |
 
 Rules: add a new file to `index.html` in the right place (`test/structure.test.js` fails if the folder and the page
@@ -93,7 +96,9 @@ Keep each file's own listeners in that file. Functions the e2e tests call (`save
 
 ## Running and testing
 
-- App: open `index.html` directly in a browser, or serve the folder statically.
+- App: open `index.html` directly in a browser, or serve the folder statically. Served over http(s) it also works
+  offline and can be installed (service worker + manifest); from disk it needs no network either (local fonts).
+  **Add a new file the page loads to `APP_FILES` in `sw.js`** (the structure test fails until you do).
 - Tests: `npm run test:browser` (or `bash test/run-headless.sh`) on Linux/macOS, the owner's machine since
   2026-09-25 (Arch Linux). It runs the unit suite and the app e2e in headless Chromium/Chrome with a throwaway profile;
   `BROWSER=/path/to/chrome` picks the browser; exit code 0 = pass. On Windows: `npm run test:browser:windows`

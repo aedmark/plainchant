@@ -455,6 +455,26 @@ would risk undo, selection, IME and the on-screen keyboard.
 **Consequences:** The veils dim, they do not hide; the text under them is still selectable and searchable. The
 outline's jump had the same padding omission (small there) and now counts the editor's top padding too.
 
+## D-026 Offline: local fonts always; a service worker and a manifest when served  (2026-09-26, status: accepted)
+**Context:** P4-02 (self-host fonts, service worker, installable). The owner opens `index.html` from disk, where
+browsers run no service workers; the only network use there was Google Fonts.
+**Decision:**
+1. **Fonts are local** (`fonts/`): Courier Prime (400, 700, both italics) and Inter (400, 600), Latin and Latin
+   Extended, as `woff2` from Fontsource 5.3.0 (SIL Open Font License, copies in `fonts/OFL-*.txt`), declared in
+   `src/styles.css` with the same unicode ranges Google Fonts used. Opened from disk the app now needs no network, and
+   printing always has Courier Prime.
+2. **Served over http(s)**, `src/app/offline.js` registers `sw.js` and links `manifest.webmanifest`. Neither happens
+   from disk (a service worker is not allowed; a manifest link there only logs an error).
+3. **`sw.js` keeps a copy of every app file** (the list is checked against the page by `test/structure.test.js`) and
+   answers from it at once, refreshing it in the background (stale-while-revalidate): offline it works, online a
+   change appears on the next load. Scripts are in IndexedDB, not in this copy. `CACHE` changes when files go away.
+4. **Icons:** a placeholder mark (a screenplay page with a folded corner) in `icons/`, as SVG plus the PNG sizes
+   installers need (192, 512, a maskable 512, Apple's 180). The real mark is still P6-03.
+**Consequences:** Verified in headless Chromium: fonts from disk with no flags; over http the service worker installs
+47 files, Chrome reports no installability errors, and the app reloads, renders, saves and restores with the network
+off. Not seen on a real phone or in Safari / Firefox. A deploy shows up one load late (the price of opening instantly
+offline). P4-12 (`navigator.storage.persist()`) is now worth doing for installed copies.
+
 ## Open questions
 
 - Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

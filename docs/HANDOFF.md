@@ -9,10 +9,14 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-26, session 13 (script stats, P4-04; outline navigator, P4-03; focus mode, P2-07). Session 12 built IndexedDB storage, dropped legacy
+_Last updated: 2026-09-26, session 13 (script stats, P4-04; outline navigator, P4-03; focus mode, P2-07; offline, P4-02). Session 12 built IndexedDB storage, dropped legacy
 support, and built print / save as PDF._
 
 **What works**
+- **Offline and installable** (P4-02, D-026). The fonts are local (`fonts/`), so the app loads nothing from the network,
+  opened from disk or served. Served over http(s) it also registers `sw.js` (a copy of all 47 app files, answered from
+  at once and refreshed in the background) and links `manifest.webmanifest`, so it works with no connection and can be
+  installed; placeholder icons in `icons/`. Help says so.
 - **Focus mode** (P2-07, D-025; `src/app/focus.js`, `Editing.blockAt`). The **Focus** button at the end of the element
   bar, or **Ctrl/Cmd+Shift+F**, dims everything but the block being written (translucent veils over the textarea;
   the text itself is untouched) and keeps the caret's line in the middle as you type or move the caret. Scrolling by
@@ -102,6 +106,11 @@ support, and built print / save as PDF._
 - Scroll sync no longer divides by zero.
 
 **Verified**
+- **Offline, session 13:** `npm test` 253 (4 new structure tests: nothing from another site, every font present and
+  used, `sw.js` listing exactly what the page loads, the manifest installable); `bash test/run-headless.sh` 241 unit +
+  **475 e2e** (section 16h). By hand in headless Chromium (Playwright): fonts from disk without flags; over http the
+  service worker registers, caches 47 files, Chrome reports no installability errors, and with the network off the app
+  reloads, renders in Courier Prime, saves and restores a script.
 - **Focus mode, session 13:** `npm test` 249 (3 new `blockAt` tests); `bash test/run-headless.sh` 241 unit +
   **470 e2e** (section 16g: toggle, remembered, caret kept in the editor, the caret line centred after a caret move,
   a typed edit and a click, veils exactly around the block, no clicks taken, hand scrolling left alone, nothing moving
@@ -204,6 +213,10 @@ support, and built print / save as PDF._
 - **The e2e page is one shared script scope.** New helpers need new names: `typeInto` and `cs2` already exist and
   broke the whole page ("the page never finished") when declared again. A syntax check that finds this in a second:
   `node -e "..."` compiling each `<script>` block of `test/app.e2e.html` with `new Function`.
+- **Offline:** any new file the page loads (a script, a stylesheet, a font, an icon) must be added to `APP_FILES` in
+  `sw.js`; `test/structure.test.js` fails until it is. Bump `CACHE` in `sw.js` when a file is removed or renamed.
+  Service workers never run on `file://`, so the e2e suite only checks `offlineState === 'file'`; to see the offline
+  copy work, serve the folder (`python3 -m http.server`) and use Playwright with `context.setOffline(true)`.
 - **Printing:** `buildPrintPages()` / `printScript()` are globals the e2e calls; `window.print` is replaced in the frame.
   `#print-root` is `display: none` on screen, so measure sheets by showing it first. The `@page` size comes from a
   `<style>` that `print.js` creates (not in `index.html`). To see real output: Playwright's `page.emulateMedia({ media:
@@ -308,7 +321,7 @@ support, and built print / save as PDF._
 4. (Print / save as PDF is done: P3-03 to P3-06, and script stats: P4-04. No browser or device checks are planned
    for either: the owner will report bugs. P3-11, direct `.pdf` download, is the answer if print windows turn out
    awkward; P3-12, page view, is for later. The outline navigator, P4-03, is done too.) **Ask the owner what comes
-   next.** Candidates: P4-02 offline / installable (also makes Courier Prime available to print offline), the stats
+   next.** Candidates: P4-12 (ask for persistent storage, now that the app can be installed), the stats
    follow-ups P4-13 to P4-15 (per-scene stats would reuse `src/outline.js`), P2-16 (the caret above the on-screen
    keyboard; focus mode's centring may already cover much of it on tablets), P2-08 (editor colours by element).
 5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
@@ -350,6 +363,8 @@ print layout tagged with their source line (for the page numbers). The owner als
 be on the roadmap (P4-13 to P4-15).
 Then **P2-07 focus mode** (D-025): `Editing.blockAt`, `src/app/focus.js`, the shared text measurer moved to
 `layout.js` (and corrected), the outline's jump now counting the editor's top padding.
+Then **P4-02 offline** (D-026): local fonts from Fontsource (npm), `sw.js`, `manifest.webmanifest`, placeholder icons
+rendered from `icons/icon.svg` with Playwright, `src/app/offline.js`, structure tests keeping the lists honest.
 **Next session should start with:** "Next steps" above.
 
 ### Session 12: 2026-09-25: IndexedDB storage (P4-10)

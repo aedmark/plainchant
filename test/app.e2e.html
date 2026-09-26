@@ -1501,6 +1501,24 @@ setTimeout(() => {
     fp.contentWindow.setFocusMode(false);
     fp.remove();
 
+    // 16h. Offline (P4-02): the fonts are the app's own, nothing comes from another site, and from disk no service worker
+    const nf2 = await openFrame(1200, 700);
+    const nw2 = nf2.contentWindow;
+    await nw2.document.fonts.load('12pt "Courier Prime"');
+    await nw2.document.fonts.load('bold 12pt "Courier Prime"');
+    await nw2.document.fonts.load('600 14px "Inter"');
+    const faces = Array.from(nw2.document.fonts).filter(ff => ff.status === 'loaded').map(ff => ff.family.replace(/"/g, '') + ' ' + ff.weight + ' ' + ff.style);
+    check('offline: Courier Prime (regular and bold) and Inter load from the app\'s own fonts/ folder',
+      ['Courier Prime 400 normal', 'Courier Prime 700 normal', 'Inter 600 normal'].every(x => faces.indexOf(x) !== -1) && nw2.document.fonts.check('12pt "Courier Prime"'), faces);
+    const external = Array.from(nf2.contentDocument.querySelectorAll('link[href], script[src], img[src]')).map(n => n.href || n.src).filter(u => !/^file:|^blob:|^data:/.test(u) && new URL(u).origin !== nw2.location.origin);
+    check('offline: nothing on the page comes from another site', external.length === 0, external);
+    await sleep(100);
+    check('offline: opened from disk, no service worker is attempted and no manifest is linked (browsers allow neither)',
+      nw2.eval('offlineState') === 'file' && !nf2.contentDocument.querySelector('link[rel="manifest"]'), nw2.eval('offlineState'));
+    check('help: working offline and installing are explained', /works offline/.test(fid(nf2, 'help-modal').textContent) && /Add to Home Screen/.test(fid(nf2, 'help-modal').textContent));
+    check('offline: the page has its icon', !!nf2.contentDocument.querySelector('link[rel="icon"][href="icons/icon.svg"]') && !!nf2.contentDocument.querySelector('link[rel="apple-touch-icon"]'));
+    nf2.remove();
+
     // Phone: the Library fits a 375px screen and every action is reachable
     await seedLibrary();
     await reloadFrame(m);
