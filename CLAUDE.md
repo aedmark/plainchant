@@ -72,6 +72,7 @@ use what an earlier file already defined. Code inside functions runs later and c
 | `stats-ui.js` | The live page count in the preview's header (`scheduleStats`, called by `render()`) and the Script stats window (D-023) |
 | `outline-ui.js` | The Outline window and `jumpToLine` (caret to a line, the line near the top of the editor, the preview following) (D-024) |
 | `offline.js` | Registers `sw.js` and links the manifest, only when served over http(s) (`offlineState`) (D-026) |
+| `safekeeping.js` | Asking the browser to keep the library (`navigator.storage.persist()`) once there is work to keep, and the line at the foot of the Library saying whether it agreed (D-027) |
 | `main.js` | Start-up on `DOMContentLoaded` (asynchronous: the library loads first; `whenReady()`). Always last |
 
 Rules: add a new file to `index.html` in the right place (`test/structure.test.js` fails if the folder and the page
@@ -87,8 +88,8 @@ Keep each file's own listeners in that file. Functions the e2e tests call (`save
 - The parser must never touch the DOM, `window` or Node-only APIs. Escape all user text before it reaches HTML.
 - Match existing CSS variable names and class names (`script-*` for rendered screenplay elements).
 - Scripts live in IndexedDB (database `plainchant`, stores `scripts` and `meta`). localStorage holds only
-  `plainchant_onboarded` (the tour), `plainchant_emergency` (the buffer), `plainchant_paper` (Letter / A4) and
-  `plainchant_focus` (focus mode). There is no legacy support and no
+  `plainchant_onboarded` (the tour), `plainchant_emergency` (the buffer), `plainchant_paper` (Letter / A4),
+  `plainchant_focus` (focus mode) and `plainchant_keep_asked` (the browser said no to keeping the library, D-027). There is no legacy support and no
   localStorage fallback (D-020): this is not a production release, so storage names may change without a migration,
   but say so in DECISIONS when they do.
 - Every storage write goes through `putScripts` / `saveScript` / `rememberCurrent` in `persistence.js`, never straight

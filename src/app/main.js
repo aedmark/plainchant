@@ -17,6 +17,7 @@ async function start() {
     syncElementState();
     restoreFocusMode();
     maybeShowTour();
+    startSafekeeping(); // not awaited: Firefox's prompt waits for the writer
 }
 
 // Resolves once the app has started. Global on purpose: the e2e tests wait on it after every page load.

@@ -153,8 +153,9 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
   run in real time (`test/run-headless.sh` added for Linux/macOS).
 - [x] P4-11 Remove the legacy `frictionless_scripts` / `frictionless_current` localStorage copy (D-018 step 4). Done
   sooner and further than planned (D-020): no migration, no localStorage fallback, `plainchant_*` keys.
-- [ ] P4-12 Ask for persistent storage (`navigator.storage.persist()`) so the browser does not evict the library under
-  disk pressure; pairs with P4-02 (installed PWAs are granted it more readily)
+- [x] P4-12 Ask for persistent storage (`navigator.storage.persist()`) so the browser does not evict the library under
+  disk pressure; pairs with P4-02 (installed PWAs are granted it more readily) (done, D-027: asked once there is
+  work, not again after a no unless installed; the Library says where things stand)
 - [ ] P4-13 Stats, per scene: each scene's length in pages (in eighths, the production convention), its speaking
   characters, and a list to jump from. Builds on `src/stats.js` and the print layout (D-023); pairs with P4-03
 - [ ] P4-14 Stats, scene mix: INT / EXT and DAY / NIGHT counts (and other times of day) read from the scene headings

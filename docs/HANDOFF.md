@@ -9,10 +9,16 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-26, session 13 (script stats, P4-04; outline navigator, P4-03; focus mode, P2-07; offline, P4-02). Session 12 built IndexedDB storage, dropped legacy
+_Last updated: 2026-09-26, session 13 (script stats, P4-04; outline navigator, P4-03; focus mode, P2-07; offline, P4-02;
+persistent storage, P4-12). Session 12 built IndexedDB storage, dropped legacy
 support, and built print / save as PDF._
 
 **What works**
+- **Persistent storage** (P4-12, D-027; `src/app/safekeeping.js`). Once the library holds a script, the app asks the
+  browser to keep it even when the disk runs low (`navigator.storage.persist()`), once per page load; after a no it
+  does not ask again by itself (`plainchant_keep_asked`) unless running installed. Chrome / Edge / Safari answer
+  silently; Firefox asks the writer. A line at the foot of the **Library** says whether the browser agreed, and
+  otherwise points at Export and offers **Ask it to keep them**. Help (Troubleshooting) explains it.
 - **Offline and installable** (P4-02, D-026). The fonts are local (`fonts/`), so the app loads nothing from the network,
   opened from disk or served. Served over http(s) it also registers `sw.js` (a copy of all 47 app files, answered from
   at once and refreshed in the background) and links `manifest.webmanifest`, so it works with no connection and can be
@@ -106,6 +112,13 @@ support, and built print / save as PDF._
 - Scroll sync no longer divides by zero.
 
 **Verified**
+- **Persistent storage, session 13:** `npm test` 253; `bash test/run-headless.sh` 241 unit + **489 e2e** (section 16i:
+  nothing asked with an empty library, the first save asking, yes / no / already kept, once per load, no second ask
+  after a no, the installed exception, the Library line and its button (focus moving to the search box when it goes),
+  no line without storage, the Help entry). A stand-in storage manager plays the browser; headless Chromium itself
+  always says no. Mutations: 7 of 7 fail a test (the once-per-load guard only after the test counted the browser
+  queries: without it the outcome is the same, but every autosave would ask the browser again). The Library line looked
+  right at 1200px and 375px.
 - **Offline, session 13:** `npm test` 253 (4 new structure tests: nothing from another site, every font present and
   used, `sw.js` listing exactly what the page loads, the manifest installable); `bash test/run-headless.sh` 241 unit +
   **475 e2e** (section 16h). By hand in headless Chromium (Playwright): fonts from disk without flags; over http the
@@ -178,6 +191,9 @@ support, and built print / save as PDF._
   and phone in headless Edge.
 
 **Not verified / not done**
+- **Persistent storage (P4-12) has not met a real browser's yes.** Not seen: Firefox's prompt (and whether it wants a
+  click first; the automatic ask is not one), Safari's answer, an installed copy in Chrome. The owner can look at the
+  foot of the Library in each browser.
 - **Printing has only run in headless Chromium, and that is deliberate.** The owner decided (2026-09-26) to skip
   browser and device checks and assume print works until a bug report says otherwise. Not seen: Firefox's and
   Safari's print windows (their headers and footers, `@page` size support), the iPad (Share → Print → PDF), a real
@@ -320,8 +336,8 @@ support, and built print / save as PDF._
    autocomplete, then PAUSE.
 4. (Print / save as PDF is done: P3-03 to P3-06, and script stats: P4-04. No browser or device checks are planned
    for either: the owner will report bugs. P3-11, direct `.pdf` download, is the answer if print windows turn out
-   awkward; P3-12, page view, is for later. The outline navigator, P4-03, is done too.) **Ask the owner what comes
-   next.** Candidates: P4-12 (ask for persistent storage, now that the app can be installed), the stats
+   awkward; P3-12, page view, is for later. The outline navigator, P4-03, is done too.) Persistent storage, P4-12, is done
+   too.) **Ask the owner what comes next.** Candidates: the stats
    follow-ups P4-13 to P4-15 (per-scene stats would reuse `src/outline.js`), P2-16 (the caret above the on-screen
    keyboard; focus mode's centring may already cover much of it on tablets), P2-08 (editor colours by element).
 5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
@@ -365,6 +381,8 @@ Then **P2-07 focus mode** (D-025): `Editing.blockAt`, `src/app/focus.js`, the sh
 `layout.js` (and corrected), the outline's jump now counting the editor's top padding.
 Then **P4-02 offline** (D-026): local fonts from Fontsource (npm), `sw.js`, `manifest.webmanifest`, placeholder icons
 rendered from `icons/icon.svg` with Playwright, `src/app/offline.js`, structure tests keeping the lists honest.
+Then **P4-12 persistent storage** (D-027): `src/app/safekeeping.js`, the line at the foot of the Library, a Help
+entry, one more localStorage key (`plainchant_keep_asked`).
 **Next session should start with:** "Next steps" above.
 
 ### Session 12: 2026-09-25: IndexedDB storage (P4-10)

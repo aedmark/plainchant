@@ -475,6 +475,25 @@ browsers run no service workers; the only network use there was Google Fonts.
 off. Not seen on a real phone or in Safari / Firefox. A deploy shows up one load late (the price of opening instantly
 offline). P4-12 (`navigator.storage.persist()`) is now worth doing for installed copies.
 
+## D-027 Persistent storage: ask once there is work to keep, never nag, say where things stand  (2026-09-26, status: accepted)
+**Context:** P4-12. Browsers may evict a site's IndexedDB under disk pressure unless the site called
+`navigator.storage.persist()` and the browser agreed. Chrome, Edge and Safari answer silently (by engagement,
+installation, bookmarks); Firefox shows the writer a prompt. Headless Chromium answers no.
+**Decision:**
+1. **Ask automatically once the library holds a script** (at start-up, or after the first save or stored change),
+   at most once per page load (`keepWhenWorthIt` in `src/app/safekeeping.js`). Never before there is work: a prompt on
+   a first visit would be asking for something the writer has no reason to want yet.
+2. **After a no, do not ask again by itself** in that browser (`plainchant_keep_asked` in localStorage): Firefox's
+   "Not now" would otherwise mean a prompt on every visit. The exception is running as an installed app
+   (`display-mode: standalone`), which is when Chrome says yes.
+3. **The Library says where things stand**, in a line at its foot: kept; may be cleared if the disk runs low; or
+   refused (with "installing usually helps"). The last two mention Export and have **Ask it to keep them**, which
+   asks on a click (where a prompt belongs). Hidden where the browser cannot say or nothing is stored.
+4. Start-up never waits for the answer (Firefox's prompt waits for the writer).
+**Consequences:** One more localStorage key. Verified in headless Chromium with a stand-in storage manager for the
+yes, the no and the installed cases, plus the real (refusing) browser. Not seen: Firefox's prompt, Safari's answer, an
+installed copy.
+
 ## Open questions
 
 - Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

@@ -41,6 +41,7 @@ const APP_FILES = [
     'src/app/outline-ui.js',
     'src/app/main.js',
     'src/app/offline.js',
+    'src/app/safekeeping.js',
     'fonts/courier-prime-latin-400-italic.woff2',
     'fonts/courier-prime-latin-400-normal.woff2',
     'fonts/courier-prime-latin-700-italic.woff2',

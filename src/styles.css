@@ -616,6 +616,7 @@ code.inline, .help-table code.inline {
 .rename-form input[aria-invalid="true"] { border-color: #b91c1c; }
 .library-note { margin: 0; padding: 0.75rem 1rem; font-size: 0.8125rem; line-height: 1.5; color: var(--text-void-muted); }
 .library-note .mini { margin-left: 0.5rem; }
+#library-keep { border-top: 1px solid var(--border-void); }
 .library-toast {
     display: flex;
     align-items: center;

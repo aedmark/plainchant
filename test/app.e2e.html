@@ -17,7 +17,7 @@
 const APP = '../index.html';
 const EMERGENCY_KEY = 'plainchant_emergency';
 const TOUR_KEY = 'plainchant_onboarded';
-const KEYS = [TOUR_KEY, EMERGENCY_KEY, 'plainchant_paper', 'plainchant_focus'];
+const KEYS = [TOUR_KEY, EMERGENCY_KEY, 'plainchant_paper', 'plainchant_focus', 'plainchant_keep_asked'];
 const f = document.getElementById('f');
 const log = [];
 const check = (name, cond, extra) => log.push((cond ? 'PASS ' : 'FAIL ') + name + (cond ? '' : '  -> ' + JSON.stringify(extra)));
@@ -1518,6 +1518,70 @@ setTimeout(() => {
     check('help: working offline and installing are explained', /works offline/.test(fid(nf2, 'help-modal').textContent) && /Add to Home Screen/.test(fid(nf2, 'help-modal').textContent));
     check('offline: the page has its icon', !!nf2.contentDocument.querySelector('link[rel="icon"][href="icons/icon.svg"]') && !!nf2.contentDocument.querySelector('link[rel="apple-touch-icon"]'));
     nf2.remove();
+
+    // 16i. Persistent storage (P4-12): the browser is asked to keep the library once there is work to keep, once per
+    // load, and after a no only again when running installed. A stand-in storage manager plays the browser's part.
+    await setDb({}, {});
+    W().localStorage.removeItem('plainchant_keep_asked');
+    const keepF = await openRealFrame(1200, 700); // its saveScript is the real one
+    const keepW = keepF.contentWindow;
+    await keepW.keepStarted;
+    check('keep: with nothing stored yet, nothing is asked for, and the Library says where things stand',
+      keepW.eval('keepState') === 'at-risk' && !keepW.eval('keepAutoAsked') && keepW.localStorage.getItem('plainchant_keep_asked') === null && !fid(keepF, 'library-keep').hidden,
+      [keepW.eval('keepState'), keepW.eval('keepAutoAsked')]);
+    let keepAsks = 0, keepLooks = 0, keepGrant = true, keepHas = false;
+    const keeper = { persisted: async () => { keepLooks++; return keepHas; }, persist: async () => { keepAsks++; keepHas = keepGrant; return keepGrant; } };
+    const keepReset = () => { keepW.eval('keepAutoAsked = false; keepState = null'); keepW.localStorage.removeItem('plainchant_keep_asked'); keepAsks = 0; keepHas = false; };
+    keepReset();
+    check('keep: no script, no request', await keepW.keepWhenWorthIt(keeper, false) === 'at-risk' && keepAsks === 0, keepAsks);
+    setText(keepF, 'INT. VAULT - NIGHT\n\nThe door stays shut.');
+    keepW.saveScript(false);
+    await keepW.whenSaved();
+    await sleep(50);
+    check('keep: the first save makes the automatic request (here to the real headless browser, which says no)',
+      keepW.eval('keepAutoAsked') && ['refused', 'kept'].indexOf(keepW.eval('keepState')) !== -1, keepW.eval('keepState'));
+    keepReset();
+    check('keep: with work stored, the browser is asked, and a yes is shown', await keepW.keepWhenWorthIt(keeper, false) === 'kept' && keepAsks === 1 &&
+      /agreed to keep your scripts/.test(fid(keepF, 'keepText').textContent) && fid(keepF, 'keepBtn').hidden && keepW.localStorage.getItem('plainchant_keep_asked') === null,
+      [keepAsks, fid(keepF, 'keepText').textContent]);
+    keepReset(); keepGrant = false;
+    await keepW.keepWhenWorthIt(keeper, true);
+    keepLooks = 0;
+    await keepW.keepWhenWorthIt(keeper, true);
+    await keepW.keepWhenWorthIt(keeper, true);
+    check('keep: once per page load; later saves do not even ask the browser where things stand', keepAsks === 1 && keepLooks === 0, [keepAsks, keepLooks]);
+    keepReset(); keepHas = true; keepGrant = true;
+    check('keep: already kept, nothing is asked', await keepW.keepWhenWorthIt(keeper, false) === 'kept' && keepAsks === 0, keepAsks);
+    keepReset(); keepGrant = false;
+    check('keep: a no is shown, with Export and the button to ask again, and remembered in this browser',
+      await keepW.keepWhenWorthIt(keeper, false) === 'refused' && keepAsks === 1 && /would not promise/.test(fid(keepF, 'keepText').textContent) &&
+      /Export keeps a copy/.test(fid(keepF, 'keepText').textContent) && !fid(keepF, 'keepBtn').hidden &&
+      keepW.localStorage.getItem('plainchant_keep_asked') === '1', [keepAsks, fid(keepF, 'keepText').textContent]);
+    keepW.eval('keepAutoAsked = false'); keepAsks = 0;
+    check('keep: after a no, the next load does not ask again (Firefox would prompt every visit)',
+      await keepW.keepWhenWorthIt(keeper, false) === 'refused' && keepAsks === 0, [keepW.eval('keepState'), keepAsks]);
+    keepW.eval('keepAutoAsked = false; keepState = null');
+    check('keep: after a no, a fresh load says "may clear" with the button',
+      await keepW.keepWhenWorthIt(keeper, false) === 'at-risk' && keepAsks === 0 && /may clear your scripts/.test(fid(keepF, 'keepText').textContent), fid(keepF, 'keepText').textContent);
+    keepW.eval('keepAutoAsked = false'); keepGrant = true;
+    check('keep: after a no, running installed asks again (installed apps are granted it)', await keepW.keepWhenWorthIt(keeper, true) === 'kept' && keepAsks === 1, keepAsks);
+    keepReset();
+    await keepW.checkKept(keeper);
+    keepW.eval('storageManager = () => window.__keeper'); keepW.__keeper = keeper;
+    fid(keepF, 'libraryBtn').click();
+    check('keep: the line sits at the bottom of the Library, with its button', shown(fid(keepF, 'library-keep')) && shown(fid(keepF, 'keepBtn')) &&
+      /may clear/.test(fid(keepF, 'library-keep').textContent));
+    fid(keepF, 'keepBtn').focus();
+    fid(keepF, 'keepBtn').click();
+    await sleep(50);
+    check('keep: the button asks; on a yes it goes, and focus moves to the search box', keepAsks === 1 && keepW.eval('keepState') === 'kept' &&
+      !shown(fid(keepF, 'keepBtn')) && focusId(keepF) === 'librarySearch', [keepAsks, keepW.eval('keepState'), focusId(keepF)]);
+    keydown(keepF, keepF.contentDocument.activeElement, 'Escape');
+    keepW.eval('storageMode = "none"; keepAutoAsked = false; keepState = null');
+    check('keep: with no storage at all there is nothing to promise, and no line', await keepW.keepWhenWorthIt(keeper, false) === 'unsupported' && fid(keepF, 'library-keep').hidden);
+    check('help: the browser keeping (or clearing) the scripts is explained', /Will the browser keep my scripts/.test(fid(keepF, 'help-modal').textContent));
+    keepF.remove();
+    W().localStorage.removeItem('plainchant_keep_asked');
 
     // Phone: the Library fits a 375px screen and every action is reachable
     await seedLibrary();

@@ -114,6 +114,8 @@
         <div id="library-list" class="modal-body">
             <!-- Scripts are drawn here by renderLibrary() -->
         </div>
+        <!-- Whether the browser has agreed to keep the library (safekeeping.js, P4-12); hidden where it cannot say -->
+        <p id="library-keep" class="library-note" hidden><span id="keepText" aria-live="polite"></span><button type="button" class="mini" id="keepBtn">Ask it to keep them</button></p>
         <!-- A live region: messages such as "Deleted ... Undo" are announced to screen readers -->
         <div id="library-status" role="status" aria-live="polite"></div>
     </div>
@@ -272,6 +274,8 @@ Author: Jane Doe</code></td>
                 <p>Capitals are added as you type, not to pasted text. Select the line and press <kbd>Tab</kbd> to convert it.</p>
                 <h3>Where did my script go?</h3>
                 <p>Open <strong>Library</strong>, and check <strong>Recently deleted</strong> if you removed it. Scripts are stored in this browser only, so a different browser, device or a private window shows a different (possibly empty) library.</p>
+                <h3>Will the browser keep my scripts?</h3>
+                <p>A browser can clear a site&rsquo;s saved data when its disk runs low. Plainchant asks yours to keep your scripts, and the bottom of the <strong>Library</strong> says whether it agreed. Firefox asks you; the others decide for themselves, and installing Plainchant usually helps. Whatever the answer, <strong>Export</strong> keeps a copy of your own.</p>
                 <h3>My PDF has a date or a web address on it</h3>
                 <p>That is the browser&rsquo;s own header and footer. In its print window, open <strong>More settings</strong> (or <strong>Show details</strong>) and turn off <strong>Headers and footers</strong>.</p>
                 <h3>The page count is not the same as in another program</h3>
@@ -458,6 +462,7 @@ Is anyone here?</pre></div>
 <script src="src/app/stats-ui.js"></script>
 <script src="src/app/outline-ui.js"></script>
 <script src="src/app/offline.js"></script>
+<script src="src/app/safekeeping.js"></script>
 <script src="src/app/main.js"></script>
 </body>
 </html>

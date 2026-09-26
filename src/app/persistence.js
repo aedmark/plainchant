@@ -81,7 +81,7 @@ function putScripts(next) {
     const change = Store.diff(before, next);
     library = next;
     return persist(change).then((ok) => {
-        if (ok) return true;
+        if (ok) { keepWhenWorthIt(); return true; }
         const back = Object.assign({}, library);
         change.put.forEach((s) => {
             if (library[s.id] !== s) return;
@@ -242,6 +242,7 @@ function saveScript(isAuto = false) {
         }
         announce({ put: [stored] });
         finish(true);
+        keepWhenWorthIt(); // there is work to keep now: ask the browser to keep it (safekeeping.js)
     }, (e) => {
         console.error("Save error:", e);
         finish(false);
