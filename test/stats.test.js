@@ -1,4 +1,4 @@
-// Script stats suite (src/stats.js, P4-04). Expects globals: test, assert, Fountain, Paginate, Library, Stats.
+// Script stats suite (src/stats.js, P4-04, P4-13). Expects globals: test, assert, Fountain, Paginate, Library, Stats, Outline.
 
 const stFill = (n) => Array.from({ length: n }, (_, i) => 'Filler ' + i + '.').join('\n');
 const stNames = (s) => s.characters.map((c) => c.name);
@@ -67,6 +67,59 @@ test('stats: characters are listed by how much they say, with their share of all
     const s = Stats.of(text);
     assert.deepEqual(stNames(s), ['CAL', 'BOB', 'ANN']);
     assert.deepEqual(s.characters.map((c) => c.share), [50, 38, 13]);
+});
+
+test('stats: a length in eighths of a page reads the way schedules write it', () => {
+    assert.deepEqual([1, 5, 8, 11, 16, 23].map(Stats.eighths), ['1/8', '5/8', '1', '1 3/8', '2', '2 7/8']);
+});
+
+test('stats: each scene runs from its heading to the next, in eighths of a printed page, on the paper asked for', () => {
+    // 47 rows: the heading, a blank, 44 lines of action, a blank. 47/54 of a Letter page is 6.96 eighths, of A4 6.48.
+    const text = 'INT. A - DAY\n\n' + stFill(44) + '\n\nINT. B - NIGHT\n\nShort.\n\nEXT. C - DAY\n\nEnd.';
+    const letter = Stats.of(text).sceneList, a4 = Stats.of(text, { paper: 'a4' }).sceneList;
+    assert.deepEqual(letter.map((sc) => sc.text), ['INT. A - DAY', 'INT. B - NIGHT', 'EXT. C - DAY']);
+    assert.equal(letter[0].eighths, 7);
+    assert.equal(a4[0].eighths, 6);
+    assert.deepEqual([letter[1].eighths, letter[2].eighths], [1, 1], 'a scene of a line or two is still 1/8');
+});
+
+test('stats: a scene across a page break counts the rows on both pages; the lengths add up to the script', () => {
+    const text = 'Title: X\n\nFADE IN:\n\nINT. A - DAY\n\n' + stFill(30) + '\n\nINT. B - DAY\n\n' + stFill(60) + '\n\nINT. C - DAY\n\n' + stFill(20);
+    const s = Stats.of(text);
+    assert.deepEqual(s.sceneList.map((sc) => sc.page), [1, 1, 2]);
+    assert.ok(s.sceneList[1].eighths >= 9 && s.sceneList[1].eighths <= 10, s.sceneList[1].eighths);
+    const pages = Paginate.layout(Fountain.parse(text)).pages, last = pages[pages.length - 1].lines;
+    const rows = (pages.length - 1) * 54 + last[last.length - 1].row + 1 - 2; // every printed row but FADE IN: and its blank
+    const total = s.sceneList.reduce((n, sc) => n + sc.eighths, 0);
+    assert.ok(Math.abs(total - rows / 54 * 8) <= 1.5, total + ' eighths for ' + rows + ' rows');
+    const outline = Outline.of(text).items.filter((i) => i.kind === 'scene');
+    assert.deepEqual(s.sceneList.map((sc) => sc.page), outline.map((i) => i.page), 'the same pages as the Outline');
+    assert.deepEqual(s.sceneList.map((sc) => sc.line), outline.map((i) => i.line));
+});
+
+test('stats: a scene heading reads as it prints: capitals, no notes, the scene number kept apart', () => {
+    const sc = Stats.of('int. kitchen - day [[check]] #12#\n\nShe cooks.').sceneList[0];
+    assert.deepEqual([sc.text, sc.number], ['INT. KITCHEN - DAY', '12']);
+    assert.equal(Stats.of('.MONTAGE\n\nThings happen.').sceneList[0].text, 'MONTAGE');
+    assert.deepEqual(Stats.of('No scenes here.').sceneList, []);
+});
+
+test('stats: a scene\'s characters are the ones who speak in it, in the order they first do, one name each', () => {
+    const text = [
+        'NARRATOR', 'Before any scene.', '',
+        'INT. A - DAY', '',
+        'Mara enters.', '',
+        '@McCLANE', 'Hi.', '',
+        'MARA (V.O.)', 'Hello.', '',
+        'MCCLANE (CONT\'D)', 'Again.', '',
+        'EXT. B - NIGHT', '',
+        'BRICK', 'Left.', '',
+        'STEEL ^', 'Right.', '',
+        'EXT. C - NIGHT', '',
+        'Silence.'
+    ].join('\n');
+    const list = Stats.of(text).sceneList;
+    assert.deepEqual(list.map((sc) => sc.characters), [['McCLANE', 'MARA'], ['BRICK', 'STEEL'], []]);
 });
 
 test('stats: speed, so the live page count can follow typing on a feature-length script', () => {

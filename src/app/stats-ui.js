@@ -1,5 +1,5 @@
 /*
- * Plainchant app script: stats-ui: the live page count in the preview's header, and the Script stats window (P4-04)
+ * Plainchant app script: stats-ui: the live page count in the preview's header, and the Script stats window (P4-04, P4-13)
  *
  * One of the classic scripts loaded by index.html, in order (see CLAUDE.md, "App scripts"). They share the
  * page's global scope, so top-level functions and consts here are visible to the files after it, and anything
@@ -10,6 +10,7 @@
 // milliseconds on a long script, so the header's count waits until typing pauses.
 const statsBtn = document.getElementById('statsBtn');
 const statsModal = document.getElementById('stats-modal');
+const statsScenes = document.getElementById('statsScenes');
 const STATS_DELAY = 600;
 let statsTimer = null;
 
@@ -48,13 +49,7 @@ function openStats() {
 
     const body = document.getElementById('statsCharacters');
     body.textContent = '';
-    if (!s.characters.length) {
-        const row = document.createElement('tr');
-        const cell = statsCell('td', 'Nobody speaks yet.');
-        cell.colSpan = 4;
-        row.appendChild(cell);
-        body.appendChild(row);
-    }
+    if (!s.characters.length) emptyRow(body, 'Nobody speaks yet.', 4);
     s.characters.forEach((c) => {
         const row = document.createElement('tr');
         row.appendChild(statsCell('th', c.name)).scope = 'row';
@@ -63,9 +58,45 @@ function openStats() {
         row.appendChild(statsCell('td', c.share + '%'));
         body.appendChild(row);
     });
+    drawSceneList(s.sceneList);
     updateStatsBadge();
     openModal(statsModal);
 }
 
+function emptyRow(body, text, span) {
+    const row = document.createElement('tr');
+    const cell = statsCell('td', text);
+    cell.colSpan = span;
+    row.appendChild(cell);
+    body.appendChild(row);
+}
+
+// Every scene, with its page, its length and who speaks in it (P4-13). Choosing one goes there, as the Outline does.
+function drawSceneList(list) {
+    statsScenes.textContent = '';
+    if (!list.length) emptyRow(statsScenes, 'No scenes yet.', 3);
+    list.forEach((sc) => {
+        const row = document.createElement('tr');
+        const head = row.appendChild(statsCell('th', ''));
+        head.scope = 'row';
+        const go = head.appendChild(document.createElement('button'));
+        go.type = 'button';
+        go.className = 'stats-jump';
+        go.dataset.line = sc.line;
+        if (sc.number) go.appendChild(statsCell('span', sc.number)).className = 'stats-num';
+        go.appendChild(document.createTextNode(sc.text || 'Scene'));
+        if (sc.characters.length) head.appendChild(statsCell('div', sc.characters.join(', '))).className = 'stats-who';
+        row.appendChild(statsCell('td', sc.page));
+        row.appendChild(statsCell('td', Stats.eighths(sc.eighths)));
+        statsScenes.appendChild(row);
+    });
+}
+
 // --- Wiring ---
 statsBtn.addEventListener('click', openStats);
+statsScenes.addEventListener('click', (e) => {
+    const go = e.target.closest('.stats-jump');
+    if (!go) return;
+    closeModal(statsModal);
+    jumpToLine(Number(go.dataset.line));
+});

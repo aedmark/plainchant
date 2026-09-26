@@ -1316,6 +1316,23 @@ setTimeout(() => {
     check('stats: names are only ever text', !fq(sf2, '#stats-modal b'));
     keydown(sf2, sf2.contentDocument.activeElement, 'Escape');
     check('stats: Esc closes it', active(sf2).length === 0);
+    // P4-13: every scene, its page, its length in eighths and who speaks in it; choosing one goes there
+    fid(sf2, 'statsBtn').click();
+    const sceneRows = () => Array.from(fq(sf2, '#statsScenes').querySelectorAll('tr')).map(r => Array.from(r.children).map(c => c.textContent).join('|'));
+    const sc0 = expected.sceneList[0], sc1 = expected.sceneList[1];
+    check('stats scenes: each scene with who speaks in it, its page and its length in eighths',
+      sceneRows().join(' / ') === 'INT. A - DAYMARA, DEV, <b>Bold</b>|1|' + sw2.Stats.eighths(sc0.eighths) + ' / EXT. B - NIGHT|2|1/8' &&
+      fq(sf2, '#statsScenes .stats-who').textContent === 'MARA, DEV, <b>Bold</b>' && !fq(sf2, '#stats-modal b'), [sceneRows(), sc0.eighths]);
+    fq(sf2, '#statsScenes tr:nth-child(2) .stats-jump').click();
+    const bAt = STATS_SCRIPT.indexOf('EXT. B - NIGHT');
+    check('stats scenes: choosing one closes the window and puts the caret at its heading',
+      active(sf2).length === 0 && fid(sf2, 'editor').selectionStart === bAt && fid(sf2, 'editor').selectionEnd === bAt && focusId(sf2) === 'editor',
+      [fid(sf2, 'editor').selectionStart, bAt, focusId(sf2)]);
+    setText(sf2, 'INT. HOUSE - DAY #4#\n\nQuiet.');
+    fid(sf2, 'statsBtn').click();
+    check('stats scenes: a scene number shows before its heading', fq(sf2, '#statsScenes .stats-num').textContent === '4' && sceneRows().join() === '4INT. HOUSE - DAY|1|1/8', sceneRows());
+    fq(sf2, '#stats-modal .modal-close').click();
+    setText(sf2, STATS_SCRIPT);
     sw2.localStorage.setItem('plainchant_paper', 'a4');
     sw2.updateStatsBadge();
     fid(sf2, 'statsBtn').click();
@@ -1324,7 +1341,8 @@ setTimeout(() => {
     setText(sf2, '   ');
     sw2.updateStatsBadge();
     fid(sf2, 'statsBtn').click();
-    check('stats: an empty script says so, and nobody speaks', fid(sf2, 'statsBtn').textContent === 'No pages yet' && /Nobody speaks yet/.test(fid(sf2, 'statsCharacters').textContent));
+    check('stats: an empty script says so, and nobody speaks, and there are no scenes', fid(sf2, 'statsBtn').textContent === 'No pages yet' &&
+      /Nobody speaks yet/.test(fid(sf2, 'statsCharacters').textContent) && fid(sf2, 'statsScenes').textContent === 'No scenes yet.');
     fq(sf2, '#stats-modal .modal-close').click();
     check('help: script stats are explained', /Script stats/.test(fid(sf2, 'help-modal').textContent));
     sf2.remove();
@@ -1339,6 +1357,8 @@ setTimeout(() => {
     fid(sp, 'statsBtn').click();
     const spModal = rect(fq(sp, '#stats-modal .modal-content'));
     check('phone stats: the stats window fits the screen', active(sp).join() === 'stats-modal' && spModal.left >= 0 && spModal.right <= 375 && spModal.bottom <= 667, spModal);
+    const spBody = fq(sp, '#stats-modal .modal-body');
+    check('phone stats: the scene list fits too (nothing scrolls sideways)', spBody.scrollWidth <= spBody.clientWidth && rect(fq(sp, '#statsScenes .stats-jump')).right <= 375, [spBody.scrollWidth, spBody.clientWidth]);
     sp.remove();
 
     // 16f. Outline (P4-03): sections, scenes and synopses; choosing one jumps there

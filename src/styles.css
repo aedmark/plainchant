@@ -842,6 +842,24 @@ code.inline, .help-table code.inline {
 .stats-table th:first-child, .stats-table td:first-child { text-align: left; overflow-wrap: anywhere; }
 .stats-table thead th { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-void-muted); font-weight: 600; }
 .stats-table tbody th { font-weight: 400; color: #f8fafc; }
+.stats-table + .stats-heading { margin-top: 1rem; }
+.stats-jump {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #f8fafc;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    overflow-wrap: anywhere;
+}
+.stats-jump:hover { text-decoration: underline; }
+.stats-jump:focus-visible { outline: 2px solid #94a3b8; outline-offset: 2px; }
+.stats-num { margin-right: 0.5em; color: var(--text-void-muted); }
+.stats-who { margin-top: 0.1rem; font-size: 0.75rem; color: var(--text-void-muted); overflow-wrap: anywhere; }
+.stats-scenes tbody th { vertical-align: top; }
 .stats-note { margin: 0.75rem 0 0; font-size: 0.75rem; color: var(--text-void-muted); }
 .modal-footer .hint-keys { font-size: 0.75rem; color: var(--text-void-muted); }
 @media (max-width: 480px) { .stats-tiles { grid-template-columns: repeat(2, 1fr); } }

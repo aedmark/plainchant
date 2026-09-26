@@ -494,6 +494,24 @@ installation, bookmarks); Firefox shows the writer a prompt. Headless Chromium a
 yes, the no and the installed cases, plus the real (refusing) browser. Not seen: Firefox's prompt, Safari's answer, an
 installed copy.
 
+## D-028 Scene lengths: printed rows from heading to heading, in eighths, at least 1/8  (2026-09-26, status: accepted)
+**Context:** P4-13 (each scene's length, speaking characters, a list to jump from). Schedules measure scenes in
+eighths of a page.
+**Decision:**
+1. **A scene runs from the first printed row of its heading to the first printed row of the next heading** (or the
+   last printed line), counting every page's full grid (54 or 58 rows), so a scene across a break counts the rows on
+   both pages, and any blank space a break leaves at a page foot belongs to the scene above it. The rows come from
+   `src/paginate.js` on the paper chosen in Export, as every other page number does.
+2. **Eighths are rounded to the nearest, never below 1/8** (the convention: no scene is shorter than an eighth), written
+   `1 3/8`. So scene lengths may add up to a little more than the page count. Anything before the first heading
+   (`FADE IN:`) is in no scene.
+3. **A scene's characters** are the speakers in it, in the order they first speak, under the same name the character
+   table uses (extensions folded, first spelling seen).
+4. **Shown in the Script stats window**, as a Scenes table (page, length, speakers under the heading); choosing a
+   heading closes the window and jumps there with the Outline's `jumpToLine`. Not a separate window: the Outline is the
+   navigator, this is the breakdown.
+**Consequences:** `Stats.of` returns `sceneList`; `Stats.eighths(n)` formats. No extra pagination pass.
+
 ## Open questions
 
 - Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

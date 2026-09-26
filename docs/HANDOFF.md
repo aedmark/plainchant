@@ -10,7 +10,7 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 ## Current state
 
 _Last updated: 2026-09-26, session 13 (script stats, P4-04; outline navigator, P4-03; focus mode, P2-07; offline, P4-02;
-persistent storage, P4-12). Session 12 built IndexedDB storage, dropped legacy
+persistent storage, P4-12; scene stats, P4-13). Session 12 built IndexedDB storage, dropped legacy
 support, and built print / save as PDF._
 
 **What works**
@@ -37,6 +37,8 @@ support, and built print / save as PDF._
   at the top of Preview). Tapping it opens **Script stats**: pages as they print on the chosen paper, screen time
   (a minute a page), scenes, words (the Library's count), and each character's speeches, spoken words and share of the
   dialogue, with every cue extension folded into the one name. The "Courier Prime" badge it replaced is gone.
+  **Scenes** (P4-13, D-028): the window also lists every scene with the page it starts on, its length in eighths of a
+  printed page (heading to heading, at least 1/8) and who speaks in it; choosing one jumps there, as the Outline does.
 - **Print / save as PDF** (P3-03 to P3-06, D-021, D-022; `src/paginate.js` + `src/app/print.js`). **Export** opens a
   dialog: *Download .fountain*, or *Print or save as PDF* with US Letter / A4 (remembered in `plainchant_paper`) and
   the page count. The pages are laid out on the Courier grid (60 columns; 54 rows Letter, 58 A4; standard margins),
@@ -112,6 +114,10 @@ support, and built print / save as PDF._
 - Scroll sync no longer divides by zero.
 
 **Verified**
+- **Scene stats (P4-13), session 13:** `npm test` 258 (5 new stats tests: eighths, lengths on both papers, across a
+  page break and adding up to the script, the same pages as the Outline, headings as printed, speakers per scene);
+  `bash test/run-headless.sh` 246 unit + **493 e2e** (the table's rows, escaping, the jump, a scene number, the empty
+  case, the phone). Mutations: 8 of 8 fail a test. Looked right at 1200px and 375px.
 - **Persistent storage, session 13:** `npm test` 253; `bash test/run-headless.sh` 241 unit + **489 e2e** (section 16i:
   nothing asked with an empty library, the first save asking, yes / no / already kept, once per load, no second ask
   after a no, the installed exception, the Library line and its button (focus moving to the search box when it goes),
@@ -338,7 +344,8 @@ support, and built print / save as PDF._
    for either: the owner will report bugs. P3-11, direct `.pdf` download, is the answer if print windows turn out
    awkward; P3-12, page view, is for later. The outline navigator, P4-03, is done too.) Persistent storage, P4-12, is done
    too.) **Ask the owner what comes next.** Candidates: the stats
-   follow-ups P4-13 to P4-15 (per-scene stats would reuse `src/outline.js`), P2-16 (the caret above the on-screen
+   follow-ups P4-14 and P4-15 (scene mix, locations: both read the scene headings, which `sceneList` in `src/stats.js`
+   already walks), P2-16 (the caret above the on-screen
    keyboard; focus mode's centring may already cover much of it on tablets), P2-08 (editor colours by element).
 5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
 6. (P4-10 and P4-11 are done: D-018, D-019, D-020.)
@@ -383,6 +390,8 @@ Then **P4-02 offline** (D-026): local fonts from Fontsource (npm), `sw.js`, `man
 rendered from `icons/icon.svg` with Playwright, `src/app/offline.js`, structure tests keeping the lists honest.
 Then **P4-12 persistent storage** (D-027): `src/app/safekeeping.js`, the line at the foot of the Library, a Help
 entry, one more localStorage key (`plainchant_keep_asked`).
+Then **P4-13 scene stats** (D-028): `sceneList` and `Stats.eighths` in `src/stats.js` (tests first), a Scenes table
+in the Script stats window that jumps like the Outline.
 **Next session should start with:** "Next steps" above.
 
 ### Session 12: 2026-09-25: IndexedDB storage (P4-10)
