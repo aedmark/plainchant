@@ -10,7 +10,7 @@
 // over it, above and below the block the caret is in (Editing.blockAt), and the text itself is never touched: typing,
 // undo, selection and the on-screen keyboard behave exactly as without focus mode. Typing or moving the caret scrolls
 // the caret's line to the middle; scrolling by hand is left alone. Only the block is measured on each change: the
-// height of the text above it is kept until that text changes.
+// height of the text above it is kept until that text changes (textAbovePx in layout.js).
 const FOCUS_KEY = 'plainchant_focus';   // '1' while focus mode is on, remembered per browser
 const focusBtn = document.getElementById('focusBtn');
 const paneVoid = document.querySelector('.pane-void');
@@ -23,17 +23,6 @@ paneVoid.append(veilAbove, veilBelow);
 
 let focusOn = false;
 let pointerHeld = false;
-const aboveCache = { text: null, top: 0 }; // the height of the text above the current block, while it is unchanged
-
-function lineHeightPx() {
-    return textTopIn('x\nx', 2);
-}
-
-function blockTopPx(start) {
-    const before = editor.value.slice(0, start);
-    if (before !== aboveCache.text) { aboveCache.text = before; aboveCache.top = textTop(start); }
-    return aboveCache.top;
-}
 
 // Puts the veils around the current block and, if asked, scrolls the caret's line to the middle.
 // Global on purpose: the e2e tests call it.
@@ -44,7 +33,7 @@ function updateFocus(recentre) {
     const text = editor.value.slice(block.start, block.end);
     const lh = lineHeightPx();
     const padTop = parseFloat(getComputedStyle(editor).paddingTop);
-    const top = blockTopPx(block.start);
+    const top = textAbovePx(block.start); // cached while the text above the block is unchanged (layout.js)
     const bottom = top + textTopIn(text, text.length) + lh;
     if (recentre) {
         const caretY = padTop + top + textTopIn(text, caret - block.start);
@@ -69,7 +58,6 @@ function setFocusMode(on) {
     document.body.classList.toggle('focus-mode', focusOn);
     focusBtn.setAttribute('aria-pressed', String(focusOn));
     try { if (focusOn) localStorage.setItem(FOCUS_KEY, '1'); else localStorage.removeItem(FOCUS_KEY); } catch (e) { /* not remembered */ }
-    aboveCache.text = null; // the padding changes with the mode, so every height does
     if (focusOn) updateFocus(true);
 }
 
@@ -100,4 +88,4 @@ document.addEventListener('pointerup', () => {
 document.addEventListener('selectionchange', () => {
     if (focusOn && !pointerHeld && document.activeElement === editor && editor.selectionStart === editor.selectionEnd) updateFocus(true);
 });
-window.addEventListener('resize', () => { aboveCache.text = null; updateFocus(true); });
+window.addEventListener('resize', () => updateFocus(true)); // a new width is a new cache key (layout.js)

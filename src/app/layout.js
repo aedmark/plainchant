@@ -1,5 +1,6 @@
 /*
- * Plainchant app script: layout: one pane at a time on phones and tablets, the drop-down menu, keyboard-safe sizing, scroll sync
+ * Plainchant app script: layout: one pane at a time on phones and tablets, the drop-down menu, keyboard-safe sizing, the caret
+ * kept clear of the keyboard, scroll sync
  *
  * One of the classic scripts loaded by index.html, in order (see CLAUDE.md, "App scripts"). They share the
  * page's global scope, so top-level functions and consts here are visible to the files after it, and anything
@@ -56,14 +57,14 @@ function textTopIn(text, pos) {
     Object.assign(measureCopy.style, { position: 'absolute', visibility: 'hidden', left: '-9999px', top: '0', boxSizing: 'border-box',
         width: editor.clientWidth + 'px', border: '0', whiteSpace: 'pre-wrap', overflowWrap: 'break-word' });
     if (!measureCopy.isConnected) document.body.appendChild(measureCopy);
-    // A span's offsetTop is the top of its text, a little below the top of its line; measuring from a mark at the
-    // very start cancels that (and the padding) out
+    // A span's top is the top of its text, a little below the top of its line; measuring from a mark at the very
+    // start cancels that (and the padding) out. getBoundingClientRect, not offsetTop, which rounds to whole pixels.
     const markAt = (before) => {
         measureCopy.textContent = before;
         const mark = document.createElement('span');
         mark.textContent = '\u200b';
         measureCopy.appendChild(mark);
-        return mark.offsetTop;
+        return mark.getBoundingClientRect().top;
     };
     const top = markAt(text.slice(0, pos)) - markAt('');
     measureCopy.textContent = '';
@@ -72,6 +73,47 @@ function textTopIn(text, pos) {
 
 function textTop(pos) {
     return textTopIn(editor.value, pos);
+}
+
+function lineHeightPx() {
+    const px = parseFloat(getComputedStyle(editor).lineHeight); // '25.6px'; 'normal' only if the stylesheet changes
+    return px > 0 ? px : textTopIn('x\nx', 2);
+}
+
+// The height of the editor's text above `start` (a line start), kept while that text, the editor's width and its type
+// stay the same: while typing inside one block only the block itself needs measuring, so long scripts stay quick.
+const aboveCache = { text: null, key: '', top: 0 };
+function textAbovePx(start) {
+    const before = editor.value.slice(0, start);
+    const cs = getComputedStyle(editor);
+    const key = [editor.clientWidth, cs.fontFamily, cs.fontSize, cs.lineHeight, cs.paddingLeft, cs.paddingRight].join('|');
+    if (before !== aboveCache.text || key !== aboveCache.key) {
+        aboveCache.text = before;
+        aboveCache.key = key;
+        aboveCache.top = textTop(start);
+    }
+    return aboveCache.top;
+}
+
+// Where the caret's line starts, in pixels from the top of the editor's content (padding included, scroll not)
+function caretLineTopPx(caret) {
+    const block = Editing.blockAt(editor.value, caret);
+    return parseFloat(getComputedStyle(editor).paddingTop) + textAbovePx(block.start) +
+        textTopIn(editor.value.slice(block.start, block.end), caret - block.start);
+}
+
+// P2-16: typing near the bottom of the editor, the browser scrolls only just enough to keep the caret in view, so
+// the line being written sits against the on-screen keyboard (or the element bar above it). Keep a few lines of room
+// below it instead. Only where FIT_QUERY applies (touch, narrow windows); focus mode centres the line anyway.
+// Global on purpose: the e2e tests call it.
+const CLEAR_LINES = 3;
+function keepCaretClear() {
+    if (!fitMQ.matches || document.body.classList.contains('focus-mode')) return;
+    if (document.activeElement !== editor || editor.selectionStart !== editor.selectionEnd || editor.offsetParent === null) return;
+    const lh = lineHeightPx();
+    const room = Math.min(CLEAR_LINES * lh, editor.clientHeight / 4); // a short editor (landscape phone) keeps most of itself
+    const bottom = caretLineTopPx(editor.selectionEnd) + lh; // the bottom of the caret's line
+    if (bottom > editor.scrollTop + editor.clientHeight - room) editor.scrollTop = bottom + room - editor.clientHeight;
 }
 
 function setMenu(open) {
@@ -94,6 +136,7 @@ function fitToViewport(vv = window.visualViewport) {
     rootStyle.setProperty('--app-top', vv.offsetTop + 'px');
     // Keyboard up: the home-indicator inset is hidden behind it, so don't reserve space for it
     document.body.classList.toggle('kb-open', vv.height < window.innerHeight - 120);
+    keepCaretClear(); // the keyboard coming up shrinks the editor: the line tapped on may now sit right against it
 }
 
 // --- Wiring ---
@@ -116,6 +159,8 @@ if (window.visualViewport) {
     visualViewport.addEventListener('resize', () => fitToViewport());
     visualViewport.addEventListener('scroll', () => fitToViewport());
 }
+
+editor.addEventListener('input', keepCaretClear);
 
 // Sync scrolling (Optional but helpful for large documents)
 // A pane that does not overflow has a scroll range of 0; dividing by it produced NaN

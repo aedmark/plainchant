@@ -10,10 +10,15 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 ## Current state
 
 _Last updated: 2026-09-26, session 13 (script stats, P4-04; outline navigator, P4-03; focus mode, P2-07; offline, P4-02;
-persistent storage, P4-12; scene stats, P4-13 to P4-15). Session 12 built IndexedDB storage, dropped legacy
+persistent storage, P4-12; scene stats, P4-13 to P4-15;
+the caret kept clear of the keyboard, P2-16). Session 12 built IndexedDB storage, dropped legacy
 support, and built print / save as PDF._
 
 **What works**
+- **The caret kept clear of the keyboard** (P2-16, D-030; `keepCaretClear` in `src/app/layout.js`). On touch devices and
+  windows under 1024px, typing near the bottom of the editor keeps the line being written three lines above its
+  bottom edge (the element bar and keyboard), and so does the keyboard coming up. Desktop windows are unchanged; focus
+  mode still centres the line. Measuring in the editor is now to fractions of a pixel.
 - **Persistent storage** (P4-12, D-027; `src/app/safekeeping.js`). Once the library holds a script, the app asks the
   browser to keep it even when the disk runs low (`navigator.storage.persist()`), once per page load; after a no it
   does not ask again by itself (`plainchant_keep_asked`) unless running installed. Chrome / Edge / Safari answer
@@ -116,6 +121,11 @@ support, and built print / save as PDF._
 - Scroll sync no longer divides by zero.
 
 **Verified**
+- **Keyboard room (P2-16), session 13:** `bash test/run-headless.sh` 249 unit + **506 e2e** (section 16j: the line
+  lifted exactly three line heights, a new last line too, nothing moved higher up or for a selection, the fake
+  keyboard shrinking the editor, focus mode left alone, desktop unchanged). The line height and the last line's bottom
+  in the checks come from the editor itself, not from the app's measuring. Mutations: 8 of 8 fail a test, after
+  three checks were sharpened (each had tested a spot where scrolling was clamped, so a missing guard changed nothing).
 - **Scene mix and locations (P4-14, P4-15), session 13:** `npm test` 261 (3 new: 21 headings read, the mix, the
   locations); `bash test/run-headless.sh` 249 unit + **497 e2e** (the two lines, the table, "other" and untimed
   scenes, escaping, the empty case). Mutations: 9 of 9 fail a test after two fixes (a guard that turned out wrong,
@@ -203,6 +213,8 @@ support, and built print / save as PDF._
   and phone in headless Edge.
 
 **Not verified / not done**
+- **P2-16 has not been on a phone or tablet.** Whether three lines feels right, and whether iOS Safari's own scrolling
+  fights it, is for the owner to try: type at the bottom of a long script with the keyboard up.
 - **Persistent storage (P4-12) has not met a real browser's yes.** Not seen: Firefox's prompt (and whether it wants a
   click first; the automatic ask is not one), Safari's answer, an installed copy in Chrome. The owner can look at the
   foot of the Library in each browser.
@@ -349,8 +361,9 @@ support, and built print / save as PDF._
 4. (Print / save as PDF is done: P3-03 to P3-06, and script stats: P4-04. No browser or device checks are planned
    for either: the owner will report bugs. P3-11, direct `.pdf` download, is the answer if print windows turn out
    awkward; P3-12, page view, is for later. The outline navigator, P4-03, is done too.) Persistent storage, P4-12, is done
-   too.) **Ask the owner what comes next.** Candidates: P2-16 (the caret above the on-screen
-   keyboard; focus mode's centring may already cover much of it on tablets), P2-08 (editor colours by element).
+   too.) **Ask the owner what comes next.** Candidates: P2-10 (tap a block in the phone
+   preview to jump there; `jumpToLine` exists), P4-05 (version snapshots), P4-06 (themes, font size, an accessibility
+   pass), P2-08 (editor colours by element).
 5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
 6. (P4-10 and P4-11 are done: D-018, D-019, D-020.)
 
@@ -397,6 +410,7 @@ entry, one more localStorage key (`plainchant_keep_asked`).
 Then **P4-13 scene stats** (D-028): `sceneList` and `Stats.eighths` in `src/stats.js` (tests first), a Scenes table
 in the Script stats window that jumps like the Outline. Then **P4-14 and P4-15** (D-029): `Stats.heading`, the scene
 mix and the locations in the same window.
+Then **P2-16** (D-030): `keepCaretClear` in `layout.js`, focus mode's measuring cache moved there and made exact.
 **Next session should start with:** "Next steps" above.
 
 ### Session 12: 2026-09-25: IndexedDB storage (P4-10)

@@ -1612,6 +1612,72 @@ setTimeout(() => {
     keepF.remove();
     W().localStorage.removeItem('plainchant_keep_asked');
 
+    // 16j. The caret kept clear of the on-screen keyboard (P2-16): typing near the bottom keeps a few lines of room
+    // below the line being written. The line height and the last line's bottom come from the editor itself.
+    const cf = await openFrame(375, 667);
+    const cw = cf.contentWindow, ce = fid(cf, 'editor');
+    const CLEAR_TEXT = Array.from({ length: 80 }, (_, i) => 'Line ' + i + ' of the action goes here.').join('\n');
+    const clh = parseFloat(getComputedStyle(ce).lineHeight);
+    const lastBottom = () => ce.scrollHeight - parseFloat(getComputedStyle(ce).paddingBottom); // the bottom of the last line
+    const roomBelow = () => ce.scrollTop + ce.clientHeight - lastBottom();
+    const typeAtEnd = (text) => {
+      ce.setRangeText(text, ce.value.length, ce.value.length, 'end');
+      ce.dispatchEvent(new cw.Event('input', { bubbles: true }));
+    };
+    setText(cf, CLEAR_TEXT);
+    ce.focus();
+    ce.setSelectionRange(ce.value.length, ce.value.length);
+    ce.scrollTop = lastBottom() - ce.clientHeight; // where the browser leaves it: the caret's line against the bottom edge
+    check('keyboard room: the check starts with the caret line against the bottom edge', Math.abs(roomBelow()) <= 1, roomBelow());
+    typeAtEnd(' More');
+    check('keyboard room: typing there lifts the line three lines clear of the bottom (keyboard or element bar)',
+      Math.abs(roomBelow() - 3 * clh) <= 1.5, [roomBelow(), 3 * clh]);
+    typeAtEnd('\nA new line.');
+    check('keyboard room: a new last line rises too (there is room under it to scroll into)', Math.abs(roomBelow() - 3 * clh) <= 1.5, [roomBelow(), 3 * clh]);
+    const at40 = ce.value.split('\n').slice(0, 40).join('\n').length; // the end of line 40
+    ce.setSelectionRange(at40, at40);
+    ce.scrollTop = parseFloat(getComputedStyle(ce).paddingTop) + 40 * clh - ce.clientHeight / 2; // that line mid-editor
+    const midTop = ce.scrollTop;
+    ce.setRangeText('x', at40, at40, 'end');
+    ce.dispatchEvent(new cw.Event('input', { bubbles: true }));
+    check('keyboard room: typing well above the bottom scrolls nothing', midTop > 0 && ce.scrollTop === midTop, [ce.scrollTop, midTop]);
+    ce.setSelectionRange(ce.value.length - 5, ce.value.length);
+    ce.scrollTop = lastBottom() - ce.clientHeight;
+    const selTop = ce.scrollTop;
+    ce.dispatchEvent(new cw.Event('input', { bubbles: true }));
+    check('keyboard room: a selection is left alone', ce.scrollTop === selTop, [ce.scrollTop, selTop]);
+
+    // The keyboard coming up: the editor shrinks under the line that was tapped (a fake visual viewport, as in 1b)
+    ce.setSelectionRange(ce.value.length, ce.value.length);
+    ce.scrollTop = lastBottom() - ce.clientHeight;
+    cw.fitToViewport({ height: 330, offsetTop: 0 });
+    const shortRoom = Math.min(3 * clh, ce.clientHeight / 4);
+    check('keyboard room: when the keyboard shrinks the editor, the caret line is lifted clear of it (less room on a short editor)',
+      ce.clientHeight < 300 && roomBelow() >= shortRoom - 1.5 && roomBelow() <= shortRoom + 1.5, [ce.clientHeight, roomBelow(), shortRoom]);
+    cw.fitToViewport();
+    cw.setFocusMode(true);
+    ce.scrollTop = lastBottom() - ce.clientHeight; // scrolled by hand so the line is at the bottom: focus mode allows that
+    const focusTop = ce.scrollTop;
+    cw.keepCaretClear();
+    check('keyboard room: in focus mode it leaves the scrolling to focus mode', ce.scrollTop === focusTop, [ce.scrollTop, focusTop]);
+    cw.setFocusMode(false);
+    cf.remove();
+
+    const cd = await openFrame(1200, 700);
+    const cde = fid(cd, 'editor');
+    setText(cd, CLEAR_TEXT + '\n' + CLEAR_TEXT);
+    cde.focus();
+    const at100 = cde.value.split('\n').slice(0, 100).join('\n').length; // the end of line 100, mid-script
+    cde.setSelectionRange(at100, at100);
+    const dlh = parseFloat(getComputedStyle(cde).lineHeight);
+    cde.scrollTop = parseFloat(getComputedStyle(cde).paddingTop) + 100 * dlh - cde.clientHeight; // that line against the bottom edge
+    const deskTop = cde.scrollTop;
+    check('keyboard room (desktop): the check has room to scroll either way', deskTop > 0 && deskTop < cde.scrollHeight - cde.clientHeight - 100, deskTop);
+    cde.setRangeText(' More', at100, at100, 'end');
+    cde.dispatchEvent(new cd.contentWindow.Event('input', { bubbles: true }));
+    check('keyboard room: a desktop window with a mouse is left as it was (no on-screen keyboard)', cde.scrollTop === deskTop, [cde.scrollTop, deskTop]);
+    cd.remove();
+
     // Phone: the Library fits a 375px screen and every action is reachable
     await seedLibrary();
     await reloadFrame(m);

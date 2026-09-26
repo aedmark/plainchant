@@ -531,6 +531,24 @@ and writers' headings vary: `INT./EXT.`, `I/E`, no dot, `--` or em dashes, `HOUS
 **Consequences:** Unusual time words (`MAGIC HOUR` is in, `LATER THAT NIGHT` is not) fall into the location. Easy to
 extend: it is one regular expression in `src/stats.js`.
 
+## D-030 The caret kept three lines clear of the keyboard  (2026-09-26, status: accepted)
+**Context:** P2-16. The app is sized to the visual viewport (D-009), so the keyboard never covers the editor, but a
+browser scrolls a textarea only just enough to show the caret: typing at the bottom of a long script, the line being
+written sits against the element bar and the keyboard, with nothing visible below it.
+**Decision:**
+1. **After each typed change** (`input`), and when the keyboard comes up (`fitToViewport`), if the caret's line is
+   within three lines of the editor's bottom edge, scroll so it is exactly three lines clear (`keepCaretClear` in
+   `layout.js`). On a short editor (a landscape phone with the keyboard up) the room is at most a quarter of its height.
+   Nothing moves when the line is higher up, for a selection, or in focus mode (which centres the line itself).
+2. **Only where FIT_QUERY applies** (touch devices, windows under 1024px): the places an on-screen keyboard exists or
+   the viewport fitting runs. A desktop window keeps the browser's own behaviour.
+3. **Room under the last line:** there, the editor's bottom padding is `1rem + 3lh`, so the last line can rise too.
+4. **Measuring** reuses focus mode's cache (moved to `layout.js` as `textAbovePx`: only the current block is measured
+   per keystroke), and now uses fractional positions (`getBoundingClientRect`) and the editor's own line height;
+   `offsetTop` rounded 25.6px lines to 26, 2px off after three lines.
+**Consequences:** Arrow keys and taps do not trigger it (only typing and the keyboard opening). Verified only in
+headless Chromium with a fake visual viewport; iOS Safari and Android are the real test.
+
 ## Open questions
 
 - Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

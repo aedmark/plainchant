@@ -59,7 +59,7 @@ use what an earlier file already defined. Code inside functions runs later and c
 | File | Owns |
 | --- | --- |
 | `core.js` | `editor` / `renderTarget` / `page` references, `newId`, `currentScriptId`, `autoSaveTimer`, `showNotice`, `render()` |
-| `layout.js` | One pane at a time, the phone menu, keyboard-safe sizing (`fitToViewport`), scroll sync, measuring where text falls in the editor (`textTopIn` / `textTop`) |
+| `layout.js` | One pane at a time, the phone menu, keyboard-safe sizing (`fitToViewport`), the caret kept clear of the keyboard (`keepCaretClear`, D-030), scroll sync, measuring where text falls in the editor (`textTopIn` / `textTop`, the cached `textAbovePx`) |
 | `persistence.js` | The in-memory library, IndexedDB writes and the emergency buffer, the no-storage notice, restoring the last script, New, the trash purge, save on hide (D-019) |
 | `dialogs.js` | `openModal` / `closeModal`: the one accessible helper for every modal window |
 | `library-ui.js` | The Library dialog (data rules are in `src/library.js`) |

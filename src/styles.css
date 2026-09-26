@@ -78,6 +78,8 @@ body {
         height: var(--app-height, 100dvh);
         transform: translateY(var(--app-top, 0px));
     }
+    /* Room under the last line, so it too can rise clear of the keyboard as it is typed (keepCaretClear, P2-16) */
+    #editor { padding-bottom: calc(1rem + 3lh); }
 }
 
 /* Fingers need bigger targets than a mouse pointer, in every layout */
