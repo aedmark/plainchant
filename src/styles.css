@@ -808,4 +808,4 @@ code.inline, .help-table code.inline {
 .outline-item.scene .ol-text { font-family: var(--font-screenplay); color: #f8fafc; }
 .outline-item .ol-num, .outline-item .ol-page { font-size: 0.7rem; color: var(--text-void-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .outline-item .ol-text { overflow-wrap: anywhere; }
-.outline-item .ol-synopsis { grid-column: 2 / 4; font-style: italic; color: var(--text-void-muted); font-size: 0.75rem; }
+.outline-item .ol-synopsis { grid-column: 2 / 4; font-style: italic; font-weight: 400; text-transform: none; letter-spacing: normal; color: var(--text-void-muted); font-size: 0.75rem; }
