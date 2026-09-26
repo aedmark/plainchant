@@ -319,8 +319,8 @@ preview's header now shows in one-pane mode as a slim row with only the count. H
 **Decisions:** D-023.
 **Problems / surprises:** None in the code. One mutation (the window ignoring the paper) survived at first because
 the fixture took two pages on both papers; the fixture now takes 2 on Letter and 1 on A4.
-**Left undone:** Per-scene breakdowns, INT/EXT or day/night counts and a locations list (easy additions to the
-module if wanted). Real-device checks, by the owner's choice.
+**Left undone:** Per-scene breakdowns, INT/EXT or day/night counts and a locations list, now roadmap items P4-13 to
+P4-15 at the owner's request. Real-device checks, by the owner's choice.
 **Next session should start with:** "Next steps" above.
 
 ### Session 12: 2026-09-25: IndexedDB storage (P4-10)
