@@ -66,7 +66,7 @@ use what an earlier file already defined. Code inside functions runs later and c
 | `library-ui.js` | The Library dialog (data rules are in `src/library.js`) |
 | `versions-ui.js` | The Versions window, from a script's row in the Library: name, go back, copy, delete. Reads and writes the `versions` store through `Store` directly (D-034) |
 | `example.js`, `help.js`, `tour.js` | The example script, the Help window, the welcome tour |
-| `settings.js` | The Settings window and `settings` (colours, blank lines on Enter, capitals as you type; `setSetting`), stored in `plainchant_settings` (D-032) |
+| `settings.js` | The Settings window and `settings` (theme, text size, colours, blank lines on Enter, capitals as you type; `setSetting`), stored in `plainchant_settings`; applies the theme and size as it loads (D-032, D-035) |
 | `typing.js` | Tab, smart Enter, auto-uppercase, the element bar, autocomplete chips (rules are in `src/editing.js` and `src/suggest.js`) |
 | `shade.js` | The editor's colour hints: a coloured copy of the text behind the textarea (whose own text is transparent), redrawn line by line from `render()`'s parse, with a wrap check that switches it off if it ever misaligns (D-031) |
 | `focus.js` | Focus mode: the veils around the current block, typewriter scrolling, the toggle and Ctrl/Cmd+Shift+F (D-025) |
@@ -91,6 +91,9 @@ Keep each file's own listeners in that file. Functions the e2e tests call (`save
 - Classic `<script>` files, not ES modules (`file://` blocks module imports).
 - The parser must never touch the DOM, `window` or Node-only APIs. Escape all user text before it reaches HTML.
 - Match existing CSS variable names and class names (`script-*` for rendered screenplay elements).
+- Colours are tokens on `:root` (dark) and `:root[data-theme="light"]`: a new colour for the app's chrome goes in both
+  sets, never as a literal. The preview and print are paper and keep literal colours. The e2e accessibility sweep
+  (section 16o) fails if text reads below 4.5:1 in either theme, or a control has no name (D-035).
 - A new writer's choice goes in Settings (`settings.js`, `SETTING_DEFAULTS`), and a pure rule it changes takes it as
   an option (as `Editing.enter` / `autoCase` do), so the rule stays testable in Node.
 - The editor's line height must stay a length (`1.6em`), never unitless, and anything copying the editor's text must use

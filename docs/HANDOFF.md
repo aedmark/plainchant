@@ -12,10 +12,16 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 _Last updated: 2026-09-26, session 13 (script stats, P4-04; outline navigator, P4-03; focus mode, P2-07; offline, P4-02;
 persistent storage, P4-12; scene stats, P4-13 to P4-15;
 the caret kept clear of the keyboard, P2-16; colour hints in the editor, P2-08; settings, P2-15; tapping the preview, P2-10;
-versions, P4-05). Session 12 built IndexedDB storage, dropped legacy
+versions, P4-05;
+themes, text size and an accessibility pass, P4-06). Session 12 built IndexedDB storage, dropped legacy
 support, and built print / save as PDF._
 
 **What works**
+- **Themes, text size, accessibility** (P4-06, D-035). Settings has Theme (Dark, the default; Light; Match the system)
+  and Text size in the editor (four steps; never under 16px on a phone). Every colour is a token with a light value;
+  the preview stays paper. An accessibility sweep runs with the e2e tests over every window in both themes, desktop
+  and phone (contrast 4.5:1, names, references, ids, graphics). The editor is named "Script"; the panes are landmarks;
+  keyboard focus is one visible ring; "reduce motion" is honoured.
 - **Versions** (P4-05, D-034; `src/versions.js`, `src/app/versions-ui.js`, the `versions` store). Every save keeps the
   text as it was before it, when due: the first save of a visit, then at most one every ten minutes of changes; they
   thin out with age (all of the last hour, then hourly for a day, daily for a month, monthly for good). The Library's
@@ -141,6 +147,12 @@ support, and built print / save as PDF._
 - Scroll sync no longer divides by zero.
 
 **Verified**
+- **P4-06, session 13:** `npm test` 279; `bash test/run-headless.sh` 267 unit + **578 e2e** (section 16o: dark by
+  default, light at once and remembered, the paper stays white, "Match the system", text size with the colour layer
+  following at once, both kept on reload, 16px on phones, and the sweep: 2 themes x (18 desktop + 5 phone states), 0
+  problems after fixing the two it found). Mutations: 10 of 11 fail a test (the sweep caught each colour and
+  label broken on purpose). The eleventh, the 16px floor on touch screens wider than a phone (an iPad in landscape),
+  cannot be reached in headless Chromium, which has no touch pointer: untested.
 - **Versions (P4-05), session 13:** `npm test` 279 (10 new in `test/versions.test.js`); `bash test/run-headless.sh`
   267 unit + **567 e2e** (section 16n: the first save's version, none straight after, one ten minutes on, thinning as
   they are kept, the window from the row, naming (and needing a name), escaping, going back on the open script and on
@@ -254,6 +266,8 @@ support, and built print / save as PDF._
   and phone in headless Edge.
 
 **Not verified / not done**
+- **P4-06 without a real screen reader:** the sweep checks names and contrast, not how VoiceOver, NVDA or TalkBack read
+  the app, nor Windows high-contrast mode. The light theme has only been seen in headless Chromium screenshots.
 - **Versions (P4-05) against the owner's real library:** the database upgrade from version 1 to 2 has only run in the
   tests (fresh profiles). With the app open in two tabs, the old tab loses its database when the new one upgrades
   (reload it). Worth opening Library → Versions on a real script after a day of writing.
@@ -410,8 +424,9 @@ support, and built print / save as PDF._
 4. (Print / save as PDF is done: P3-03 to P3-06, and script stats: P4-04. No browser or device checks are planned
    for either: the owner will report bugs. P3-11, direct `.pdf` download, is the answer if print windows turn out
    awkward; P3-12, page view, is for later. The outline navigator, P4-03, is done too.) Persistent storage, P4-12, is done
-   too.) **Ask the owner what comes next.** Candidates: P4-06 (themes, font size, an accessibility
-   pass; Settings is where font size would go), P2-14 (suggest cues without Tab), P2-21 (autocomplete follow-ups).
+   too.) **Ask the owner what comes next.** Candidates: P2-14 (suggest cues without Tab), P2-21 (autocomplete follow-ups), P4-01
+   (incremental render, for very long scripts), P4-16 (compare versions), P2-22 (desktop click-to-jump), P3-11 (a real
+   .pdf download), P3-12 (page view), P5-01 (open and save real files). A screen-reader pass by a person is worth doing.
 5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
 6. (P4-10 and P4-11 are done: D-018, D-019, D-020.)
 
@@ -464,6 +479,7 @@ Then **P2-08** (D-031): `Fountain.shade`, `src/app/shade.js`, the editor's line 
 Then **P2-15** (D-032): `src/app/settings.js`, options on `Editing.enter` / `autoCase`, `setShadeOn`, the gear.
 Then **P2-10** (D-033): a tap on the one-pane preview goes to that line; speech lines carry `data-line`. P2-22 added.
 Then **P4-05** (D-034): `src/versions.js`, the `versions` store kept inside `Store.saveScript`, `versions-ui.js`. P4-16 added.
+Then **P4-06** (D-035): colour tokens and a light theme, Theme and Text size in Settings, the accessibility sweep.
 **Next session should start with:** "Next steps" above.
 
 ### Session 12: 2026-09-25: IndexedDB storage (P4-10)

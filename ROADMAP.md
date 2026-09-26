@@ -143,7 +143,8 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
   character with their share)
 - [x] P4-05 Version snapshots and restore (D-034: kept by the saves themselves, thinned with age, named ones kept;
   a Versions window from the Library)
-- [ ] P4-06 Themes and font-size controls; accessibility pass (keyboard, contrast, screen reader labels)
+- [x] P4-06 Themes and font-size controls; accessibility pass (keyboard, contrast, screen reader labels) (D-035: dark,
+  light or the system's; four text sizes; an automated sweep in the tests. A real screen reader pass is still to do)
 - [x] P4-08 Split the inline app script in `index.html` (~925 lines) into eleven classic script files under
   `src/app/`, one per concern (D-014). Behaviour-neutral: every original line moved exactly once (checked), all
   319 e2e checks unchanged. `test/structure.test.js` guards the structure.

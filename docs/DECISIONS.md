@@ -635,6 +635,31 @@ session 12).
 fail until reloaded; the emergency buffer keeps their words). A feature-length script with a year of versions is
 roughly 60 copies (about 9 MB); P4-12 asks the browser to keep it all. No side-by-side comparison of two versions yet.
 
+## D-035 Themes, text size and an accessibility sweep that runs with the tests  (2026-09-26, status: accepted)
+**Context:** P4-06 (themes and font-size controls; an accessibility pass: keyboard, contrast, screen reader labels).
+The stylesheet had about a hundred literal colours, all for one dark look.
+**Decision:**
+1. **Colours are tokens** on `:root` (the dark theme) with a `:root[data-theme="light"]` set beside them; every
+   colour of the app's own chrome goes through one. The preview and print stay paper in both themes (the page is what
+   the writer will print), with their own literal colours.
+2. **Settings gains Theme (Dark, Light, Match the system) and Text size in the editor** (Small, Normal, Large,
+   Larger: 0.875, 1, 1.15, 1.3 times the editor's size). Dark stays the default. Both go on the root element
+   (`data-theme`, `--editor-scale`) as `settings.js` loads, before the first paint; "Match the system" follows a change
+   of the system's setting live. On touch screens the editor never goes under 16px (iOS would zoom the page). The
+   colour layer and focus mode follow a size change at once. Only the editor's text changes size: the browser's own
+   zoom covers the rest.
+3. **The accessibility pass is a sweep that runs with the tests** (e2e section 16o), in both themes, on a desktop
+   (eighteen states: every window, each Help topic, each tour step, focus mode, suggestions) and a phone (five):
+   visible text meets 4.5:1 against its real background (3:1 when large; the boneyard, commented-out text, is dim on
+   purpose at 3:1), every control has a name, no `aria-*` reference points at a missing id, no id is used twice, and
+   no graphic is unnamed. It found two problems, both fixed: the editor had no name (it is "Script"), and the preview
+   header's tagline was 3.0:1. The muted grey was raised to pass everywhere (dark `#8b95a7`, light `#556070`).
+4. **Also:** the editor and preview are landmarks ("Editor" main, "Preview" region); keyboard focus shows as one
+   ring in the theme's colour on every control; "reduce motion" turns transitions off.
+**Consequences:** A new colour must be added to both themes, and the sweep will fail a test if it reads badly in
+either. Not covered by the sweep: a real screen reader's reading order and wording (VoiceOver, NVDA, TalkBack), and
+Windows high-contrast mode; worth one pass by a person.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom
