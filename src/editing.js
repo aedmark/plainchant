@@ -12,6 +12,7 @@
  *   Editing.kindAt(text, lineIndex)            what element a line is: 'scene' | 'action' | 'character' |
  *                                              'parenthetical' | 'dialogue' | 'transition' | 'blank' | others
  *   Editing.enter(text, start, end, mode, opts) smart Enter, or null to let the browser insert a plain newline
+ *   Editing.looksLikeCue(line, names)          whether a line on its own reads as a character's name (P2-14)
  *   Editing.tab(text, caret, dir, mode)        { target, edit, mode } for Tab / Shift+Tab, skipping impossible steps
  *   Editing.cycleTarget(text, caret, dir, mode)  the element Tab would pick, ignoring whether it is possible
  *   Editing.setType(text, caret, target, mode)   { edit, mode } converting the current line to `target`, or null
@@ -114,9 +115,12 @@
      * With `mode` set, the line is also finished off first (uppercased, scene prefix / transition marker added).
      * `options.paragraphs === false` (the writer's setting, P2-15): no blank lines are added; Enter is the browser's
      * plain line break, except that a chosen element is still finished off, followed by one line break.
+     * `options.cues = { names }` (P2-14, D-036): a line after a blank line that looksLikeCue() becomes a cue as if the
+     * writer had chosen Character: capitals, then straight into the speech.
      */
     function enter(text, start, end, mode, options) {
         const paragraphs = !options || options.paragraphs !== false;
+        const cues = options && options.cues;
         if (start !== end) return null;
         const info = lineInfo(text, start);
         if (start !== info.end) return null;                          // not at the end of the line
@@ -125,11 +129,36 @@
         if (isBlank(line)) return null;
 
         if (mode && MODES.indexOf(mode) !== -1) return finishLine(text, info, mode, paragraphs);
+        if (cues && (info.idx === 0 || isBlank(info.lines[info.idx - 1])) && kindAt(text, info.idx) === 'action' &&
+            looksLikeCue(line, cues.names)) {
+            return finishLine(text, info, 'character', paragraphs);
+        }
         if (!paragraphs) return null;
 
         const kind = kindAt(text, info.idx);
         const sep = (kind === 'character' || kind === 'parenthetical') ? '\n' : '\n\n';
         return { from: start, to: start, insert: sep, selStart: start + sep.length, selEnd: start + sep.length };
+    }
+
+    // ---------- guessing a cue (P2-14) ----------
+
+    const CUE_WORD = /^\p{Lu}[\p{L}'’.\-]*$/u; // a capitalised word: Mara, O'Neil, Mary-Jane, Dr.
+
+    /**
+     * Whether a line on its own looks like a character's name: one the script already uses as a cue (any case, with
+     * or without an extension), or a new one written with capitals, one to three words, not ending like a sentence.
+     * "Mara enters." and "Night falls" do not; "Detective Ruiz" and "mara (v.o.)" (if MARA speaks) do.
+     */
+    function looksLikeCue(line, names) {
+        let name = String(line || '').trim();
+        while (/\([^)]*\)\s*$/.test(name)) name = name.replace(/\s*\([^)]*\)\s*$/, '');
+        name = name.trim();
+        if (!name) return false; // (a line starting with a mark, ! . > # =, fails the word test below)
+        const up = name.toUpperCase();
+        if ((names || []).some((n) => String(n).toUpperCase() === up)) return true;
+        if (name.length > 30 || SCENE_PREFIX_RE.test(name) || /[.!?,;:]$/.test(name)) return false;
+        const words = name.split(/\s+/);
+        return words.length <= 3 && words.every((w) => CUE_WORD.test(w));
     }
 
     function finishLine(text, info, mode, paragraphs) {
@@ -307,7 +336,7 @@
     }
 
     return {
-        kindAt: kindAt, enter: enter, cycleTarget: cycleTarget, tab: tab, setType: setType, autoCase: autoCase,
+        kindAt: kindAt, enter: enter, looksLikeCue: looksLikeCue, cycleTarget: cycleTarget, tab: tab, setType: setType, autoCase: autoCase,
         diffEdit: diffEdit, lineInfo: lineInfo, inDialogueBlock: inDialogueBlock, blockAt: blockAt
     };
 });

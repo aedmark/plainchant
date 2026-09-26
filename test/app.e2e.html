@@ -2162,6 +2162,42 @@ setTimeout(() => {
     W().localStorage.removeItem('plainchant_settings');
     await setDb({}, {});
 
+    // 16p. Guessing a character name on Enter (P2-14): a name on its own line after a blank line becomes a cue
+    W().localStorage.removeItem('plainchant_settings');
+    const cuF = await openFrame(1200, 700);
+    const cuW = cuF.contentWindow, cuE = fid(cuF, 'editor');
+    const cueEnter = (before, typed) => {
+      setText(cuF, before);
+      cuE.focus();
+      cuE.setSelectionRange(cuE.value.length, cuE.value.length);
+      cuF.contentDocument.execCommand('insertText', false, typed); // typed, so it can be undone
+      const ev = new cuW.InputEvent('beforeinput', { inputType: 'insertLineBreak', bubbles: true, cancelable: true });
+      cuE.dispatchEvent(ev);
+      return ev.defaultPrevented ? cuE.value.slice(before.length) : 'browser';
+    };
+    const CU_BEFORE = 'MARA\nHi.\n\nShe waits.\n\n';
+    check('guess cues: a name the script already uses, typed in lowercase, becomes the cue, speech next',
+      cueEnter(CU_BEFORE, 'mara') === 'MARA\n' && cuE.selectionStart === cuE.value.length, cuE.value.slice(CU_BEFORE.length));
+    cuW.syncElementState();
+    check('guess cues: the bar then shows Dialogue', fq(cuF, '.element-bar [data-el="dialogue"]').getAttribute('aria-pressed') === 'true');
+    cuF.contentDocument.execCommand('undo');
+    check('guess cues: Ctrl/Cmd+Z undoes the guess in one step', cuE.value === CU_BEFORE + 'mara', cuE.value.slice(CU_BEFORE.length));
+    check('guess cues: a new name written with capitals too, extension and all', cueEnter(CU_BEFORE, 'Detective Ruiz (v.o.)') === 'DETECTIVE RUIZ (V.O.)\n');
+    check('guess cues: a sentence stays action (a new paragraph)', cueEnter(CU_BEFORE, 'Mara enters.') === 'Mara enters.\n\n');
+    check('guess cues: a new name in lowercase is not guessed', cueEnter(CU_BEFORE, 'ruiz') === 'ruiz\n\n');
+    fid(cuF, 'settingsBtn').click();
+    check('guess cues: on by default, in Settings', fid(cuF, 'setCues').checked === true);
+    fid(cuF, 'setCues').click();
+    keydown(cuF, cuF.contentDocument.activeElement, 'Escape');
+    check('guess cues: switched off, a name is action like any other line, and that is remembered',
+      cueEnter(CU_BEFORE, 'mara') === 'mara\n\n' && cueEnter(CU_BEFORE, 'Detective Ruiz') === 'Detective Ruiz\n\n' &&
+      cuW.localStorage.getItem('plainchant_settings') === '{"cues":false}', cuW.localStorage.getItem('plainchant_settings'));
+    cuW.setSetting('cues', true);
+    check('help: guessing character names is explained', /becomes a character, capitalised/.test(fid(cuF, 'help-modal').textContent) &&
+      /Type the name with capitals/.test(fid(cuF, 'help-modal').textContent));
+    cuF.remove();
+    W().localStorage.removeItem('plainchant_settings');
+
     // Phone: the Library fits a 375px screen and every action is reachable
     await seedLibrary();
     await reloadFrame(m);

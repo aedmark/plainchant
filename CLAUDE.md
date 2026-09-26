@@ -37,7 +37,7 @@ Sessions are short-lived and context resets between them, so the repo carries th
 | `src/styles.css` | All the CSS. Desktop-first; the mobile block mirrors `MOBILE_QUERY` / `FIT_QUERY` in `src/app/layout.js` |
 | `src/app/*.js` | The app itself, one file per concern, loaded in order by `index.html` (see "App scripts" below, D-014) |
 | `src/fountain.js` | Fountain parser + HTML renderer, and the editor's line kinds (`classifyLines`, `shade`). Pure, UMD, no DOM (D-003) |
-| `src/editing.js` | Typing helpers (Tab, smart Enter, auto-uppercase): text + caret in, edit out. Pure, UMD (D-010) |
+| `src/editing.js` | Typing helpers (Tab, smart Enter, auto-uppercase, guessing a name on Enter): text + caret in, edit out. Pure, UMD (D-010, D-036) |
 | `src/library.js` | Library data rules (search, soft delete, restore, purge, duplicate, rename): scripts object in, new object out. Pure, UMD (D-013) |
 | `src/importing.js` | Import rules: which files to accept, decoding (UTF-8/16, Windows-1252), line endings. Pure, UMD (D-016) |
 | `src/suggest.js` | Autocomplete rules: names and locations from the script, what to offer for the word being typed. Pure, UMD, uses `Fountain` and `Editing` (D-017) |
@@ -66,7 +66,7 @@ use what an earlier file already defined. Code inside functions runs later and c
 | `library-ui.js` | The Library dialog (data rules are in `src/library.js`) |
 | `versions-ui.js` | The Versions window, from a script's row in the Library: name, go back, copy, delete. Reads and writes the `versions` store through `Store` directly (D-034) |
 | `example.js`, `help.js`, `tour.js` | The example script, the Help window, the welcome tour |
-| `settings.js` | The Settings window and `settings` (theme, text size, colours, blank lines on Enter, capitals as you type; `setSetting`), stored in `plainchant_settings`; applies the theme and size as it loads (D-032, D-035) |
+| `settings.js` | The Settings window and `settings` (theme, text size, colours, blank lines on Enter, capitals as you type, guessing names; `setSetting`), stored in `plainchant_settings`; applies the theme and size as it loads (D-032, D-035) |
 | `typing.js` | Tab, smart Enter, auto-uppercase, the element bar, autocomplete chips (rules are in `src/editing.js` and `src/suggest.js`) |
 | `shade.js` | The editor's colour hints: a coloured copy of the text behind the textarea (whose own text is transparent), redrawn line by line from `render()`'s parse, with a wrap check that switches it off if it ever misaligns (D-031) |
 | `focus.js` | Focus mode: the veils around the current block, typewriter scrolling, the toggle and Ctrl/Cmd+Shift+F (D-025) |

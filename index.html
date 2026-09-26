@@ -270,7 +270,7 @@ Author: Jane Doe</code></td>
                         <tr><td><kbd>Tab</kbd></td><td>Cycles the current line through Action &rarr; Character &rarr; Scene heading &rarr; Transition. Inside dialogue it switches between dialogue and parenthetical. On a blank line it chooses what you are about to type: a character (typed text is capitalised) or a scene heading (<code class="inline">INT.&nbsp;</code> is filled in).</td></tr>
                         <tr><td><kbd>Tab</kbd> <em>while suggestions show</em></td><td>Completes the first suggestion instead. While you type a character name or a scene location, names already used in your script appear in the bar under the text; <kbd>Enter</kbd> never picks one, so what you typed stays what you typed. <kbd>Esc</kbd> hides them.</td></tr>
                         <tr><td><kbd>Shift</kbd>+<kbd>Tab</kbd></td><td>The same as <kbd>Tab</kbd> for cycling, backwards.</td></tr>
-                        <tr><td><kbd>Enter</kbd></td><td>Moves on to what comes next. After a character or a parenthetical you go straight to the speech; after anything else you get a blank line, so an action line ends its paragraph.</td></tr>
+                        <tr><td><kbd>Enter</kbd></td><td>Moves on to what comes next. After a character or a parenthetical you go straight to the speech; after anything else you get a blank line, so an action line ends its paragraph. A name on its own line after a blank line (one your script already uses, or a new one with capitals, like <code class="inline">Detective Ruiz</code>) becomes a character, capitalised, with the speech next; <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Z</kbd> undoes it.</td></tr>
                         <tr><td><kbd>Shift</kbd>+<kbd>Enter</kbd></td><td>A plain line break, to keep writing inside the same element.</td></tr>
                         <tr><td><kbd>Esc</kbd>, then <kbd>Tab</kbd></td><td>Moves focus out of the editor. (<kbd>Tab</kbd> alone is used for cycling.)</td></tr>
                         <tr><td><kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Z</kbd></td><td>Undo, including anything <kbd>Tab</kbd> or <kbd>Enter</kbd> just changed.</td></tr>
@@ -290,7 +290,7 @@ Author: Jane Doe</code></td>
 
             <section class="help-section" data-section="fixes" hidden>
                 <h3>A character name shows up as ordinary action</h3>
-                <p>A character needs three things: an UPPERCASE line, a blank line above it, and the speech directly below. Press <kbd>Tab</kbd> (or Character) on the blank line first and the editor takes care of the capitals for you.</p>
+                <p>A character needs three things: an UPPERCASE line, a blank line above it, and the speech directly below. Type the name with capitals (<code class="inline">Mara</code>) and press <kbd>Enter</kbd>, or press <kbd>Tab</kbd> (or Character) on the blank line first: either way the editor takes care of the capitals. A name in lowercase is only taken for a character once the script has used it.</p>
                 <h3>An action line in capitals turned into a character</h3>
                 <p>An UPPERCASE line with text right under it looks like a character to every screenplay program. Put <code class="inline">!</code> in front of it, or leave a blank line below it.</p>
                 <h3>My scene heading is not recognised</h3>
@@ -437,6 +437,9 @@ Author: Jane Doe</code></td>
             <label class="setting"><input type="checkbox" id="setCapitals" checked>
                 <span><strong>Capitals as you type</strong>
                 <span class="setting-note">Scene headings (<code class="inline">int.</code>, <code class="inline">ext.</code>) and transitions (<code class="inline">cut to:</code>) turn to capitals by themselves. Off: only what you choose with <kbd>Tab</kbd> or the bar under the text.</span></span></label>
+            <label class="setting"><input type="checkbox" id="setCues" checked>
+                <span><strong>Guess character names</strong>
+                <span class="setting-note">A name on its own line after a blank line becomes a character when you press <kbd>Enter</kbd>: one your script already uses, in any case, or a new one written with capitals (<code class="inline">Detective Ruiz</code>). <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Z</kbd> undoes a wrong guess. Off: only <kbd>Tab</kbd> or the bar makes a character.</span></span></label>
             <p class="setting-more">Focus mode is the <strong>Focus</strong> button (or <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd>); the paper size is in <strong>Export</strong>. Settings are kept in this browser. The preview is always white paper, like the printed page.</p>
         </div>
         <div class="modal-footer">

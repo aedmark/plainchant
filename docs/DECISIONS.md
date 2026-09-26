@@ -660,6 +660,24 @@ The stylesheet had about a hundred literal colours, all for one dark look.
 either. Not covered by the sweep: a real screen reader's reading order and wording (VoiceOver, NVDA, TalkBack), and
 Windows high-contrast mode; worth one pass by a person.
 
+## D-036 Guessing a character name on Enter: known names, or new ones written with capitals  (2026-09-26, status: accepted)
+**Context:** P2-14. D-010 chose explicit cues (Tab or the Character button) because a guess that turns an action
+line into a cue is worse than no guess. The owner asked for the guess.
+**Decision:**
+1. **When:** Enter at the end of a line that follows a blank line (or starts the script), where the parser would
+   call the line action, and nothing was chosen with Tab or the bar. Then the line is finished as a cue exactly as if
+   Character had been chosen: capitals, one line break, the speech next.
+2. **What counts as a name** (`Editing.looksLikeCue(line, names)`): a name the script already uses as a cue, in any
+   case and with any extension (`mara (v.o.)`); or a new name written with capitals: one to three words, each
+   starting with a capital letter (letters, apostrophes, hyphens and full stops inside: O'Neil, Mary-Jane, Dr.
+   Okafor), at most 30 characters, not ending in sentence punctuation, and not an INT./EXT. heading. "Mara enters.",
+   "Night falls", "Silence." and a new name in lowercase stay action.
+3. **Safety:** one Ctrl/Cmd+Z undoes the guess (it is one edit). Settings has **Guess character names**, on by
+   default. The script's names are read (`Suggest.names`) only when a line might be a cue.
+**Consequences:** A one- to three-word Title Case action line with no full stop ("Silence", "Darkness Falls") is taken
+for a new character. Writers usually end action with a full stop; if the owner finds it guesses wrong, the next step
+is to require a known name for single words.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom
