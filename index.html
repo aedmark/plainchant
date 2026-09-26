@@ -44,6 +44,7 @@
             <button id="saveBtn" class="btn">Save</button>
             <button id="exportBtn" class="btn">Export</button>
             <button id="copyBtn" class="btn">Copy</button>
+            <button id="settingsBtn" class="btn help-btn" aria-label="Settings" title="Settings"><span class="txt-short" aria-hidden="true"><svg class="gear" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span class="txt-long">Settings</span></button>
             <button id="helpBtn" class="btn help-btn" aria-label="Help" title="Help (F1)"><span class="txt-short" aria-hidden="true">?</span><span class="txt-long">Help</span></button>
         </div>
     </div>
@@ -153,6 +154,7 @@
                     <li><strong>Import</strong> (in the Library, or drop a file anywhere on the page) adds a <code class="inline">.fountain</code> or <code class="inline">.txt</code> file as a new script. Nothing you already have is replaced.</li>
                     <li><strong>Copy</strong> puts the whole script on the clipboard.</li>
                     <li><strong>Colours in the editor</strong> show what each line is: scene headings warm, character names blue, dialogue a little brighter than action, notes muted. They are only hints; the formatted script is what prints.</li>
+                    <li><strong>Settings</strong> (the gear; <strong>Settings</strong> in the phone menu) can turn off the colours, the blank line Enter adds after action, and capitals as you type.</li>
                     <li><strong>No connection needed.</strong> Plainchant works offline. Opened from a web address, your browser can also install it as an app: look for <strong>Install</strong> or <strong>Add to Home Screen</strong>.</li>
                     <li><strong>Outline</strong> (above the formatted script) lists your sections (<code class="inline"># Act One</code>), scenes and synopses (<code class="inline">= ...</code>), with the page each scene starts on. Choose one to jump there; type to find one.</li>
                     <li>The page count above the formatted script (<strong>3 pages &middot; ~3 min</strong>) opens <strong>Script stats</strong>: pages, screen time (about a minute a page), scenes, words, how much each character speaks, the mix of interior and exterior, day and night scenes, each location, and every scene with its page, its length in eighths of a page and who speaks in it (choose one to go there).</li>
@@ -381,6 +383,32 @@ Author: Jane Doe</code></td>
     </div>
 </div>
 
+<!-- Settings (P2-15, D-032): each on by default, remembered in this browser (settings.js) -->
+<div id="settings-modal" class="modal-overlay">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+        <div class="modal-header">
+            <h2 id="settings-title">Settings</h2>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <label class="setting"><input type="checkbox" id="setColours" checked>
+                <span><strong>Colours in the editor</strong>
+                <span class="setting-note">Scene headings, character names, dialogue and notes each in their own colour. Off: plain text, as in any text editor.</span></span></label>
+            <label class="setting"><input type="checkbox" id="setParagraphs" checked>
+                <span><strong>Enter starts the next element</strong>
+                <span class="setting-note">After action, a scene heading or a transition, Enter leaves the blank line the next element needs. Off: Enter is a plain line break, so press it twice between elements.</span></span></label>
+            <label class="setting"><input type="checkbox" id="setCapitals" checked>
+                <span><strong>Capitals as you type</strong>
+                <span class="setting-note">Scene headings (<code class="inline">int.</code>, <code class="inline">ext.</code>) and transitions (<code class="inline">cut to:</code>) turn to capitals by themselves. Off: only what you choose with <kbd>Tab</kbd> or the bar under the text.</span></span></label>
+            <p class="setting-more">Focus mode is the <strong>Focus</strong> button (or <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd>); the paper size is in <strong>Export</strong>. Settings are kept in this browser.</p>
+        </div>
+        <div class="modal-footer">
+            <span class="hint-keys"><kbd>Esc</kbd> closes</span>
+            <button type="button" class="btn primary" data-close>Done</button>
+        </div>
+    </div>
+</div>
+
 <!-- Welcome tour (shown once on first launch; replay from Help) -->
 <div id="tour-modal" class="modal-overlay">
     <div class="modal-content wide" role="dialog" aria-modal="true" aria-labelledby="tour-title">
@@ -469,6 +497,7 @@ Is anyone here?</pre></div>
 <script src="src/app/example.js"></script>
 <script src="src/app/help.js"></script>
 <script src="src/app/tour.js"></script>
+<script src="src/app/settings.js"></script>
 <script src="src/app/typing.js"></script>
 <script src="src/app/shade.js"></script>
 <script src="src/app/focus.js"></script>

@@ -86,7 +86,8 @@ Goal: the "just type" promise. The editor helps; it never interrupts.
   shows the current element and converts on tap, without dismissing the keyboard
 - [ ] P2-14 Suggest character cues without a Tab: after a blank line, a short unpunctuated line followed by Enter is
   probably a cue. Try it only if writers find the explicit Tab / Character step a chore (D-010 chose explicit)
-- [ ] P2-15 Settings to switch off Enter-after-action-makes-a-paragraph and auto-uppercase for writers who dislike them
+- [x] P2-15 Settings to switch off Enter-after-action-makes-a-paragraph and auto-uppercase for writers who dislike them
+  (D-032: those two and the colour hints, from a gear beside Help)
 - [x] P2-16 Keep the caret line comfortably above the on-screen keyboard while typing in a long script (D-030: three
   lines of room, on touch devices and narrow windows)
 - [x] P2-17 Welcome tour: four skippable steps on first launch, device-aware wording, live-rendered sample, ends

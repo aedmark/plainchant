@@ -11,11 +11,11 @@
  *   Editing.blockAt(text, caret)              { start, end } of the run of non-blank lines the caret is in (focus mode)
  *   Editing.kindAt(text, lineIndex)            what element a line is: 'scene' | 'action' | 'character' |
  *                                              'parenthetical' | 'dialogue' | 'transition' | 'blank' | others
- *   Editing.enter(text, start, end, mode)      smart Enter, or null to let the browser insert a plain newline
+ *   Editing.enter(text, start, end, mode, opts) smart Enter, or null to let the browser insert a plain newline
  *   Editing.tab(text, caret, dir, mode)        { target, edit, mode } for Tab / Shift+Tab, skipping impossible steps
  *   Editing.cycleTarget(text, caret, dir, mode)  the element Tab would pick, ignoring whether it is possible
  *   Editing.setType(text, caret, target, mode)   { edit, mode } converting the current line to `target`, or null
- *   Editing.autoCase(text, caret, mode)        uppercase-as-you-type edit, or null
+ *   Editing.autoCase(text, caret, mode, opts)  uppercase-as-you-type edit, or null
  *   Editing.diffEdit(old, new, selStart, selEnd)  the smallest edit turning old into new, selection carried across
  *
  * "mode" is the element the writer chose for a line that has no text yet (a blank line cannot say what it is).
@@ -112,8 +112,11 @@
      *   character cue or parenthetical -> new line (the speech comes next)
      *   anything else                  -> blank line (a new element)
      * With `mode` set, the line is also finished off first (uppercased, scene prefix / transition marker added).
+     * `options.paragraphs === false` (the writer's setting, P2-15): no blank lines are added; Enter is the browser's
+     * plain line break, except that a chosen element is still finished off, followed by one line break.
      */
-    function enter(text, start, end, mode) {
+    function enter(text, start, end, mode, options) {
+        const paragraphs = !options || options.paragraphs !== false;
         if (start !== end) return null;
         const info = lineInfo(text, start);
         if (start !== info.end) return null;                          // not at the end of the line
@@ -121,14 +124,15 @@
         const line = info.lines[info.idx];
         if (isBlank(line)) return null;
 
-        if (mode && MODES.indexOf(mode) !== -1) return finishLine(text, info, mode);
+        if (mode && MODES.indexOf(mode) !== -1) return finishLine(text, info, mode, paragraphs);
+        if (!paragraphs) return null;
 
         const kind = kindAt(text, info.idx);
         const sep = (kind === 'character' || kind === 'parenthetical') ? '\n' : '\n\n';
         return { from: start, to: start, insert: sep, selStart: start + sep.length, selEnd: start + sep.length };
     }
 
-    function finishLine(text, info, mode) {
+    function finishLine(text, info, mode, paragraphs) {
         const words = plain(info.lines[info.idx]);
         if (words === '') return null;                                // nothing typed yet: plain newline
         let line, sep;
@@ -144,6 +148,7 @@
             if (!isTransition(line)) line = FORCE.transition + line;
             sep = '\n\n';
         }
+        if (!paragraphs) sep = '\n';
         return { from: info.start, to: info.end, insert: line + sep,
                  selStart: info.start + line.length + sep.length, selEnd: info.start + line.length + sep.length };
     }
@@ -244,8 +249,9 @@
     /**
      * Uppercase the current line as it is typed, when it is clearly a scene heading ("int. kitchen"), a transition
      * ("cut to:"), or the writer has said it is one (mode). Only at the end of a line, and never inside dialogue.
+     * `options.guess === false` (the writer's setting, P2-15): only a chosen mode uppercases; nothing is guessed.
      */
-    function autoCase(text, caret, mode) {
+    function autoCase(text, caret, mode, options) {
         const info = lineInfo(text, caret);
         if (caret !== info.end) return null;
         const line = info.lines[info.idx];
@@ -254,7 +260,8 @@
         const prevBlank = info.idx === 0 || isBlank(info.lines[info.idx - 1]);
 
         const chosen = MODES.indexOf(mode) !== -1;
-        const obvious = prevBlank && (AUTO_SCENE_RE.test(line) || AUTO_TRANSITION_RE.test(line));
+        const guess = !options || options.guess !== false;
+        const obvious = guess && prevBlank && (AUTO_SCENE_RE.test(line) || AUTO_TRANSITION_RE.test(line));
         if (!chosen && !obvious) return null;
         return { from: info.start, to: info.end, insert: upper, selStart: caret, selEnd: caret };
     }

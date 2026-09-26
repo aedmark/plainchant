@@ -17,7 +17,7 @@
 const APP = '../index.html';
 const EMERGENCY_KEY = 'plainchant_emergency';
 const TOUR_KEY = 'plainchant_onboarded';
-const KEYS = [TOUR_KEY, EMERGENCY_KEY, 'plainchant_paper', 'plainchant_focus', 'plainchant_keep_asked'];
+const KEYS = [TOUR_KEY, EMERGENCY_KEY, 'plainchant_paper', 'plainchant_focus', 'plainchant_keep_asked', 'plainchant_settings'];
 const f = document.getElementById('f');
 const log = [];
 const check = (name, cond, extra) => log.push((cond ? 'PASS ' : 'FAIL ') + name + (cond ? '' : '  -> ' + JSON.stringify(extra)));
@@ -1756,6 +1756,92 @@ setTimeout(() => {
     hp.contentWindow.setView('preview');
     check('phone hints: previewing hides the layer with the editor', !shown(fq(hp, '.editor-shade')));
     hp.remove();
+
+    // 16l. Settings (P2-15): colours, blank lines on Enter, capitals as you type; each on by default, remembered
+    W().localStorage.removeItem('plainchant_settings');
+    const gf = await openFrame(1200, 700);
+    const gw = gf.contentWindow, ge = fid(gf, 'editor'), glayer = fq(gf, '.editor-shade');
+    const box = (id) => fid(gf, id);
+    const toggle = (id) => { box(id).click(); }; // a click on a checkbox changes it and fires change
+    const gShaded = () => gf.contentDocument.body.classList.contains('shaded');
+    setText(gf, 'INT. KITCHEN - DAY\n\nShe waits.');
+    fid(gf, 'settingsBtn').focus();
+    fid(gf, 'settingsBtn').click();
+    check('settings: the gear opens the Settings window, every switch on by default, nothing stored',
+      active(gf).join() === 'settings-modal' && ['setColours', 'setParagraphs', 'setCapitals'].every(id => box(id).checked) &&
+      gw.localStorage.getItem('plainchant_settings') === null && gShaded(), [active(gf), gw.localStorage.getItem('plainchant_settings')]);
+    toggle('setColours');
+    check('settings: colours off gives the editor its own text back at once, and is remembered',
+      !gShaded() && getComputedStyle(ge).color !== 'rgba(0, 0, 0, 0)' && glayer.textContent === '' && !shown(glayer) &&
+      gw.localStorage.getItem('plainchant_settings') === '{"colours":false}', [gShaded(), getComputedStyle(ge).color, gw.localStorage.getItem('plainchant_settings')]);
+    keydown(gf, gf.contentDocument.activeElement, 'Escape');
+    check('settings: Esc closes it and focus goes back to the gear', active(gf).length === 0 && focusId(gf) === 'settingsBtn', focusId(gf));
+    setText(gf, 'INT. KITCHEN - DAY\n\nShe waits.\n\nJOHN\nHi.');
+    gf.style.width = '1100px';
+    await sleep(150);
+    check('settings: with colours off, typing and resizing never bring the layer back', !gShaded() && glayer.textContent === '' && getComputedStyle(ge).color !== 'rgba(0, 0, 0, 0)');
+    gf.remove();
+
+    const gf2 = await openFrame(1200, 700);
+    const gw2 = gf2.contentWindow, ge2 = fid(gf2, 'editor');
+    setText(gf2, 'INT. KITCHEN - DAY\n\nShe waits.');
+    check('settings: colours stay off after a reload', !gf2.contentDocument.body.classList.contains('shaded') && gw2.eval('settings.colours') === false);
+    fid(gf2, 'settingsBtn').click();
+    check('settings: the window shows the stored choice', !fid(gf2, 'setColours').checked && fid(gf2, 'setParagraphs').checked);
+    fid(gf2, 'setColours').click();
+    check('settings: colours back on draw the hints straight away, and the stored key goes (all defaults again)',
+      gf2.contentDocument.body.classList.contains('shaded') && fq(gf2, '.editor-shade').textContent.replace(/\u200b/g, '') === ge2.value &&
+      gw2.localStorage.getItem('plainchant_settings') === null, gw2.localStorage.getItem('plainchant_settings'));
+    fq(gf2, '#settings-modal .modal-close').click();
+
+    // Enter: on, a blank line after action (the browser's own line break is replaced); off, the browser's own
+    const enterAfter = (text) => {
+      setText(gf2, text);
+      ge2.focus();
+      ge2.setSelectionRange(text.length, text.length);
+      const ev = new gw2.InputEvent('beforeinput', { inputType: 'insertLineBreak', bubbles: true, cancelable: true });
+      ge2.dispatchEvent(ev);
+      return ev.defaultPrevented ? ge2.value : 'browser';
+    };
+    check('settings: Enter after action leaves a blank line by default', enterAfter('She waits.') === 'She waits.\n\n');
+    gw2.setSetting('paragraphs', false);
+    check('settings: with "Enter starts the next element" off, Enter is the browser\'s plain line break',
+      enterAfter('She waits.') === 'browser' && enterAfter('INT. KITCHEN - DAY') === 'browser' && gw2.localStorage.getItem('plainchant_settings') === '{"paragraphs":false}');
+    gw2.setSetting('paragraphs', true);
+
+    // Capitals: typed "int. kitchen" is uppercased by default, left alone when off; a chosen element still is
+    const typeLine = (text) => {
+      setText(gf2, 'She waits.\n\n');
+      ge2.focus();
+      ge2.setRangeText(text, ge2.value.length, ge2.value.length, 'end');
+      ge2.dispatchEvent(new gw2.InputEvent('input', { inputType: 'insertText', data: text.slice(-1), bubbles: true }));
+      return ge2.value.split('\n').pop();
+    };
+    check('settings: capitals as you type by default', typeLine('int. kitchen') === 'INT. KITCHEN');
+    gw2.setSetting('capitals', false);
+    check('settings: with capitals off, nothing is guessed', typeLine('int. kitchen') === 'int. kitchen' && typeLine('cut to:') === 'cut to:');
+    setText(gf2, 'She waits.\n\n');
+    ge2.focus();
+    ge2.setSelectionRange(ge2.value.length, ge2.value.length);
+    fq(gf2, '.element-bar [data-el="character"]').dispatchEvent(new gw2.MouseEvent('click', { bubbles: true }));
+    ge2.setRangeText('john', ge2.value.length, ge2.value.length, 'end');
+    ge2.dispatchEvent(new gw2.InputEvent('input', { inputType: 'insertText', data: 'n', bubbles: true }));
+    check('settings: with capitals off, a cue chosen in the bar is still in capitals', ge2.value.split('\n').pop() === 'JOHN', ge2.value.split('\n').pop());
+    gw2.setSetting('capitals', true);
+    check('help: Settings are explained', /Settings/.test(fid(gf2, 'help-modal').textContent) && /capitals as you type/.test(fid(gf2, 'help-modal').textContent));
+    gf2.remove();
+
+    const gp = await openFrame(375, 667);
+    fid(gp, 'menuBtn').click();
+    check('phone settings: the menu has Settings, in words', shown(fid(gp, 'settingsBtn')) && /Settings/.test(fid(gp, 'settingsBtn').innerText), fid(gp, 'settingsBtn').innerText);
+    fid(gp, 'settingsBtn').click();
+    const gpm = rect(fq(gp, '#settings-modal .modal-content'));
+    check('phone settings: the window opens and fits the screen', active(gp).join() === 'settings-modal' && gpm.left >= 0 && gpm.right <= 375 && gpm.bottom <= 667, gpm);
+    gp.remove();
+    const gd = await openFrame(1024, 700);
+    const gHelp = rect(fid(gd, 'helpBtn')), gVoid = rect(fq(gd, '.pane-void'));
+    check('narrow desktop 1024: all seven actions fit the editor\'s header', shown(fid(gd, 'settingsBtn')) && gHelp.right <= gVoid.right - 8, [gHelp.right, gVoid.right]);
+    gd.remove();
 
     // Phone: the Library fits a 375px screen and every action is reachable
     await seedLibrary();

@@ -11,10 +11,15 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 _Last updated: 2026-09-26, session 13 (script stats, P4-04; outline navigator, P4-03; focus mode, P2-07; offline, P4-02;
 persistent storage, P4-12; scene stats, P4-13 to P4-15;
-the caret kept clear of the keyboard, P2-16; colour hints in the editor, P2-08). Session 12 built IndexedDB storage, dropped legacy
+the caret kept clear of the keyboard, P2-16; colour hints in the editor, P2-08; settings, P2-15). Session 12 built IndexedDB storage, dropped legacy
 support, and built print / save as PDF._
 
 **What works**
+- **Settings** (P2-15, D-032; `src/app/settings.js`). The gear beside `?` (Settings in the phone menu) opens three
+  switches, all on by default: *Colours in the editor*, *Enter starts the next element*, *Capitals as you type*.
+  Changes apply at once and are remembered per browser (`plainchant_settings`). With the last two off, a line whose
+  element was chosen with Tab or the bar is still finished and capitalised. At 1024-1199px the "The Void" label steps
+  aside so the seven actions fit.
 - **Colour hints in the editor** (P2-08, D-031; `src/app/shade.js`, `Fountain.shade`). Scene headings warm, cues blue,
   dialogue a little brighter than action, parentheticals and notes muted, transitions violet, sections and synopses
   green, boneyard dim. Drawn on a copy of the text behind the textarea, whose own text is transparent: typing, undo,
@@ -126,6 +131,12 @@ support, and built print / save as PDF._
 - Scroll sync no longer divides by zero.
 
 **Verified**
+- **Settings (P2-15), session 13:** `npm test` 268 (3 new: Enter and capitals with the switches off);
+  `bash test/run-headless.sh` 256 unit + **538 e2e** (section 16l: defaults, colours off at once and remembered, not
+  coming back on typing or resize, a reload, back on and the key gone, Enter and capitals both ways, a chosen cue still
+  capitalised, Esc and focus, Help, the phone menu, the actions fitting at 1024px; the 700px tablet check caught the
+  gear crowding the switch, now fixed). Mutations: 11 of 12 fail a test; the twelfth showed a CSS tweak
+  (tighter buttons at 1024px) was not needed, and it was removed.
 - **Colour hints (P2-08), session 13:** `npm test` 265 (4 new `shade` tests); `bash test/run-headless.sh` 253 unit +
   **522 e2e** (section 16k: shaded and transparent, the layer's text and kinds, colours differ, notes / boneyard /
   escaping, the layer exactly on the editor's box, the caret line, only changed lines redrawn, scrolling, focus
@@ -377,7 +388,7 @@ support, and built print / save as PDF._
    awkward; P3-12, page view, is for later. The outline navigator, P4-03, is done too.) Persistent storage, P4-12, is done
    too.) **Ask the owner what comes next.** Candidates: P2-10 (tap a block in the phone
    preview to jump there; `jumpToLine` exists), P4-05 (version snapshots), P4-06 (themes, font size, an accessibility
-   pass), P2-15 (settings: now also a place for turning the colour hints off).
+   pass; Settings is where font size would go), P2-14 (suggest cues without Tab), P2-21 (autocomplete follow-ups).
 5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
 6. (P4-10 and P4-11 are done: D-018, D-019, D-020.)
 
@@ -386,7 +397,8 @@ support, and built print / save as PDF._
 - ~~What is the product called?~~ **Plainchant** (D-012). Repo and folder renamed. Still open for the owner:
   register a domain, do a proper trademark search, make a logo (roadmap Phase 6).
 - Is the tour the right length and tone (four steps), and is showing it once to existing users too?
-- Enter after an action line starts a new paragraph (Shift+Enter for a line break). Right default?
+- Enter after an action line starts a new paragraph (Shift+Enter for a line break). Right default? (It can now be
+  switched off in Settings, D-032.)
 - Cues need Tab or the Character button. Is that acceptable, or should "a short unpunctuated line after a blank
   line, then Enter" be treated as a cue automatically (P2-14)?
 - Autocomplete: is Tab-takes-the-first-suggestion right, and do you want the time of day (`- DAY`) suggested too (P2-21)?
@@ -426,6 +438,7 @@ in the Script stats window that jumps like the Outline. Then **P4-14 and P4-15**
 mix and the locations in the same window.
 Then **P2-16** (D-030): `keepCaretClear` in `layout.js`, focus mode's measuring cache moved there and made exact.
 Then **P2-08** (D-031): `Fountain.shade`, `src/app/shade.js`, the editor's line height as a length; Q-001 answered.
+Then **P2-15** (D-032): `src/app/settings.js`, options on `Editing.enter` / `autoCase`, `setShadeOn`, the gear.
 **Next session should start with:** "Next steps" above.
 
 ### Session 12: 2026-09-25: IndexedDB storage (P4-10)

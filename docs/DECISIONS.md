@@ -574,6 +574,26 @@ on-screen keyboard reliable; it cannot colour part of its text.
 check may bite: if they wrap a hair differently, the writer just sees the plain editor. Emphasis (`*italic*`) is not
 shown in the editor.
 
+## D-032 Settings: three switches, on by default, one key; a gear beside Help  (2026-09-26, status: accepted)
+**Context:** P2-15 (switch off Enter-after-action-makes-a-paragraph and auto-uppercase), plus a switch for the colour
+hints (D-031 shipped them always on). The action row was already full at 1024px (a seventh text button overflowed in
+session 12).
+**Decision:**
+1. **Three switches, all on by default:** *Colours in the editor*, *Enter starts the next element* (D-010's blank line
+   after action, scene headings and transitions), *Capitals as you type* (the guessed `int.` / `cut to:` uppercase).
+   Each applies at once. Focus mode and the paper keep their own controls; the window points to them.
+2. **The rules take the switches as options**, so they stay pure and tested: `Editing.enter(..., { paragraphs })`
+   returns null (the browser's own line break) when off, but a line whose element the writer chose with Tab or the
+   bar is still finished, followed by one line break. `Editing.autoCase(..., { guess })` stops guessing when off,
+   but a chosen element (a cue picked in the bar) is still uppercased: the writer asked for it.
+3. **Colours off** clears the layer and gives the textarea its own text back (`setShadeOn`); nothing redraws or
+   re-places it until it is switched on again, which redraws at once. Unlike the wrap check's switch-off, reversible.
+4. **Stored** in `plainchant_settings` as only what differs from the defaults (`{"colours":false}`); back to all
+   defaults, the key goes. Per browser, like the paper and focus mode.
+5. **Opened from a gear** beside `?` (the word "Settings" in the phone menu). To fit seven actions: at 1024-1199px the
+   editor pane's "The Void" label steps aside; at 700-799px the Write | Preview switch is 14rem.
+**Consequences:** One more localStorage key. D-031's "always on" no longer holds.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

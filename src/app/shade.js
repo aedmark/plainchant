@@ -46,7 +46,7 @@ function lineKey(line) {
 // Draws the text's colours, given the tokens render() has just parsed from it. Global on purpose: render() calls it,
 // and the e2e tests call it.
 function drawShade(tokens) {
-    if (shadeBroken) return;
+    if (shadeBroken || !settings.colours) return; // switched off in Settings (settings.js)
     try {
         const text = editor.value;
         shadeBase = Fountain.shade(text, text ? tokens : undefined);
@@ -88,7 +88,7 @@ function paintShade() {
 
 // Lay the layer exactly over the textarea's box, with its type and padding, scrolled as it is
 function placeShade() {
-    if (shadeBroken || editor.offsetParent === null) return;
+    if (shadeBroken || shadeText === null || editor.offsetParent === null) return; // nothing drawn: leave the editor's text alone
     copyEditorType(shadeLayer);
     // (the stylesheet adds room after the text, so the layer can always scroll as far as the textarea does)
     Object.assign(shadeLayer.style, { top: editor.offsetTop + 'px', left: editor.offsetLeft + 'px', height: editor.clientHeight + 'px' });
@@ -100,7 +100,7 @@ function placeShade() {
 // overflows, the textarea's scroll height is the text's height plus its padding (Firefox has left out the bottom
 // padding): anything else means the lines wrap differently.
 function checkShade() {
-    if (editor.offsetParent === null || editor.scrollHeight <= editor.clientHeight + 1) return;
+    if (shadeText === null || editor.offsetParent === null || editor.scrollHeight <= editor.clientHeight + 1) return;
     const cs = getComputedStyle(editor);
     const padTop = parseFloat(cs.paddingTop), padBottom = parseFloat(cs.paddingBottom);
     const layer = getComputedStyle(shadeLayer);
@@ -110,11 +110,23 @@ function checkShade() {
     if (Math.abs(rest - padBottom) > 2 && Math.abs(rest) > 2) stopShade('the colour hints wrap differently from the editor', rest - padBottom);
 }
 
+// Settings: on draws the hints afresh; off clears them and gives the textarea its own text back. Unlike stopShade,
+// this can be undone. Global on purpose: settings.js calls it.
+function setShadeOn(on) {
+    if (on) { drawShade(); return; }
+    document.body.classList.remove('shaded');
+    shadeLayer.textContent = '';
+    shadeBase = [];
+    shadeKeys = [];
+    shadeText = null;
+}
+
 function stopShade(why, detail) {
     shadeBroken = true;
     document.body.classList.remove('shaded');
     shadeLayer.textContent = '';
     shadeKeys = [];
+    shadeText = null;
     console.warn('Plainchant: ' + why + ', so they are off until the page is reloaded.', detail);
 }
 

@@ -166,7 +166,8 @@ editor.addEventListener('beforeinput', (e) => {
     if (applyingEdit || e.isComposing) return;
     if (e.inputType !== 'insertLineBreak' && e.inputType !== 'insertParagraph') return;
     if (shiftDown) return;
-    const edit = Editing.enter(editor.value, editor.selectionStart, editor.selectionEnd, elementMode);
+    const edit = Editing.enter(editor.value, editor.selectionStart, editor.selectionEnd, elementMode,
+        { paragraphs: settings.paragraphs }); // the writer's setting (settings.js)
     if (!edit) return;
     e.preventDefault();
     applyEdit(edit);
@@ -177,7 +178,7 @@ editor.addEventListener('beforeinput', (e) => {
 // Rendering is handled by src/fountain.js (see D-003); render() is defined above.
 editor.addEventListener('input', (e) => {
     if (!applyingEdit && !e.isComposing && AUTO_CASE_INPUTS.indexOf(e.inputType) !== -1) {
-        const edit = Editing.autoCase(editor.value, editor.selectionStart, elementMode);
+        const edit = Editing.autoCase(editor.value, editor.selectionStart, elementMode, { guess: settings.capitals });
         if (edit) applyEdit(edit);
     }
     render();
