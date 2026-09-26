@@ -136,10 +136,11 @@ _Last updated: 2026-09-25, session 12 (IndexedDB storage; no legacy support; pri
   and phone in headless Edge.
 
 **Not verified / not done**
-- **Printing has only run in headless Chromium.** Not seen: the print window in Firefox and Safari (their own headers
-  and footers, `@page` size support), the iPad (Share → Print → PDF), a real printer, and a real feature-length
-  script compared with another program's page count. P3-11 (direct PDF download) is the fallback if print windows
-  prove awkward; P3-12 (page view in the preview) is a later feature, at the owner's request.
+- **Printing has only run in headless Chromium, and that is deliberate.** The owner decided (2026-09-26) to skip
+  browser and device checks and assume print works until a bug report says otherwise. Not seen: Firefox's and
+  Safari's print windows (their headers and footers, `@page` size support), the iPad (Share → Print → PDF), a real
+  printer, and a feature-length script against another program's page count. If a report comes in, start there;
+  P3-11 (direct PDF download) is the fix if print windows prove awkward. P3-12 (page view) is a later feature.
 - **IndexedDB storage (P4-10) is confirmed by the owner (2026-09-25)** on their Arch Linux machine: the tests pass
   there (`npm run test:browser`), and the app works in their desktop browser, **Firefox and Safari** (a `plainchant`
   database appears; the example script saves and loads). Still unobserved: a real tab closed mid-write, and the
@@ -271,10 +272,9 @@ _Last updated: 2026-09-25, session 12 (IndexedDB storage; no legacy support; pri
    first letter, chips replacing the element buttons while typing a name. Then P2-21 (time of day after `INT. PLACE - `,
    names on an empty cue line, screen-reader announcements) only if wanted. The agreed order still stands:
    autocomplete, then PAUSE.
-4. **Try Print / save as PDF in Firefox, Safari and on the iPad** (Export → Print or save as PDF, and Ctrl/Cmd+P).
-   Check the browser adds no header or footer, the paper size is right, and a real script's page count looks sane.
-   If a print window is awkward (most likely the iPad), P3-11 (direct `.pdf` download) is the next step. P3-12 (page
-   view in the preview) is wanted later, not now.
+4. (Print / save as PDF is done: P3-03 to P3-06. No browser or device checks are planned: the owner will report
+   bugs. P3-11, direct `.pdf` download, is the answer if print windows turn out awkward; P3-12, page view, is for
+   later.) **Ask the owner what comes next.**
 5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
 6. (P4-10 and P4-11 are done: D-018, D-019, D-020.)
 
@@ -327,6 +327,7 @@ answers; the page view (P3-12) deferred. Built: **P3-04** `src/paginate.js` + `F
 **P3-03** the print path with **P3-05** (title page) and **P3-06** (dual dialogue). D-022 records the two departures:
 Print lives in the Export dialog (a seventh button broke the six-action bar at 1024px and on tablets), and pages break
 at any sentence end with the rest re-wrapped (the first real PDF showed six empty lines at a page foot otherwise).
+The owner then chose to skip browser and device checks of printing until a bug report.
 **Next session should start with:** "Next steps" above.
 
 ### Session 11: 2026-09-21: IndexedDB migration spec (P4-10)
