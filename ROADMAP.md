@@ -158,9 +158,9 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
   work, not again after a no unless installed; the Library says where things stand)
 - [x] P4-13 Stats, per scene: each scene's length in pages (in eighths, the production convention), its speaking
   characters, and a list to jump from. Builds on `src/stats.js` and the print layout (D-023); pairs with P4-03 (done, D-028: in the Script stats window)
-- [ ] P4-14 Stats, scene mix: INT / EXT and DAY / NIGHT counts (and other times of day) read from the scene headings
-- [ ] P4-15 Stats, locations: each distinct location (the heading without INT./EXT. and the time of day), with how
-  many scenes and pages it takes
+- [x] P4-14 Stats, scene mix: INT / EXT and DAY / NIGHT counts (and other times of day) read from the scene headings (done, D-029)
+- [x] P4-15 Stats, locations: each distinct location (the heading without INT./EXT. and the time of day), with how
+  many scenes and pages it takes (done, D-029)
 
 ## Phase 5: Sync and share (open questions)
 

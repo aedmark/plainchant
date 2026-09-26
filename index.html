@@ -154,7 +154,7 @@
                     <li><strong>Copy</strong> puts the whole script on the clipboard.</li>
                     <li><strong>No connection needed.</strong> Plainchant works offline. Opened from a web address, your browser can also install it as an app: look for <strong>Install</strong> or <strong>Add to Home Screen</strong>.</li>
                     <li><strong>Outline</strong> (above the formatted script) lists your sections (<code class="inline"># Act One</code>), scenes and synopses (<code class="inline">= ...</code>), with the page each scene starts on. Choose one to jump there; type to find one.</li>
-                    <li>The page count above the formatted script (<strong>3 pages &middot; ~3 min</strong>) opens <strong>Script stats</strong>: pages, screen time (about a minute a page), scenes, words, how much each character speaks, and every scene with its page, its length in eighths of a page and who speaks in it (choose one to go there).</li>
+                    <li>The page count above the formatted script (<strong>3 pages &middot; ~3 min</strong>) opens <strong>Script stats</strong>: pages, screen time (about a minute a page), scenes, words, how much each character speaks, the mix of interior and exterior, day and night scenes, each location, and every scene with its page, its length in eighths of a page and who speaks in it (choose one to go there).</li>
                 </ul>
                 <div class="callout"><p><strong>Scripts live only in this browser, on this device.</strong> Nothing
                     saves to your filesystem without your consent, and your writing is never sent to a server. Clearing
@@ -337,7 +337,8 @@ Author: Jane Doe</code></td>
     </div>
 </div>
 
-<!-- Script stats (P4-04, P4-13): pages, screen time, scenes, words, who speaks how much, and every scene -->
+<!-- Script stats (P4-04, P4-13 to P4-15): pages, screen time, scenes, words, who speaks how much, the scene mix,
+     the locations, and every scene -->
 <div id="stats-modal" class="modal-overlay">
     <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="stats-title">
         <div class="modal-header">
@@ -356,6 +357,14 @@ Author: Jane Doe</code></td>
             <table class="stats-table">
                 <thead><tr><th scope="col">Character</th><th scope="col">Speeches</th><th scope="col">Words</th><th scope="col">Share</th></tr></thead>
                 <tbody id="statsCharacters"></tbody>
+            </table>
+            <h3 class="stats-heading">Scene mix</h3>
+            <p class="stats-mix" id="statsSettings"></p>
+            <p class="stats-mix" id="statsTimes"></p>
+            <h3 class="stats-heading">Locations</h3>
+            <table class="stats-table">
+                <thead><tr><th scope="col">Location</th><th scope="col">Scenes</th><th scope="col">Length</th></tr></thead>
+                <tbody id="statsLocations"></tbody>
             </table>
             <h3 class="stats-heading">Scenes</h3>
             <table class="stats-table stats-scenes">

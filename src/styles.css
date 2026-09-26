@@ -842,7 +842,9 @@ code.inline, .help-table code.inline {
 .stats-table th:first-child, .stats-table td:first-child { text-align: left; overflow-wrap: anywhere; }
 .stats-table thead th { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-void-muted); font-weight: 600; }
 .stats-table tbody th { font-weight: 400; color: #f8fafc; }
-.stats-table + .stats-heading { margin-top: 1rem; }
+.stats-table + .stats-heading, .stats-mix + .stats-heading { margin-top: 1rem; }
+.stats-mix { margin: 0 0 0.25rem; font-size: 0.8125rem; color: #f8fafc; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.stats-mix:empty { display: none; }
 .stats-jump {
     display: block;
     width: 100%;

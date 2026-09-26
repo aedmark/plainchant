@@ -512,6 +512,25 @@ eighths of a page.
    navigator, this is the breakdown.
 **Consequences:** `Stats.of` returns `sceneList`; `Stats.eighths(n)` formats. No extra pagination pass.
 
+## D-029 Reading a scene heading: setting, location, time of day  (2026-09-26, status: accepted)
+**Context:** P4-14 (INT / EXT and day / night counts) and P4-15 (locations) both need a heading split into its parts,
+and writers' headings vary: `INT./EXT.`, `I/E`, no dot, `--` or em dashes, `HOUSE - KITCHEN - DAY`, `NIGHT - 1985`.
+**Decision:** `Stats.heading(text)`:
+1. **Setting** from the same prefixes the parser accepts: INT, EXT, both (`INT./EXT.`, `EXT./INT.`, `I/E`), and
+   **EST. counts as exterior**. A forced heading (`.MONTAGE`) is "other".
+2. **Time of day** is the last " - " part (any dash, spaces around it) that is a known time word: DAY, NIGHT, MORNING,
+   DUSK, DAWN, ..., with EARLY / LATE, and the continuity words LATER, MOMENTS LATER, CONTINUOUS, SAME TIME. A
+   bracketed note after it (`NIGHT (FLASHBACK)`) is ignored. A known list, not "whatever comes last", so
+   `HOUSE - KITCHEN` keeps its kitchen. Anything after the time (`- 1985`) is dropped.
+3. **Location** is everything before the time (or the whole rest, if there is none). One location for a place inside
+   and out (`INT. HOUSE` and `EXT. HOUSE` are both HOUSE), matched exactly after capitals. A forced heading counts
+   as a location only if it has a time of day (`.SNIPER'S NEST - NIGHT` yes, `.MONTAGE` no); a heading that is only a
+   time (`.LATER`) has none.
+4. **Shown** in the Script stats window: "INT. 12 · EXT. 5" (both and other only when there are some), the times most
+   used first with "no time of day" last, and a Locations table sorted by length (the sum of its scenes' eighths).
+**Consequences:** Unusual time words (`MAGIC HOUR` is in, `LATER THAT NIGHT` is not) fall into the location. Easy to
+extend: it is one regular expression in `src/stats.js`.
+
 ## Open questions
 
 - Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

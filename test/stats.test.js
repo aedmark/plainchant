@@ -1,4 +1,4 @@
-// Script stats suite (src/stats.js, P4-04, P4-13). Expects globals: test, assert, Fountain, Paginate, Library, Stats, Outline.
+// Script stats suite (src/stats.js, P4-04, P4-13 to P4-15). Expects globals: test, assert, Fountain, Paginate, Library, Stats, Outline.
 
 const stFill = (n) => Array.from({ length: n }, (_, i) => 'Filler ' + i + '.').join('\n');
 const stNames = (s) => s.characters.map((c) => c.name);
@@ -120,6 +120,53 @@ test('stats: a scene\'s characters are the ones who speak in it, in the order th
     ].join('\n');
     const list = Stats.of(text).sceneList;
     assert.deepEqual(list.map((sc) => sc.characters), [['McCLANE', 'MARA'], ['BRICK', 'STEEL'], []]);
+});
+
+test('stats: a scene heading reads as setting, location and time of day', () => {
+    const h = (text) => { const r = Stats.heading(text); return [r.setting, r.location, r.time]; };
+    assert.deepEqual(h('INT. COFFEE SHOP - DAY'), ['int', 'COFFEE SHOP', 'DAY']);
+    assert.deepEqual(h('ext. rooftop - night'), ['ext', 'ROOFTOP', 'NIGHT'], 'read in capitals, as it prints');
+    assert.deepEqual(h('INT HALL - CONTINUOUS'), ['int', 'HALL', 'CONTINUOUS'], 'the dot is optional, as in the parser');
+    assert.deepEqual(h('EST. CITY - DAWN'), ['ext', 'CITY', 'DAWN'], 'an establishing shot is exterior');
+    assert.deepEqual(h('INT./EXT. CAR - MOVING - NIGHT'), ['both', 'CAR - MOVING', 'NIGHT'], 'a part that is no time stays in the location');
+    assert.deepEqual(h('EXT/INT BARN - DAY'), ['both', 'BARN', 'DAY']);
+    assert.deepEqual(h('I/E VAN - DUSK'), ['both', 'VAN', 'DUSK']);
+    assert.deepEqual(h('INT. HOUSE - KITCHEN'), ['int', 'HOUSE - KITCHEN', null], 'no time of day given');
+    assert.deepEqual(h('INT. HOUSE - NIGHT - 1985'), ['int', 'HOUSE', 'NIGHT'], 'whatever follows the time is not the place');
+    assert.deepEqual(h('INT. HOUSE - NIGHT (FLASHBACK)'), ['int', 'HOUSE', 'NIGHT']);
+    assert.deepEqual(h('INT. ROOM — MOMENTS LATER'), ['int', 'ROOM', 'MOMENTS LATER'], 'dashes of any kind');
+    assert.deepEqual(h('INT. HALL -- LATE NIGHT'), ['int', 'HALL', 'LATE NIGHT']);
+    assert.deepEqual(h('EXT. X-RAY LAB - DAY'), ['ext', 'X-RAY LAB', 'DAY'], 'a hyphen inside a word is not a break');
+    assert.deepEqual(h('INT. *HOUSE* - DAY [[check]]'), ['int', 'HOUSE', 'DAY'], 'notes and emphasis marks are not read');
+    assert.deepEqual(h('INT. - DAY'), ['int', '', 'DAY']);
+    assert.deepEqual(h('MONTAGE'), ['other', 'MONTAGE', null], 'a forced heading');
+    assert.deepEqual(h('DAYBREAK INN - NIGHT'), ['other', 'DAYBREAK INN', 'NIGHT'], 'a time must be the whole part');
+    assert.deepEqual(h('LATER'), ['other', '', 'LATER'], 'a heading that is only a time has no place');
+    assert.deepEqual(h('EXT. NIGHT'), ['ext', '', 'NIGHT']);
+});
+
+test('stats: the scene mix counts INT. / EXT. / both / other, and each time of day, most used first', () => {
+    const text = ['INT. A - DAY', 'EXT. B - NIGHT', 'EXT. C - NIGHT', 'I/E D - DAY', '.MONTAGE', 'INT. E - DAY', 'INT. F', 'EXT. G - DUSK']
+        .map((hd) => hd + '\n\nsomething happens.').join('\n\n');
+    const s = Stats.of(text);
+    assert.deepEqual(s.settings, { int: 3, ext: 3, both: 1, other: 1 });
+    assert.deepEqual(s.times, [{ name: 'DAY', scenes: 3 }, { name: 'NIGHT', scenes: 2 }, { name: 'DUSK', scenes: 1 }]);
+    assert.equal(s.untimed, 2);
+    assert.deepEqual([s.sceneList[1].setting, s.sceneList[1].location, s.sceneList[1].time], ['ext', 'B', 'NIGHT']);
+    const none = Stats.of('Just action.');
+    assert.deepEqual([none.settings, none.times, none.untimed, none.locations], [{ int: 0, ext: 0, both: 0, other: 0 }, [], 0, []]);
+});
+
+test('stats: locations gather every scene set there, inside or out, with their length; the biggest first', () => {
+    const text = 'INT. HOUSE - DAY\n\n' + stFill(20) + '\n\nEXT. PARK - NIGHT\n\nwind.\n\nEXT. HOUSE - NIGHT\n\n' + stFill(10) +
+        '\n\nint. house - later\n\nquiet.\n\n.MONTAGE\n\nthings.\n\n.ALLEY - NIGHT\n\n' + stFill(18) + '\n\nINT. PARK\n\nbench.\n\n.LATER\n\nstill.';
+    const s = Stats.of(text);
+    const eighthsIn = (name) => s.sceneList.filter((sc) => sc.location === name).reduce((n, sc) => n + sc.eighths, 0);
+    assert.deepEqual(s.locations.map((l) => [l.name, l.scenes]), [['HOUSE', 3], ['ALLEY', 1], ['PARK', 2]],
+        'INT. and EXT. of one place are one location; by length, not by scenes; a forced heading counts only if it gives a time of day');
+    assert.deepEqual(s.locations.map((l) => l.eighths), [eighthsIn('HOUSE'), eighthsIn('ALLEY'), eighthsIn('PARK')]);
+    assert.ok(eighthsIn('ALLEY') > eighthsIn('PARK'), eighthsIn('ALLEY') + ' vs ' + eighthsIn('PARK'));
+    assert.ok(s.locations[0].eighths > 3, s.locations[0].eighths);
 });
 
 test('stats: speed, so the live page count can follow typing on a feature-length script', () => {

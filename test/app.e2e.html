@@ -1323,14 +1323,22 @@ setTimeout(() => {
     check('stats scenes: each scene with who speaks in it, its page and its length in eighths',
       sceneRows().join(' / ') === 'INT. A - DAYMARA, DEV, <b>Bold</b>|1|' + sw2.Stats.eighths(sc0.eighths) + ' / EXT. B - NIGHT|2|1/8' &&
       fq(sf2, '#statsScenes .stats-who').textContent === 'MARA, DEV, <b>Bold</b>' && !fq(sf2, '#stats-modal b'), [sceneRows(), sc0.eighths]);
+    const locRows = () => Array.from(fq(sf2, '#statsLocations').querySelectorAll('tr')).map(r => Array.from(r.children).map(c => c.textContent).join('|'));
+    check('stats mix (P4-14): INT. and EXT., and the times of day', tile('statsSettings') === 'INT. 1 · EXT. 1' && tile('statsTimes') === 'DAY 1 · NIGHT 1',
+      [tile('statsSettings'), tile('statsTimes')]);
+    check('stats locations (P4-15): each place, its scenes and its length, the biggest first',
+      locRows().join(' / ') === 'A|1|' + sw2.Stats.eighths(sc0.eighths) + ' / B|1|1/8', locRows());
     fq(sf2, '#statsScenes tr:nth-child(2) .stats-jump').click();
     const bAt = STATS_SCRIPT.indexOf('EXT. B - NIGHT');
     check('stats scenes: choosing one closes the window and puts the caret at its heading',
       active(sf2).length === 0 && fid(sf2, 'editor').selectionStart === bAt && fid(sf2, 'editor').selectionEnd === bAt && focusId(sf2) === 'editor',
       [fid(sf2, 'editor').selectionStart, bAt, focusId(sf2)]);
-    setText(sf2, 'INT. HOUSE - DAY #4#\n\nQuiet.');
+    setText(sf2, 'INT. HOUSE - DAY #4#\n\nQuiet.\n\n.<I>DEN</I> - DUSK\n\nWind.\n\n.MONTAGE\n\nThings.\n\nINT. HOUSE\n\nLater.');
     fid(sf2, 'statsBtn').click();
-    check('stats scenes: a scene number shows before its heading', fq(sf2, '#statsScenes .stats-num').textContent === '4' && sceneRows().join() === '4INT. HOUSE - DAY|1|1/8', sceneRows());
+    check('stats scenes: a scene number shows before its heading', fq(sf2, '#statsScenes .stats-num').textContent === '4' && sceneRows()[0] === '4INT. HOUSE - DAY|1|1/8', sceneRows());
+    check('stats mix: both and other only when there are some; scenes with no time of day are counted',
+      tile('statsSettings') === 'INT. 2 · EXT. 0 · Other 2' && tile('statsTimes') === 'DAY 1 · DUSK 1 · no time of day 2', [tile('statsSettings'), tile('statsTimes')]);
+    check('stats locations: headings are only ever text; a montage is no place', locRows().join(' / ') === 'HOUSE|2|2/8 / <I>DEN</I>|1|1/8' && !fq(sf2, '#stats-modal i'), locRows());
     fq(sf2, '#stats-modal .modal-close').click();
     setText(sf2, STATS_SCRIPT);
     sw2.localStorage.setItem('plainchant_paper', 'a4');
@@ -1342,7 +1350,8 @@ setTimeout(() => {
     sw2.updateStatsBadge();
     fid(sf2, 'statsBtn').click();
     check('stats: an empty script says so, and nobody speaks, and there are no scenes', fid(sf2, 'statsBtn').textContent === 'No pages yet' &&
-      /Nobody speaks yet/.test(fid(sf2, 'statsCharacters').textContent) && fid(sf2, 'statsScenes').textContent === 'No scenes yet.');
+      /Nobody speaks yet/.test(fid(sf2, 'statsCharacters').textContent) && fid(sf2, 'statsScenes').textContent === 'No scenes yet.' &&
+      tile('statsSettings') === 'No scenes yet.' && !shown(fid(sf2, 'statsTimes')) && tile('statsLocations') === 'No locations yet.');
     fq(sf2, '#stats-modal .modal-close').click();
     check('help: script stats are explained', /Script stats/.test(fid(sf2, 'help-modal').textContent));
     sf2.remove();

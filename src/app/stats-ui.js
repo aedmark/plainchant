@@ -1,5 +1,5 @@
 /*
- * Plainchant app script: stats-ui: the live page count in the preview's header, and the Script stats window (P4-04, P4-13)
+ * Plainchant app script: stats-ui: the live page count in the preview's header, and the Script stats window (P4-04, P4-13 to P4-15)
  *
  * One of the classic scripts loaded by index.html, in order (see CLAUDE.md, "App scripts"). They share the
  * page's global scope, so top-level functions and consts here are visible to the files after it, and anything
@@ -58,6 +58,8 @@ function openStats() {
         row.appendChild(statsCell('td', c.share + '%'));
         body.appendChild(row);
     });
+    drawSceneMix(s);
+    drawLocations(s.locations);
     drawSceneList(s.sceneList);
     updateStatsBadge();
     openModal(statsModal);
@@ -69,6 +71,32 @@ function emptyRow(body, text, span) {
     cell.colSpan = span;
     row.appendChild(cell);
     body.appendChild(row);
+}
+
+// INT. / EXT. and the times of day (P4-14), as one line each: "INT. 12 · EXT. 5" and "DAY 10 · NIGHT 6"
+function drawSceneMix(s) {
+    const n = s.settings;
+    const parts = [['INT.', n.int], ['EXT.', n.ext], ['INT./EXT.', n.both], ['Other', n.other]]
+        .filter(([, count], i) => count || i < 2).map(([label, count]) => label + ' ' + count);
+    const scenes = n.int + n.ext + n.both + n.other;
+    document.getElementById('statsSettings').textContent = scenes ? parts.join(' · ') : 'No scenes yet.';
+    const times = s.times.map((t) => t.name + ' ' + t.scenes);
+    if (s.untimed && scenes) times.push('no time of day ' + s.untimed);
+    document.getElementById('statsTimes').textContent = times.join(' · '); // the writer's words: text only
+}
+
+// Each place, with how many scenes and how much of the script are set there (P4-15)
+function drawLocations(list) {
+    const body = document.getElementById('statsLocations');
+    body.textContent = '';
+    if (!list.length) emptyRow(body, 'No locations yet.', 3);
+    list.forEach((place) => {
+        const row = document.createElement('tr');
+        row.appendChild(statsCell('th', place.name)).scope = 'row';
+        row.appendChild(statsCell('td', place.scenes));
+        row.appendChild(statsCell('td', Stats.eighths(place.eighths)));
+        body.appendChild(row);
+    });
 }
 
 // Every scene, with its page, its length and who speaks in it (P4-13). Choosing one goes there, as the Outline does.

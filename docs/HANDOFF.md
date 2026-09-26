@@ -10,7 +10,7 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 ## Current state
 
 _Last updated: 2026-09-26, session 13 (script stats, P4-04; outline navigator, P4-03; focus mode, P2-07; offline, P4-02;
-persistent storage, P4-12; scene stats, P4-13). Session 12 built IndexedDB storage, dropped legacy
+persistent storage, P4-12; scene stats, P4-13 to P4-15). Session 12 built IndexedDB storage, dropped legacy
 support, and built print / save as PDF._
 
 **What works**
@@ -39,6 +39,8 @@ support, and built print / save as PDF._
   dialogue, with every cue extension folded into the one name. The "Courier Prime" badge it replaced is gone.
   **Scenes** (P4-13, D-028): the window also lists every scene with the page it starts on, its length in eighths of a
   printed page (heading to heading, at least 1/8) and who speaks in it; choosing one jumps there, as the Outline does.
+  Above it, the **Scene mix** (INT. / EXT. / both / other; each time of day) and **Locations** (each place with its
+  scenes and total length, INT. and EXT. of one place together), read from the headings (P4-14, P4-15, D-029).
 - **Print / save as PDF** (P3-03 to P3-06, D-021, D-022; `src/paginate.js` + `src/app/print.js`). **Export** opens a
   dialog: *Download .fountain*, or *Print or save as PDF* with US Letter / A4 (remembered in `plainchant_paper`) and
   the page count. The pages are laid out on the Courier grid (60 columns; 54 rows Letter, 58 A4; standard margins),
@@ -114,6 +116,10 @@ support, and built print / save as PDF._
 - Scroll sync no longer divides by zero.
 
 **Verified**
+- **Scene mix and locations (P4-14, P4-15), session 13:** `npm test` 261 (3 new: 21 headings read, the mix, the
+  locations); `bash test/run-headless.sh` 249 unit + **497 e2e** (the two lines, the table, "other" and untimed
+  scenes, escaping, the empty case). Mutations: 9 of 9 fail a test after two fixes (a guard that turned out wrong,
+  a fixture that could not tell the sort orders apart).
 - **Scene stats (P4-13), session 13:** `npm test` 258 (5 new stats tests: eighths, lengths on both papers, across a
   page break and adding up to the script, the same pages as the Outline, headings as printed, speakers per scene);
   `bash test/run-headless.sh` 246 unit + **493 e2e** (the table's rows, escaping, the jump, a scene number, the empty
@@ -343,9 +349,7 @@ support, and built print / save as PDF._
 4. (Print / save as PDF is done: P3-03 to P3-06, and script stats: P4-04. No browser or device checks are planned
    for either: the owner will report bugs. P3-11, direct `.pdf` download, is the answer if print windows turn out
    awkward; P3-12, page view, is for later. The outline navigator, P4-03, is done too.) Persistent storage, P4-12, is done
-   too.) **Ask the owner what comes next.** Candidates: the stats
-   follow-ups P4-14 and P4-15 (scene mix, locations: both read the scene headings, which `sceneList` in `src/stats.js`
-   already walks), P2-16 (the caret above the on-screen
+   too.) **Ask the owner what comes next.** Candidates: P2-16 (the caret above the on-screen
    keyboard; focus mode's centring may already cover much of it on tablets), P2-08 (editor colours by element).
 5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
 6. (P4-10 and P4-11 are done: D-018, D-019, D-020.)
@@ -391,7 +395,8 @@ rendered from `icons/icon.svg` with Playwright, `src/app/offline.js`, structure 
 Then **P4-12 persistent storage** (D-027): `src/app/safekeeping.js`, the line at the foot of the Library, a Help
 entry, one more localStorage key (`plainchant_keep_asked`).
 Then **P4-13 scene stats** (D-028): `sceneList` and `Stats.eighths` in `src/stats.js` (tests first), a Scenes table
-in the Script stats window that jumps like the Outline.
+in the Script stats window that jumps like the Outline. Then **P4-14 and P4-15** (D-029): `Stats.heading`, the scene
+mix and the locations in the same window.
 **Next session should start with:** "Next steps" above.
 
 ### Session 12: 2026-09-25: IndexedDB storage (P4-10)
