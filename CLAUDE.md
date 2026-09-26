@@ -40,7 +40,7 @@ Sessions are short-lived and context resets between them, so the repo carries th
 | `src/editing.js` | Typing helpers (Tab, smart Enter, auto-uppercase, guessing a name on Enter): text + caret in, edit out. Pure, UMD (D-010, D-036) |
 | `src/library.js` | Library data rules (search, soft delete, restore, purge, duplicate, rename): scripts object in, new object out. Pure, UMD (D-013) |
 | `src/importing.js` | Import rules: which files to accept, decoding (UTF-8/16, Windows-1252), line endings. Pure, UMD (D-016) |
-| `src/suggest.js` | Autocomplete rules: names and locations from the script, what to offer for the word being typed. Pure, UMD, uses `Fountain` and `Editing` (D-017) |
+| `src/suggest.js` | Autocomplete rules: names, locations and times of day from the script, what to offer for the word being typed (and names on an empty cue line). Pure, UMD, uses `Fountain` and `Editing` (D-017, D-037) |
 | `src/paginate.js` | Print pagination: tokens in, pages of positioned lines out, on the Courier grid (60 columns, 54 rows Letter / 58 A4) with the page-break rules. Pure, UMD, uses `Fountain` (D-021, docs/SPEC-PRINT.md) |
 | `src/stats.js` | Script stats: pages (as printed), screen time, scenes, words, per-character speeches and words, per scene its page, length in eighths and speakers, the INT / EXT and time-of-day mix, and the locations (`Stats.heading`). Pure, UMD, uses `Fountain` and `Paginate` (D-023, D-028, D-029) |
 | `src/outline.js` | The outline: sections, scenes (with the page each starts on) and synopses, and which one a line is in. Pure, UMD, uses `Fountain` and `Paginate` (D-024) |

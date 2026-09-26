@@ -2198,6 +2198,52 @@ setTimeout(() => {
     cuF.remove();
     W().localStorage.removeItem('plainchant_settings');
 
+    // 16q. Autocomplete follow-ups (P2-21): times of day after a dash, names on an empty cue line, and what a screen
+    // reader hears
+    const acF = await openFrame(1200, 700);
+    const acW = acF.contentWindow, acE = fid(acF, 'editor');
+    const acType = (before, text) => {
+      setText(acF, before);
+      acE.focus();
+      acE.setSelectionRange(acE.value.length, acE.value.length);
+      if (text) acF.contentDocument.execCommand('insertText', false, text);
+      acW.syncElementState();
+    };
+    const acTab = () => acE.dispatchEvent(new acW.KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
+    const acChips = () => Array.from(acF.contentDocument.querySelectorAll('.suggest-chip')).filter(c => shown(c)).map(c => c.textContent);
+    const acSaid = () => fid(acF, 'suggestSay').textContent;
+    const AC_SCRIPT = 'INT. KITCHEN - NIGHT\n\nMARA\nHi.\n\nDEV\nHey.\n\nMARA\nAgain.\n\n';
+    acType(AC_SCRIPT, 'INT. HALL - ');
+    check('times of day: after a location and a dash, the script\'s own times, then DAY', acChips().join() === 'NIGHT,DAY', acChips());
+    check('times of day: a screen reader hears them, and which one Tab takes', acSaid() === 'Times of day: NIGHT, DAY. Tab takes NIGHT.', acSaid());
+    acTab();
+    check('times of day: Tab takes the first', acE.value.split('\n').pop() === 'INT. HALL - NIGHT', acE.value.split('\n').pop());
+    acW.syncElementState();
+    check('times of day: then the acChips go, and so does what is acSaid', acChips().length === 0 && acSaid() === '', [acChips(), acSaid()]);
+    acType(AC_SCRIPT, 'INT. HALL - D');
+    check('times of day: narrowed by what is typed', acChips().join() === 'DAY', acChips());
+
+    // Names on an empty line with Character chosen: offered, but Tab still moves on to the next element
+    acType(AC_SCRIPT, '');
+    acTab(); // Action -> Character, on the blank line
+    await sleep(50);
+    acW.syncElementState();
+    check('empty cue: with Character chosen, the most used names are offered, none marked for Tab',
+      acW.eval('elementMode') === 'character' && acChips().join() === 'MARA,DEV' && fq(acF, '.suggestions').classList.contains('no-tab'), [acW.eval('elementMode'), acChips()]);
+    check('empty cue: a screen reader hears the names, and nothing about Tab', acSaid() === 'Names: MARA, DEV.', acSaid());
+    acTab();
+    await sleep(50);
+    check('empty cue: Tab still moves on to the next element (Scene), no name is typed', acW.eval('elementMode') === 'scene' && !/MARA/.test(acE.value.split('\n').pop()),
+      [acW.eval('elementMode'), acE.value.split('\n').pop()]);
+    acType(AC_SCRIPT, '');
+    fq(acF, '.element-bar [data-el="character"]').click();
+    acW.syncElementState();
+    Array.from(acF.contentDocument.querySelectorAll('.suggest-chip')).find(c => c.textContent === 'DEV').click();
+    check('empty cue: a tap on a name types it', acE.value === AC_SCRIPT + 'DEV', acE.value.slice(AC_SCRIPT.length));
+    check('help: the new suggestions are explained', /the times of day you use appear/.test(fid(acF, 'help-modal').textContent) &&
+      /names you use most appear too/.test(fid(acF, 'help-modal').textContent));
+    acF.remove();
+
     // Phone: the Library fits a 375px screen and every action is reachable
     await seedLibrary();
     await reloadFrame(m);

@@ -14,10 +14,13 @@ persistent storage, P4-12; scene stats, P4-13 to P4-15;
 the caret kept clear of the keyboard, P2-16; colour hints in the editor, P2-08; settings, P2-15; tapping the preview, P2-10;
 versions, P4-05;
 themes, text size and an accessibility pass, P4-06;
-guessing character names, P2-14). Session 12 built IndexedDB storage, dropped legacy
+guessing character names, P2-14; autocomplete follow-ups, P2-21). Session 12 built IndexedDB storage, dropped legacy
 support, and built print / save as PDF._
 
 **What works**
+- **Autocomplete follow-ups** (P2-21, D-037). After `INT. PLACE - ` the chips offer the script's times of day, then DAY
+  and NIGHT (Tab takes the first). With Character chosen on an empty line, the most used names show as chips to tap
+  (Tab still cycles the element there). A hidden live region tells a screen reader what is offered.
 - **Themes, text size, accessibility** (P4-06, D-035). Settings has Theme (Dark, the default; Light; Match the system)
   and Text size in the editor (four steps; never under 16px on a phone). Every colour is a token with a light value;
   the preview stays paper. An accessibility sweep runs with the e2e tests over every window in both themes, desktop
@@ -151,6 +154,11 @@ support, and built print / save as PDF._
 - Scroll sync no longer divides by zero.
 
 **Verified**
+- **Autocomplete follow-ups (P2-21), session 13:** `npm test` 290 (4 new in `test/suggest.test.js`, one changed:
+  "- " after a location now offers times); `bash test/run-headless.sh` 278 unit + **597 e2e** (section 16q: times
+  through the real Tab, narrowed, cleared; names on an empty cue line, not taken by Tab, tapped; what a screen reader
+  is told; Help). Mutations: 9 of 10 fail a test; the tenth showed a redundant step (the parser already strips a
+  scene number), since removed.
 - **Guessing names (P2-14), session 13:** `npm test` 286 (7 new in `test/editing.test.js`: known names in any case,
   new capitalised names, 25 lines that must not be names, the Enter rule both ways); `bash test/run-headless.sh` 274
   unit + **587 e2e** (section 16p: through the real Enter path, the bar showing Dialogue after, one-step undo, a
@@ -435,7 +443,7 @@ support, and built print / save as PDF._
 4. (Print / save as PDF is done: P3-03 to P3-06, and script stats: P4-04. No browser or device checks are planned
    for either: the owner will report bugs. P3-11, direct `.pdf` download, is the answer if print windows turn out
    awkward; P3-12, page view, is for later. The outline navigator, P4-03, is done too.) Persistent storage, P4-12, is done
-   too.) **Ask the owner what comes next.** Candidates: P2-21 (autocomplete follow-ups), P4-01
+   too.) **Ask the owner what comes next.** Candidates: P4-01
    (incremental render, for very long scripts), P4-16 (compare versions), P2-22 (desktop click-to-jump), P3-11 (a real
    .pdf download), P3-12 (page view), P5-01 (open and save real files). A screen-reader pass by a person is worth doing.
 5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
@@ -491,6 +499,7 @@ Then **P2-10** (D-033): a tap on the one-pane preview goes to that line; speech 
 Then **P4-05** (D-034): `src/versions.js`, the `versions` store kept inside `Store.saveScript`, `versions-ui.js`. P4-16 added.
 Then **P4-06** (D-035): colour tokens and a light theme, Theme and Text size in Settings, the accessibility sweep.
 Then **P2-14** (D-036): `Editing.looksLikeCue`, `Editing.enter`'s `cues` option, the Guess character names switch.
+Then **P2-21** (D-037): times of day and empty-line names in `Suggest.at`, `tab: false`, the `#suggestSay` live region.
 **Next session should start with:** "Next steps" above.
 
 ### Session 12: 2026-09-25: IndexedDB storage (P4-10)
