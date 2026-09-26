@@ -141,7 +141,8 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
 - [x] P4-04 Stats: page count, estimated runtime, scene count, per-character line counts (D-023): a live page count
   in the preview's header opens Script stats (pages as printed, screen time, scenes, words, speeches and words per
   character with their share)
-- [ ] P4-05 Version snapshots and restore
+- [x] P4-05 Version snapshots and restore (D-034: kept by the saves themselves, thinned with age, named ones kept;
+  a Versions window from the Library)
 - [ ] P4-06 Themes and font-size controls; accessibility pass (keyboard, contrast, screen reader labels)
 - [x] P4-08 Split the inline app script in `index.html` (~925 lines) into eleven classic script files under
   `src/app/`, one per concern (D-014). Behaviour-neutral: every original line moved exactly once (checked), all
@@ -166,6 +167,8 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
 - [x] P4-14 Stats, scene mix: INT / EXT and DAY / NIGHT counts (and other times of day) read from the scene headings (done, D-029)
 - [x] P4-15 Stats, locations: each distinct location (the heading without INT./EXT. and the time of day), with how
   many scenes and pages it takes (done, D-029)
+- [ ] P4-16 Versions, if wanted: compare a version with the text now (what changed, scene by scene) before going
+  back, and take one scene from a version rather than the whole script
 
 ## Phase 5: Sync and share (open questions)
 

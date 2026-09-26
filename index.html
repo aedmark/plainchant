@@ -122,6 +122,28 @@
     </div>
 </div>
 
+<!-- Versions (P4-05, D-034): a script's kept versions, opened from its row in the Library (versions-ui.js) -->
+<div id="versions-modal" class="modal-overlay">
+    <div class="modal-content wide" role="dialog" aria-modal="true" aria-labelledby="versions-title">
+        <div class="modal-header">
+            <h2 id="versions-title">Versions</h2>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+        </div>
+        <div class="versions-top">
+            <p id="versionsFor" class="versions-for"></p>
+            <form id="versionForm" class="rename-form">
+                <input type="text" id="versionName" maxlength="80" autocomplete="off" placeholder="Name this version, e.g. Draft 2"
+                       aria-label="A name for the script as it is now">
+                <button type="submit" class="btn primary">Keep</button>
+            </form>
+        </div>
+        <div id="versions-list" class="modal-body">
+            <!-- Versions are drawn here by renderVersions() -->
+        </div>
+        <div id="versions-status" role="status" aria-live="polite"></div>
+    </div>
+</div>
+
 <!-- Help -->
 <div id="help-modal" class="modal-overlay">
     <div class="modal-content wide" role="dialog" aria-modal="true" aria-labelledby="help-title">
@@ -277,6 +299,8 @@ Author: Jane Doe</code></td>
                 <p>Capitals are added as you type, not to pasted text. Select the line and press <kbd>Tab</kbd> to convert it.</p>
                 <h3>Where did my script go?</h3>
                 <p>Open <strong>Library</strong>, and check <strong>Recently deleted</strong> if you removed it. Scripts are stored in this browser only, so a different browser, device or a private window shows a different (possibly empty) library.</p>
+                <h3>I changed something and want the old text back</h3>
+                <p>Straight away, <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Z</kbd> undoes it. Later, open <strong>Library</strong> and choose <strong>Versions</strong> on the script: Plainchant keeps earlier versions by itself as you write. <strong>Go back</strong> to one, or <strong>Copy</strong> it as a new script to take just a scene from it.</p>
                 <h3>Will the browser keep my scripts?</h3>
                 <p>A browser can clear a site&rsquo;s saved data when its disk runs low. Plainchant asks yours to keep your scripts, and the bottom of the <strong>Library</strong> says whether it agreed. Firefox asks you; the others decide for themselves, and installing Plainchant usually helps. Whatever the answer, <strong>Export</strong> keeps a copy of your own.</p>
                 <h3>My PDF has a date or a web address on it</h3>
@@ -484,6 +508,7 @@ Is anyone here?</pre></div>
 <script src="src/paginate.js"></script>
 <script src="src/stats.js"></script>
 <script src="src/outline.js"></script>
+<script src="src/versions.js"></script>
 <script src="src/importing.js"></script>
 <script src="src/suggest.js"></script>
 <!-- The app itself, split by concern. Classic scripts (D-001: no build step, and modules cannot load over file://),
@@ -494,6 +519,7 @@ Is anyone here?</pre></div>
 <script src="src/app/persistence.js"></script>
 <script src="src/app/dialogs.js"></script>
 <script src="src/app/library-ui.js"></script>
+<script src="src/app/versions-ui.js"></script>
 <script src="src/app/example.js"></script>
 <script src="src/app/help.js"></script>
 <script src="src/app/tour.js"></script>

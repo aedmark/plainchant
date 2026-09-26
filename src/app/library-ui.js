@@ -99,8 +99,9 @@ function scriptRow(script, now) {
     item.appendChild(h('div', { class: 'script-actions' }, [
         h('button', { type: 'button', class: 'mini', 'data-action': 'rename', 'aria-label': label('Rename'), text: 'Rename' }),
         h('button', { type: 'button', class: 'mini', 'data-action': 'duplicate', 'aria-label': label('Duplicate'), text: 'Duplicate' }),
+        storageMode === 'idb' ? h('button', { type: 'button', class: 'mini', 'data-action': 'versions', 'aria-label': 'Versions of “' + title + '”', text: 'Versions' }) : null,
         h('button', { type: 'button', class: 'mini danger', 'data-action': 'delete', 'aria-label': label('Delete'), text: 'Delete' })
-    ]));
+    ].filter(Boolean)));
     return item;
 }
 
@@ -299,6 +300,7 @@ libraryList.addEventListener('click', (e) => {
             break;
         case 'cancel-rename': cancelRename(id); break;
         case 'duplicate': duplicateScript(id); break;
+        case 'versions': openVersions(id); break; // versions-ui.js
         case 'delete': deleteScript(id); break;
         case 'restore': restoreScript(id); break;
         case 'purge': purgeScript(id); break;
