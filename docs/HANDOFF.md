@@ -11,10 +11,17 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 _Last updated: 2026-09-26, session 13 (script stats, P4-04; outline navigator, P4-03; focus mode, P2-07; offline, P4-02;
 persistent storage, P4-12; scene stats, P4-13 to P4-15;
-the caret kept clear of the keyboard, P2-16; colour hints in the editor, P2-08; settings, P2-15; tapping the preview, P2-10). Session 12 built IndexedDB storage, dropped legacy
+the caret kept clear of the keyboard, P2-16; colour hints in the editor, P2-08; settings, P2-15; tapping the preview, P2-10;
+versions, P4-05). Session 12 built IndexedDB storage, dropped legacy
 support, and built print / save as PDF._
 
 **What works**
+- **Versions** (P4-05, D-034; `src/versions.js`, `src/app/versions-ui.js`, the `versions` store). Every save keeps the
+  text as it was before it, when due: the first save of a visit, then at most one every ten minutes of changes; they
+  thin out with age (all of the last hour, then hourly for a day, daily for a month, monthly for good). The Library's
+  **Versions** button on each script opens a window: name the text now ("Draft 2", kept for good), and for each
+  version Go back (the text there now is kept first; undo works in the open script), Copy (as a new script), Delete.
+  Deleting a script for good deletes its versions. The database is now version 2.
 - **Tap the preview to edit there** (P2-10, D-033). On phones and portrait tablets, a tap on a line in Preview goes back
   to Write with the caret at the start of that line (a speech's lines each count), the keyboard up. Not for a tap that
   ends a selection or lands on empty space, and not side by side on a desktop (P2-22 is the desktop idea).
@@ -134,6 +141,11 @@ support, and built print / save as PDF._
 - Scroll sync no longer divides by zero.
 
 **Verified**
+- **Versions (P4-05), session 13:** `npm test` 279 (10 new in `test/versions.test.js`); `bash test/run-headless.sh`
+  267 unit + **567 e2e** (section 16n: the first save's version, none straight after, one ten minutes on, thinning as
+  they are kept, the window from the row, naming (and needing a name), escaping, going back on the open script and on
+  another, undo, no doubled version, copy, two-click delete, deleting for good, Help, the phone). Mutations: 10 of 11
+  fail a test after one more (the hourly band); the eleventh showed a redundant guard, since removed.
 - **Tap the preview (P2-10), session 13:** `npm test` 269 (1 new: speech lines carry their line); `bash
   test/run-headless.sh` 257 unit + **547 e2e** (section 16m: parenthetical, dialogue and heading taps, the line in
   view far down, a selection and empty space ignored, a blank script, the desktop left alone even when a widened
@@ -242,6 +254,9 @@ support, and built print / save as PDF._
   and phone in headless Edge.
 
 **Not verified / not done**
+- **Versions (P4-05) against the owner's real library:** the database upgrade from version 1 to 2 has only run in the
+  tests (fresh profiles). With the app open in two tabs, the old tab loses its database when the new one upgrades
+  (reload it). Worth opening Library → Versions on a real script after a day of writing.
 - **P2-10 has not been tapped on a real phone:** whether iOS brings the keyboard up from the tap (it should: the focus
   happens inside the tap's own event) and whether a long-press to copy ever ends in a jump.
 - **Colour hints (P2-08) only seen in headless Chromium.** Firefox and Safari may wrap the copy a hair differently:
@@ -395,7 +410,7 @@ support, and built print / save as PDF._
 4. (Print / save as PDF is done: P3-03 to P3-06, and script stats: P4-04. No browser or device checks are planned
    for either: the owner will report bugs. P3-11, direct `.pdf` download, is the answer if print windows turn out
    awkward; P3-12, page view, is for later. The outline navigator, P4-03, is done too.) Persistent storage, P4-12, is done
-   too.) **Ask the owner what comes next.** Candidates: P4-05 (version snapshots), P4-06 (themes, font size, an accessibility
+   too.) **Ask the owner what comes next.** Candidates: P4-06 (themes, font size, an accessibility
    pass; Settings is where font size would go), P2-14 (suggest cues without Tab), P2-21 (autocomplete follow-ups).
 5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
 6. (P4-10 and P4-11 are done: D-018, D-019, D-020.)
@@ -448,6 +463,7 @@ Then **P2-16** (D-030): `keepCaretClear` in `layout.js`, focus mode's measuring 
 Then **P2-08** (D-031): `Fountain.shade`, `src/app/shade.js`, the editor's line height as a length; Q-001 answered.
 Then **P2-15** (D-032): `src/app/settings.js`, options on `Editing.enter` / `autoCase`, `setShadeOn`, the gear.
 Then **P2-10** (D-033): a tap on the one-pane preview goes to that line; speech lines carry `data-line`. P2-22 added.
+Then **P4-05** (D-034): `src/versions.js`, the `versions` store kept inside `Store.saveScript`, `versions-ui.js`. P4-16 added.
 **Next session should start with:** "Next steps" above.
 
 ### Session 12: 2026-09-25: IndexedDB storage (P4-10)

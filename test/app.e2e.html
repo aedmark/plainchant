@@ -1891,6 +1891,120 @@ setTimeout(() => {
     check('tap preview: side by side on a desktop, a click in the preview moves nothing (select and copy as usual)', tapDE.selectionStart === 0 && focusId(tapD) !== 'editor', [tapDE.selectionStart, focusId(tapD)]);
     tapD.remove();
 
+    // 16n. Versions (P4-05): saves keep the text as it was, the Versions window goes back, copies, names and deletes
+    const VT0 = Date.now() - 3 * DAY_MS;
+    const VA = 'Title: Vault\n\nINT. VAULT - NIGHT\n\nFirst words.';
+    const VB = 'Title: Other\n\nEXT. FIELD - DAY\n\nGrass.';
+    await setDb({ va: { id: 'va', title: 'Vault', content: VA, updatedAt: VT0 }, vb: { id: 'vb', title: 'Other', content: VB, updatedAt: VT0 } }, { currentScriptId: 'va' });
+    const verF = await openRealFrame(1200, 760);
+    const verW = verF.contentWindow, verE = fid(verF, 'editor');
+    const versionsOfDb = async (id) => { await settle(); return Store.loadVersions(await idb(), id); };
+    check('versions: a fresh script has none', (await versionsOfDb('va')).length === 0 && verE.value === VA);
+    appendText(verF, ' More.');
+    verW.flushSave();
+    let vlist = await versionsOfDb('va');
+    check('versions: the first save keeps the text as it was before it, with when it was saved',
+      vlist.length === 1 && vlist[0].content === VA && vlist[0].updatedAt === VT0 && vlist[0].scriptId === 'va' && !vlist[0].name, vlist);
+    appendText(verF, ' Again.');
+    verW.flushSave();
+    check('versions: another save straight after keeps nothing new (ten minutes apart at most)', (await versionsOfDb('va')).length === 1);
+    const realNow = verW.Date.now;
+    verW.Date.now = () => realNow.call(verW.Date) + 11 * 60000;
+    const beforeLater = verE.value;
+    appendText(verF, ' Later.');
+    verW.flushSave();
+    vlist = await versionsOfDb('va');
+    verW.Date.now = realNow;
+    check('versions: ten minutes on, the next save keeps the text as it was then', vlist.length === 2 && vlist[0].content === beforeLater, vlist.map(v => v.content));
+    // Thinning happens as versions are kept: two in one clock hour a day ago, the older goes when the newer is kept
+    const hourAgo = Math.floor((Date.now() - DAY_MS / 2) / HOUR_MS) * HOUR_MS;
+    await Store.addVersion(await idb(), { id: 'thin1', scriptId: 'vb', title: 'Other', content: 'one', updatedAt: hourAgo, takenAt: hourAgo + 60000 }, verW.Versions, Date.now());
+    await Store.addVersion(await idb(), { id: 'thin2', scriptId: 'vb', title: 'Other', content: 'two', updatedAt: hourAgo, takenAt: hourAgo + 120000 }, verW.Versions, Date.now());
+    check('versions: keeping one thins out the older ones (the newest of that hour stays)', (await versionsOfDb('vb')).map(v => v.id).join() === 'thin2');
+
+    // The window, from the script's row in the Library
+    fid(verF, 'libraryBtn').click();
+    fq(verF, '#library-list [data-id="va"] [data-action="versions"]').click();
+    await verW.whenSaved(); await sleep(100);
+    const vRows = () => Array.from(verF.contentDocument.querySelectorAll('#versions-list .version-item'));
+    check('versions window: opens over the Library from the row, one row per version, newest first, focus in the name field',
+      active(verF).join() === 'library-modal,versions-modal' && vRows().length === 2 && vRows()[0].dataset.id === vlist[0].id && focusId(verF) === 'versionName' &&
+      /“Vault”/.test(fid(verF, 'versionsFor').textContent), [active(verF), vRows().length, focusId(verF)]);
+    check('versions window: each says when it was saved, how many words and how that compares with now',
+      /^Today|^Yesterday|\d/.test(vRows()[1].querySelector('.version-when').textContent) && /3 words · 2 fewer than now|fewer than now/.test(vRows()[1].textContent), vRows()[1].textContent);
+    fid(verF, 'versionForm').requestSubmit();
+    check('versions window: a name is needed to keep one by hand', fid(verF, 'versionName').getAttribute('aria-invalid') === 'true' && /name first/.test(fid(verF, 'versions-status').textContent));
+    fid(verF, 'versionName').value = 'Draft <b>2</b>';
+    fid(verF, 'versionForm').requestSubmit();
+    await sleep(150); await verW.whenSaved();
+    vlist = await versionsOfDb('va');
+    const named = vlist.find(v => v.name);
+    const namedRow = named && vRows().find(r => r.dataset.id === named.id);
+    check('versions window: a named version is the script as it is now, shown by its name, as text',
+      vlist.length === 3 && named.name === 'Draft <b>2</b>' && named.content === verE.value && namedRow.querySelector('.version-name').textContent === 'Draft <b>2</b>' &&
+      !fq(verF, '#versions-list b'), vlist.map(v => v.name));
+
+    // Going back: the text now is kept first, the editor changes, and undo still works
+    const nowText = verE.value;
+    const oldest = vRows()[vRows().length - 1];
+    oldest.querySelector('[data-action="go-back"]').click();
+    await sleep(200); await verW.whenSaved(); await sleep(100);
+    vlist = await versionsOfDb('va');
+    check('versions: going back puts the version\'s text in the editor and in storage', verE.value === VA && (await stored()).va.content === VA, verE.value);
+    check('versions: the text from before going back was already kept (the named one), so nothing is doubled',
+      vlist.filter(v => v.content === nowText).length === 1 && /Back to the version of/.test(fid(verF, 'versions-status').textContent), vlist.map(v => v.note || v.name || '-'));
+    verE.focus();
+    verF.contentDocument.execCommand('undo');
+    check('versions: Ctrl/Cmd+Z undoes going back, in the open script', verE.value === nowText, verE.value.slice(-30));
+    verW.flushSave(); await verW.whenSaved();
+
+    // A script that is not open: going back rewrites it in storage, after keeping what it had
+    appendText(verF, ' x'); verW.flushSave(); await verW.whenSaved();
+    await Store.addVersion(await idb(), { id: 'vbOld', scriptId: 'vb', title: 'Other', content: 'Title: Other\n\nThe old field.', updatedAt: VT0 - DAY_MS, takenAt: Date.now() - 5 * 60000 }, verW.Versions, Date.now());
+    fq(verF, '#versions-modal .modal-close').click();
+    await sleep(50);
+    fq(verF, '#library-list [data-id="vb"] [data-action="versions"]').click();
+    await sleep(200);
+    const vbRow = vRows().find(r => r.dataset.id === 'vbOld');
+    vbRow.querySelector('[data-action="go-back"]').click();
+    await sleep(200); await verW.whenSaved(); await sleep(100);
+    const vbList = await versionsOfDb('vb');
+    check('versions: going back on a script that is not open rewrites it, and keeps what it had with a note',
+      (await stored()).vb.content === 'Title: Other\n\nThe old field.' && vbList.some(v => v.content === VB && /Before going back/.test(v.note || '')) && verE.value.indexOf('Vault') !== -1,
+      [(await stored()).vb.content, vbList.map(v => v.note)]);
+    // Copy, and delete with two clicks
+    vRows().find(r => r.dataset.id === 'thin2').querySelector('[data-action="copy-version"]').click();
+    await sleep(100); await verW.whenSaved();
+    const copies = Object.values(await stored()).filter(s => /^Title: two \((Today|Yesterday|\d)/.test(s.content) && /\n\ntwo$/.test(s.content));
+    check('versions: Copy makes a new script from the version, the original untouched', copies.length === 1 && (await stored()).vb.content === 'Title: Other\n\nThe old field.', copies.map(c => c.title));
+    const delBtn = () => vRows().find(r => r.dataset.id === 'thin2').querySelector('[data-action="delete-version"]');
+    delBtn().click();
+    check('versions: Delete asks once more', delBtn().textContent === 'Really delete?' && (await versionsOfDb('vb')).some(v => v.id === 'thin2'));
+    delBtn().click();
+    await sleep(150);
+    check('versions: the second click deletes it', !(await versionsOfDb('vb')).some(v => v.id === 'thin2') && !vRows().some(r => r.dataset.id === 'thin2'));
+    fq(verF, '#versions-modal .modal-close').click();
+    check('versions: closing the window leaves the Library open', active(verF).join() === 'library-modal');
+    fq(verF, '#library-modal .modal-close').click();
+
+    // A script deleted for good takes its versions with it
+    verW.putScripts(verW.Library.removeForever(verW.Library.softDelete(verW.getScripts(), 'vb', Date.now()), 'vb'));
+    check('versions: deleting a script for good deletes its versions', (await versionsOfDb('vb')).length === 0 && (await versionsOfDb('va')).length > 0);
+    check('help: versions are explained', /Versions/.test(fid(verF, 'help-modal').textContent) && /want the old text back/.test(fid(verF, 'help-modal').textContent));
+    verF.remove();
+
+    const verP = await openRealFrame(375, 667);
+    fid(verP, 'menuBtn').click();
+    fid(verP, 'libraryBtn').click();
+    fq(verP, '#library-list [data-id="va"] [data-action="versions"]').click();
+    await sleep(250);
+    const vpm = rect(fq(verP, '#versions-modal .modal-content')), vpl = fq(verP, '#versions-list');
+    check('phone versions: the window fits the screen, nothing scrolls sideways, every button on screen',
+      active(verP).indexOf('versions-modal') !== -1 && vpm.left >= 0 && vpm.right <= 375 && vpm.bottom <= 667 && vpl.scrollWidth <= vpl.clientWidth &&
+      Array.from(vpl.querySelectorAll('.mini')).every(b => rect(b).right <= 375), [vpm, vpl.scrollWidth, vpl.clientWidth]);
+    verP.remove();
+    await setDb({}, {});
+
     // Phone: the Library fits a 375px screen and every action is reachable
     await seedLibrary();
     await reloadFrame(m);

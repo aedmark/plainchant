@@ -657,6 +657,16 @@ code.inline, .help-table code.inline {
 }
 .rename-form input:focus-visible { outline: 2px solid #94a3b8; outline-offset: 1px; }
 .rename-form input[aria-invalid="true"] { border-color: #b91c1c; }
+/* Versions (P4-05) */
+.versions-top { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-void); }
+.versions-for { margin: 0 0 0.5rem; color: #f8fafc; font-weight: 600; overflow-wrap: anywhere; }
+.version-item { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-void); }
+.version-when { font-weight: 600; color: #f8fafc; }
+.version-name { margin-top: 0.1rem; color: #e8cf98; overflow-wrap: anywhere; }
+.version-note { margin-top: 0.1rem; font-size: 0.8125rem; color: var(--text-void-muted); }
+.versions-note { padding-inline: 0; }
+#versions-status:empty { display: none; }
+#versions-status { padding: 0.6rem 1rem; border-top: 1px solid var(--border-void); background: #161a21; font-size: 0.8125rem; color: var(--btn-text); }
 .library-note { margin: 0; padding: 0.75rem 1rem; font-size: 0.8125rem; line-height: 1.5; color: var(--text-void-muted); }
 .library-note .mini { margin-left: 0.5rem; }
 #library-keep { border-top: 1px solid var(--border-void); }

@@ -44,8 +44,9 @@ Sessions are short-lived and context resets between them, so the repo carries th
 | `src/paginate.js` | Print pagination: tokens in, pages of positioned lines out, on the Courier grid (60 columns, 54 rows Letter / 58 A4) with the page-break rules. Pure, UMD, uses `Fountain` (D-021, docs/SPEC-PRINT.md) |
 | `src/stats.js` | Script stats: pages (as printed), screen time, scenes, words, per-character speeches and words, per scene its page, length in eighths and speakers, the INT / EXT and time-of-day mix, and the locations (`Stats.heading`). Pure, UMD, uses `Fountain` and `Paginate` (D-023, D-028, D-029) |
 | `src/outline.js` | The outline: sections, scenes (with the page each starts on) and synopses, and which one a line is in. Pure, UMD, uses `Fountain` and `Paginate` (D-024) |
+| `src/versions.js` | Versions of a script: when to keep one (`due`), making one, which to let go (`prune`). Pure, UMD (D-034) |
 | `src/store.js` | Storage in IndexedDB, global `Store`: pure rules (diff, delete guard, emergency-buffer reconcile) plus thin IndexedDB calls that take the database as an argument. UMD (D-018, D-019, D-020) |
-| `test/` | `fountain.test.js` (parser), `editing.test.js` (typing helpers), `library.test.js` (library rules), `importing.test.js` (import rules), `suggest.test.js` (autocomplete rules), `store.test.js` (storage rules), `paginate.test.js` (print pagination), `stats.test.js` (script stats), `outline.test.js` (outline), `structure.test.js` (app script structure, Node only), `app.e2e.html` (app behaviour), `harness.js`, runners: `index.html`, `run-headless.ps1` (Windows), `run-headless.sh` (Linux/macOS), `run.js` |
+| `test/` | `fountain.test.js` (parser), `editing.test.js` (typing helpers), `library.test.js` (library rules), `importing.test.js` (import rules), `suggest.test.js` (autocomplete rules), `store.test.js` (storage rules), `paginate.test.js` (print pagination), `stats.test.js` (script stats), `outline.test.js` (outline), `versions.test.js` (version rules), `structure.test.js` (app script structure, Node only), `app.e2e.html` (app behaviour), `harness.js`, runners: `index.html`, `run-headless.ps1` (Windows), `run-headless.sh` (Linux/macOS), `run.js` |
 | `ROADMAP.md` | The plan, with stable item IDs |
 | `docs/HANDOFF.md` | Current state, next steps, session log |
 | `docs/DECISIONS.md` | Append-only decision record |
@@ -63,6 +64,7 @@ use what an earlier file already defined. Code inside functions runs later and c
 | `persistence.js` | The in-memory library, IndexedDB writes and the emergency buffer, the no-storage notice, restoring the last script, New, the trash purge, save on hide (D-019) |
 | `dialogs.js` | `openModal` / `closeModal`: the one accessible helper for every modal window |
 | `library-ui.js` | The Library dialog (data rules are in `src/library.js`) |
+| `versions-ui.js` | The Versions window, from a script's row in the Library: name, go back, copy, delete. Reads and writes the `versions` store through `Store` directly (D-034) |
 | `example.js`, `help.js`, `tour.js` | The example script, the Help window, the welcome tour |
 | `settings.js` | The Settings window and `settings` (colours, blank lines on Enter, capitals as you type; `setSetting`), stored in `plainchant_settings` (D-032) |
 | `typing.js` | Tab, smart Enter, auto-uppercase, the element bar, autocomplete chips (rules are in `src/editing.js` and `src/suggest.js`) |
@@ -93,14 +95,15 @@ Keep each file's own listeners in that file. Functions the e2e tests call (`save
   an option (as `Editing.enter` / `autoCase` do), so the rule stays testable in Node.
 - The editor's line height must stay a length (`1.6em`), never unitless, and anything copying the editor's text must use
   `copyEditorType` (layout.js): the colour hints only line up if the copies lay out exactly like the textarea (D-031).
-- Scripts live in IndexedDB (database `plainchant`, stores `scripts` and `meta`). localStorage holds only
+- Scripts live in IndexedDB (database `plainchant`, stores `scripts`, `meta` and `versions`, D-034). localStorage holds only
   `plainchant_onboarded` (the tour), `plainchant_emergency` (the buffer), `plainchant_paper` (Letter / A4),
   `plainchant_focus` (focus mode), `plainchant_keep_asked` (the browser said no to keeping the library, D-027) and
   `plainchant_settings` (the Settings switches that differ from their defaults, D-032). There is no legacy support and no
   localStorage fallback (D-020): this is not a production release, so storage names may change without a migration,
   but say so in DECISIONS when they do.
 - Every storage write goes through `putScripts` / `saveScript` / `rememberCurrent` in `persistence.js`, never straight
-  to IndexedDB or localStorage, so other tabs are told and the emergency buffer stays right.
+  to IndexedDB or localStorage, so other tabs are told and the emergency buffer stays right. The one exception is the
+  `versions` store, which `versions-ui.js` reads and writes through `Store` (versions are not held in memory; D-034).
 
 ## Running and testing
 

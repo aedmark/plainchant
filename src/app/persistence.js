@@ -233,7 +233,9 @@ function saveScript(isAuto = false) {
     writeEmergency(entries);
 
     let written;
-    try { written = Store.saveScript(scriptDb, record, newId()); } catch (e) { written = Promise.reject(e); }
+    // The text as stored before this save is kept as a version first, when src/versions.js says it is due (P4-05)
+    const versions = { rules: Versions, now: record.updatedAt, makeId: newId };
+    try { written = Store.saveScript(scriptDb, record, newId(), versions); } catch (e) { written = Promise.reject(e); }
     track(written.then(({ record: stored, deleted }) => {
         clearEmergency(record.id, record.updatedAt);
         if (deleted) { // another tab had deleted it: the words went to a new script, and this tab now knows

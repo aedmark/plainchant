@@ -609,6 +609,32 @@ session 12).
    tap flash is switched off.
 **Consequences:** On a blank script the preview shows the example; a tap on it goes to Write at the start.
 
+## D-034 Versions: the text before a save, kept in the save's own transaction, thinned with age  (2026-09-26, status: accepted)
+**Context:** P4-05 (version snapshots and restore). Autosave overwrites the script every few seconds, so a bad edit
+(a scene deleted by mistake) is saved over the good text within moments; undo only lasts until the page closes.
+**Decision:**
+1. **What a version is:** the script as storage held it *before* a save changed it. The first save of a visit keeps
+   the text from before the writer started; then at most one every ten minutes while it keeps changing. A save that
+   changes nothing keeps nothing, nor does a new, deleted or empty script (`src/versions.js`, pure, tested).
+2. **Kept inside the save's own IndexedDB transaction** (`Store.saveScript(db, record, freshId, { rules, now,
+   makeId })`): the read of the old text, the version and the new text land together, so nothing slips between them
+   and two tabs cannot both keep the same text. A new `versions` store (database version 2) with a
+   `[scriptId, takenAt]` index; versions are never loaded with the library, only when their window opens.
+3. **Thinned as versions are kept:** all of the last hour, the newest of each clock hour for a day, of each day for
+   thirty days, then of each thirty days for good. Named versions are never thinned. A script deleted for good takes
+   its versions with it (in `Store.write`'s transaction); one in Recently deleted keeps them.
+4. **The window** (`src/app/versions-ui.js`), from a **Versions** button on each script's row in the Library (only
+   when storage works): name the text as it is now ("Draft 2"), and for each version **Go back** (first keeping the
+   text there now as a version, unless one already has it; the open script changes through `applyEdit`, so
+   Ctrl/Cmd+Z undoes it), **Copy** (a new script titled after the version and its time), **Delete** (two clicks).
+   Rows show when the text was saved, its name or note, and its words against now.
+5. **An exception to "every write goes through persistence.js":** versions live in their own store, are not held in
+   memory, need no emergency buffer and no other tab needs telling, so the window calls `Store` directly. The
+   scripts themselves still change only through `putScripts` / `saveScript`.
+**Consequences:** Tabs still open on the old code close their database when a new tab upgrades it (their saves then
+fail until reloaded; the emergency buffer keeps their words). A feature-length script with a year of versions is
+roughly 60 copies (about 9 MB); P4-12 asks the browser to keep it all. No side-by-side comparison of two versions yet.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

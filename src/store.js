@@ -2,7 +2,8 @@
  * Script storage in IndexedDB (P4-10, D-018): the pure rules plus a thin layer over the browser's IndexedDB.
  *
  * One record per script in the `scripts` store, keyed by id: { id, title, content, updatedAt, deletedAt? }, the same
- * shape the library has always had (D-013), and a `meta` store for the open-script pointer.
+ * shape the library has always had (D-013), a `meta` store for the open-script pointer, and a `versions` store of
+ * kept copies of scripts (P4-05, D-034; src/versions.js decides when), found by script through the `byScript` index.
  * The page keeps the whole library in memory as { [id]: script } and writes only what changed.
  *
  * The pure half (diff, guardSave, reconcile) never touches a browser API and is
@@ -19,9 +20,12 @@
     'use strict';
 
     const DB_NAME = 'plainchant';
-    const DB_VERSION = 1;
+    const DB_VERSION = 2; // 2: the versions store
     const SCRIPTS = 'scripts';
     const META = 'meta';
+    const VERSIONS = 'versions';
+    const BY_SCRIPT = 'byScript'; // [scriptId, takenAt]: a script's versions, oldest first
+    const ofScript = (id) => IDBKeyRange.bound([id, -Infinity], [id, Infinity]);
 
     const isRecord = (s) => !!s && typeof s === 'object' && typeof s.id === 'string' && s.id !== '' && typeof s.content === 'string';
 
@@ -96,6 +100,9 @@
                 const db = request.result;
                 if (!db.objectStoreNames.contains(SCRIPTS)) db.createObjectStore(SCRIPTS, { keyPath: 'id' });
                 if (!db.objectStoreNames.contains(META)) db.createObjectStore(META, { keyPath: 'key' });
+                if (!db.objectStoreNames.contains(VERSIONS)) {
+                    db.createObjectStore(VERSIONS, { keyPath: 'id' }).createIndex(BY_SCRIPT, ['scriptId', 'takenAt']);
+                }
             };
             request.onsuccess = () => {
                 const db = request.result;
@@ -127,11 +134,28 @@
         });
     }
 
-    /** One transaction: remove ids, put records, set meta keys (null removes one). All of it lands, or none. */
+    // Deletes every version of the script `id`, inside the transaction `versions` belongs to
+    function dropVersionsOf(versions, id) {
+        const keys = versions.index(BY_SCRIPT).getAllKeys(ofScript(id));
+        keys.onsuccess = () => keys.result.forEach((key) => versions.delete(key));
+    }
+
+    // Keeps `version` and lets go of whatever `rules.prune` says, among that script's versions
+    function keepVersion(versions, version, rules, now) {
+        if (version) versions.put(version);
+        const all = versions.index(BY_SCRIPT).getAll(ofScript(version.scriptId));
+        all.onsuccess = () => rules.prune(all.result, now).forEach((id) => versions.delete(id));
+    }
+
+    /**
+     * One transaction: remove ids, put records, set meta keys (null removes one). All of it lands, or none. A script
+     * removed for good takes its versions with it.
+     */
     function write(db, change) {
-        const tx = db.transaction([SCRIPTS, META], 'readwrite');
+        const removing = (change.remove || []).length > 0;
+        const tx = db.transaction(removing ? [SCRIPTS, META, VERSIONS] : [SCRIPTS, META], 'readwrite');
         const scripts = tx.objectStore(SCRIPTS);
-        (change.remove || []).forEach((id) => scripts.delete(id));
+        (change.remove || []).forEach((id) => { scripts.delete(id); dropVersionsOf(tx.objectStore(VERSIONS), id); });
         (change.put || []).forEach((s) => scripts.put(s));
         putMeta(tx.objectStore(META), change.meta);
         return finished(tx);
@@ -142,25 +166,58 @@
      * another tab may have deleted the script since this one loaded it (guardSave). Resolves { record, deleted }:
      * the record written, whose id differs from the one asked for when the words had to go to a new script, and in
      * that case the deleted script as it is stored (untouched).
+     * With `versions` ({ rules: Versions, now, makeId }), the script as it was stored is first kept as a version when
+     * the rules say it is due (P4-05), in the same transaction: nothing is lost between the read and the write, and
+     * two tabs cannot both keep the same text.
      */
-    function saveScript(db, record, freshId) {
-        const tx = db.transaction([SCRIPTS, META], 'readwrite');
+    function saveScript(db, record, freshId, versions) {
+        const tx = db.transaction(versions ? [SCRIPTS, META, VERSIONS] : [SCRIPTS, META], 'readwrite');
         const scripts = tx.objectStore(SCRIPTS);
         let written = record;
         let deleted = null;
         const read = scripts.get(record.id);
         read.onsuccess = () => {
-            written = guardSave(read.result, record, freshId);
-            if (written !== record) deleted = read.result;
+            const stored = read.result;
+            written = guardSave(stored, record, freshId);
+            if (written !== record) deleted = stored;
             scripts.put(written);
             putMeta(tx.objectStore(META), { currentScriptId: written.id });
+            if (!versions || !stored) return; // (a deleted script, whose words went elsewhere, is never due)
+            const store = tx.objectStore(VERSIONS);
+            const last = store.index(BY_SCRIPT).openCursor(ofScript(stored.id), 'prev');
+            last.onsuccess = () => {
+                const latest = last.result ? last.result.value : null;
+                if (versions.rules.due(stored, latest, versions.now, record)) {
+                    keepVersion(store, versions.rules.make(stored, versions.makeId(), versions.now), versions.rules, versions.now);
+                }
+            };
         };
         return finished(tx).then(() => ({ record: written, deleted: deleted }));
+    }
+
+    /** Keeps one version (a named one, or the text before going back to another) and prunes that script's versions. */
+    function addVersion(db, version, rules, now) {
+        const tx = db.transaction([VERSIONS], 'readwrite');
+        keepVersion(tx.objectStore(VERSIONS), version, rules, now);
+        return finished(tx);
+    }
+
+    /** A script's versions, newest first. */
+    function loadVersions(db, scriptId) {
+        const tx = db.transaction([VERSIONS], 'readonly');
+        return promised(tx.objectStore(VERSIONS).index(BY_SCRIPT).getAll(ofScript(scriptId))).then((list) => list.reverse());
+    }
+
+    function removeVersion(db, id) {
+        const tx = db.transaction([VERSIONS], 'readwrite');
+        tx.objectStore(VERSIONS).delete(id);
+        return finished(tx);
     }
 
     return {
         DB_NAME: DB_NAME,
         diff: diff, guardSave: guardSave, reconcile: reconcile,
-        open: open, loadAll: loadAll, write: write, saveScript: saveScript
+        open: open, loadAll: loadAll, write: write, saveScript: saveScript,
+        addVersion: addVersion, loadVersions: loadVersions, removeVersion: removeVersion
     };
 });
