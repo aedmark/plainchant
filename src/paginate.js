@@ -10,7 +10,7 @@
  *   Paginate.wrap(runs, width)          -> [{ runs, start, end }]  word-wrapped lines, with where each sits in the text
  *
  *   line = { row, col, width, align: 'left' | 'center' | 'right', runs: [{ text, bold, italic, underline }], kind,
- *            side?: 'left' | 'right' (dual dialogue), number?: scene number }
+ *            side?: 'left' | 'right' (dual dialogue), number?: scene number, source?: a scene heading's source line }
  *
  * Lines come in reading order (dual dialogue: the whole left speech, then the right). Rows count from 0 at the top
  * margin; columns from 0 at the left margin. Loads as window.Paginate (after fountain.js) and via require() in Node.
@@ -170,6 +170,7 @@
                 case 'scene': {
                     const ls = linesOf(parasOf('scene', upper(Fountain.runs(t.text)), GEO.scene));
                     if (t.number) ls[0].number = t.number;
+                    ls[0].source = t.line; // so the outline can say which page a scene starts on
                     blocks.push({ type: 'scene', lines: ls });
                     break;
                 }
@@ -281,6 +282,7 @@
             const line = { row: r, col: tpl.col, width: tpl.width, align: tpl.align, runs: tpl.runs, kind: tpl.kind };
             if (tpl.side) line.side = tpl.side;
             if (tpl.number) line.number = tpl.number;
+            if (tpl.source !== undefined) line.source = tpl.source;
             page.push(line);
         };
         const gap = () => (row === 0 ? 0 : 1);

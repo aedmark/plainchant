@@ -214,7 +214,8 @@ textarea {
 
 .pane-canvas .header h2 { color: var(--text-ink); }
 
-.stats-btn {
+.canvas-tools { display: flex; gap: 0.4rem; align-items: center; }
+.canvas-btn {
     font-family: monospace;
     font-size: 0.75rem;
     background: #f3f4f6;
@@ -225,8 +226,8 @@ textarea {
     cursor: pointer;
     white-space: nowrap;
 }
-.stats-btn:hover { background: #e5e7eb; color: #111827; }
-.stats-btn:focus-visible { outline: 2px solid #94a3b8; outline-offset: 2px; }
+.canvas-btn:hover { background: #e5e7eb; color: #111827; }
+.canvas-btn:focus-visible { outline: 2px solid #94a3b8; outline-offset: 2px; }
 
 /* The scroll area is also a size container: the @container rules below re-proportion the screenplay by the
    width of *this column*, not by the device, so phones, portrait tablets and a narrow split all work. */
@@ -645,7 +646,8 @@ code.inline, .help-table code.inline {
     /* One pane: the preview keeps only a slim row with the page count (P4-04) */
     .pane-canvas > .header { padding: 0.35rem 1rem; justify-content: flex-end; }
     .pane-canvas > .header > div:first-child { display: none; }
-    .pane-canvas > .header .stats-btn { min-height: 36px; }
+    .pane-canvas > .header .canvas-tools { display: flex; gap: 0.4rem; align-items: center; }
+.canvas-btn { min-height: 36px; }
 
     /* The Void's header disappears; its action buttons become a drop-down menu under the top bar */
     .pane-void > .header { display: contents; }
@@ -790,3 +792,20 @@ code.inline, .help-table code.inline {
 .stats-note { margin: 0.75rem 0 0; font-size: 0.75rem; color: var(--text-void-muted); }
 .modal-footer .hint-keys { font-size: 0.75rem; color: var(--text-void-muted); }
 @media (max-width: 480px) { .stats-tiles { grid-template-columns: repeat(2, 1fr); } }
+
+/* --- Outline (P4-03) --- */
+.outline-list { display: flex; flex-direction: column; gap: 1px; padding: 0.5rem; }
+.outline-item {
+    display: grid; grid-template-columns: auto 1fr auto; column-gap: 0.6rem; align-items: baseline;
+    width: 100%; padding: 0.45rem 0.6rem 0.45rem calc(0.6rem + var(--level, 0) * 1rem);
+    border: 0; border-left: 3px solid transparent; border-radius: 0.25rem;
+    background: transparent; color: var(--btn-text); font: 0.8125rem/1.35 var(--font-ui); text-align: left; cursor: pointer;
+}
+.outline-item:hover { background: #161a21; }
+.outline-item:focus-visible { outline: 2px solid #94a3b8; outline-offset: -2px; }
+.outline-item[aria-current] { border-left-color: #94a3b8; background: #161a21; }
+.outline-item.section { font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.72rem; color: #cbd5e1; }
+.outline-item.scene .ol-text { font-family: var(--font-screenplay); color: #f8fafc; }
+.outline-item .ol-num, .outline-item .ol-page { font-size: 0.7rem; color: var(--text-void-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.outline-item .ol-text { overflow-wrap: anywhere; }
+.outline-item .ol-synopsis { grid-column: 2 / 4; font-style: italic; color: var(--text-void-muted); font-size: 0.75rem; }

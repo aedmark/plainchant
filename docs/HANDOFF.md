@@ -9,10 +9,15 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-26, session 13 (script stats, P4-04). Session 12 built IndexedDB storage, dropped legacy
+_Last updated: 2026-09-26, session 13 (script stats, P4-04; outline navigator, P4-03). Session 12 built IndexedDB storage, dropped legacy
 support, and built print / save as PDF._
 
 **What works**
+- **Outline navigator** (P4-03, D-024; `src/outline.js` + `src/app/outline-ui.js`). **Outline**, beside the page count
+  above the preview, opens a window listing sections (`#`), scenes (with scene numbers and the page each starts on)
+  and synopses (`=`), nested. The scene the caret is in is marked and focused; type to filter (Enter takes the
+  first match); Up / Down move. Choosing one puts the caret at the start of that line with the line a quarter of the
+  way down the editor, and the preview shows the scene. From the Preview on a phone it stays in the Preview.
 - **Script stats** (P4-04, D-023; `src/stats.js` + `src/app/stats-ui.js`). The preview's header shows a live
   "3 pages · ~3 min" (it updates 600 ms after typing pauses; on phones and portrait tablets it sits in a slim row
   at the top of Preview). Tapping it opens **Script stats**: pages as they print on the chosen paper, screen time
@@ -93,6 +98,12 @@ support, and built print / save as PDF._
 - Scroll sync no longer divides by zero.
 
 **Verified**
+- **Outline, session 13:** `npm test` 246 (9 new in `test/outline.test.js`); `bash test/run-headless.sh` 238 unit +
+  **456 e2e** (section 16f: order, numbers, pages, nesting, synopsis, the current scene marked and focused, escaping,
+  arrow keys, the jump's caret and scroll position checked against an independent line-height estimate, the preview
+  landing on the scene, filter and Enter, the empty case, the phone Preview path and the slim row). Mutations: 8 of
+  10 fail a test at once; one needed a sharper fixture (150 blank lines, so proportional scrolling lands wrong); one
+  is equivalent (the phone-Preview branch: the hidden editor ignores focus and scrolling anyway).
 - **Stats, session 13:** `npm test` 237 (9 new in `test/stats.test.js`, including a speed guard for the live count on
   a 100+ page script); `bash test/run-headless.sh` 229 unit + **439 e2e** (section 16e: the count waits for a pause
   then matches, the window's tiles and character table, names only as text, A4 changing the count, the empty case,
@@ -285,9 +296,9 @@ support, and built print / save as PDF._
    autocomplete, then PAUSE.
 4. (Print / save as PDF is done: P3-03 to P3-06, and script stats: P4-04. No browser or device checks are planned
    for either: the owner will report bugs. P3-11, direct `.pdf` download, is the answer if print windows turn out
-   awkward; P3-12, page view, is for later.) **Ask the owner what comes next.** Candidates offered in session 12:
-   P4-03 outline navigator, P2-07 focus / typewriter mode, P4-02 offline / installable (also makes Courier Prime
-   available to print offline).
+   awkward; P3-12, page view, is for later. The outline navigator, P4-03, is done too.) **Ask the owner what comes
+   next.** Candidates: P2-07 focus / typewriter mode, P4-02 offline / installable (also makes Courier Prime available
+   to print offline), the stats follow-ups P4-13 to P4-15 (per-scene stats would reuse `src/outline.js`).
 5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
 6. (P4-10 and P4-11 are done: D-018, D-019, D-020.)
 
@@ -321,6 +332,10 @@ preview's header now shows in one-pane mode as a slim row with only the count. H
 the fixture took two pages on both papers; the fixture now takes 2 on Letter and 1 on A4.
 **Left undone:** Per-scene breakdowns, INT/EXT or day/night counts and a locations list, now roadmap items P4-13 to
 P4-15 at the owner's request. Real-device checks, by the owner's choice.
+Then, at the owner's request, **P4-03 outline navigator** (D-024): `src/outline.js` (tests first), the Outline
+window and `jumpToLine` in `src/app/outline-ui.js`, an Outline button beside the page count, scene headings in the
+print layout tagged with their source line (for the page numbers). The owner also asked for the stats follow-ups to
+be on the roadmap (P4-13 to P4-15).
 **Next session should start with:** "Next steps" above.
 
 ### Session 12: 2026-09-25: IndexedDB storage (P4-10)

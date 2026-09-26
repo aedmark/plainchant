@@ -129,7 +129,8 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
 
 - [ ] P4-01 Incremental render: only re-render changed blocks; debounce; feature-length (120 page) performance budget
 - [ ] P4-02 Offline: self-host fonts, service worker, installable PWA
-- [ ] P4-03 Outline navigator (sections, synopses, scenes; click to jump)
+- [x] P4-03 Outline navigator (sections, synopses, scenes; click to jump) (D-024): an Outline window from the
+  preview's header, with scene numbers, pages, a filter, and a jump that puts the line near the top of the editor
 - [x] P4-04 Stats: page count, estimated runtime, scene count, per-character line counts (D-023): a live page count
   in the preview's header opens Script stats (pages as printed, screen time, scenes, words, speeches and words per
   character with their share)

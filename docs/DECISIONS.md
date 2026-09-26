@@ -418,6 +418,24 @@ dialog, headless Chrome waits forever on a clipboard permission prompt.
 **Consequences:** No per-scene breakdown, no INT/EXT or day/night counts, no locations list; easy to add to the module
 if wanted. The page count needs the print layout, so any change to pagination changes the count too (by design).
 
+## D-024 Outline: a window from the preview's header; a jump puts the line near the top  (2026-09-26, status: accepted)
+**Context:** P4-03 (sections, synopses, scenes; click to jump). The action bar is full (D-022); a permanent sidebar
+would take width the two panes need on laptops and tablets.
+**Decision:**
+1. **A pure module, `src/outline.js`**: sections nest by `#` depth, scenes sit one level under the section above,
+   a synopsis belongs to the item above it. Scene headings read as printed; each scene carries the page it starts
+   on, from the print layout (`src/paginate.js` now tags each scene heading's first line with its source line).
+2. **An Outline window**, opened by an **Outline** button beside the page count in the preview's header (both in the
+   slim row on phones). The scene the caret is in is marked and focused; a filter box finds items (Enter takes the
+   first); Up / Down move between items.
+3. **A jump puts the caret at the start of the line and scrolls the editor so the line sits a quarter of the way
+   down**, measured on a hidden copy of the editor (a textarea cannot say where its wrapped lines fall; relying on
+   the browser to reveal the caret would leave it at the bottom edge). The preview is then put exactly on the scene,
+   after the proportional scroll sync has run. From the Preview on a phone it stays in the Preview, scrolled there.
+4. **No keyboard shortcut yet:** the obvious ones are taken (Ctrl+Shift+O opens Chrome's bookmarks; Alt+letter
+   types characters on a Mac keyboard).
+**Consequences:** One click more than a sidebar, but no lost width. Per-scene stats (P4-13) can reuse the module.
+
 ## Open questions
 
 - Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

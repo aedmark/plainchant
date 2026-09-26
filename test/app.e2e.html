@@ -1341,6 +1341,86 @@ setTimeout(() => {
     check('phone stats: the stats window fits the screen', active(sp).join() === 'stats-modal' && spModal.left >= 0 && spModal.right <= 375 && spModal.bottom <= 667, spModal);
     sp.remove();
 
+    // 16f. Outline (P4-03): sections, scenes and synopses; choosing one jumps there
+    const of2 = await openFrame(1200, 700);
+    const ow = of2.contentWindow;
+    const oe = fid(of2, 'editor');
+    const block = (n) => Array.from({ length: n }, (_, i) => 'Line ' + i + ' of the scene.').join('\n');
+    // The 150 blank lines are long in the editor and nothing in the preview, so scrolling the two in proportion lands wrong
+    const OUTLINED = ['# Act <img src=x onerror="window.__pwned=1">', '', '= Where it begins', '', 'INT. KITCHEN - DAY #1#', '', block(30), '',
+      'EXT. GARDEN - NIGHT #2#', '', block(60), '\n'.repeat(150), '## The chase', '', 'INT. CAR - NIGHT #3#', '', block(60), '', 'EXT. ROAD - DAWN #4#', '', block(10)].join('\n');
+    setText(of2, OUTLINED);
+    const srcLines = OUTLINED.split('\n');
+    const lineOf = (needle) => srcLines.findIndex(l => l.indexOf(needle) === 0);
+    const posOf = (line) => srcLines.slice(0, line).reduce((n, l) => n + l.length + 1, 0);
+    oe.focus();
+    oe.setSelectionRange(posOf(lineOf('EXT. GARDEN') + 5), posOf(lineOf('EXT. GARDEN') + 5)); // the caret is in the garden scene
+    check('outline: its button sits beside the page count above the preview', shown(fid(of2, 'outlineBtn')) && fid(of2, 'outlineBtn').closest('.pane-canvas') !== null);
+    fid(of2, 'outlineBtn').click();
+    const olRows = () => Array.from(fq(of2, '#outline-list').querySelectorAll('.outline-item'));
+    const olText = (r) => r.querySelector('.ol-text').textContent;
+    check('outline: it lists sections and scenes in order, with scene numbers and the page each starts on',
+      active(of2).join() === 'outline-modal' &&
+      olRows().map(r => r.className.replace('outline-item ', '') + ':' + r.querySelector('.ol-num').textContent + ':' + olText(r) + ':' + r.querySelector('.ol-page').textContent).join(' / ') ===
+      'section::Act <img src=x onerror="window.__pwned=1">: / scene:1:INT. KITCHEN - DAY:p. 1 / scene:2:EXT. GARDEN - NIGHT:p. 1 / section::The chase: / scene:3:INT. CAR - NIGHT:p. 2 / scene:4:EXT. ROAD - DAWN:p. 3',
+      olRows().map(r => r.textContent));
+    check('outline: a synopsis shows under its item; scenes sit one level under their section',
+      olRows()[0].querySelector('.ol-synopsis').textContent === 'Where it begins' && olRows()[1].style.getPropertyValue('--level') === '1' && olRows()[4].style.getPropertyValue('--level') === '2');
+    check('outline: the scene the caret is in is marked and has focus', olRows()[2].getAttribute('aria-current') === 'location' && of2.contentDocument.activeElement === olRows()[2]);
+    check('outline: the writer\'s words are only text', !fq(of2, '#outline-list img') && !ow.__pwned);
+    keydown(of2, olRows()[2], 'ArrowDown');
+    check('outline: Down and Up move between the items', of2.contentDocument.activeElement === olRows()[3]);
+    keydown(of2, olRows()[3], 'ArrowUp');
+
+    // Jump to a scene far down: the caret goes to its first character, and the line shows near the top of the editor
+    olRows()[4].click();
+    const carLine = lineOf('INT. CAR');
+    const padY = parseFloat(ow.getComputedStyle(oe).paddingTop) + parseFloat(ow.getComputedStyle(oe).paddingBottom);
+    const lineH = (oe.scrollHeight - padY) / srcLines.length; // no line wraps in this script
+    const carTop = carLine * lineH;
+    check('outline: choosing a scene closes the window and puts the caret at the start of its heading',
+      active(of2).length === 0 && of2.contentDocument.activeElement === oe && oe.selectionStart === posOf(carLine) && oe.selectionEnd === posOf(carLine), [oe.selectionStart, posOf(carLine)]);
+    check('outline: the heading is in view, in the top half of the editor (not at its bottom edge)',
+      carTop >= oe.scrollTop && carTop - oe.scrollTop < oe.clientHeight / 2, [carTop, oe.scrollTop, oe.clientHeight]);
+    await sleep(100);
+    const carEl = fq(of2, '#page [data-line="' + carLine + '"]');
+    const rtBox = rect(fid(of2, 'render-target')), carBox = rect(carEl);
+    check('outline: and the preview shows that scene too', carBox.top >= rtBox.top && carBox.bottom <= rtBox.bottom, [carBox.top, rtBox.top, rtBox.bottom]);
+    check('outline: the element bar follows the caret', fq(of2, '.el-btn[aria-pressed="true"]').dataset.el === 'scene');
+
+    fid(of2, 'outlineBtn').click();
+    const filterBox = fid(of2, 'outlineFilter');
+    filterBox.value = 'dawn';
+    filterBox.dispatchEvent(new ow.Event('input', { bubbles: true }));
+    check('outline: typing finds matching scenes and sections', olRows().map(olText).join() === 'EXT. ROAD - DAWN', olRows().map(olText));
+    const enterEv = keydown(of2, filterBox, 'Enter');
+    check('outline: Enter jumps to the first match', enterEv.defaultPrevented && active(of2).length === 0 && oe.selectionStart === posOf(lineOf('EXT. ROAD')));
+    fid(of2, 'outlineBtn').click();
+    filterBox.value = 'zzz';
+    filterBox.dispatchEvent(new ow.Event('input', { bubbles: true }));
+    check('outline: no match says so', olRows().length === 0 && /Nothing matches/.test(fid(of2, 'outline-list').textContent));
+    keydown(of2, filterBox, 'Escape');
+    setText(of2, 'Just some action, no scenes.');
+    fid(of2, 'outlineBtn').click();
+    check('outline: a script with no scenes or sections explains what would appear', /No scenes or sections yet/.test(fid(of2, 'outline-list').textContent) && of2.contentDocument.activeElement === filterBox);
+    keydown(of2, filterBox, 'Escape');
+    check('help: the outline is explained', /Outline/.test(fid(of2, 'help-modal').textContent) && /jump/.test(fid(of2, 'help-modal').textContent));
+    of2.remove();
+
+    // Phone, from the Preview: it stays in the Preview, scrolled to the scene
+    const op = await openFrame(375, 667);
+    setText(op, OUTLINED);
+    op.contentWindow.setView('preview');
+    fid(op, 'outlineBtn').click();
+    Array.from(fq(op, '#outline-list').querySelectorAll('.outline-item'))[5].click();
+    const roadEl = fq(op, '#page [data-line="' + lineOf('EXT. ROAD') + '"]');
+    const prt = rect(fid(op, 'render-target')), road = rect(roadEl);
+    check('phone outline: from the Preview it stays in the Preview and shows the scene', op.contentDocument.body.dataset.view === 'preview' &&
+      road.top >= prt.top && road.bottom <= prt.bottom && fid(op, 'render-target').scrollTop > 0, [op.contentDocument.body.dataset.view, road.top, prt.top, prt.bottom]);
+    const obtn = rect(fid(op, 'outlineBtn')), sbtn = rect(fid(op, 'statsBtn'));
+    check('phone outline: Outline and the page count both fit in the slim row', obtn.left >= 0 && sbtn.right <= 375 && obtn.right <= sbtn.left && obtn.height >= 36);
+    op.remove();
+
     // Phone: the Library fits a 375px screen and every action is reachable
     await seedLibrary();
     await reloadFrame(m);
