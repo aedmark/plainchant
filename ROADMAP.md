@@ -69,7 +69,8 @@ Goal: the "just type" promise. The editor helps; it never interrupts.
   for opening Preview on mobile; continuous desktop sync still uses percentage.
 - [x] P2-07 Focus / typewriter mode (dim everything but the current block, keep the caret vertically centred) (D-025):
   veils over the textarea, the Focus toggle in the element bar and Ctrl/Cmd+Shift+F, remembered
-- [ ] P2-08 Editor styling that hints at structure (subtle per-element colour) without becoming a WYSIWYG editor
+- [x] P2-08 Editor styling that hints at structure (subtle per-element colour) without becoming a WYSIWYG editor
+  (D-031: a coloured copy behind a transparent textarea)
 - [~] P2-09 Real-device pass for the mobile and tablet layouts (iPad and iPhone Safari, Android Chrome: keyboard vs.
   caret line, no zoom-on-focus, safe areas, rotation, iPad Split View / Stage Manager window sizes, hardware
   keyboard attached). Serve the folder over LAN with `python -m http.server`. The user reported (2026-09-20) that

@@ -1678,6 +1678,85 @@ setTimeout(() => {
     check('keyboard room: a desktop window with a mouse is left as it was (no on-screen keyboard)', cde.scrollTop === deskTop, [cde.scrollTop, deskTop]);
     cd.remove();
 
+    // 16k. Colour hints in the editor (P2-08): a coloured copy of the text behind the textarea, whose own text is transparent
+    const hf = await openFrame(1200, 700);
+    const hw = hf.contentWindow, he = fid(hf, 'editor'), layer = fq(hf, '.editor-shade');
+    const HINT_TEXT = 'Title: Hints\n\nINT. KITCHEN - DAY\n\nShe waits. [[a note]] Long ' + 'words '.repeat(40) + '\n\n' +
+      'JOHN\n(quietly)\nHi <b>there</b>.\n\n/* gone\nall gone */\n\n# ACT\n\n= Synopsis.\n\nCUT TO:\n\nMARA';
+    setText(hf, HINT_TEXT);
+    he.focus();
+    he.setSelectionRange(he.value.length, he.value.length);
+    hw.drawShade();
+    const kindsDrawn = () => Array.from(layer.children).map(c => c.className.replace('sh-', ''));
+    const layerText = () => layer.textContent.replace(/\u200b/g, '');
+    check('hints: the editor is shaded, its own text transparent, and the caret still shows',
+      hf.contentDocument.body.classList.contains('shaded') && getComputedStyle(he).color === 'rgba(0, 0, 0, 0)' && getComputedStyle(he).caretColor !== 'rgba(0, 0, 0, 0)',
+      [getComputedStyle(he).color, getComputedStyle(he).caretColor]);
+    check('hints: the layer holds exactly the editor\'s text, one span per line', layerText() === he.value && layer.children.length === he.value.split('\n').length,
+      [layerText().length, he.value.length]);
+    const expectKinds = hw.Fountain.classifyLines(HINT_TEXT);
+    expectKinds[expectKinds.length - 1] = 'character'; // the line being typed: a cue before its speech exists
+    check('hints: each line coloured by its kind; the line being typed as the element bar shows it (a cue before its speech)',
+      kindsDrawn().join() === expectKinds.join(), kindsDrawn());
+    check('hints: scene, character and dialogue colours differ from action', new Set(['.sh-scene', '.sh-character', '.sh-dialogue', '.sh-action']
+      .map(sel => getComputedStyle(fq(hf, '.editor-shade ' + sel)).color)).size === 4);
+    check('hints: notes and boneyard marked; the writer\'s text is only ever text',
+      fq(hf, '.editor-shade .sh-note').textContent === '[[a note]]' && fq(hf, '.editor-shade .sh-boneyard').textContent === '/* gone\n' && !fq(hf, '.editor-shade b'));
+    const lr = rect(layer), er = rect(he);
+    check('hints: the layer sits exactly on the editor\'s box, without its scrollbar, and wraps the same (the text heights agree)',
+      Math.abs(lr.top - er.top) < 0.5 && Math.abs(lr.left - er.left) < 0.5 && Math.abs(lr.width - (er.width - (he.offsetWidth - he.clientWidth))) < 0.1 && Math.abs(lr.height - he.clientHeight) < 0.5 &&
+      getComputedStyle(layer).paddingTop === getComputedStyle(he).paddingTop && !hw.eval('shadeBroken'), [lr, er, he.clientWidth]);
+    he.setSelectionRange(0, 0);
+    hf.contentDocument.dispatchEvent(new hw.Event('selectionchange'));
+    check('hints: moving the caret away, the unfinished cue is shown as the parser reads it (action)', kindsDrawn().slice(-1)[0] === 'action', kindsDrawn().slice(-1));
+    const firstSpan = layer.firstElementChild;
+    he.setSelectionRange(he.value.length, he.value.length);
+    he.setRangeText('A', he.value.length, he.value.length, 'end');
+    he.dispatchEvent(new hw.Event('input', { bubbles: true }));
+    check('hints: typing redraws only the lines that changed', layer.firstElementChild === firstSpan && layerText() === he.value);
+    setText(hf, HINT_TEXT + '\n' + 'A line of action.\n'.repeat(80));
+    he.scrollTop = 400;
+    he.dispatchEvent(new hw.Event('scroll'));
+    check('hints: the layer scrolls with the editor', he.scrollTop > 0 && layer.scrollTop === he.scrollTop, [layer.scrollTop, he.scrollTop]);
+    hw.setFocusMode(true);
+    await sleep(100);
+    check('hints: in focus mode the layer takes the editor\'s new padding and stays in step',
+      getComputedStyle(layer).paddingTop === getComputedStyle(he).paddingTop && layer.scrollTop === he.scrollTop && !hw.eval('shadeBroken'),
+      [getComputedStyle(layer).paddingTop, getComputedStyle(he).paddingTop, layer.scrollTop, he.scrollTop]);
+    hw.setFocusMode(false);
+    setText(hf, '');
+    check('hints: an empty editor still shows its placeholder', getComputedStyle(he, '::placeholder').color !== 'rgba(0, 0, 0, 0)' && layerText() === '',
+      getComputedStyle(he, '::placeholder').color);
+    const LONG_HINTS = ('INT. ROOM - DAY\n\nShe crosses to the window and looks out at the rain.\n\nMARA\nI have been here all week, and nothing has changed at all.\n\n').repeat(700);
+    setText(hf, LONG_HINTS);
+    he.setSelectionRange(he.value.length, he.value.length);
+    const t0 = performance.now();
+    he.setRangeText('x', 20, 20, 'end');
+    const tokens = hw.Fountain.parse(he.value);
+    void he.scrollHeight; void rect(fq(hf, '#page')); // the textarea and the preview lay out their own text first, as they would anyway
+    const t1 = performance.now();
+    hw.drawShade(tokens);
+    const t2 = performance.now();
+    check('hints: on a 120-page script a keystroke\'s redraw stays quick', t2 - t1 < 20 && layerText() === he.value, [Math.round(t2 - t1) + ' ms', Math.round(t1 - t0) + ' ms parse']);
+    check('hints: 4,900 lines down, the copy still wraps exactly as the editor (no drift)', !hw.eval('shadeBroken') && hf.contentDocument.body.classList.contains('shaded'));
+    // A copy that wraps differently must never be shown: the textarea's own text comes back
+    const skew = hf.contentDocument.createElement('style');
+    skew.textContent = '.editor-shade { letter-spacing: 3px !important; }';
+    hf.contentDocument.head.appendChild(skew);
+    hw.console.warn = () => {};
+    hw.drawShade();
+    check('hints: if the copy ever wraps differently, the hints switch off and the editor shows its own text',
+      hw.eval('shadeBroken') && !hf.contentDocument.body.classList.contains('shaded') && getComputedStyle(he).color !== 'rgba(0, 0, 0, 0)' && !shown(layer),
+      [hw.eval('shadeBroken'), getComputedStyle(he).color]);
+    hf.remove();
+
+    const hp = await openFrame(375, 667);
+    setText(hp, HINT_TEXT);
+    check('phone hints: shaded, and wrapped the same on a narrow screen', hp.contentDocument.body.classList.contains('shaded') && !hp.contentWindow.eval('shadeBroken'));
+    hp.contentWindow.setView('preview');
+    check('phone hints: previewing hides the layer with the editor', !shown(fq(hp, '.editor-shade')));
+    hp.remove();
+
     // Phone: the Library fits a 375px screen and every action is reachable
     await seedLibrary();
     await reloadFrame(m);

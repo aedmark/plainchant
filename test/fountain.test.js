@@ -407,3 +407,36 @@ test('runs: the visible text is exactly the preview\'s text content', () => {
         assert.equal(visible, html, t);
     });
 });
+
+// ---------- shade: the editor's colour hints (P2-08) ----------
+
+const shadeKinds = (text) => Fountain.shade(text).map((l) => l.kind);
+const shadeText = (text) => Fountain.shade(text).map((l) => l.runs.map((r) => r.text).join('')).join('\n');
+
+test('shade: one entry per source line, with the kind classifyLines gives it', () => {
+    const text = 'Title: X\n\nINT. A - DAY\n\nHe waits.\n\nJOHN\n(quietly)\nHi.\n\n# ACT\n\n= The end.\n\nCUT TO:\n';
+    assert.deepEqual(shadeKinds(text), Fountain.classifyLines(text));
+    assert.equal(Fountain.shade(text).length, text.split('\n').length);
+});
+
+test('shade: the runs give back exactly the source text, line for line', () => {
+    ['', '\n\n', 'INT. A - DAY\n\nHe [[note]] waits. /* cut\nthis */ Done.\n', 'a\r\nb', '<b>&amp;</b>\t  x  '].forEach((text) => {
+        assert.equal(shadeText(text), text.replace(/\r\n?/g, '\n'), JSON.stringify(text));
+    });
+});
+
+test('shade: notes and closed boneyard are marked, wherever they start and end', () => {
+    const lines = Fountain.shade('He waits. [[check this]] Then [[and this]].\nKeep /* gone\nall gone\nstill */ kept.\n/* open');
+    const marks = (l) => l.runs.map((r) => (r.mark || '-') + ':' + r.text);
+    assert.deepEqual(marks(lines[0]), ['-:He waits. ', 'note:[[check this]]', '-: Then ', 'note:[[and this]]', '-:.']);
+    assert.deepEqual(marks(lines[1]), ['-:Keep ', 'boneyard:/* gone']);
+    assert.deepEqual(marks(lines[2]), ['boneyard:all gone']);
+    assert.deepEqual(marks(lines[3]), ['boneyard:still */', '-: kept.']);
+    assert.deepEqual(marks(lines[4]), ['-:/* open'], 'an unclosed boneyard is plain text, as in the parser');
+});
+
+test('shade: parsed tokens can be passed in, so the text is parsed once', () => {
+    const text = 'INT. A - DAY\n\nJOHN\nHi.';
+    assert.deepEqual(Fountain.shade(text, Fountain.parse(text)), Fountain.shade(text));
+    assert.deepEqual(Fountain.classifyLines(text, Fountain.parse(text)), Fountain.classifyLines(text));
+});

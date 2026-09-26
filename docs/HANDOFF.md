@@ -11,10 +11,15 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 _Last updated: 2026-09-26, session 13 (script stats, P4-04; outline navigator, P4-03; focus mode, P2-07; offline, P4-02;
 persistent storage, P4-12; scene stats, P4-13 to P4-15;
-the caret kept clear of the keyboard, P2-16). Session 12 built IndexedDB storage, dropped legacy
+the caret kept clear of the keyboard, P2-16; colour hints in the editor, P2-08). Session 12 built IndexedDB storage, dropped legacy
 support, and built print / save as PDF._
 
 **What works**
+- **Colour hints in the editor** (P2-08, D-031; `src/app/shade.js`, `Fountain.shade`). Scene headings warm, cues blue,
+  dialogue a little brighter than action, parentheticals and notes muted, transitions violet, sections and synopses
+  green, boneyard dim. Drawn on a copy of the text behind the textarea, whose own text is transparent: typing, undo,
+  selection and the keyboard are still the textarea's. The line being typed is coloured as the element bar shows it.
+  A wrap check switches the hints off for the visit (plain editor text again) if the copy ever misaligns.
 - **The caret kept clear of the keyboard** (P2-16, D-030; `keepCaretClear` in `src/app/layout.js`). On touch devices and
   windows under 1024px, typing near the bottom of the editor keeps the line being written three lines above its
   bottom edge (the element bar and keyboard), and so does the keyboard coming up. Desktop windows are unchanged; focus
@@ -121,6 +126,12 @@ support, and built print / save as PDF._
 - Scroll sync no longer divides by zero.
 
 **Verified**
+- **Colour hints (P2-08), session 13:** `npm test` 265 (4 new `shade` tests); `bash test/run-headless.sh` 253 unit +
+  **522 e2e** (section 16k: shaded and transparent, the layer's text and kinds, colours differ, notes / boneyard /
+  escaping, the layer exactly on the editor's box, the caret line, only changed lines redrawn, scrolling, focus
+  mode's padding, the placeholder, a 120-page redraw under 20 ms and no drift 4,900 lines down, the fallback when the
+  copy is skewed, the phone). Found and fixed on the way: a unitless line height drifting 1/64px a line.
+  Mutations: 10 of 10 fail a test.
 - **Keyboard room (P2-16), session 13:** `bash test/run-headless.sh` 249 unit + **506 e2e** (section 16j: the line
   lifted exactly three line heights, a new last line too, nothing moved higher up or for a selection, the fake
   keyboard shrinking the editor, focus mode left alone, desktop unchanged). The line height and the last line's bottom
@@ -213,6 +224,9 @@ support, and built print / save as PDF._
   and phone in headless Edge.
 
 **Not verified / not done**
+- **Colour hints (P2-08) only seen in headless Chromium.** Firefox and Safari may wrap the copy a hair differently:
+  then the wrap check turns the hints off and the editor looks as before (a console warning says so). Worth a look in
+  both, with a long script, and with IME / dictation on a phone. The colours themselves are the owner's call.
 - **P2-16 has not been on a phone or tablet.** Whether three lines feels right, and whether iOS Safari's own scrolling
   fights it, is for the owner to try: type at the bottom of a long script with the keyboard up.
 - **Persistent storage (P4-12) has not met a real browser's yes.** Not seen: Firefox's prompt (and whether it wants a
@@ -363,7 +377,7 @@ support, and built print / save as PDF._
    awkward; P3-12, page view, is for later. The outline navigator, P4-03, is done too.) Persistent storage, P4-12, is done
    too.) **Ask the owner what comes next.** Candidates: P2-10 (tap a block in the phone
    preview to jump there; `jumpToLine` exists), P4-05 (version snapshots), P4-06 (themes, font size, an accessibility
-   pass), P2-08 (editor colours by element).
+   pass), P2-15 (settings: now also a place for turning the colour hints off).
 5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
 6. (P4-10 and P4-11 are done: D-018, D-019, D-020.)
 
@@ -411,6 +425,7 @@ Then **P4-13 scene stats** (D-028): `sceneList` and `Stats.eighths` in `src/stat
 in the Script stats window that jumps like the Outline. Then **P4-14 and P4-15** (D-029): `Stats.heading`, the scene
 mix and the locations in the same window.
 Then **P2-16** (D-030): `keepCaretClear` in `layout.js`, focus mode's measuring cache moved there and made exact.
+Then **P2-08** (D-031): `Fountain.shade`, `src/app/shade.js`, the editor's line height as a length; Q-001 answered.
 **Next session should start with:** "Next steps" above.
 
 ### Session 12: 2026-09-25: IndexedDB storage (P4-10)

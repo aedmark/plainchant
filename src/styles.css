@@ -155,8 +155,33 @@ textarea {
     color: var(--text-void);
     font-family: monospace;
     font-size: 0.875rem;
-    line-height: 1.6;
+    /* 1.6em, not 1.6: a unitless line height lays out a hair differently from the same length, and the copies of the
+       text (the colour hints, the measuring copy) can only be given the length. 1/64px a line added up over a long
+       script (D-031). */
+    line-height: 1.6em;
 }
+
+/* --- COLOUR HINTS in the editor (P2-08, D-031): a coloured copy of the text behind the textarea, whose own text is
+   then transparent (shade.js). Colours only: weight and style would change the width of the letters. --- */
+.pane-void > textarea { position: relative; z-index: 1; }
+.editor-shade { position: absolute; z-index: 0; margin: 0; overflow: hidden; pointer-events: none; color: var(--text-void); }
+body:not(.shaded) .editor-shade { display: none; }
+.editor-shade::after { content: ''; display: block; height: 100vh; } /* scroll room past the text */
+.editor-shade > span { display: block; } /* a line of its own: redrawing one line lays out only that line */
+body.shaded #editor { color: transparent; caret-color: #e4e4e7; }
+body.shaded #editor::selection { color: transparent; background: rgba(148, 163, 184, 0.3); }
+#editor::placeholder { color: var(--text-void-muted); opacity: 1; }
+.sh-scene { color: #e8cf98; }
+.sh-character { color: #93c5fd; }
+.sh-dialogue { color: #d4d4d8; }
+.sh-parenthetical { color: #8b93a1; }
+.sh-transition { color: #c4b5fd; }
+.sh-section { color: #86cfa3; }
+.sh-synopsis { color: #74a487; }
+.sh-title_page { color: #b9b1a3; }
+.sh-page_break { color: var(--text-void-muted); }
+.sh-note { color: #7a8597; }
+.sh-boneyard { color: #5f6675; }
 
 /* --- ELEMENT BAR: shows what the current line is, and changes it --- */
 .element-bar {
@@ -695,6 +720,7 @@ code.inline, .help-table code.inline {
     /* While previewing, the Void's box goes away but its menu (a fixed-position child) must stay reachable */
     body[data-view="preview"] .pane-void { display: contents; }
     body[data-view="preview"] .pane-void textarea,
+    body[data-view="preview"] .editor-shade,
     body[data-view="preview"] .element-bar,
     body[data-view="preview"] .focus-veil { display: none; }
 

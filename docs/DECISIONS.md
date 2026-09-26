@@ -549,8 +549,33 @@ written sits against the element bar and the keyboard, with nothing visible belo
 **Consequences:** Arrow keys and taps do not trigger it (only typing and the keyboard opening). Verified only in
 headless Chromium with a fake visual viewport; iOS Safari and Android are the real test.
 
+## D-031 Colour hints: a coloured copy behind a transparent textarea, with a wrap check  (2026-09-26, status: accepted)
+**Context:** P2-08 (hint at structure with subtle per-element colour, without becoming WYSIWYG) and Q-001 (keep the
+plain `<textarea>` or move to contenteditable). The textarea is what makes typing, undo, selection, IME and the
+on-screen keyboard reliable; it cannot colour part of its text.
+**Decision:**
+1. **Keep the textarea; draw the colours on a copy behind it** (`src/app/shade.js`): a layer with the same box,
+   type, padding and scroll, one block per source line coloured by its kind, and the textarea's own text made
+   transparent (the caret keeps a colour; selection is a translucent tint). Q-001 is answered: textarea plus overlay.
+2. **What colours what:** `Fountain.shade(text, tokens)` (pure, tested) gives each line's kind (`classifyLines`, from
+   the same parse as the preview) and marks `[[notes]]` and closed boneyard. The line being typed takes the kind the
+   element bar shows (`Editing.kindAt`), so a cue is blue before its speech exists. Colours only: bold or italic
+   would change letter widths and break the alignment. Scene headings warm, cues blue, dialogue a little brighter
+   than action, parentheticals and notes muted, transitions violet, sections and synopses green, boneyard dim.
+3. **Only changed lines are redrawn** (keys compared from both ends); moving the caret repaints only the lines
+   involved, without parsing. About 4 ms a keystroke on a 120-page script in headless Chromium.
+4. **A wrap check keeps it honest:** after each draw, the textarea's scroll height must equal the copy's text height
+   plus padding (or without the bottom padding, as Firefox has reported it). If not, the hints switch off for the
+   visit and the textarea shows its own text: wrong colours on the wrong letters would be worse than none.
+5. **Two exactness fixes it needed:** the editor's line height is `1.6em`, not `1.6` (a unitless line height laid
+   out 1/64px a line differently from the same length, 77px adrift after 4,900 lines), and the copies' width is
+   fractional (`clientWidth` rounds). The measuring copy (`textTopIn`) benefits too.
+**Consequences:** Always on; no switch yet (P2-15, settings, could add one). Firefox and Safari are where the wrap
+check may bite: if they wrap a hair differently, the writer just sees the plain editor. Emphasis (`*italic*`) is not
+shown in the editor.
+
 ## Open questions
 
-- Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom
-  editor for inline element styling (P2-08)? Prefer textarea plus an overlay until it proves insufficient.
+- ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom
+  editor for inline element styling (P2-08)?~~ Textarea plus an overlay (D-031).
 - Q-002 Sync (Phase 5): local-file-first via the File System Access API, or hosted accounts?

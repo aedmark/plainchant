@@ -9,6 +9,8 @@
  *   Fountain.setTitle(t, s)   -> the text with its Title: line set to s (creates the title page if there is none)
  *   Fountain.fileName(t, ext) -> a safe file name for exporting t, e.g. "big-fish.fountain"
  *   Fountain.classifyLines(t) -> one type per source line, for the editor (see src/editing.js)
+ *   Fountain.shade(t)         -> per source line { kind, runs: [{ text, mark: null | 'note' | 'boneyard' }] }: the
+ *                                editor's colour hints (P2-08)
  *   Fountain.runs(text)       -> [{ text, bold, italic, underline }]: inline emphasis as data, notes removed (print)
  *
  * Follows Fountain 1.1 (https://fountain.io/syntax). Deliberately strict about case: lowercase cues are action (D-004).
@@ -341,10 +343,10 @@
      * token type. A dialogue block's cue line is 'character' and its other lines are 'parenthetical' / 'dialogue'.
      * Lines that are part of an action paragraph are 'action'; title-page lines are 'title_page'.
      */
-    function classifyLines(text) {
+    function classifyLines(text, tokens) {
         const count = String(text || '').replace(/\r\n?/g, '\n').split('\n').length;
         const kinds = new Array(count).fill('blank');
-        parse(text).forEach(function (t) {
+        (tokens || parse(text)).forEach(function (t) {
             if (t.type === 'action') {
                 const span = t.text.split('\n').length;
                 for (let k = 0; k < span; k++) kinds[t.line + k] = 'action';
@@ -359,6 +361,38 @@
             }
         });
         return kinds;
+    }
+
+    /**
+     * The editor's colour hints (P2-08, D-031): for each source line its kind (classifyLines) and its text cut into
+     * runs, [[notes]] and closed boneyard marked. The runs of a line join back to exactly that line. `tokens`, if
+     * given, are parse(text), so a caller that has just parsed the text does not parse it again.
+     */
+    function shade(text, tokens) {
+        const src = String(text || '').replace(/\r\n?/g, '\n');
+        const kinds = classifyLines(src, tokens);
+        const bone = []; // [start, end) of each closed /* ... */
+        src.replace(/\/\*[\s\S]*?\*\//g, function (m, at) { bone.push([at, at + m.length]); return m; });
+        let pos = 0, b = 0;
+        return src.split('\n').map(function (line, i) {
+            const start = pos, end = pos + line.length;
+            pos = end + 1;
+            while (b < bone.length && bone[b][1] <= start) b++;
+            const inBone = b < bone.length && bone[b][0] < end;
+            if (!inBone && line.indexOf('[[') === -1) return { kind: kinds[i], runs: [{ text: line, mark: null }] };
+            const marks = new Array(line.length).fill(null);
+            line.replace(/\[\[.*?\]\]/g, function (m, at) { marks.fill('note', at, at + m.length); return m; });
+            for (let k = b; k < bone.length && bone[k][0] < end; k++) {
+                marks.fill('boneyard', Math.max(bone[k][0], start) - start, Math.min(bone[k][1], end) - start);
+            }
+            const runs = [];
+            for (let c = 0; c < line.length; c++) {
+                const last = runs[runs.length - 1];
+                if (last && last.mark === marks[c]) last.text += line[c];
+                else runs.push({ text: line[c], mark: marks[c] });
+            }
+            return { kind: kinds[i], runs: runs.length ? runs : [{ text: '', mark: null }] };
+        });
     }
 
     /** Title-page Title if present, otherwise the first non-empty line; '' for an empty script. Not truncated. */
@@ -433,6 +467,6 @@
 
     return {
         parse: parse, toHTML: toHTML, extractTitle: extractTitle, fullTitle: fullTitle, setTitle: setTitle,
-        fileName: fileName, classifyLines: classifyLines, escapeHTML: escapeHTML, inline: inline, runs: runs
+        fileName: fileName, classifyLines: classifyLines, shade: shade, escapeHTML: escapeHTML, inline: inline, runs: runs
     };
 });

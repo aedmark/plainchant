@@ -50,12 +50,21 @@ function scrollPreviewToCaret() {
 // say where its wrapped lines fall. Used by the outline's jump (D-024) and focus mode (P2-07). A piece of the text
 // that starts at a line start measures the same as it would in place.
 const measureCopy = document.createElement('div');
-function textTopIn(text, pos) {
+
+// Give `el` the editor's type, padding and wrapping, and its width without the scrollbar, so text in it wraps exactly
+// as it does in the editor (measureCopy here; the colour layer in shade.js)
+function copyEditorType(el) {
     const cs = getComputedStyle(editor);
     ['fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'letterSpacing', 'wordSpacing', 'lineHeight', 'tabSize', 'textIndent',
-        'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'].forEach((p) => { measureCopy.style[p] = cs[p]; });
-    Object.assign(measureCopy.style, { position: 'absolute', visibility: 'hidden', left: '-9999px', top: '0', boxSizing: 'border-box',
-        width: editor.clientWidth + 'px', border: '0', whiteSpace: 'pre-wrap', overflowWrap: 'break-word' });
+        'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'].forEach((p) => { el.style[p] = cs[p]; });
+    // the width to the fraction of a pixel (clientWidth rounds), less the scrollbar
+    const width = editor.getBoundingClientRect().width - (editor.offsetWidth - editor.clientWidth);
+    Object.assign(el.style, { boxSizing: 'border-box', width: width + 'px', border: '0', whiteSpace: 'pre-wrap', overflowWrap: 'break-word' });
+}
+
+function textTopIn(text, pos) {
+    copyEditorType(measureCopy);
+    Object.assign(measureCopy.style, { position: 'absolute', visibility: 'hidden', left: '-9999px', top: '0' });
     if (!measureCopy.isConnected) document.body.appendChild(measureCopy);
     // A span's top is the top of its text, a little below the top of its line; measuring from a mark at the very
     // start cancels that (and the padding) out. getBoundingClientRect, not offsetTop, which rounds to whole pixels.

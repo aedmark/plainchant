@@ -36,7 +36,7 @@ Sessions are short-lived and context resets between them, so the repo carries th
 | `icons/`, `manifest.webmanifest`, `sw.js` | The placeholder icon (SVG + PNG sizes), the web app manifest and the service worker: offline and installable when served over http(s). `sw.js`'s file list must match what the page loads (`test/structure.test.js` checks) (D-026) |
 | `src/styles.css` | All the CSS. Desktop-first; the mobile block mirrors `MOBILE_QUERY` / `FIT_QUERY` in `src/app/layout.js` |
 | `src/app/*.js` | The app itself, one file per concern, loaded in order by `index.html` (see "App scripts" below, D-014) |
-| `src/fountain.js` | Fountain parser + HTML renderer. Pure, UMD, no DOM (D-003) |
+| `src/fountain.js` | Fountain parser + HTML renderer, and the editor's line kinds (`classifyLines`, `shade`). Pure, UMD, no DOM (D-003) |
 | `src/editing.js` | Typing helpers (Tab, smart Enter, auto-uppercase): text + caret in, edit out. Pure, UMD (D-010) |
 | `src/library.js` | Library data rules (search, soft delete, restore, purge, duplicate, rename): scripts object in, new object out. Pure, UMD (D-013) |
 | `src/importing.js` | Import rules: which files to accept, decoding (UTF-8/16, Windows-1252), line endings. Pure, UMD (D-016) |
@@ -58,13 +58,14 @@ use what an earlier file already defined. Code inside functions runs later and c
 
 | File | Owns |
 | --- | --- |
-| `core.js` | `editor` / `renderTarget` / `page` references, `newId`, `currentScriptId`, `autoSaveTimer`, `showNotice`, `render()` |
+| `core.js` | `editor` / `renderTarget` / `page` references, `newId`, `currentScriptId`, `autoSaveTimer`, `showNotice`, `render()` (one parse for the preview and the colour hints) |
 | `layout.js` | One pane at a time, the phone menu, keyboard-safe sizing (`fitToViewport`), the caret kept clear of the keyboard (`keepCaretClear`, D-030), scroll sync, measuring where text falls in the editor (`textTopIn` / `textTop`, the cached `textAbovePx`) |
 | `persistence.js` | The in-memory library, IndexedDB writes and the emergency buffer, the no-storage notice, restoring the last script, New, the trash purge, save on hide (D-019) |
 | `dialogs.js` | `openModal` / `closeModal`: the one accessible helper for every modal window |
 | `library-ui.js` | The Library dialog (data rules are in `src/library.js`) |
 | `example.js`, `help.js`, `tour.js` | The example script, the Help window, the welcome tour |
 | `typing.js` | Tab, smart Enter, auto-uppercase, the element bar, autocomplete chips (rules are in `src/editing.js` and `src/suggest.js`) |
+| `shade.js` | The editor's colour hints: a coloured copy of the text behind the textarea (whose own text is transparent), redrawn line by line from `render()`'s parse, with a wrap check that switches it off if it ever misaligns (D-031) |
 | `focus.js` | Focus mode: the veils around the current block, typewriter scrolling, the toggle and Ctrl/Cmd+Shift+F (D-025) |
 | `export.js` | The Export dialog (the `.fountain` download), and Copy |
 | `import.js` | Import: the Library's picker and drag-and-drop onto the page; `showNotice` messages (defined in `core.js`) |
@@ -87,6 +88,8 @@ Keep each file's own listeners in that file. Functions the e2e tests call (`save
 - Classic `<script>` files, not ES modules (`file://` blocks module imports).
 - The parser must never touch the DOM, `window` or Node-only APIs. Escape all user text before it reaches HTML.
 - Match existing CSS variable names and class names (`script-*` for rendered screenplay elements).
+- The editor's line height must stay a length (`1.6em`), never unitless, and anything copying the editor's text must use
+  `copyEditorType` (layout.js): the colour hints only line up if the copies lay out exactly like the textarea (D-031).
 - Scripts live in IndexedDB (database `plainchant`, stores `scripts` and `meta`). localStorage holds only
   `plainchant_onboarded` (the tour), `plainchant_emergency` (the buffer), `plainchant_paper` (Letter / A4),
   `plainchant_focus` (focus mode) and `plainchant_keep_asked` (the browser said no to keeping the library, D-027). There is no legacy support and no
