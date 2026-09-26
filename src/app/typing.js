@@ -166,8 +166,12 @@ editor.addEventListener('beforeinput', (e) => {
     if (applyingEdit || e.isComposing) return;
     if (e.inputType !== 'insertLineBreak' && e.inputType !== 'insertParagraph') return;
     if (shiftDown) return;
-    const edit = Editing.enter(editor.value, editor.selectionStart, editor.selectionEnd, elementMode,
-        { paragraphs: settings.paragraphs }); // the writer's setting (settings.js)
+    // The writer's settings (settings.js). The script's names are only read if a line might be a cue (P2-14).
+    const text = editor.value;
+    const edit = Editing.enter(text, editor.selectionStart, editor.selectionEnd, elementMode, {
+        paragraphs: settings.paragraphs,
+        cues: settings.cues ? { get names() { return Suggest.names(text); } } : null
+    });
     if (!edit) return;
     e.preventDefault();
     applyEdit(edit);

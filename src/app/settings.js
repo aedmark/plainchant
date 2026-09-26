@@ -1,5 +1,5 @@
 /*
- * Plainchant app script: settings: the writer's choices (P2-15, P4-06): theme, text size, colours in the editor, blank lines on Enter, capitals as you type
+ * Plainchant app script: settings: the writer's choices (P2-15, P4-06, P2-14): theme, text size, colours in the editor, blank lines on Enter, capitals as you type, guessing names
  *
  * One of the classic scripts loaded by index.html, in order (see CLAUDE.md, "App scripts"). They share the
  * page's global scope, so top-level functions and consts here are visible to the files after it, and anything
@@ -11,14 +11,15 @@
 // options (typing.js passes them), the colour layer (shade.js) is drawn or cleared, and the theme and text size are
 // on the page's root element (D-035). The theme is applied as this file loads, before the page is first drawn.
 const SETTINGS_KEY = 'plainchant_settings';
-const SETTING_DEFAULTS = { theme: 'dark', size: 'normal', colours: true, paragraphs: true, capitals: true };
+const SETTING_DEFAULTS = { theme: 'dark', size: 'normal', colours: true, paragraphs: true, capitals: true, cues: true };
 const SETTING_CHOICES = { theme: ['dark', 'light', 'system'], size: ['small', 'normal', 'large', 'larger'] };
 const TEXT_SCALE = { small: 0.875, normal: 1, large: 1.15, larger: 1.3 }; // of the editor's own size (14px; 16px on phones)
 const settingsModal = document.getElementById('settings-modal');
 const settingBoxes = {
     colours: document.getElementById('setColours'),
     paragraphs: document.getElementById('setParagraphs'),
-    capitals: document.getElementById('setCapitals')
+    capitals: document.getElementById('setCapitals'),
+    cues: document.getElementById('setCues')
 };
 const systemLight = window.matchMedia('(prefers-color-scheme: light)');
 

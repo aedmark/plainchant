@@ -13,7 +13,8 @@ _Last updated: 2026-09-26, session 13 (script stats, P4-04; outline navigator, P
 persistent storage, P4-12; scene stats, P4-13 to P4-15;
 the caret kept clear of the keyboard, P2-16; colour hints in the editor, P2-08; settings, P2-15; tapping the preview, P2-10;
 versions, P4-05;
-themes, text size and an accessibility pass, P4-06). Session 12 built IndexedDB storage, dropped legacy
+themes, text size and an accessibility pass, P4-06;
+guessing character names, P2-14). Session 12 built IndexedDB storage, dropped legacy
 support, and built print / save as PDF._
 
 **What works**
@@ -118,8 +119,11 @@ support, and built print / save as PDF._
     anything else -> blank line (new element). **After an action line it now starts a new paragraph; Shift+Enter is
     the plain line break.** Mid-line, mid-block and selections use the normal Enter.
   - **Auto-uppercase** while typing: `int. `/`ext. `/`est. `/`i/e` scene headings and `... to:` transitions, only
-    after a blank line and only at the end of the line. Character cues are NOT guessed: press Tab (or the Character
-    button) first.
+    after a blank line and only at the end of the line.
+  - **Character names are guessed on Enter** (P2-14, D-036): a line after a blank line that is a name the script
+    already uses (any case, "mara (v.o.)") or a new name written with capitals (1-3 words, no sentence punctuation,
+    "Detective Ruiz") becomes a cue, capitalised, with the speech next. Ctrl/Cmd+Z undoes it; Settings has
+    **Guess character names** to switch it off. Tab / the Character button work as before.
   - **Element bar** under the editor: shows what the current line is and converts it on tap, without closing the
     on-screen keyboard. Short names on phones. Hidden while previewing. This is the touch replacement for Tab.
   - All edits go in through `execCommand('insertText')`, so Ctrl/Cmd+Z undoes each one (tested).
@@ -147,6 +151,12 @@ support, and built print / save as PDF._
 - Scroll sync no longer divides by zero.
 
 **Verified**
+- **Guessing names (P2-14), session 13:** `npm test` 286 (7 new in `test/editing.test.js`: known names in any case,
+  new capitalised names, 25 lines that must not be names, the Enter rule both ways); `bash test/run-headless.sh` 274
+  unit + **587 e2e** (section 16p: through the real Enter path, the bar showing Dialogue after, one-step undo, a
+  sentence and a lowercase new name left alone, the switch and its storage, Help; the sweep passes with the new
+  switch). Mutations: 8 of 8 fail a test after one more case (a name ending in a full stop); a redundant check found
+  by the ninth was removed.
 - **P4-06, session 13:** `npm test` 279; `bash test/run-headless.sh` 267 unit + **578 e2e** (section 16o: dark by
   default, light at once and remembered, the paper stays white, "Match the system", text size with the colour layer
   following at once, both kept on reload, 16px on phones, and the sweep: 2 themes x (18 desktop + 5 phone states), 0
@@ -415,8 +425,9 @@ support, and built print / save as PDF._
 1. **Try the tour as a first-time user on the tablet** (clear site data or
    `localStorage.removeItem('plainchant_onboarded')`). The user proofed the Help copy in session 8; the tour copy
    (`src/app/tour.js` and the tour markup) was not changed then.
-2. **Ask the user how the typing helpers feel** (especially Enter starting a new paragraph after action, and cues
-   needing a Tab). Adjust or add settings (P2-15) / cue suggestions (P2-14) accordingly.
+2. **Ask the user how the typing helpers feel** (especially Enter starting a new paragraph after action, and the new
+   guessing of character names on Enter, P2-14: does it ever take an action line for a name?). Both can be switched
+   off in Settings.
 3. **Ask the user how autocomplete feels** (P2-04, D-017): Tab taking the first suggestion while chips show, needing a
    first letter, chips replacing the element buttons while typing a name. Then P2-21 (time of day after `INT. PLACE - `,
    names on an empty cue line, screen-reader announcements) only if wanted. The agreed order still stands:
@@ -424,7 +435,7 @@ support, and built print / save as PDF._
 4. (Print / save as PDF is done: P3-03 to P3-06, and script stats: P4-04. No browser or device checks are planned
    for either: the owner will report bugs. P3-11, direct `.pdf` download, is the answer if print windows turn out
    awkward; P3-12, page view, is for later. The outline navigator, P4-03, is done too.) Persistent storage, P4-12, is done
-   too.) **Ask the owner what comes next.** Candidates: P2-14 (suggest cues without Tab), P2-21 (autocomplete follow-ups), P4-01
+   too.) **Ask the owner what comes next.** Candidates: P2-21 (autocomplete follow-ups), P4-01
    (incremental render, for very long scripts), P4-16 (compare versions), P2-22 (desktop click-to-jump), P3-11 (a real
    .pdf download), P3-12 (page view), P5-01 (open and save real files). A screen-reader pass by a person is worth doing.
 5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
@@ -437,8 +448,7 @@ support, and built print / save as PDF._
 - Is the tour the right length and tone (four steps), and is showing it once to existing users too?
 - Enter after an action line starts a new paragraph (Shift+Enter for a line break). Right default? (It can now be
   switched off in Settings, D-032.)
-- Cues need Tab or the Character button. Is that acceptable, or should "a short unpunctuated line after a blank
-  line, then Enter" be treated as a cue automatically (P2-14)?
+- ~~Cues need Tab or the Character button.~~ Names are now guessed on Enter (P2-14, D-036). Does it guess wrong?
 - Autocomplete: is Tab-takes-the-first-suggestion right, and do you want the time of day (`- DAY`) suggested too (P2-21)?
 - Is a plain `<textarea>` editor acceptable long term, or is inline styling of the source text (P2-08) a must-have?
 
@@ -480,6 +490,7 @@ Then **P2-15** (D-032): `src/app/settings.js`, options on `Editing.enter` / `aut
 Then **P2-10** (D-033): a tap on the one-pane preview goes to that line; speech lines carry `data-line`. P2-22 added.
 Then **P4-05** (D-034): `src/versions.js`, the `versions` store kept inside `Store.saveScript`, `versions-ui.js`. P4-16 added.
 Then **P4-06** (D-035): colour tokens and a light theme, Theme and Text size in Settings, the accessibility sweep.
+Then **P2-14** (D-036): `Editing.looksLikeCue`, `Editing.enter`'s `cues` option, the Guess character names switch.
 **Next session should start with:** "Next steps" above.
 
 ### Session 12: 2026-09-25: IndexedDB storage (P4-10)

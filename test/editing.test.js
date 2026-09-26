@@ -173,6 +173,59 @@ test('enter with blank lines switched off: a chosen element is still finished, w
     assert.equal(applied(tr, Editing.enter(tr, tr.length, tr.length, 'transition', off)).text, 'X.\n\n> MEANWHILE\n');
 });
 
+// ---------- guessing a cue on Enter (P2-14) ----------
+
+const guessOn = (names) => ({ cues: { names: names || [] } });
+const enterGuess = (t, names, extra) => Editing.enter(t, t.length, t.length, null, Object.assign(guessOn(names), extra || {}));
+
+test('looksLikeCue: a name the script already uses, in any case, with or without an extension', () => {
+    ['mara', 'Mara', 'MARA', 'mara (v.o.)', 'Mara (O.S.)', '  mara  '].forEach((l) => assert.ok(Editing.looksLikeCue(l, ['MARA', 'DEV']), l));
+    assert.ok(Editing.looksLikeCue('detective ruiz', ['DETECTIVE RUIZ']));
+    assert.ok(!Editing.looksLikeCue('marathon', ['MARA']), 'the whole name, not a prefix');
+});
+
+test('looksLikeCue: a new name written with capitals, one to three words, no sentence punctuation', () => {
+    ['Mara', 'Detective Ruiz', 'Old Man Jenkins', "O'Neil", 'Mary-Jane', 'Dr. Okafor', 'Ruiz (V.O.)', 'Élodie'].forEach((l) => {
+        assert.ok(Editing.looksLikeCue(l, []), l);
+    });
+    ['Mara enters.', 'Night falls', 'Silence!', 'Silence.', 'Later.', 'Mara Waits.', 'He waits', 'The Man In The Hat', 'Wait, what', 'Ruiz?', 'john',
+        '', '   ', '!Mara', '.Mara', '> Mara', '# Act', '= Mara', 'INT. HOUSE', 'Ext Garden', 'Cut To:', '12 Monkeys', 'A Very Long Name Indeed Here']
+        .forEach((l) => assert.ok(!Editing.looksLikeCue(l, []), JSON.stringify(l)));
+});
+
+test('enter guessing cues: a known name after a blank line becomes a cue, speech next', () => {
+    const t = 'MARA\nHi.\n\nShe waits.\n\nmara';
+    const r = applied(t, enterGuess(t, ['MARA']));
+    assert.equal(r.text, 'MARA\nHi.\n\nShe waits.\n\nMARA\n');
+    assert.equal(kind(r.text + 'Hello.', 5), 'character');
+});
+
+test('enter guessing cues: a new capitalised name too; an extension is kept and capitalised', () => {
+    const t = 'She waits.\n\nDetective Ruiz (v.o.)';
+    assert.equal(applied(t, enterGuess(t, [])).text, 'She waits.\n\nDETECTIVE RUIZ (V.O.)\n');
+});
+
+test('enter guessing cues: never mid-block, never for a sentence, never when switched off', () => {
+    const mid = 'She waits.\nMara';
+    assert.equal(applied(mid, enterGuess(mid, ['MARA'])).text, 'She waits.\nMara\n\n', 'not after a blank line: a new paragraph as before');
+    const sentence = 'She waits.\n\nMara enters.';
+    assert.equal(applied(sentence, enterGuess(sentence, ['MARA'])).text, 'She waits.\n\nMara enters.\n\n');
+    const t = 'She waits.\n\nMara';
+    assert.equal(applied(t, Editing.enter(t, t.length, t.length, null, {})).text, 'She waits.\n\nMara\n\n', 'no cues option: as before');
+});
+
+test('enter guessing cues: with blank lines switched off it still makes the cue (the writer asked for guessing)', () => {
+    const t = 'She waits.\n\nMara';
+    assert.equal(applied(t, enterGuess(t, [], { paragraphs: false })).text, 'She waits.\n\nMARA\n');
+});
+
+test('enter guessing cues: a line already in capitals is a cue as before; a chosen element wins', () => {
+    const t = 'She waits.\n\nMARA';
+    assert.equal(applied(t, enterGuess(t, [])).text, 'She waits.\n\nMARA\n');
+    const s = 'She waits.\n\nMara';
+    assert.equal(applied(s, Editing.enter(s, s.length, s.length, 'scene', guessOn([]))).text, 'She waits.\n\n.MARA\n\n');
+});
+
 // ---------- Tab: which element next ----------
 
 test('cycleTarget: action -> character -> scene -> transition -> action', () => {
