@@ -282,9 +282,9 @@
 
     function renderDialogue(t) {
         let html = '<div ' + attrs(t, 'script-dialogue-block' + (t.dual ? ' dual-' + t.dual : '')) + '>' +
-            '<div class="script-character">' + inline(t.character) + '</div>';
+            '<div class="script-character" data-line="' + t.line + '">' + inline(t.character) + '</div>';
         t.lines.forEach(function (l) {
-            html += '<div class="script-' + l.type + '">' + inline(l.text) + '</div>';
+            html += '<div class="script-' + l.type + '" data-line="' + l.line + '">' + inline(l.text) + '</div>';
         });
         return html + '</div>';
     }

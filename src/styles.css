@@ -768,7 +768,8 @@ code.inline, .help-table code.inline {
 
     textarea { padding: 1rem; font-size: 16px; }
 
-    #render-target { padding: 1rem; overscroll-behavior: contain; }
+    /* A tap on a line goes to it in Write (P2-10); no grey flash over the whole preview */
+    #render-target { padding: 1rem; overscroll-behavior: contain; -webkit-tap-highlight-color: transparent; }
 
     .modal-close { min-width: 44px; min-height: 44px; }
 }

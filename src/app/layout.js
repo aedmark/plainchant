@@ -1,6 +1,6 @@
 /*
  * Plainchant app script: layout: one pane at a time on phones and tablets, the drop-down menu, keyboard-safe sizing, the caret
- * kept clear of the keyboard, scroll sync
+ * kept clear of the keyboard, tapping the preview to edit there, scroll sync
  *
  * One of the classic scripts loaded by index.html, in order (see CLAUDE.md, "App scripts"). They share the
  * page's global scope, so top-level functions and consts here are visible to the files after it, and anything
@@ -170,6 +170,19 @@ if (window.visualViewport) {
 }
 
 editor.addEventListener('input', keepCaretClear);
+
+// P2-10: in one-pane mode, tapping a line of the Preview goes back to Write with the caret at the start of that line.
+// Not when the tap ends a text selection (copying), nor on empty space. Every block, and every line of a speech,
+// carries its source line. On a blank script (the preview showing the example) the caret simply lands at the start.
+renderTarget.addEventListener('click', (e) => {
+    if (!mobileMQ.matches || document.body.dataset.view !== 'preview') return;
+    const sel = window.getSelection();
+    if (sel && !sel.isCollapsed) return;
+    const at = e.target.closest('[data-line]');
+    if (!at || !renderTarget.contains(at)) return;
+    setView('write');
+    jumpToLine(Number(at.dataset.line)); // outline-ui.js
+});
 
 // Sync scrolling (Optional but helpful for large documents)
 // A pane that does not overflow has a scroll range of 0; dividing by it produced NaN
