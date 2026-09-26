@@ -81,7 +81,7 @@ Goal: the "just type" promise. The editor helps; it never interrupts.
   touch-device viewport fitting. Verified at 640-1366px in a headless browser; real iPads are P2-09.
 - [ ] P2-13 Tablet input: check Apple Pencil handwriting (Scribble) and hardware-keyboard shortcuts in the editor;
   decide whether tablets in landscape want the preview to follow the caret continuously (P2-06)
-- [ ] P2-10 Tap a block in the mobile preview to jump to that line in the editor
+- [x] P2-10 Tap a block in the mobile preview to jump to that line in the editor (D-033: every line of a speech too)
 - [x] P2-11 On-screen element control for touch (there is no Tab key on a phone): the element bar under the editor
   shows the current element and converts on tap, without dismissing the keyboard
 - [ ] P2-14 Suggest character cues without a Tab: after a blank line, a short unpunctuated line followed by Enter is
@@ -101,6 +101,8 @@ Goal: the "just type" promise. The editor helps; it never interrupts.
 - [ ] P2-21 Autocomplete follow-ups, if wanted after the writer has tried P2-04: suggest the time of day after
   `INT. PLACE - ` (DAY, NIGHT, plus any already used); offer names on an empty cue line after Character is chosen;
   announce suggestions to screen readers.
+- [ ] P2-22 Desktop: click a line in the preview to put the editor's caret there (P2-10 is one-pane only, so selecting
+  preview text to copy is never disturbed; a desktop version needs a gesture that cannot be mistaken for selecting)
 
 ## Phase 3: Output and library
 

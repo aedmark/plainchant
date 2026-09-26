@@ -440,3 +440,13 @@ test('shade: parsed tokens can be passed in, so the text is parsed once', () => 
     assert.deepEqual(Fountain.shade(text, Fountain.parse(text)), Fountain.shade(text));
     assert.deepEqual(Fountain.classifyLines(text, Fountain.parse(text)), Fountain.classifyLines(text));
 });
+
+test('toHTML: every line of a speech says which source line it is (for tapping the preview, P2-10)', () => {
+    const html = Fountain.toHTML(Fountain.parse('INT. A - DAY\n\nJOHN\n(quietly)\nHi.\n\nBRICK\nLeft.\n\nSTEEL ^\nRight.'));
+    ['<div class="script-character" data-line="2">', '<div class="script-parenthetical" data-line="3">', '<div class="script-dialogue" data-line="4">',
+        '<div class="script-dialogue" data-line="7">', '<div class="script-dialogue" data-line="10">'].forEach((s) => {
+        assert.ok(html.indexOf(s) !== -1, s);
+    });
+    const lines = (html.match(/data-line="(\d+)"/g) || []).map((m) => Number(m.replace(/\D/g, '')));
+    assert.deepEqual(lines, lines.slice().sort((a, b) => a - b), 'in reading order, so the preview can find the caret\'s line');
+});

@@ -11,10 +11,13 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 _Last updated: 2026-09-26, session 13 (script stats, P4-04; outline navigator, P4-03; focus mode, P2-07; offline, P4-02;
 persistent storage, P4-12; scene stats, P4-13 to P4-15;
-the caret kept clear of the keyboard, P2-16; colour hints in the editor, P2-08; settings, P2-15). Session 12 built IndexedDB storage, dropped legacy
+the caret kept clear of the keyboard, P2-16; colour hints in the editor, P2-08; settings, P2-15; tapping the preview, P2-10). Session 12 built IndexedDB storage, dropped legacy
 support, and built print / save as PDF._
 
 **What works**
+- **Tap the preview to edit there** (P2-10, D-033). On phones and portrait tablets, a tap on a line in Preview goes back
+  to Write with the caret at the start of that line (a speech's lines each count), the keyboard up. Not for a tap that
+  ends a selection or lands on empty space, and not side by side on a desktop (P2-22 is the desktop idea).
 - **Settings** (P2-15, D-032; `src/app/settings.js`). The gear beside `?` (Settings in the phone menu) opens three
   switches, all on by default: *Colours in the editor*, *Enter starts the next element*, *Capitals as you type*.
   Changes apply at once and are remembered per browser (`plainchant_settings`). With the last two off, a line whose
@@ -131,6 +134,10 @@ support, and built print / save as PDF._
 - Scroll sync no longer divides by zero.
 
 **Verified**
+- **Tap the preview (P2-10), session 13:** `npm test` 269 (1 new: speech lines carry their line); `bash
+  test/run-headless.sh` 257 unit + **547 e2e** (section 16m: parenthetical, dialogue and heading taps, the line in
+  view far down, a selection and empty space ignored, a blank script, the desktop left alone even when a widened
+  window is still on Preview). Mutations: 5 of 5 fail a test (the last after that desktop case was added).
 - **Settings (P2-15), session 13:** `npm test` 268 (3 new: Enter and capitals with the switches off);
   `bash test/run-headless.sh` 256 unit + **538 e2e** (section 16l: defaults, colours off at once and remembered, not
   coming back on typing or resize, a reload, back on and the key gone, Enter and capitals both ways, a chosen cue still
@@ -235,6 +242,8 @@ support, and built print / save as PDF._
   and phone in headless Edge.
 
 **Not verified / not done**
+- **P2-10 has not been tapped on a real phone:** whether iOS brings the keyboard up from the tap (it should: the focus
+  happens inside the tap's own event) and whether a long-press to copy ever ends in a jump.
 - **Colour hints (P2-08) only seen in headless Chromium.** Firefox and Safari may wrap the copy a hair differently:
   then the wrap check turns the hints off and the editor looks as before (a console warning says so). Worth a look in
   both, with a long script, and with IME / dictation on a phone. The colours themselves are the owner's call.
@@ -386,8 +395,7 @@ support, and built print / save as PDF._
 4. (Print / save as PDF is done: P3-03 to P3-06, and script stats: P4-04. No browser or device checks are planned
    for either: the owner will report bugs. P3-11, direct `.pdf` download, is the answer if print windows turn out
    awkward; P3-12, page view, is for later. The outline navigator, P4-03, is done too.) Persistent storage, P4-12, is done
-   too.) **Ask the owner what comes next.** Candidates: P2-10 (tap a block in the phone
-   preview to jump there; `jumpToLine` exists), P4-05 (version snapshots), P4-06 (themes, font size, an accessibility
+   too.) **Ask the owner what comes next.** Candidates: P4-05 (version snapshots), P4-06 (themes, font size, an accessibility
    pass; Settings is where font size would go), P2-14 (suggest cues without Tab), P2-21 (autocomplete follow-ups).
 5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
 6. (P4-10 and P4-11 are done: D-018, D-019, D-020.)
@@ -439,6 +447,7 @@ mix and the locations in the same window.
 Then **P2-16** (D-030): `keepCaretClear` in `layout.js`, focus mode's measuring cache moved there and made exact.
 Then **P2-08** (D-031): `Fountain.shade`, `src/app/shade.js`, the editor's line height as a length; Q-001 answered.
 Then **P2-15** (D-032): `src/app/settings.js`, options on `Editing.enter` / `autoCase`, `setShadeOn`, the gear.
+Then **P2-10** (D-033): a tap on the one-pane preview goes to that line; speech lines carry `data-line`. P2-22 added.
 **Next session should start with:** "Next steps" above.
 
 ### Session 12: 2026-09-25: IndexedDB storage (P4-10)

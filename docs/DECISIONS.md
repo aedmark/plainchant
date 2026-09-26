@@ -594,6 +594,21 @@ session 12).
    editor pane's "The Void" label steps aside; at 700-799px the Write | Preview switch is 14rem.
 **Consequences:** One more localStorage key. D-031's "always on" no longer holds.
 
+## D-033 Tapping the preview: one-pane only, the start of the tapped line  (2026-09-26, status: accepted)
+**Context:** P2-10 (tap a block in the mobile preview to jump to that line in the editor).
+**Decision:**
+1. **In the one-pane layout only** (phones, portrait tablets), while on Preview: a tap on a line switches to Write and
+   puts the caret at the start of that source line, with the line a quarter of the way down (the Outline's
+   `jumpToLine`). The editor takes focus, so the on-screen keyboard comes up: a tap on the text means "edit here".
+2. **Line, not block:** the character, parenthetical and dialogue lines of a speech now carry their own `data-line`
+   (they were only on the block), so a tap on a speech lands on that line. An action paragraph of several lines still
+   lands on its first line: finding the tapped character would need the preview's text to map back onto the source
+   (emphasis marks, notes), which it does not.
+3. **Nothing happens** for a tap that ends a text selection (long-press to copy), a tap on empty space, or side by
+   side on a desktop (where a click is how text is selected; a desktop version is P2-22). The whole preview's grey
+   tap flash is switched off.
+**Consequences:** On a blank script the preview shows the example; a tap on it goes to Write at the start.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

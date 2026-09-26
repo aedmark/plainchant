@@ -1843,6 +1843,54 @@ setTimeout(() => {
     check('narrow desktop 1024: all seven actions fit the editor\'s header', shown(fid(gd, 'settingsBtn')) && gHelp.right <= gVoid.right - 8, [gHelp.right, gVoid.right]);
     gd.remove();
 
+    // 16m. Tapping the preview (P2-10): in one-pane mode, a tap on a line goes back to Write with the caret on it
+    const tapF = await openFrame(375, 667);
+    const tapW = tapF.contentWindow, tapE = fid(tapF, 'editor');
+    const TAP_TEXT = 'INT. KITCHEN - DAY\n\n' + Array.from({ length: 60 }, (_, i) => 'Filler ' + i + ' goes on.').join('\n') +
+      '\n\nEXT. GARDEN - NIGHT\n\nJOHN\n(quietly)\nHi there.\n\nThe end.';
+    const tapStart = (n) => TAP_TEXT.split('\n').slice(0, n).join('\n').length + (n ? 1 : 0);
+    const tapN = (prefix) => TAP_TEXT.split('\n').findIndex(l => l.indexOf(prefix) === 0);
+    const tapAt = (n) => fq(tapF, '#page [data-line="' + n + '"]');
+    setText(tapF, TAP_TEXT);
+    tapW.setView('preview');
+    const parenLine = tapN('(quietly)');
+    tapAt(parenLine).click();
+    const tapTop = parseFloat(getComputedStyle(tapE).paddingTop) + (parenLine) * parseFloat(getComputedStyle(tapE).lineHeight) - tapE.scrollTop;
+    check('tap preview: a tap on a parenthetical goes to Write with the caret at the start of that line',
+      tapF.contentDocument.body.dataset.view === 'write' && tapE.selectionStart === tapStart(parenLine) && tapE.selectionEnd === tapStart(parenLine) && focusId(tapF) === 'editor',
+      [tapF.contentDocument.body.dataset.view, tapE.selectionStart, tapStart(parenLine), focusId(tapF)]);
+    check('tap preview: the line is in view in the editor (far down the script)', tapE.scrollTop > 0 && tapTop >= 0 && tapTop <= tapE.clientHeight - 20, [tapTop, tapE.scrollTop, tapE.clientHeight]);
+    tapW.setView('preview');
+    tapAt(tapN('Hi there.')).click();
+    check('tap preview: a line of dialogue is its own line, not just its block', tapE.selectionStart === tapStart(tapN('Hi there.')), [tapE.selectionStart, tapStart(tapN('Hi there.'))]);
+    tapW.setView('preview');
+    tapAt(tapN('EXT. GARDEN')).click();
+    check('tap preview: a scene heading', tapE.selectionStart === tapStart(tapN('EXT. GARDEN')));
+    tapW.setView('preview');
+    const tapBefore = tapE.selectionStart;
+    tapF.contentWindow.getSelection().selectAllChildren(tapAt(tapN('The end.')));
+    tapAt(tapN('The end.')).click();
+    check('tap preview: a tap that ends a text selection (to copy) stays in the preview', tapF.contentDocument.body.dataset.view === 'preview' && tapE.selectionStart === tapBefore);
+    tapF.contentWindow.getSelection().removeAllRanges();
+    fid(tapF, 'render-target').click();
+    check('tap preview: a tap on empty space does nothing', tapF.contentDocument.body.dataset.view === 'preview');
+    setText(tapF, '');
+    tapW.setView('preview');
+    fq(tapF, '#page .script-scene-heading').click();
+    check('tap preview: on a blank script (the example is showing) it just goes to Write, the page still blank',
+      tapF.contentDocument.body.dataset.view === 'write' && tapE.value === '' && focusId(tapF) === 'editor', [tapF.contentDocument.body.dataset.view, tapE.value]);
+    check('help: tapping the preview is explained', /tapping a line there takes you back to Write/.test(fid(tapF, 'help-modal').textContent));
+    tapF.remove();
+
+    const tapD = await openFrame(1200, 700);
+    setText(tapD, TAP_TEXT);
+    const tapDE = fid(tapD, 'editor');
+    tapDE.setSelectionRange(0, 0);
+    tapD.contentWindow.setView('preview'); // as a window widened from a phone that was on Preview is left
+    fq(tapD, '#page [data-line="' + tapN('(quietly)') + '"]').click();
+    check('tap preview: side by side on a desktop, a click in the preview moves nothing (select and copy as usual)', tapDE.selectionStart === 0 && focusId(tapD) !== 'editor', [tapDE.selectionStart, focusId(tapD)]);
+    tapD.remove();
+
     // Phone: the Library fits a 375px screen and every action is reachable
     await seedLibrary();
     await reloadFrame(m);
