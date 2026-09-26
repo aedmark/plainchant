@@ -139,9 +139,54 @@ test('at: locations work for a forced heading and INT./EXT.', () => {
 test('at: nothing yet after a bare "INT. " (Tab must keep cycling), nor once the location is done', () => {
     assert.equal(typed(SCRIPT, 'INT. '), null);
     assert.equal(typed(SCRIPT, 'INT. COFFEE SHOP'), null);
-    assert.equal(typed(SCRIPT, 'INT. COFFEE SHOP - '), null);
-    assert.equal(typed(SCRIPT, 'INT. COFFEE SHOP - D'), null);
     assert.equal(typed(SCRIPT, 'INT. COF #4#'), null);
+});
+
+// ---------- the time of day (P2-21) ----------
+
+test('at: after a location and a dash, the times of day the script uses, most used first, then DAY and NIGHT', () => {
+    const script = SCRIPT + 'INT. HALL - NIGHT\n\nx.\n\nEXT. ROOF - DUSK\n\nx.\n\n';
+    assert.deepEqual(options(script, 'INT. COFFEE SHOP - '), ['NIGHT', 'DUSK', 'DAY']);
+    assert.deepEqual(options(SCRIPT, 'INT. COFFEE SHOP - '), ['NIGHT', 'DAY'], 'a tie goes to the most recent');
+    assert.deepEqual(options('Nothing yet.\n\n', 'INT. HALL - '), ['DAY', 'NIGHT'], 'a new script still gets DAY and NIGHT');
+});
+
+test('at: a time of day is narrowed by what is typed, and a whole one is left alone', () => {
+    const script = SCRIPT + 'INT. HALL - DAWN\n\nx.\n\n';
+    assert.deepEqual(options(script, 'INT. HALL - D'), ['DAWN', 'DAY']);
+    assert.deepEqual(options(script, 'INT. HALL - DAW'), ['DAWN']);
+    assert.equal(typed(script, 'INT. HALL - DAY'), null);
+    assert.equal(typed(script, 'INT. HALL - X'), null);
+});
+
+test('at: the time of day comes after the last dash, and the edit replaces only what was typed of it', () => {
+    const text = SCRIPT + 'INT. HOUSE - KITCHEN - NI';
+    const hit = Suggest.at(text, text.length);
+    assert.equal(hit.kind, 'time');
+    assert.deepEqual(hit.options, ['NIGHT']);
+    assert.equal(text.slice(hit.from, hit.to), 'NI');
+    assert.ok(hit.tab !== false, 'Tab takes it');
+    assert.equal(typed(SCRIPT + 'INT. HALL - DAY (FLASHBACK)\n\nx.\n\n', 'INT. ROOM - F'), null, 'a note after the time is not a time');
+    assert.deepEqual(options(SCRIPT + 'INT. HALL - DAY (FLASHBACK) #9#\n\nx.\n\n', 'INT. ROOM - D'), ['DAY'], 'nor part of one');
+    assert.equal(typed(SCRIPT, 'INT. - '), null, 'no location yet');
+    assert.equal(typed(SCRIPT, 'INT. HALL - DAY #4#'), null);
+});
+
+// ---------- names on an empty cue line (P2-21) ----------
+
+test('at: with Character chosen on an empty line, the most used names are offered, but Tab keeps cycling', () => {
+    const text = SCRIPT;
+    const hit = Suggest.at(text, text.length, 'character');
+    assert.deepEqual(hit.options, ['JOHN', 'MARY', 'MARYLOU']);
+    assert.equal(hit.kind, 'character');
+    assert.equal(hit.from, text.length);
+    assert.equal(hit.to, text.length);
+    assert.equal(hit.tab, false);
+    assert.equal(Suggest.at(text, text.length), null, 'not without Character chosen');
+    assert.equal(Suggest.at(text, text.length, 'scene'), null, 'not for another element');
+    assert.equal(Suggest.at('Nothing yet.\n\n', 14, 'character'), null, 'not when nobody has spoken');
+    const mid = SCRIPT.trimEnd() + '\n';
+    assert.equal(Suggest.at(mid, mid.length, 'character'), null, 'not straight under another line');
 });
 
 test('at: a heading must follow a blank line, and the current heading is not its own source', () => {

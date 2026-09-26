@@ -61,6 +61,8 @@
         <button type="button" class="el-btn" data-el="transition" aria-pressed="false"><span class="long">Transition</span><span class="short">Trans</span></button>
         <!-- Autocomplete (P2-04): while a name is being typed these take the place of the element buttons -->
         <div class="suggestions" role="group" aria-label="Suggestions" hidden></div>
+        <!-- Says what the suggestions are, for a screen reader (P2-21); never shown -->
+        <p id="suggestSay" class="sr-only" role="status" aria-live="polite"></p>
         <!-- Focus mode (P2-07): dim all but the current block, keep the caret centred -->
         <button type="button" id="focusBtn" class="el-focus" aria-pressed="false" title="Focus mode: dim everything but what you are writing (Ctrl/Cmd+Shift+F)">Focus</button>
         <button type="button" class="el-help" aria-label="Help with screenplay elements" title="Help with elements">?</button>
@@ -268,7 +270,7 @@ Author: Jane Doe</code></td>
                     <thead><tr><th>Keys</th><th>What they do</th></tr></thead>
                     <tbody>
                         <tr><td><kbd>Tab</kbd></td><td>Cycles the current line through Action &rarr; Character &rarr; Scene heading &rarr; Transition. Inside dialogue it switches between dialogue and parenthetical. On a blank line it chooses what you are about to type: a character (typed text is capitalised) or a scene heading (<code class="inline">INT.&nbsp;</code> is filled in).</td></tr>
-                        <tr><td><kbd>Tab</kbd> <em>while suggestions show</em></td><td>Completes the first suggestion instead. While you type a character name or a scene location, names already used in your script appear in the bar under the text; <kbd>Enter</kbd> never picks one, so what you typed stays what you typed. <kbd>Esc</kbd> hides them.</td></tr>
+                        <tr><td><kbd>Tab</kbd> <em>while suggestions show</em></td><td>Completes the first suggestion instead. While you type a character name or a scene location, names already used in your script appear in the bar under the text; after a location and a dash (<code class="inline">INT. KITCHEN - </code>) the times of day you use appear, then DAY and NIGHT. <kbd>Enter</kbd> never picks one, so what you typed stays what you typed. <kbd>Esc</kbd> hides them. With <strong>Character</strong> chosen on an empty line, the names you use most appear too: tap or click one (there <kbd>Tab</kbd> still moves on to the next element).</td></tr>
                         <tr><td><kbd>Shift</kbd>+<kbd>Tab</kbd></td><td>The same as <kbd>Tab</kbd> for cycling, backwards.</td></tr>
                         <tr><td><kbd>Enter</kbd></td><td>Moves on to what comes next. After a character or a parenthetical you go straight to the speech; after anything else you get a blank line, so an action line ends its paragraph. A name on its own line after a blank line (one your script already uses, or a new one with capitals, like <code class="inline">Detective Ruiz</code>) becomes a character, capitalised, with the speech next; <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Z</kbd> undoes it.</td></tr>
                         <tr><td><kbd>Shift</kbd>+<kbd>Enter</kbd></td><td>A plain line break, to keep writing inside the same element.</td></tr>

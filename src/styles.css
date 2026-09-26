@@ -325,9 +325,13 @@ button:focus-visible, a[href]:focus-visible, input:focus-visible, select:focus-v
 .element-bar.suggesting .el-btn { display: none; }
 .suggest-chip { min-width: 0; max-width: 14rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .suggest-chip:first-child { background-color: var(--btn-bg); border-color: var(--border-void); color: var(--text-strong); }
+/* Names offered on an empty cue line: Tab does not take them (P2-21), so none looks chosen */
+.suggestions.no-tab .suggest-chip:first-child { background: transparent; border-color: transparent; color: var(--text-void-muted); }
+/* Read by screen readers, never seen */
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 /* A keyboard user is told which key takes it; a touch screen has no such key */
 @media (hover: hover) and (pointer: fine) {
-    .suggest-chip:first-child::after { content: "Tab"; margin-left: 0.6em; padding: 0 0.35em; border: 1px solid var(--border-void); border-radius: 0.25rem; font-size: 0.85em; opacity: 0.7; }
+    .suggestions:not(.no-tab) .suggest-chip:first-child::after { content: "Tab"; margin-left: 0.6em; padding: 0 0.35em; border: 1px solid var(--border-void); border-radius: 0.25rem; font-size: 0.85em; opacity: 0.7; }
 }
 /* "?" at the end of the bar: help on the elements. Phones have no room; they use Help in the menu. */
 .el-help {

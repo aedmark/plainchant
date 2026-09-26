@@ -91,6 +91,8 @@ function scheduleSync() {
 // While a name is being typed the suggestions take the place of the element buttons in the same bar (same height,
 // so nothing moves, and nothing covers the line being typed). Tab takes the first one; Enter never does.
 const suggestBox = elementBar.querySelector('.suggestions');
+const suggestSay = document.getElementById('suggestSay');
+const SUGGEST_WHAT = { character: 'Names', location: 'Places', time: 'Times of day' };
 let suggestion = null;      // the Suggest.at() result while chips are showing
 let dismissedFor = '';      // the word Esc waved away; a different word (or line) brings suggestions back
 
@@ -103,7 +105,11 @@ function showSuggestions(hit) {
     suggestion = hit;
     if (same) return;
     suggestBox.hidden = !hit;
+    suggestBox.classList.toggle('no-tab', !!hit && hit.tab === false);
     elementBar.classList.toggle('suggesting', !!hit);
+    // A screen reader hears them once, when they change (P2-21)
+    suggestSay.textContent = hit ? SUGGEST_WHAT[hit.kind] + ': ' + hit.options.join(', ') + '.' +
+        (hit.tab === false ? '' : ' Tab takes ' + hit.options[0] + '.') : '';
     suggestBox.replaceChildren(...(hit ? hit.options : []).map((option, i) => {
         const chip = document.createElement('button');
         chip.type = 'button';
@@ -116,7 +122,9 @@ function showSuggestions(hit) {
 
 function syncSuggestions() {
     let hit = null;
-    if (document.activeElement === editor && editor.selectionStart === editor.selectionEnd) hit = Suggest.at(editor.value, editor.selectionStart);
+    if (document.activeElement === editor && editor.selectionStart === editor.selectionEnd) {
+        hit = Suggest.at(editor.value, editor.selectionStart, elementMode); // Character chosen on an empty line: names (P2-21)
+    }
     const key = hit ? suggestionKey(hit) : '';
     if (key !== dismissedFor) dismissedFor = '';   // Esc only holds while the caret stays on that word
     showSuggestions(hit && key !== dismissedFor ? hit : null);
@@ -149,7 +157,7 @@ editor.addEventListener('keydown', (e) => {
         e.preventDefault();
         if (!e.shiftKey) {
             syncSuggestions(); // the bar is refreshed on the next frame; Tab may arrive before it
-            if (suggestion) { acceptSuggestion(0); return; }
+            if (suggestion && suggestion.tab !== false) { acceptSuggestion(0); return; }
         }
         cycleElement(e.shiftKey ? -1 : 1);
         return;

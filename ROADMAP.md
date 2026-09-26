@@ -99,9 +99,9 @@ Goal: the "just type" promise. The editor helps; it never interrupts.
   and the tour; Library items are keyboard-operable
 - [ ] P2-20 Contextual first-use hints (for example, the first time a writer types an UPPERCASE line, or first
   presses Tab), if the tour and Help prove not to be enough. Watch how new users actually get stuck first.
-- [ ] P2-21 Autocomplete follow-ups, if wanted after the writer has tried P2-04: suggest the time of day after
+- [x] P2-21 Autocomplete follow-ups, if wanted after the writer has tried P2-04: suggest the time of day after
   `INT. PLACE - ` (DAY, NIGHT, plus any already used); offer names on an empty cue line after Character is chosen;
-  announce suggestions to screen readers.
+  announce suggestions to screen readers. (D-037: all three; names on an empty line are for tapping, Tab keeps cycling)
 - [ ] P2-22 Desktop: click a line in the preview to put the editor's caret there (P2-10 is one-pane only, so selecting
   preview text to copy is never disturbed; a desktop version needs a gesture that cannot be mistaken for selecting)
 

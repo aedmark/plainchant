@@ -678,6 +678,22 @@ line into a cue is worse than no guess. The owner asked for the guess.
 for a new character. Writers usually end action with a full stop; if the owner finds it guesses wrong, the next step
 is to require a known name for single words.
 
+## D-037 Autocomplete follow-ups: times of day, names on an empty cue line, announced  (2026-09-26, status: accepted)
+**Context:** P2-21, the follow-ups D-017 left for later.
+**Decision:**
+1. **Times of day:** on a scene heading, once a location is followed by a spaced dash (`INT. KITCHEN - `), the
+   suggestions are the times of day the script already uses (the part after a heading's last spaced dash, without a
+   scene number or a bracketed note), most used first with ties to the most recent, then DAY and NIGHT if not among
+   them; narrowed by what is typed, none once it is a whole one. Tab takes the first, as for names and places: on a
+   heading's time Tab has nothing better to do.
+2. **Names on an empty cue line:** with Character chosen (Tab or the bar) on an empty line after a blank one, the
+   four most used names are offered, for a tap or a click. **Tab does not take them**: there Tab is still choosing
+   the element (Character, then Scene...), and taking a name would break that cycle. So the first chip is not marked
+   as Tab's, and the "Tab" hint is not shown.
+3. **Announced:** a visually hidden live region (`#suggestSay`) says what is offered when it changes: "Names: MARA,
+   DEV." or "Times of day: NIGHT, DAY. Tab takes NIGHT." It is cleared when the chips go.
+**Consequences:** `Suggest.at(text, caret, mode)` takes the chosen element and may return `tab: false`.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom
