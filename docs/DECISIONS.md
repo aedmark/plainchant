@@ -436,6 +436,25 @@ would take width the two panes need on laptops and tablets.
    types characters on a Mac keyboard).
 **Consequences:** One click more than a sidebar, but no lost width. Per-scene stats (P4-13) can reuse the module.
 
+## D-025 Focus mode: veils over a plain textarea, the caret's line kept in the middle  (2026-09-26, status: accepted)
+**Context:** P2-07 (dim everything but the current block; keep the caret vertically centred). The editor is a plain
+`<textarea>` (Q-001), which cannot style part of its own text; replacing it with a styled overlay (the P2-08 route)
+would risk undo, selection, IME and the on-screen keyboard.
+**Decision:**
+1. **Two translucent veils** (the editor's background at 72%) laid over the textarea, above and below the block the
+   caret is in (`Editing.blockAt`: the run of non-blank lines). The textarea is never touched. They take no clicks.
+2. **Typewriter scrolling:** typing, arrow keys and clicks bring the caret's line to the middle; scrolling by hand is
+   left alone, and nothing moves while a mouse button is down (a selection being dragged) or a selection exists.
+   Large top and bottom padding in focus mode lets the first and last lines reach the middle.
+3. **Measuring:** positions come from a hidden copy of the editor (`textTopIn` in `layout.js`, shared with the
+   outline's jump), taken relative to a mark at the start (a span's offsetTop is its text's top, not its line's; the
+   difference skewed every measurement until corrected). Per change only the current block is measured; the height
+   of the text above it is cached until that text changes, so long scripts stay quick.
+4. **Toggle:** a **Focus** button at the end of the element bar (hidden under 480px, like `?`), and
+   **Ctrl/Cmd+Shift+F**. Remembered in `plainchant_focus`. On phones the veils hide while previewing.
+**Consequences:** The veils dim, they do not hide; the text under them is still selectable and searchable. The
+outline's jump had the same padding omission (small there) and now counts the editor's top padding too.
+
 ## Open questions
 
 - Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

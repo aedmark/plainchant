@@ -44,6 +44,36 @@ function scrollPreviewToCaret() {
     renderTarget.scrollTop = Math.max(0, top - renderTarget.clientHeight / 3);
 }
 
+// Where the top of the character at `pos` in `text` would sit if `text` filled the editor, in pixels from the top of
+// its text (padding not counted). Measured on a hidden copy with the editor's width and type, since a textarea cannot
+// say where its wrapped lines fall. Used by the outline's jump (D-024) and focus mode (P2-07). A piece of the text
+// that starts at a line start measures the same as it would in place.
+const measureCopy = document.createElement('div');
+function textTopIn(text, pos) {
+    const cs = getComputedStyle(editor);
+    ['fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'letterSpacing', 'wordSpacing', 'lineHeight', 'tabSize', 'textIndent',
+        'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'].forEach((p) => { measureCopy.style[p] = cs[p]; });
+    Object.assign(measureCopy.style, { position: 'absolute', visibility: 'hidden', left: '-9999px', top: '0', boxSizing: 'border-box',
+        width: editor.clientWidth + 'px', border: '0', whiteSpace: 'pre-wrap', overflowWrap: 'break-word' });
+    if (!measureCopy.isConnected) document.body.appendChild(measureCopy);
+    // A span's offsetTop is the top of its text, a little below the top of its line; measuring from a mark at the
+    // very start cancels that (and the padding) out
+    const markAt = (before) => {
+        measureCopy.textContent = before;
+        const mark = document.createElement('span');
+        mark.textContent = '\u200b';
+        measureCopy.appendChild(mark);
+        return mark.offsetTop;
+    };
+    const top = markAt(text.slice(0, pos)) - markAt('');
+    measureCopy.textContent = '';
+    return top;
+}
+
+function textTop(pos) {
+    return textTopIn(editor.value, pos);
+}
+
 function setMenu(open) {
     document.body.classList.toggle('menu-open', open);
     menuBtn.setAttribute('aria-expanded', String(open));

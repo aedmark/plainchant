@@ -375,3 +375,28 @@ test('diffEdit: the caret before the change stays, after it shifts by the change
     assert.equal(Editing.diffEdit(old, neu, 10, 14).selEnd, 14 + 5);
     assert.equal(Editing.diffEdit(old, neu, 7, 8).selEnd, 13);                               // covering the change: end of the insert
 });
+
+// ---------- blockAt: the block the caret is in, for focus mode (P2-07) ----------
+
+const blk = (text, caret) => { const b = Editing.blockAt(text, caret); return text.slice(b.start, b.end); };
+
+test('blockAt: the run of non-blank lines around the caret', () => {
+    const text = 'INT. A - DAY\n\nJOHN\n(beat)\nHello.\n\nShe leaves.';
+    assert.equal(blk(text, 0), 'INT. A - DAY');
+    assert.equal(blk(text, text.indexOf('beat')), 'JOHN\n(beat)\nHello.');
+    assert.equal(blk(text, text.length), 'She leaves.');
+});
+
+test('blockAt: on a blank line the block is that empty line', () => {
+    const text = 'One.\n\nTwo.';
+    const b = Editing.blockAt(text, 5);
+    assert.deepEqual([b.start, b.end], [5, 5]);
+    assert.deepEqual(Editing.blockAt('', 0), { start: 0, end: 0 });
+});
+
+test('blockAt: a line of spaces counts as blank, and the caret at a line end belongs to that line', () => {
+    const text = 'One.\n   \nTwo.';
+    assert.equal(blk(text, 4), 'One.');
+    assert.equal(blk(text, 6), '   ');
+    assert.equal(blk('Alpha\nBeta', 5), 'Alpha\nBeta');
+});

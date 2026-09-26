@@ -57,12 +57,13 @@ use what an earlier file already defined. Code inside functions runs later and c
 | File | Owns |
 | --- | --- |
 | `core.js` | `editor` / `renderTarget` / `page` references, `newId`, `currentScriptId`, `autoSaveTimer`, `showNotice`, `render()` |
-| `layout.js` | One pane at a time, the phone menu, keyboard-safe sizing (`fitToViewport`), scroll sync |
+| `layout.js` | One pane at a time, the phone menu, keyboard-safe sizing (`fitToViewport`), scroll sync, measuring where text falls in the editor (`textTopIn` / `textTop`) |
 | `persistence.js` | The in-memory library, IndexedDB writes and the emergency buffer, the no-storage notice, restoring the last script, New, the trash purge, save on hide (D-019) |
 | `dialogs.js` | `openModal` / `closeModal`: the one accessible helper for every modal window |
 | `library-ui.js` | The Library dialog (data rules are in `src/library.js`) |
 | `example.js`, `help.js`, `tour.js` | The example script, the Help window, the welcome tour |
 | `typing.js` | Tab, smart Enter, auto-uppercase, the element bar, autocomplete chips (rules are in `src/editing.js` and `src/suggest.js`) |
+| `focus.js` | Focus mode: the veils around the current block, typewriter scrolling, the toggle and Ctrl/Cmd+Shift+F (D-025) |
 | `export.js` | The Export dialog (the `.fountain` download), and Copy |
 | `import.js` | Import: the Library's picker and drag-and-drop onto the page; `showNotice` messages (defined in `core.js`) |
 | `print.js` | Print / save as PDF: draws the `src/paginate.js` pages as paper-sized sheets in `#print-root`, the paper choice, `beforeprint` (D-021, D-022) |
@@ -83,7 +84,8 @@ Keep each file's own listeners in that file. Functions the e2e tests call (`save
 - The parser must never touch the DOM, `window` or Node-only APIs. Escape all user text before it reaches HTML.
 - Match existing CSS variable names and class names (`script-*` for rendered screenplay elements).
 - Scripts live in IndexedDB (database `plainchant`, stores `scripts` and `meta`). localStorage holds only
-  `plainchant_onboarded` (the tour) and `plainchant_emergency` (the buffer). There is no legacy support and no
+  `plainchant_onboarded` (the tour), `plainchant_emergency` (the buffer), `plainchant_paper` (Letter / A4) and
+  `plainchant_focus` (focus mode). There is no legacy support and no
   localStorage fallback (D-020): this is not a production release, so storage names may change without a migration,
   but say so in DECISIONS when they do.
 - Every storage write goes through `putScripts` / `saveScript` / `rememberCurrent` in `persistence.js`, never straight

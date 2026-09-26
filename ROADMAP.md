@@ -67,7 +67,8 @@ Goal: the "just type" promise. The editor helps; it never interrupts.
   375px in a headless browser; real-device keyboard behaviour is P2-09.
 - [~] P2-06 Caret-anchored preview scroll (use the parser's `data-line` anchors instead of percentage sync). Done
   for opening Preview on mobile; continuous desktop sync still uses percentage.
-- [ ] P2-07 Focus / typewriter mode (dim everything but the current block, keep the caret vertically centred)
+- [x] P2-07 Focus / typewriter mode (dim everything but the current block, keep the caret vertically centred) (D-025):
+  veils over the textarea, the Focus toggle in the element bar and Ctrl/Cmd+Shift+F, remembered
 - [ ] P2-08 Editor styling that hints at structure (subtle per-element colour) without becoming a WYSIWYG editor
 - [~] P2-09 Real-device pass for the mobile and tablet layouts (iPad and iPhone Safari, Android Chrome: keyboard vs.
   caret line, no zoom-on-focus, safe areas, rotation, iPad Split View / Stage Manager window sizes, hardware

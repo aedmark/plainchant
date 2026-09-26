@@ -57,25 +57,6 @@ function openOutline() {
     openModal(outlineModal, { focus: outlineHere >= 0 ? '[data-index="' + outlineHere + '"]' : '#outlineFilter' });
 }
 
-// Where the top of the character at `pos` sits in the editor's text, in pixels: measured on a hidden copy of the
-// editor with the same width and type, since a textarea cannot say where its wrapped lines fall
-function textTop(pos) {
-    const cs = getComputedStyle(editor);
-    const copy = document.createElement('div');
-    ['fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'letterSpacing', 'wordSpacing', 'lineHeight', 'tabSize', 'textIndent',
-        'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'].forEach((p) => { copy.style[p] = cs[p]; });
-    Object.assign(copy.style, { position: 'absolute', visibility: 'hidden', left: '-9999px', top: '0', boxSizing: 'border-box',
-        width: editor.clientWidth + 'px', border: '0', whiteSpace: 'pre-wrap', overflowWrap: 'break-word' });
-    copy.textContent = editor.value.slice(0, pos);
-    const mark = document.createElement('span');
-    mark.textContent = '​';
-    copy.appendChild(mark);
-    document.body.appendChild(copy);
-    const top = mark.offsetTop - parseFloat(cs.paddingTop);
-    copy.remove();
-    return top;
-}
-
 // Global on purpose: the e2e tests call it
 function jumpToLine(line) {
     const lines = editor.value.split('\n');
@@ -90,7 +71,8 @@ function jumpToLine(line) {
     }
     editor.focus({ preventScroll: true });
     editor.setSelectionRange(pos, pos);
-    const want = Math.max(0, Math.min(textTop(pos) - editor.clientHeight / 4, editor.scrollHeight - editor.clientHeight));
+    const lineY = parseFloat(getComputedStyle(editor).paddingTop) + textTop(pos);
+    const want = Math.max(0, Math.min(lineY - editor.clientHeight / 4, editor.scrollHeight - editor.clientHeight));
     if (Math.abs(editor.scrollTop - want) < 1) scrollPreviewToCaret();
     else { // the scroll sync moves the preview in proportion first; then put it exactly on the scene
         editor.addEventListener('scroll', scrollPreviewToCaret, { once: true });

@@ -9,10 +9,14 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-26, session 13 (script stats, P4-04; outline navigator, P4-03). Session 12 built IndexedDB storage, dropped legacy
+_Last updated: 2026-09-26, session 13 (script stats, P4-04; outline navigator, P4-03; focus mode, P2-07). Session 12 built IndexedDB storage, dropped legacy
 support, and built print / save as PDF._
 
 **What works**
+- **Focus mode** (P2-07, D-025; `src/app/focus.js`, `Editing.blockAt`). The **Focus** button at the end of the element
+  bar, or **Ctrl/Cmd+Shift+F**, dims everything but the block being written (translucent veils over the textarea;
+  the text itself is untouched) and keeps the caret's line in the middle as you type or move the caret. Scrolling by
+  hand is left alone. Remembered in `plainchant_focus`. Not on narrow phones (no room in the bar; the shortcut works).
 - **Outline navigator** (P4-03, D-024; `src/outline.js` + `src/app/outline-ui.js`). **Outline**, beside the page count
   above the preview, opens a window listing sections (`#`), scenes (with scene numbers and the page each starts on)
   and synopses (`=`), nested. The scene the caret is in is marked and focused; type to filter (Enter takes the
@@ -98,6 +102,13 @@ support, and built print / save as PDF._
 - Scroll sync no longer divides by zero.
 
 **Verified**
+- **Focus mode, session 13:** `npm test` 249 (3 new `blockAt` tests); `bash test/run-headless.sh` 241 unit +
+  **470 e2e** (section 16g: toggle, remembered, caret kept in the editor, the caret line centred after a caret move,
+  a typed edit and a click, veils exactly around the block, no clicks taken, hand scrolling left alone, nothing moving
+  while the mouse is down, the shortcut, reload, the phone). Positions are checked against a line height worked out
+  from the editor's own scroll height. That check found a real bug: measurements were off by the gap between a line's
+  top and its text's top (fixed in `textTopIn`). Mutations: 6 of 7 fail a test; the seventh showed a redundant guard
+  (the element bar already keeps focus), since removed.
 - **Outline, session 13:** `npm test` 246 (9 new in `test/outline.test.js`); `bash test/run-headless.sh` 238 unit +
   **456 e2e** (section 16f: order, numbers, pages, nesting, synopsis, the current scene marked and focused, escaping,
   arrow keys, the jump's caret and scroll position checked against an independent line-height estimate, the preview
@@ -297,8 +308,9 @@ support, and built print / save as PDF._
 4. (Print / save as PDF is done: P3-03 to P3-06, and script stats: P4-04. No browser or device checks are planned
    for either: the owner will report bugs. P3-11, direct `.pdf` download, is the answer if print windows turn out
    awkward; P3-12, page view, is for later. The outline navigator, P4-03, is done too.) **Ask the owner what comes
-   next.** Candidates: P2-07 focus / typewriter mode, P4-02 offline / installable (also makes Courier Prime available
-   to print offline), the stats follow-ups P4-13 to P4-15 (per-scene stats would reuse `src/outline.js`).
+   next.** Candidates: P4-02 offline / installable (also makes Courier Prime available to print offline), the stats
+   follow-ups P4-13 to P4-15 (per-scene stats would reuse `src/outline.js`), P2-16 (the caret above the on-screen
+   keyboard; focus mode's centring may already cover much of it on tablets), P2-08 (editor colours by element).
 5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
 6. (P4-10 and P4-11 are done: D-018, D-019, D-020.)
 
@@ -336,6 +348,8 @@ Then, at the owner's request, **P4-03 outline navigator** (D-024): `src/outline.
 window and `jumpToLine` in `src/app/outline-ui.js`, an Outline button beside the page count, scene headings in the
 print layout tagged with their source line (for the page numbers). The owner also asked for the stats follow-ups to
 be on the roadmap (P4-13 to P4-15).
+Then **P2-07 focus mode** (D-025): `Editing.blockAt`, `src/app/focus.js`, the shared text measurer moved to
+`layout.js` (and corrected), the outline's jump now counting the editor's top padding.
 **Next session should start with:** "Next steps" above.
 
 ### Session 12: 2026-09-25: IndexedDB storage (P4-10)

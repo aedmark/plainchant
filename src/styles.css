@@ -183,6 +183,30 @@ textarea {
 .el-help:hover { color: var(--btn-text); }
 @media (pointer: coarse) { .el-help { width: 44px; height: 44px; } }
 @media (max-width: 480px) { .el-help { display: none; } }
+
+/* Focus mode (P2-07). The toggle sits at the end of the element bar; phones have no room for it (the shortcut works) */
+.el-focus {
+    flex-shrink: 0;
+    margin-left: auto;
+    padding: 0 0.6rem;
+    height: 32px;
+    border: 1px solid var(--border-void);
+    border-radius: 0.375rem;
+    background: transparent;
+    color: var(--text-void-muted);
+    font: 600 0.75rem var(--font-ui);
+    cursor: pointer;
+}
+.el-focus:hover { color: var(--btn-text); }
+.el-focus[aria-pressed="true"] { color: #f8fafc; border-color: #475569; background: var(--btn-bg); }
+@media (pointer: coarse) { .el-focus { height: 44px; } }
+@media (max-width: 480px) { .el-focus { display: none; } }
+.el-focus + .el-help { margin-left: 0.4rem; }
+.pane-void { position: relative; }
+.focus-veil { display: none; position: absolute; z-index: 5; pointer-events: none; background: var(--bg-void); opacity: 0.72; }
+body.focus-mode .focus-veil { display: block; }
+/* Room above the first line and below the last, so either can come to the middle */
+body.focus-mode #editor { padding-top: 40vh; padding-bottom: 50vh; }
 @media (pointer: coarse) {
     .el-btn, .suggest-chip { min-height: 44px; font-size: 0.85rem; padding: 0 0.9rem; }
 }
@@ -641,7 +665,8 @@ code.inline, .help-table code.inline {
     /* While previewing, the Void's box goes away but its menu (a fixed-position child) must stay reachable */
     body[data-view="preview"] .pane-void { display: contents; }
     body[data-view="preview"] .pane-void textarea,
-    body[data-view="preview"] .element-bar { display: none; }
+    body[data-view="preview"] .element-bar,
+    body[data-view="preview"] .focus-veil { display: none; }
 
     /* One pane: the preview keeps only a slim row with the page count (P4-04) */
     .pane-canvas > .header { padding: 0.35rem 1rem; justify-content: flex-end; }

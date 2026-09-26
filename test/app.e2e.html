@@ -17,7 +17,7 @@
 const APP = '../index.html';
 const EMERGENCY_KEY = 'plainchant_emergency';
 const TOUR_KEY = 'plainchant_onboarded';
-const KEYS = [TOUR_KEY, EMERGENCY_KEY];
+const KEYS = [TOUR_KEY, EMERGENCY_KEY, 'plainchant_paper', 'plainchant_focus'];
 const f = document.getElementById('f');
 const log = [];
 const check = (name, cond, extra) => log.push((cond ? 'PASS ' : 'FAIL ') + name + (cond ? '' : '  -> ' + JSON.stringify(extra)));
@@ -1420,6 +1420,86 @@ setTimeout(() => {
     const obtn = rect(fid(op, 'outlineBtn')), sbtn = rect(fid(op, 'statsBtn'));
     check('phone outline: Outline and the page count both fit in the slim row', obtn.left >= 0 && sbtn.right <= 375 && obtn.right <= sbtn.left && obtn.height >= 36);
     op.remove();
+
+    // 16g. Focus mode (P2-07): veils over everything but the current block, the caret's line kept in the middle
+    const ff = await openFrame(1200, 700);
+    const fw = ff.contentWindow, fe = fid(ff, 'editor');
+    const FOCUS_TEXT = Array.from({ length: 40 }, (_, b) => ['Block ' + b + ' line one.', 'Block ' + b + ' line two.', 'Block ' + b + ' line three.'].join('\n')).join('\n\n');
+    const fLines = FOCUS_TEXT.split('\n');
+    const fPos = (line, col) => fLines.slice(0, line).reduce((n, l) => n + l.length + 1, 0) + (col || 0);
+    setText(ff, FOCUS_TEXT);
+    fe.focus();
+    const veils = () => Array.from(ff.contentDocument.querySelectorAll('.focus-veil'));
+    const focusBtnEl = fid(ff, 'focusBtn');
+    check('focus: the Focus toggle sits in the element bar, off, with no veils', !!focusBtnEl.closest('.element-bar') && focusBtnEl.getAttribute('aria-pressed') === 'false' && veils().every(v => !shown(v)));
+    const md = new fw.MouseEvent('mousedown', { bubbles: true, cancelable: true });
+    focusBtnEl.dispatchEvent(md);
+    focusBtnEl.click();
+    check('focus: the toggle turns it on, is remembered, and leaves the caret in the editor',
+      md.defaultPrevented && ff.contentDocument.body.classList.contains('focus-mode') && focusBtnEl.getAttribute('aria-pressed') === 'true' &&
+      fw.localStorage.getItem('plainchant_focus') === '1' && ff.contentDocument.activeElement === fe);
+
+    // Geometry, with a line height worked out independently (no line wraps in this text)
+    const fcs = fw.getComputedStyle(fe);
+    const fPadTop = parseFloat(fcs.paddingTop), fPadBottom = parseFloat(fcs.paddingBottom);
+    const fLh = (fe.scrollHeight - fPadTop - fPadBottom) / fLines.length;
+    const lineY = (line) => rect(fe).top + fPadTop + line * fLh - fe.scrollTop; // on screen
+    const midY = () => rect(fe).top + fe.clientHeight / 2;
+    const centred = (line) => Math.abs(lineY(line) + fLh / 2 - midY()) <= fLh;
+    const blockLine = (b) => b * 4;             // each block is 3 lines and a blank one
+    fe.setSelectionRange(fPos(blockLine(20) + 1, 5), fPos(blockLine(20) + 1, 5));
+    await sleep(60);                            // selectionchange arrives on its own
+    check('focus: moving the caret brings its line to the middle of the editor', centred(blockLine(20) + 1), [lineY(blockLine(20) + 1), midY(), fLh]);
+    const [above, below] = veils().map(rect);
+    check('focus: the veils cover everything above and below the block the caret is in, and nothing of it',
+      Math.abs(above.bottom - lineY(blockLine(20))) <= 2 && Math.abs(below.top - lineY(blockLine(20) + 3)) <= 2 &&
+      Math.abs(above.top - rect(fe).top) <= 1 && Math.abs(below.bottom - (rect(fe).top + fe.clientHeight)) <= 1,
+      [above.top, above.bottom, lineY(blockLine(20)), below.top, lineY(blockLine(20) + 3), below.bottom]);
+    check('focus: the veils never take a click', veils().every(v => fw.getComputedStyle(v).pointerEvents === 'none'));
+
+    const endOfBlock = fPos(blockLine(30) + 2) + fLines[blockLine(30) + 2].length;
+    fe.setSelectionRange(endOfBlock, endOfBlock);
+    await sleep(60);
+    fe.setRangeText(' More words.', endOfBlock, endOfBlock, 'end');
+    fe.dispatchEvent(new fw.Event('input', { bubbles: true }));
+    check('focus: typing keeps the line being typed in the middle', centred(blockLine(30) + 2), [lineY(blockLine(30) + 2), midY()]);
+    await sleep(60); // the selectionchange from that edit arrives now, as it would long before a person scrolls
+
+    fe.scrollTop = 0;
+    fe.dispatchEvent(new fw.Event('scroll'));
+    await sleep(60);
+    check('focus: scrolling by hand is left alone; the veils move with the text (the block is now below: all is veiled)',
+      fe.scrollTop === 0 && Math.abs(rect(veils()[0]).height - fe.clientHeight) <= 1 && rect(veils()[1]).height === 0, [fe.scrollTop, rect(veils()[0]).height, rect(veils()[1]).height]);
+
+    fe.dispatchEvent(new fw.PointerEvent('pointerdown', { bubbles: true }));
+    fe.setSelectionRange(fPos(blockLine(10)), fPos(blockLine(10)));
+    await sleep(60);
+    check('focus: while the mouse button is down (a selection being dragged) nothing scrolls', fe.scrollTop === 0, fe.scrollTop);
+    ff.contentDocument.dispatchEvent(new fw.PointerEvent('pointerup', { bubbles: true }));
+    check('focus: when it comes up, the clicked line comes to the middle', centred(blockLine(10)), [lineY(blockLine(10)), midY()]);
+
+    const scKey = new fw.KeyboardEvent('keydown', { key: 'F', ctrlKey: true, shiftKey: true, bubbles: true, cancelable: true });
+    fe.dispatchEvent(scKey);
+    check('focus: Ctrl/Cmd+Shift+F turns it off: no veils, normal padding, forgotten',
+      scKey.defaultPrevented && !ff.contentDocument.body.classList.contains('focus-mode') && veils().every(v => !shown(v)) &&
+      parseFloat(fw.getComputedStyle(fe).paddingTop) < 100 && fw.localStorage.getItem('plainchant_focus') === null);
+    check('help: focus mode is explained', /Focus mode/.test(fid(ff, 'help-modal').textContent));
+    ff.remove();
+
+    W().localStorage.setItem('plainchant_focus', '1');
+    const ff2 = await openFrame(1200, 700);
+    check('focus: it is still on after a reload', ff2.contentDocument.body.classList.contains('focus-mode') && fid(ff2, 'focusBtn').getAttribute('aria-pressed') === 'true');
+    ff2.contentWindow.setFocusMode(false);
+    ff2.remove();
+
+    const fp = await openFrame(375, 667);
+    check('phone focus: no room for the toggle in the bar', !shown(fid(fp, 'focusBtn')));
+    setText(fp, FOCUS_TEXT);
+    fp.contentWindow.setFocusMode(true);
+    fp.contentWindow.setView('preview');
+    check('phone focus: previewing shows no veils over the script', Array.from(fp.contentDocument.querySelectorAll('.focus-veil')).every(v => !shown(v)));
+    fp.contentWindow.setFocusMode(false);
+    fp.remove();
 
     // Phone: the Library fits a 375px screen and every action is reachable
     await seedLibrary();

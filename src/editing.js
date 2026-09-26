@@ -8,6 +8,7 @@
  * The page applies it in a way that keeps the browser's undo history (see applyEdit in index.html). Loads as
  * window.Editing (after fountain.js) in the browser and via require() in Node.
  *
+ *   Editing.blockAt(text, caret)              { start, end } of the run of non-blank lines the caret is in (focus mode)
  *   Editing.kindAt(text, lineIndex)            what element a line is: 'scene' | 'action' | 'character' |
  *                                              'parenthetical' | 'dialogue' | 'transition' | 'blank' | others
  *   Editing.enter(text, start, end, mode)      smart Enter, or null to let the browser insert a plain newline
@@ -279,8 +280,27 @@
         return { from: from, to: to, insert: insert, selStart: carry(selStart), selEnd: carry(selEnd) };
     }
 
+    /**
+     * The block the caret is in, for focus mode (P2-07): the run of non-blank lines around it, as character offsets
+     * { start, end } (end is the end of its last line, before any newline). On a blank line, just that line.
+     */
+    function blockAt(text, caret) {
+        const lines = String(text).split('\n');
+        const starts = [];
+        let at = 0;
+        lines.forEach((l) => { starts.push(at); at += l.length + 1; });
+        let i = 0;
+        while (i < lines.length - 1 && starts[i + 1] <= caret) i++;
+        const blank = (k) => !lines[k].trim();
+        if (blank(i)) return { start: starts[i], end: starts[i] + lines[i].length };
+        let first = i, last = i;
+        while (first > 0 && !blank(first - 1)) first--;
+        while (last < lines.length - 1 && !blank(last + 1)) last++;
+        return { start: starts[first], end: starts[last] + lines[last].length };
+    }
+
     return {
         kindAt: kindAt, enter: enter, cycleTarget: cycleTarget, tab: tab, setType: setType, autoCase: autoCase,
-        diffEdit: diffEdit, lineInfo: lineInfo, inDialogueBlock: inDialogueBlock
+        diffEdit: diffEdit, lineInfo: lineInfo, inDialogueBlock: inDialogueBlock, blockAt: blockAt
     };
 });

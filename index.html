@@ -56,6 +56,8 @@
         <button type="button" class="el-btn" data-el="transition" aria-pressed="false"><span class="long">Transition</span><span class="short">Trans</span></button>
         <!-- Autocomplete (P2-04): while a name is being typed these take the place of the element buttons -->
         <div class="suggestions" role="group" aria-label="Suggestions" hidden></div>
+        <!-- Focus mode (P2-07): dim all but the current block, keep the caret centred -->
+        <button type="button" id="focusBtn" class="el-focus" aria-pressed="false" title="Focus mode: dim everything but what you are writing (Ctrl/Cmd+Shift+F)">Focus</button>
         <button type="button" class="el-help" aria-label="Help with screenplay elements" title="Help with elements">?</button>
     </div>
 </div>
@@ -241,6 +243,7 @@ Author: Jane Doe</code></td>
                         <tr><td><kbd>Esc</kbd>, then <kbd>Tab</kbd></td><td>Moves focus out of the editor. (<kbd>Tab</kbd> alone is used for cycling.)</td></tr>
                         <tr><td><kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Z</kbd></td><td>Undo, including anything <kbd>Tab</kbd> or <kbd>Enter</kbd> just changed.</td></tr>
                         <tr><td><kbd>F1</kbd> or <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>/</kbd></td><td>Opens this help.</td></tr>
+                        <tr><td><kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd></td><td>Focus mode on or off (the <strong>Focus</strong> button at the end of the bar under the text does the same): everything but the block you are writing is dimmed, and the line you are on stays in the middle of the screen. Scrolling by hand still works.</td></tr>
                         <tr><td><kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>P</kbd></td><td>Prints the screenplay pages (never the app itself), on the paper chosen last in Export.</td></tr>
                     </tbody>
                 </table>
@@ -443,6 +446,7 @@ Is anyone here?</pre></div>
 <script src="src/app/help.js"></script>
 <script src="src/app/tour.js"></script>
 <script src="src/app/typing.js"></script>
+<script src="src/app/focus.js"></script>
 <script src="src/app/export.js"></script>
 <script src="src/app/import.js"></script>
 <script src="src/app/print.js"></script>

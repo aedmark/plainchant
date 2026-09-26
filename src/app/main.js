@@ -15,6 +15,7 @@ async function start() {
     await restoreLastScript();
     render();
     syncElementState();
+    restoreFocusMode();
     maybeShowTour();
 }
 
