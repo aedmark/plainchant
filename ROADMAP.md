@@ -171,6 +171,8 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
   many scenes and pages it takes (done, D-029)
 - [ ] P4-16 Versions, if wanted: compare a version with the text now (what changed, scene by scene) before going
   back, and take one scene from a version rather than the whole script
+- [ ] P4-17 Accessibility by a person: VoiceOver / NVDA / TalkBack reading order and wording, Windows high-contrast
+  mode, keyboard-only use for a whole session. The automated sweep (D-035) checks names and contrast only
 
 ## Phase 5: Sync and share (open questions)
 
@@ -186,7 +188,8 @@ Not committed. Decide only after Phase 3 ships. See open questions in DECISIONS.
 - [ ] P6-01 Confirm and register a domain (`plainchant.app` / `.io` showed no DNS answer; `.com` and `.co` are taken)
 - [ ] P6-02 Proper trademark search for "Plainchant" in software classes before investing in the brand
 - [ ] P6-03 Wordmark and icon (a page with fold lines was floated; plainchant notation is another source of shapes),
-  favicon, and a web-app manifest icon once P4-02 (PWA) happens
+  favicon, and a web-app manifest icon once P4-02 (PWA) happens (P4-02 shipped placeholders in `icons/`, drawn from
+  `icons/icon.svg`: replace those files and keep their sizes)
 - [x] P6-04 Rename the GitHub repository to `plainchant`, point `origin` at it, push, and move the project to a
   `plainchant` folder (done 2026-09-20 by the owner: renamed on GitHub, re-cloned; fresh clone verified, all tests pass)
 
@@ -194,5 +197,12 @@ Not committed. Decide only after Phase 3 ships. See open questions in DECISIONS.
 
 - Notes (`[[...]]`) that span several lines are not recognised; single-line notes are.
 - The parser is spec-strict about uppercase (D-004); the editor covers for it: `cut to:` and `int. ...` are
-  uppercased as typed (P2-03), and other cues are set with Tab / the Character button. Text pasted in or typed
-  outside the app in lowercase is still action.
+  uppercased as typed (P2-03), cues are set with Tab / the Character button or guessed on Enter (P2-14). Text pasted
+  in or typed outside the app in lowercase is still action.
+- The editor shows colours only: `*italic*` and `**bold**` are not shown until the preview (weights and slants would
+  break the colour layer's alignment, D-031). If a browser wraps the layer differently, the colours switch themselves
+  off for that visit.
+- Name guessing (D-036) takes a short Title Case line without a full stop ("Silence") for a new character. Undo takes
+  it back; Settings switches guessing off.
+- Printing goes through the browser's print window (D-021); there is no direct `.pdf` download yet (P3-11).
+- The preview is always white paper, whatever the theme (D-035).

@@ -9,13 +9,19 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-26, session 13 (script stats, P4-04; outline navigator, P4-03; focus mode, P2-07; offline, P4-02;
-persistent storage, P4-12; scene stats, P4-13 to P4-15;
-the caret kept clear of the keyboard, P2-16; colour hints in the editor, P2-08; settings, P2-15; tapping the preview, P2-10;
-versions, P4-05;
-themes, text size and an accessibility pass, P4-06;
-guessing character names, P2-14; autocomplete follow-ups, P2-21). Session 12 built IndexedDB storage, dropped legacy
-support, and built print / save as PDF._
+_Last updated: 2026-09-26, end of session 13. Session 13 was long: sixteen roadmap items, D-023 to D-037 (stats and
+scene stats, outline, focus mode, offline, persistent storage, the caret above the keyboard, colour hints, settings,
+tapping the preview, versions, themes and text size with an accessibility sweep, guessing names, autocomplete
+follow-ups). All the code is merged into `master` (through P2-21); only this wrap-up of the docs is new on the working
+branch, `claude/compassionate-clarke-mxwpzz`. Tests: `npm test` 290, `bash test/run-headless.sh` 278 unit + 597 e2e, about
+50 s._
+
+**Where things stand, in one paragraph:** Phases 1 and 2 are done apart from real-device work (P2-09, P2-13) and two
+optional ideas (P2-20 hints, P2-22 desktop click-to-jump). Phase 3's output is done (Fountain export, print / save as
+PDF); what is left there is optional (P3-08 to P3-12). Phase 4 is done apart from P4-01 (incremental render), P4-16
+(comparing versions) and P4-17 (a screen-reader pass by a person). Phase 5 (real files, sync) is undecided and Phase 6
+(brand) is the owner's. The biggest gap is not code: almost everything from session 13 has only run in headless
+Chromium. The owner's hands-on pass (Next steps 1) matters more than the next feature.
 
 **What works**
 - **Autocomplete follow-ups** (P2-21, D-037). After `INT. PLACE - ` the chips offer the script's times of day, then DAY
@@ -85,7 +91,8 @@ support, and built print / save as PDF._
   The browser's print window does the rest (Save as PDF). **Ctrl/Cmd+P** prints the screenplay too, never the app.
   The preview now matches paper: plain (not bold) scene headings, transitions flush right, 20-column parentheticals.
 - **Storage is IndexedDB** (P4-10, D-018, D-019, D-020; `src/store.js` + `src/app/persistence.js`). Database
-  `plainchant`, one record per script in `scripts`, the open-script pointer in `meta`. The whole library is held in
+  `plainchant` (version 2), one record per script in `scripts`, the open-script pointer in `meta`, kept versions in
+  `versions` (P4-05). The whole library is held in
   memory; an autosave writes **only the script being edited**. Every save first puts its words in a small synchronous
   localStorage buffer (`plainchant_emergency`), cleared once IndexedDB has them, so a tab closed mid-write loses
   nothing: the next load puts them back. Other open tabs are told of every change (BroadcastChannel); a save into a
@@ -140,7 +147,7 @@ support, and built print / save as PDF._
 - **1024px and wider** (desktop, iPad landscape): two panes side by side, raw Fountain text left, live preview right.
 - **Below 1024px** (phones, portrait tablets, narrow windows; also landscape coarse-pointer under 500px tall): one pane
   at a time. A top bar has a **Write | Preview** toggle. Opening Preview scrolls to where the caret was.
-  - Phones (under 700px): New / Library / Save / Export / Copy are in a ⋯ menu.
+  - Phones (under 700px): New / Library / Save / Export / Copy / Settings / Help are in a ⋯ menu.
   - Tablets (700px+): those actions sit inline in the bar; the editor text is held to ~44rem in the middle.
 - The screenplay adapts to the width of its *column* (container queries, D-009): a full 60-character page with true
   indents when it fits (portrait iPad), percentage indents and stacked dual dialogue when narrower (phones, a
@@ -314,19 +321,21 @@ support, and built print / save as PDF._
   spirit but the specifics below remain unobserved by me. `fitToViewport()` itself is tested only with a fake
   `visualViewport`. The **tour and Help have not been seen on a device**, and their wording has had no review from
   anyone but me.
-- Only Edge (Chromium) has been used. Firefox and Safari are untested. iPad Safari's "desktop-class" browsing mode
-  and Split View / Stage Manager window widths are reasoned about, not observed.
+- Automated runs are headless Chromium only. The owner has used the app in Firefox and Safari (storage, 2026-09-25),
+  but nothing from session 13 has been seen there. iPad Safari's "desktop-class" browsing mode and Split View / Stage
+  Manager window widths are reasoned about, not observed.
 - Apple Pencil handwriting and hardware-keyboard use on tablets are unchecked (P2-13).
 - **Typing helpers on real input methods.** Tests fire keyboard-shaped events (`keydown` Tab, `beforeinput`
   insertLineBreak, `input` insertText). Not yet observed: iOS Safari and Android GBoard soft keyboards (Enter is
   read from `beforeinput`; Android composition may delay auto-uppercase until a word is committed), predictive
   text, Scribble, and whether the on-screen keyboard survives a tap on the element bar (the design cancels
   `mousedown` for that). All of it is P2-09 territory.
-- Whether the new Enter / Tab behaviour *feels* right to a writer is a judgement only the user can make; P2-15
-  (settings to turn parts off) exists in case it does not.
-- **Autocomplete on real devices and with a screen reader** (nothing announces the chips; P2-21). Whether Tab taking a
-  suggestion feels right to a writer is the user's call.
-- Phase 1 is complete (P1-01 to P1-10); P2-01 to -05, -11, -12, -17 to -19 are done.
+- Whether the Enter / Tab behaviour, name guessing and Tab-takes-the-suggestion *feel* right to a writer is the
+  owner's judgement; Settings can switch off blank lines on Enter, capitals as you type, guessing names and the
+  colours.
+- **Autocomplete on real devices and with a real screen reader.** The chips are announced (P2-21) but no screen reader
+  has heard them.
+- **The Windows runner** (`npm run test:browser:windows`) has not run since session 11.
 
 **Gotchas for the next session**
 - **Test fixtures: a line in capitals parses as a character cue.** `A.` or `B.` alone on a line after a blank line is a
@@ -371,7 +380,7 @@ support, and built print / save as PDF._
   `await` in front of one.
 - **The headless runners run in real time now (no `--virtual-time-budget`).** IndexedDB never answers under virtual
   time. The e2e page holds its own load event open until it is done (the hidden `hold` iframe), which is what makes
-  `--dump-dom` wait; it gives up after 10 real minutes. A run takes about 40 s. "The page never finished" now means a
+  `--dump-dom` wait; it gives up after 10 real minutes. A run takes about 50 s. "The page never finished" now means a
   script error or a hung `await`: open the page in a browser, or in Playwright with `waitUntil: 'commit'` (the page
   holds its load event, so waiting for "load" times out).
 - **In the e2e page, a stubbed write that never resolves hangs `stored()`** (it waits on every frame's `whenSaved()`).
@@ -381,12 +390,14 @@ support, and built print / save as PDF._
   can then write a script into storage during the Library section (the symptom: "library: choosing a script opens it"
   opens the wrong script). The typing section now silences every existing frame before it starts. Do the same in any
   new section that runs after long-lived frames and touches storage.
-- Autocomplete: `Suggest.at(text, caret)` needs no "mode" argument because it asks `Editing.kindAt`, so it sees a cue only
-  once the line is uppercase (Tab-chosen Character mode uppercases as you type). Chips use their own class
+- Autocomplete: `Suggest.at(text, caret, mode)` asks `Editing.kindAt`, so it sees a cue only once the line is uppercase
+  (Tab-chosen Character mode uppercases as you type); `mode` matters only for an empty cue line (P2-21), whose
+  suggestions carry `tab: false` so Tab keeps cycling. Chips use their own class
   (`.suggest-chip`), not `.el-btn`, so the tests that count six element buttons still hold. `dismissedFor` clears itself
   as soon as the caret leaves the dismissed word.
-- **Git and the repo:** `origin` is `https://github.com/aedmark/plainchant.git` (renamed on GitHub by the owner,
-  who also re-cloned into a fresh `plainchant` folder). Everything through `4d9fe13` is pushed and in sync. The
+- **Git and the repo:** `origin` is `https://github.com/aedmark/plainchant.git`. Cloud sessions work on a branch
+  (session 13: `claude/compassionate-clarke-mxwpzz`), commit and push there; the owner merges it into `master`
+  (`git fetch origin && git merge origin/<branch> && git push`, or from PyCharm) and says "merged to master". The
   `gh` CLI is not installed, so GitHub-side changes (renames, settings) are the owner's to make. **Git working
   agreement (owner's preference):** commit finished, tested work without asking, with a normal message; never
   force-push or rewrite history; push when asked (it publishes the code). The fresh clone has a git identity
@@ -421,44 +432,67 @@ support, and built print / save as PDF._
   scripts, one shared global scope, order matters only for code that runs at load. `test/structure.test.js` guards it.
   Put new code in the file that owns the concern (a new file if none does) and register it in `index.html`.
 - `fitToViewport(vv)` and `setView()` / `setMenu()` are global functions on purpose: the e2e page calls them.
+- **Mutation testing is how session 13 checked its tests** (a scratch script swaps one line of source, runs the
+  suites, restores the line). Restore from the text the script read, **never with `git checkout <file>`**: that
+  once threw away a file's uncommitted work mid-session. Don't commit while such a run is going (a source file is
+  mutated during each step). Survivors were usually a weak test (fix the test) or a redundant guard (remove it).
+- **The e2e page's names clash easily** (one shared scope, ~2,000 lines): `tf`, `kw`, `sf`, `chips` and `said` all
+  collided in session 13. Prefix a new section's names (`verF`, `acChips`) and run the `new Function` syntax check.
+- **Colours:** never a literal in the app's chrome; add a token to both `:root` sets (D-035). The sweep in section 16o
+  fails for any text under 4.5:1 in either theme or any control without a name, so run the e2e after a CSS change.
+- **The editor's copies must lay out exactly like the textarea** (colour layer, measuring copy): line height as a
+  length (`1.6em`), `copyEditorType` for type and width, `getBoundingClientRect` not `offsetTop` (which rounds).
+  A unitless line height drifted 1/64px a line; the wrap check in `shade.js` turns the hints off if anything drifts.
+- **Settings:** a new choice goes in `SETTING_DEFAULTS` (and `SETTING_CHOICES` for a pick-one), with a control in the
+  Settings window; the stored key holds only what differs from the defaults. A pure rule takes it as an option.
+- **Versions:** saved inside `Store.saveScript`'s own transaction when `Versions.due` says so; `versions-ui.js` is the
+  one place that writes IndexedDB outside `persistence.js`. The e2e stubs the frame's `Date.now` to reach "ten minutes
+  later".
 - `#render-target` (full-width scroll area) and `#page` (the fixed-width screenplay column, `.screenplay-font`) are
   separate elements on purpose. Merged into one flex item with `margin: 0 auto`, the column shrank to its widest
   line and floated to the middle. Render into `#page`, scroll `#render-target`.
 
 ## Next steps (in order)
 
-0. (P4-10 is checked: tests pass on the owner's Arch Linux machine, and the app works in Firefox and Safari. P4-11 is
-   closed by D-020: no legacy support.) The owner is on **Arch Linux** now (not Windows); `npm run test:browser` runs
-   `bash test/run-headless.sh`. The tour will show once more for the owner (its flag was renamed).
-1. **Try the tour as a first-time user on the tablet** (clear site data or
-   `localStorage.removeItem('plainchant_onboarded')`). The user proofed the Help copy in session 8; the tour copy
-   (`src/app/tour.js` and the tour markup) was not changed then.
-2. **Ask the user how the typing helpers feel** (especially Enter starting a new paragraph after action, and the new
-   guessing of character names on Enter, P2-14: does it ever take an action line for a name?). Both can be switched
-   off in Settings.
-3. **Ask the user how autocomplete feels** (P2-04, D-017): Tab taking the first suggestion while chips show, needing a
-   first letter, chips replacing the element buttons while typing a name. Then P2-21 (time of day after `INT. PLACE - `,
-   names on an empty cue line, screen-reader announcements) only if wanted. The agreed order still stands:
-   autocomplete, then PAUSE.
-4. (Print / save as PDF is done: P3-03 to P3-06, and script stats: P4-04. No browser or device checks are planned
-   for either: the owner will report bugs. P3-11, direct `.pdf` download, is the answer if print windows turn out
-   awkward; P3-12, page view, is for later. The outline navigator, P4-03, is done too.) Persistent storage, P4-12, is done
-   too.) **Ask the owner what comes next.** Candidates: P4-01
-   (incremental render, for very long scripts), P4-16 (compare versions), P2-22 (desktop click-to-jump), P3-11 (a real
-   .pdf download), P3-12 (page view), P5-01 (open and save real files). A screen-reader pass by a person is worth doing.
-5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
-6. (P4-10 and P4-11 are done: D-018, D-019, D-020.)
+0. **Merge the branch** for this wrap-up's docs commit (the owner does this; see the git gotcha). The code is already
+   in `master`.
+1. **A hands-on pass by the owner of what session 13 built** (nothing of it has been on a real device or in
+   Firefox / Safari). Most useful first, each a few minutes:
+   - **A long real script in Firefox and Safari**: do the colour hints appear (if not, the wrap check switched them
+     off: the console says so), does the light theme look right (Settings > Theme), does Script stats look right.
+   - **After a day of writing: Library > Versions** on a real script (the database upgraded to version 2 on first
+     load; with two tabs open, reload the older one). Try Go back, then Ctrl+Z.
+   - **On the phone / tablet:** type at the bottom of a long script (three lines of room above the keyboard?), tap a
+     line in Preview (does the keyboard come up?), Focus mode, suggestions for the time of day after `INT. X - `.
+   - **Name guessing:** write normally for a while. Does Enter ever take an action line for a character? If so, the
+     planned fix is to require a known name for single words (D-036).
+   - **Firefox's "keep your data" prompt** (persistent storage): does it appear, and what does the Library say after?
+   - Whatever feels wrong is the next session's first job; Settings can switch most new behaviour off meanwhile.
+2. **A screen-reader pass by a person** (P4-17): VoiceOver on the iPad or Mac, NVDA on Windows if available. The
+   automated sweep (D-035) checks names and contrast, not how the app sounds.
+3. **Then the next feature, the owner's pick.** Candidates, roughly by value:
+   - **P5-01** open and save real `.fountain` files on disk (File System Access API; Chromium only, so it needs a
+     fallback story): the biggest step towards "text is the source of truth".
+   - **P4-01** incremental render: each keystroke now parses the whole script for the preview and the colour layer,
+     and the stats half a second later. Measure on a 120-page script on the phone before optimising.
+   - **P4-16** compare a version with the text now, scene by scene; take one scene back.
+   - **P3-11** a real `.pdf` download (only if print windows prove awkward); **P3-12** a page view while writing.
+   - **P2-22** click-to-jump in the desktop preview; **P2-20** first-use hints; **P3-09 / P3-10** Library and export
+     extras; **P3-08** Final Draft export (stretch).
+4. **Owner's non-code items:** a domain, a trademark search and a real icon (P6-01 to P6-03; the icons in `icons/` are
+   placeholders).
 
 ## Open questions for the user
 
-- ~~What is the product called?~~ **Plainchant** (D-012). Repo and folder renamed. Still open for the owner:
-  register a domain, do a proper trademark search, make a logo (roadmap Phase 6).
-- Is the tour the right length and tone (four steps), and is showing it once to existing users too?
-- Enter after an action line starts a new paragraph (Shift+Enter for a line break). Right default? (It can now be
-  switched off in Settings, D-032.)
-- ~~Cues need Tab or the Character button.~~ Names are now guessed on Enter (P2-14, D-036). Does it guess wrong?
-- Autocomplete: is Tab-takes-the-first-suggestion right, and do you want the time of day (`- DAY`) suggested too (P2-21)?
-- Is a plain `<textarea>` editor acceptable long term, or is inline styling of the source text (P2-08) a must-have?
+- ~~What is the product called?~~ **Plainchant** (D-012). Still open for the owner: a domain, a trademark search, a logo
+  (roadmap Phase 6).
+- Is the tour the right length and tone (four steps)? It has not been revised since session 8.
+- Enter after an action line starts a new paragraph (Shift+Enter for a line break): right default? (Switchable, D-032.)
+- Name guessing on Enter (D-036): does it guess wrong in real writing?
+- Tab takes the first suggestion (names, places, times of day): right? The times of day are new (D-037).
+- Should the preview follow the theme too (a dark page), or stay paper as now (D-035)?
+- Phase 5: real files on disk (P5-01) or hosted sync (P5-02) first? Q-002 in DECISIONS.
+- ~~Plain textarea or a rich editor (Q-001)?~~ A textarea with a coloured layer behind it (D-031).
 
 ---
 
@@ -466,41 +500,49 @@ support, and built print / save as PDF._
 
 Newest first. Copy the template for each new session.
 
-### Session 13: 2026-09-26: Script stats (P4-04)
+### Session 13: 2026-09-26: Stats, outline, focus, offline, versions, settings, themes and more (sixteen items)
 
-**Goal:** The owner chose P4-04 (stats) next, after confirming print works through the browser's print window to a
-printer or to PDF, and choosing to skip device checks of print until a bug report.
-**Done:** P4-04 (D-023). New `src/stats.js` (pure; tests first, 9 unit tests); `src/app/stats-ui.js` (the live count
-and the Script stats window); `render()` in `core.js` schedules the count; Export's paper choice updates it. The
-preview's header now shows in one-pane mode as a slim row with only the count. Help mentions it. 11 e2e checks.
-**Changed:** the decorative "Courier Prime" badge in the preview's header is replaced by the count.
-**Decisions:** D-023.
-**Problems / surprises:** None in the code. One mutation (the window ignoring the paper) survived at first because
-the fixture took two pages on both papers; the fixture now takes 2 on Letter and 1 on A4.
-**Left undone:** Per-scene breakdowns, INT/EXT or day/night counts and a locations list, now roadmap items P4-13 to
-P4-15 at the owner's request. Real-device checks, by the owner's choice.
-Then, at the owner's request, **P4-03 outline navigator** (D-024): `src/outline.js` (tests first), the Outline
-window and `jumpToLine` in `src/app/outline-ui.js`, an Outline button beside the page count, scene headings in the
-print layout tagged with their source line (for the page numbers). The owner also asked for the stats follow-ups to
-be on the roadmap (P4-13 to P4-15).
-Then **P2-07 focus mode** (D-025): `Editing.blockAt`, `src/app/focus.js`, the shared text measurer moved to
-`layout.js` (and corrected), the outline's jump now counting the editor's top padding.
-Then **P4-02 offline** (D-026): local fonts from Fontsource (npm), `sw.js`, `manifest.webmanifest`, placeholder icons
-rendered from `icons/icon.svg` with Playwright, `src/app/offline.js`, structure tests keeping the lists honest.
-Then **P4-12 persistent storage** (D-027): `src/app/safekeeping.js`, the line at the foot of the Library, a Help
-entry, one more localStorage key (`plainchant_keep_asked`).
-Then **P4-13 scene stats** (D-028): `sceneList` and `Stats.eighths` in `src/stats.js` (tests first), a Scenes table
-in the Script stats window that jumps like the Outline. Then **P4-14 and P4-15** (D-029): `Stats.heading`, the scene
-mix and the locations in the same window.
-Then **P2-16** (D-030): `keepCaretClear` in `layout.js`, focus mode's measuring cache moved there and made exact.
-Then **P2-08** (D-031): `Fountain.shade`, `src/app/shade.js`, the editor's line height as a length; Q-001 answered.
-Then **P2-15** (D-032): `src/app/settings.js`, options on `Editing.enter` / `autoCase`, `setShadeOn`, the gear.
-Then **P2-10** (D-033): a tap on the one-pane preview goes to that line; speech lines carry `data-line`. P2-22 added.
-Then **P4-05** (D-034): `src/versions.js`, the `versions` store kept inside `Store.saveScript`, `versions-ui.js`. P4-16 added.
-Then **P4-06** (D-035): colour tokens and a light theme, Theme and Text size in Settings, the accessibility sweep.
-Then **P2-14** (D-036): `Editing.looksLikeCue`, `Editing.enter`'s `cues` option, the Guess character names switch.
-Then **P2-21** (D-037): times of day and empty-line names in `Suggest.at`, `tab: false`, the `#suggestSay` live region.
-**Next session should start with:** "Next steps" above.
+**Goal:** The owner picked one roadmap item at a time and merged each into `master` before asking for the next:
+P4-04, P4-03, P2-07, P4-02, P4-12, P4-13 to P4-15, P2-16, P2-08, P2-15, P2-10, P4-05, P4-06, P2-14, P2-21. The
+owner had confirmed print works (to a printer and to PDF) and chose to skip device checks until a bug report.
+**Done:**
+- **P4-04 script stats** (D-023): `src/stats.js`, `src/app/stats-ui.js`; the live page count replaced the font badge.
+- **P4-03 outline** (D-024): `src/outline.js`, `src/app/outline-ui.js` and `jumpToLine`; scene headings in the print
+  layout carry their source line.
+- **P2-07 focus mode** (D-025): `Editing.blockAt`, `src/app/focus.js`; the text measurer moved to `layout.js`.
+- **P4-02 offline** (D-026): local fonts (Fontsource), `sw.js`, `manifest.webmanifest`, placeholder icons.
+- **P4-12 persistent storage** (D-027): `src/app/safekeeping.js`, a line at the foot of the Library.
+- **P4-13 to P4-15 scene stats** (D-028, D-029): scene lengths in eighths, speakers, the INT/EXT and time-of-day mix,
+  locations (`Stats.heading`), all in the Script stats window.
+- **P2-16** (D-030): `keepCaretClear`, three lines of room above the keyboard.
+- **P2-08 colour hints** (D-031): `Fountain.shade`, `src/app/shade.js`, a coloured copy behind a transparent
+  textarea with a wrap check. Answered Q-001.
+- **P2-15 settings** (D-032): `src/app/settings.js`, a gear beside Help; options on `Editing.enter` / `autoCase`.
+- **P2-10** (D-033): a tap on the one-pane preview goes to that line.
+- **P4-05 versions** (D-034): `src/versions.js`, a `versions` store written inside the save's transaction,
+  `src/app/versions-ui.js` from each Library row.
+- **P4-06** (D-035): colour tokens and a light theme, Theme and Text size in Settings, an accessibility sweep in the
+  e2e suite over every window in both themes.
+- **P2-14** (D-036): names guessed on Enter (`Editing.looksLikeCue`), with a switch.
+- **P2-21** (D-037): times of day and empty-cue names in `Suggest.at`, announced to screen readers.
+- Tests went from 228 (Node) / 220 unit + 428 e2e to **290 / 278 + 597**. Almost every item was mutation-tested
+  (a scratch script breaking one line at a time); the counts are under "Verified".
+**Changed:** the preview matches paper; the editor's line height is `1.6em`; the database is version 2; new
+localStorage keys `plainchant_focus`, `plainchant_keep_asked`, `plainchant_settings`; the "Courier Prime" badge and
+the Google Fonts links are gone. New roadmap items: P2-22, P4-13 to P4-17.
+**Decisions:** D-023 to D-037.
+**Problems / surprises:**
+- Measuring text in the editor was wrong three ways, each found by a test: a span's `offsetTop` is its text's top,
+  not its line's; `offsetTop` rounds (25.6px lines counted as 26); and a unitless line height lays out 1/64px a line
+  differently from its copies (77px adrift after 4,900 lines). All fixed; see the gotchas.
+- Mutation runs found weak tests (clamped scrolling that hid missing guards, fixtures that could not tell two sort
+  orders apart) and several redundant guards, which were removed.
+- The accessibility sweep found two real problems (an unnamed editor, a 3.0:1 tagline).
+- One restore with `git checkout` threw away uncommitted work during a mutation run; it was redone at once.
+- The e2e page's shared scope caused four name clashes; each broke the whole page until renamed.
+**Left undone:** Every device and non-Chromium check (see "Not verified"); a real screen reader; the Windows runner;
+the 16px text floor on landscape iPads (no touch pointer in headless Chromium).
+**Next session should start with:** "Next steps" above: the owner's hands-on pass first.
 
 ### Session 12: 2026-09-25: IndexedDB storage (P4-10)
 
