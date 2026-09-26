@@ -130,7 +130,9 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
 - [ ] P4-01 Incremental render: only re-render changed blocks; debounce; feature-length (120 page) performance budget
 - [ ] P4-02 Offline: self-host fonts, service worker, installable PWA
 - [ ] P4-03 Outline navigator (sections, synopses, scenes; click to jump)
-- [ ] P4-04 Stats: page count, estimated runtime, scene count, per-character line counts
+- [x] P4-04 Stats: page count, estimated runtime, scene count, per-character line counts (D-023): a live page count
+  in the preview's header opens Script stats (pages as printed, screen time, scenes, words, speeches and words per
+  character with their share)
 - [ ] P4-05 Version snapshots and restore
 - [ ] P4-06 Themes and font-size controls; accessibility pass (keyboard, contrast, screen reader labels)
 - [x] P4-08 Split the inline app script in `index.html` (~925 lines) into eleven classic script files under

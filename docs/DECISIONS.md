@@ -402,6 +402,22 @@ breaking a speech only where a sentence happens to end a wrapped line leaves sev
 from 4 sheets to 3). The e2e page fakes the clipboard in the Copy check: once focus returns into the frame after a
 dialog, headless Chrome waits forever on a clipboard permission prompt.
 
+## D-023 Script stats: counted as printed, shown live in the preview's header  (2026-09-26, status: accepted)
+**Context:** P4-04 (page count, runtime, scenes, per-character counts). The header bar of actions is full (D-022).
+**Decision:**
+1. **A pure module, `src/stats.js`**, on top of `src/paginate.js`: pages are the printed pages on the paper chosen in
+   Export (so the count always matches what prints; the title page is not counted). **Screen time** is a minute a
+   page, with the last page counted by how full it is (at least a minute for any script). **Words** use the Library's
+   rule (every word in the text), so the two numbers always agree. **Characters** are grouped by name with every
+   extension dropped (`JOHN (V.O.)` is JOHN) and case ignored, shown as first spelled; their words are spoken words
+   only (no parentheticals, no notes); both sides of dual dialogue count. Sorted by words, with a share of all dialogue.
+2. **Where it shows:** a live "3 pages · ~3 min" button in the preview's header, in place of the decorative
+   "Courier Prime" badge; it opens a **Script stats** window. It updates 600 ms after typing pauses (pagination of a
+   120-page script takes tens of milliseconds, too much for every keystroke). In one-pane mode (phones, portrait
+   tablets) the preview's header, hidden until now, comes back as a slim row holding only that button.
+**Consequences:** No per-scene breakdown, no INT/EXT or day/night counts, no locations list; easy to add to the module
+if wanted. The page count needs the print layout, so any change to pagination changes the count too (by design).
+
 ## Open questions
 
 - Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

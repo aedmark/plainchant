@@ -9,9 +9,15 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-25, session 12 (IndexedDB storage; no legacy support; print / save as PDF built)._
+_Last updated: 2026-09-26, session 13 (script stats, P4-04). Session 12 built IndexedDB storage, dropped legacy
+support, and built print / save as PDF._
 
 **What works**
+- **Script stats** (P4-04, D-023; `src/stats.js` + `src/app/stats-ui.js`). The preview's header shows a live
+  "3 pages · ~3 min" (it updates 600 ms after typing pauses; on phones and portrait tablets it sits in a slim row
+  at the top of Preview). Tapping it opens **Script stats**: pages as they print on the chosen paper, screen time
+  (a minute a page), scenes, words (the Library's count), and each character's speeches, spoken words and share of the
+  dialogue, with every cue extension folded into the one name. The "Courier Prime" badge it replaced is gone.
 - **Print / save as PDF** (P3-03 to P3-06, D-021, D-022; `src/paginate.js` + `src/app/print.js`). **Export** opens a
   dialog: *Download .fountain*, or *Print or save as PDF* with US Letter / A4 (remembered in `plainchant_paper`) and
   the page count. The pages are laid out on the Courier grid (60 columns; 54 rows Letter, 58 A4; standard margins),
@@ -87,6 +93,11 @@ _Last updated: 2026-09-25, session 12 (IndexedDB storage; no legacy support; pri
 - Scroll sync no longer divides by zero.
 
 **Verified**
+- **Stats, session 13:** `npm test` 237 (9 new in `test/stats.test.js`, including a speed guard for the live count on
+  a 100+ page script); `bash test/run-headless.sh` 229 unit + **439 e2e** (section 16e: the count waits for a pause
+  then matches, the window's tiles and character table, names only as text, A4 changing the count, the empty case,
+  the phone layout). Seven mutations (extensions or case splitting a character, parentheticals counted, whole-page
+  minutes, the header never updating, names as markup, the window ignoring the paper) each fail a test.
 - **Print, end of session 12:** `npm test` 228 (adds 5 `Fountain.runs` and 32 pagination tests, among them a
   no-words-lost property test over 25 generated scripts, a "no page ends on a heading, lone cue or parenthetical"
   test, and a speed guard); `bash test/run-headless.sh` 220 unit + **428 e2e** (section 16d: the Export dialog, page
@@ -272,9 +283,11 @@ _Last updated: 2026-09-25, session 12 (IndexedDB storage; no legacy support; pri
    first letter, chips replacing the element buttons while typing a name. Then P2-21 (time of day after `INT. PLACE - `,
    names on an empty cue line, screen-reader announcements) only if wanted. The agreed order still stands:
    autocomplete, then PAUSE.
-4. (Print / save as PDF is done: P3-03 to P3-06. No browser or device checks are planned: the owner will report
-   bugs. P3-11, direct `.pdf` download, is the answer if print windows turn out awkward; P3-12, page view, is for
-   later.) **Ask the owner what comes next.**
+4. (Print / save as PDF is done: P3-03 to P3-06, and script stats: P4-04. No browser or device checks are planned
+   for either: the owner will report bugs. P3-11, direct `.pdf` download, is the answer if print windows turn out
+   awkward; P3-12, page view, is for later.) **Ask the owner what comes next.** Candidates offered in session 12:
+   P4-03 outline navigator, P2-07 focus / typewriter mode, P4-02 offline / installable (also makes Courier Prime
+   available to print offline).
 5. (P4-08 and P4-09, splitting the script and the stylesheet out of `index.html`, are done.)
 6. (P4-10 and P4-11 are done: D-018, D-019, D-020.)
 
@@ -294,6 +307,21 @@ _Last updated: 2026-09-25, session 12 (IndexedDB storage; no legacy support; pri
 ## Session log
 
 Newest first. Copy the template for each new session.
+
+### Session 13: 2026-09-26: Script stats (P4-04)
+
+**Goal:** The owner chose P4-04 (stats) next, after confirming print works through the browser's print window to a
+printer or to PDF, and choosing to skip device checks of print until a bug report.
+**Done:** P4-04 (D-023). New `src/stats.js` (pure; tests first, 9 unit tests); `src/app/stats-ui.js` (the live count
+and the Script stats window); `render()` in `core.js` schedules the count; Export's paper choice updates it. The
+preview's header now shows in one-pane mode as a slim row with only the count. Help mentions it. 11 e2e checks.
+**Changed:** the decorative "Courier Prime" badge in the preview's header is replaced by the count.
+**Decisions:** D-023.
+**Problems / surprises:** None in the code. One mutation (the window ignoring the paper) survived at first because
+the fixture took two pages on both papers; the fixture now takes 2 on Letter and 1 on A4.
+**Left undone:** Per-scene breakdowns, INT/EXT or day/night counts and a locations list (easy additions to the
+module if wanted). Real-device checks, by the owner's choice.
+**Next session should start with:** "Next steps" above.
 
 ### Session 12: 2026-09-25: IndexedDB storage (P4-10)
 

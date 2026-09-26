@@ -109,6 +109,7 @@ function fontsReady() {
 async function printScript() {
     const paper = chosenPaper();
     try { localStorage.setItem(PAPER_KEY, paper); } catch (e) { /* remembered for this print only */ }
+    updateStatsBadge(); // the page count in the preview's header is for this paper now
     closeModal(printChoice);
     await fontsReady();
     buildPrintPages(paper);

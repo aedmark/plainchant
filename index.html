@@ -67,7 +67,8 @@
             <h2>The Canvas</h2>
             <p>Live structural rendering.</p>
         </div>
-        <span class="font-badge">Courier Prime</span>
+        <!-- Live page count and screen time; opens the Stats window (P4-04) -->
+        <button type="button" id="statsBtn" class="stats-btn" aria-haspopup="dialog" title="Script stats">No pages yet</button>
     </div>
     <!-- #render-target is the full-width scroll area; #page is the fixed-width screenplay column inside it.
          They must stay separate elements: as one flex item with auto margins the column shrank to its widest
@@ -139,6 +140,7 @@
                     <li><strong>Export</strong> offers two things. <strong>Download .fountain</strong> saves your script as a file named after its title: plain text, so any text editor opens it, and screenwriting apps that understand Fountain open it as a script. <strong>Print or save as PDF</strong> lays it out as standard screenplay pages (Courier 12pt, numbered, a title page of its own, <em>(MORE)</em> and <em>(CONT&rsquo;D)</em> where a speech runs over a page) and opens your browser&rsquo;s print window; choose <strong>Save as PDF</strong> there to make a PDF. Notes, sections and synopses are left out of the pages.</li>
                     <li><strong>Import</strong> (in the Library, or drop a file anywhere on the page) adds a <code class="inline">.fountain</code> or <code class="inline">.txt</code> file as a new script. Nothing you already have is replaced.</li>
                     <li><strong>Copy</strong> puts the whole script on the clipboard.</li>
+                    <li>The page count above the formatted script (<strong>3 pages &middot; ~3 min</strong>) opens <strong>Script stats</strong>: pages, screen time (about a minute a page), scenes, words, and how much each character speaks.</li>
                 </ul>
                 <div class="callout"><p><strong>Scripts live only in this browser, on this device.</strong> Nothing
                     saves to your filesystem without your consent, and your writing is never sent to a server. Clearing
@@ -301,6 +303,35 @@ Author: Jane Doe</code></td>
     </div>
 </div>
 
+<!-- Script stats (P4-04): pages, screen time, scenes, words, and who speaks how much -->
+<div id="stats-modal" class="modal-overlay">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="stats-title">
+        <div class="modal-header">
+            <h2 id="stats-title">Script stats</h2>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p id="statsFor" class="stats-for"></p>
+            <dl class="stats-tiles">
+                <div><dt>Pages</dt><dd id="statPages"></dd></div>
+                <div><dt>Screen time</dt><dd id="statTime"></dd></div>
+                <div><dt>Scenes</dt><dd id="statScenes"></dd></div>
+                <div><dt>Words</dt><dd id="statWords"></dd></div>
+            </dl>
+            <h3 class="stats-heading">Characters</h3>
+            <table class="stats-table">
+                <thead><tr><th scope="col">Character</th><th scope="col">Speeches</th><th scope="col">Words</th><th scope="col">Share</th></tr></thead>
+                <tbody id="statsCharacters"></tbody>
+            </table>
+            <p class="stats-note">A page is about a minute of screen time. Pages are counted as they print, on <span id="statsPaper">US Letter</span> (the paper chosen in Export).</p>
+        </div>
+        <div class="modal-footer">
+            <span class="hint-keys"><kbd>Esc</kbd> closes</span>
+            <button type="button" class="btn primary" data-close>Done</button>
+        </div>
+    </div>
+</div>
+
 <!-- Welcome tour (shown once on first launch; replay from Help) -->
 <div id="tour-modal" class="modal-overlay">
     <div class="modal-content wide" role="dialog" aria-modal="true" aria-labelledby="tour-title">
@@ -374,6 +405,7 @@ Is anyone here?</pre></div>
 <script src="src/library.js"></script>
 <script src="src/store.js"></script>
 <script src="src/paginate.js"></script>
+<script src="src/stats.js"></script>
 <script src="src/importing.js"></script>
 <script src="src/suggest.js"></script>
 <!-- The app itself, split by concern. Classic scripts (D-001: no build step, and modules cannot load over file://),
@@ -391,6 +423,7 @@ Is anyone here?</pre></div>
 <script src="src/app/export.js"></script>
 <script src="src/app/import.js"></script>
 <script src="src/app/print.js"></script>
+<script src="src/app/stats-ui.js"></script>
 <script src="src/app/main.js"></script>
 </body>
 </html>

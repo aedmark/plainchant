@@ -22,7 +22,7 @@ test('structure: index.html loads every file in src/app exactly once, and no fil
 
 test('structure: the app scripts are loaded after the src/ modules they use, and main.js is last', () => {
     const order = Array.from(html.matchAll(/<script src="([^"]+)"><\/script>/g)).map((m) => m[1]);
-    ['src/fountain.js', 'src/editing.js', 'src/library.js', 'src/store.js', 'src/paginate.js', 'src/importing.js', 'src/suggest.js'].forEach((m) => {
+    ['src/fountain.js', 'src/editing.js', 'src/library.js', 'src/store.js', 'src/paginate.js', 'src/stats.js', 'src/importing.js', 'src/suggest.js'].forEach((m) => {
         assert.ok(order.indexOf(m) !== -1 && order.indexOf(m) < order.indexOf('src/app/core.js'), m + ' must load before the app scripts');
     });
     assert.equal(order[order.length - 1], 'src/app/main.js');

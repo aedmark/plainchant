@@ -32,4 +32,5 @@ function showNotice(message, isError = false) {
 
 function render() {
     page.innerHTML = Fountain.toHTML(Fountain.parse(editor.value || editor.getAttribute('placeholder')));
+    scheduleStats(); // the page count in the preview's header follows, a moment later (src/app/stats-ui.js)
 }

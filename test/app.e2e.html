@@ -1293,6 +1293,54 @@ setTimeout(() => {
     check('help: saving as PDF is explained', /Save as PDF/.test(fid(pf, 'help-modal').textContent) && /Headers and footers/.test(fid(pf, 'help-modal').textContent));
     pf.remove();
 
+    // 16e. Script stats (P4-04): the live page count in the preview's header, and the stats window
+    const sf2 = await openFrame(1200, 800);
+    const sw2 = sf2.contentWindow;
+    sw2.localStorage.removeItem('plainchant_paper');
+    const STATS_SCRIPT = 'Title: Stat <b>Test</b>\n\nINT. A - DAY\n\n' + Array.from({ length: 36 }, (_, i) => 'Line ' + i + ' of action.').join('\n') + // 2 pages on Letter, 1 on A4
+      '\n\nMARA\nOne two three four.\n\nDEV\n(quietly)\nOne two.\n\n@<b>Bold</b>\nHi.\n\nMARA (V.O.)\nFive six.\n\nEXT. B - NIGHT\n\nRain.';
+    setText(sf2, STATS_SCRIPT);
+    const expected = sw2.Stats.of(STATS_SCRIPT);
+    check('stats: the page count waits for a pause in typing', fid(sf2, 'statsBtn').textContent === 'No pages yet', fid(sf2, 'statsBtn').textContent);
+    await sleep(800);
+    check('stats: then the preview\'s header shows the pages and the screen time',
+      fid(sf2, 'statsBtn').textContent === expected.pages + ' pages · ~' + expected.minutes + ' min' && expected.pages === 2, [fid(sf2, 'statsBtn').textContent, expected.pages]);
+    fid(sf2, 'statsBtn').click();
+    const tile = (id) => fid(sf2, id).textContent;
+    check('stats: it opens the stats window, with pages, screen time, scenes and words (the same count as the Library)',
+      active(sf2).join() === 'stats-modal' && tile('statPages') === '2' && tile('statTime') === '~' + expected.minutes + ' min' && tile('statScenes') === '2' &&
+      tile('statWords') === sw2.Library.wordCount(STATS_SCRIPT).toLocaleString() && tile('statsFor') === '“Stat <b>Test</b>”', [tile('statPages'), tile('statTime'), tile('statScenes'), tile('statWords'), tile('statsFor')]);
+    const statRows = () => Array.from(fq(sf2, '#statsCharacters').querySelectorAll('tr')).map(r => Array.from(r.children).map(c => c.textContent).join('|'));
+    check('stats: characters by how much they say; every MARA cue counts as MARA; parentheticals are not words',
+      statRows().join(' / ') === 'MARA|2|6|67% / DEV|1|2|22% / <b>Bold</b>|1|1|11%', statRows());
+    check('stats: names are only ever text', !fq(sf2, '#stats-modal b'));
+    keydown(sf2, sf2.contentDocument.activeElement, 'Escape');
+    check('stats: Esc closes it', active(sf2).length === 0);
+    sw2.localStorage.setItem('plainchant_paper', 'a4');
+    sw2.updateStatsBadge();
+    fid(sf2, 'statsBtn').click();
+    check('stats: pages are counted on the paper chosen in Export, and it says which', tile('statPages') === '1' && tile('statsPaper') === 'A4' && fid(sf2, 'statsBtn').textContent.indexOf('1 page ·') === 0, [tile('statPages'), fid(sf2, 'statsBtn').textContent]);
+    fq(sf2, '#stats-modal .modal-close').click();
+    setText(sf2, '   ');
+    sw2.updateStatsBadge();
+    fid(sf2, 'statsBtn').click();
+    check('stats: an empty script says so, and nobody speaks', fid(sf2, 'statsBtn').textContent === 'No pages yet' && /Nobody speaks yet/.test(fid(sf2, 'statsCharacters').textContent));
+    fq(sf2, '#stats-modal .modal-close').click();
+    check('help: script stats are explained', /Script stats/.test(fid(sf2, 'help-modal').textContent));
+    sf2.remove();
+
+    const sp = await openFrame(375, 667);
+    setText(sp, STATS_SCRIPT);
+    sp.contentWindow.updateStatsBadge();
+    sp.contentWindow.setView('preview');
+    const spBtn = rect(fid(sp, 'statsBtn'));
+    check('phone stats: in Preview the page count sits in a slim row above the script, on screen and tappable',
+      shown(fid(sp, 'statsBtn')) && spBtn.right <= 375 && spBtn.top >= 0 && spBtn.height >= 36 && rect(fid(sp, 'render-target')).top >= spBtn.bottom - 1, spBtn);
+    fid(sp, 'statsBtn').click();
+    const spModal = rect(fq(sp, '#stats-modal .modal-content'));
+    check('phone stats: the stats window fits the screen', active(sp).join() === 'stats-modal' && spModal.left >= 0 && spModal.right <= 375 && spModal.bottom <= 667, spModal);
+    sp.remove();
+
     // Phone: the Library fits a 375px screen and every action is reachable
     await seedLibrary();
     await reloadFrame(m);
