@@ -157,6 +157,7 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
 - [ ] P4-14 Stats, scene mix: INT / EXT and DAY / NIGHT counts (and other times of day) read from the scene headings
 - [ ] P4-15 Stats, locations: each distinct location (the heading without INT./EXT. and the time of day), with how
   many scenes and pages it takes
+
 ## Phase 5: Sync and share (open questions)
 
 Not committed. Decide only after Phase 3 ships. See open questions in DECISIONS.md.
