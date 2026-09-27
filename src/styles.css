@@ -349,6 +349,13 @@ button:focus-visible, a[href]:focus-visible, input:focus-visible, select:focus-v
 .setting-more { margin: 0.9rem 0 0; font-size: 0.8125rem; line-height: 1.5; color: var(--text-void-muted); }
 @media (pointer: coarse) { .setting input { width: 1.4rem; height: 1.4rem; } }
 
+/* --- FILE BAR (P5-01): a linked file needs permission again, or the writer's choice --- */
+.file-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.75rem; padding: 0.5rem 1.5rem; border-bottom: 1px solid var(--border-void);
+    background: var(--bg-raised); color: var(--text-strong); font-size: 0.8125rem; }
+.file-bar[hidden] { display: none; }
+.file-bar-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.file-bar[data-kind="allow"] #fileLoadBtn, .file-bar[data-kind="allow"] #fileKeepBtn, .file-bar[data-kind="conflict"] #fileAllowBtn { display: none; }
+
 /* --- ELEMENT BAR: shows what the current line is, and changes it --- */
 .element-bar {
     display: flex;

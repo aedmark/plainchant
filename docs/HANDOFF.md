@@ -9,20 +9,28 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-27, session 18: comparing versions scene by scene (P4-16, D-044). Before it, session 17 made
-typing on long scripts fast (P4-01, D-043), session 16 added adventure-game replies (P4-20), session 15 the retro theme
-(P4-19), and session 14 narration time, video chapters and the browser targets (Firefox and Chromium; Safari, iPhone
-and iPad are roadmap Phase 7). Everything up to P4-01 is in `master`; P4-16 is on the working branch,
-`claude/compassionate-clarke-mxwpzz`, until the owner merges it. Tests: `npm test` 316, `bash test/run-headless.sh`
-304 unit + 654 e2e, about 55 s._
+_Last updated: 2026-09-27, session 19: real files on disk (P5-01, D-046), after the thank-you to Space Quest Historian
+(P4-22, D-045) and the owner's screen-reader pass (P4-17). Before them: comparing versions (P4-16), fast typing on
+long scripts (P4-01), adventure-game replies, the retro theme, narration time and video chapters, and the browser
+targets (Firefox and Chromium; Safari, iPhone and iPad are roadmap Phase 7). Everything up to P4-22 is in `master`;
+P5-01 is on the working branch, `claude/compassionate-clarke-mxwpzz`, until the owner merges it. Tests: `npm test`
+323, `bash test/run-headless.sh` 311 unit + 670 e2e, about 55 s._
 
 **Where things stand, in one paragraph:** Phases 1 and 2 are done apart from real-device work (P2-09, P2-13) and two
 optional ideas (P2-20 hints, P2-22 desktop click-to-jump). Phase 3's output is done (Fountain export, print / save as
-PDF); what is left there is optional (P3-08 to P3-12). Phase 4 is done: the owner checked the app with a screen reader (P4-17) and the thank-you to Space Quest Historian is in Help (P4-22, with their permission, D-045). Phase 5 (real files, sync) is undecided and Phase 6
+PDF); what is left there is optional (P3-08 to P3-12). Phase 4 is done: the owner checked the app with a screen reader (P4-17) and the thank-you to Space Quest Historian is in Help (P4-22, with their permission, D-045). Phase 5 has real files on disk (P5-01, Chromium only); sync and sharing are not planned. Phase 6
 (brand) is the owner's. The biggest gap is not code: almost everything from sessions 13 and 14 has only run in headless
 Chromium. The owner's hands-on pass (Next steps 1) matters more than the next feature.
 
 **What works**
+- **Real files on disk** (P5-01, D-046; `src/filesync.js`, `src/app/files-ui.js`, the `files` store, database version
+  3). In Chromium browsers only (hidden in Firefox): Library > **Open a file...** opens a .fountain file as a script
+  and keeps it linked (the same file again opens the same script); Export > **File on disk** has **Save to a file...**
+  and **Stop saving to it**. Every save writes the linked file too. The file is read again when its script is opened
+  and when the window comes back into view: changed only there, the script takes it (what it had goes to Versions);
+  changed in both, a bar above the editor asks **Load the file** or **Keep the script here** (the loser goes to
+  Versions either way). A file changed elsewhere is never written over. After a browser restart a bar asks to
+  **Allow** again. A file that is gone is unlinked, and the writer is told.
 - **Comparing versions** (P4-16, D-044; `src/compare.js`, `src/app/compare-ui.js`). In Library > Versions, each version
   has **Compare**: the Versions window then shows only the scenes that differ since that version (and the title page
   or opening, if it changed), each with the lines that went (struck through, −) and came (underlined, +) and two
@@ -197,6 +205,12 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 - Scroll sync no longer divides by zero.
 
 **Verified**
+- **Real files (P5-01), session 19:** `npm test` 323 (7 new in `test/filesync.test.js`); e2e 670 (section 16v, with
+  real files in the browser's private file system standing in for picked ones: save to a file, every save writes it
+  (proved to come from the save), a change made elsewhere loaded, both changed (Keep the script here / Load the
+  file), permission again, open a file and open it again, stop saving, a file gone, a script deleted for good takes
+  its link). Mutations: 7 of 7 in `src/filesync.js`, 11 of 12 in the app (the twelfth is the e2e page's own restore
+  of a writer's links, which a throwaway profile cannot show).
 - **Comparing versions (P4-16), session 18:** `npm test` 316 (9 new in `test/compare.test.js`); e2e 654 (section 16u:
   the summary and only the differing scenes, del / ins, headings as text, taking a changed scene and putting a removed
   one back in the open script (stored, kept as a version first, undoable), in a script that is not open, the way
@@ -526,7 +540,8 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 
 ## Next steps (in order)
 
-0. **Merge the branch** for comparing versions (P4-16; the owner does this, see the git gotcha).
+0. **Merge the branch** for real files on disk (P5-01; the owner does this, see the git gotcha). Try it in Chrome or
+   Edge: Export > Save to a file, write a little, open the file in a text editor, change it there, come back.
 1. **A hands-on pass by the owner of what sessions 13 and 14 built.** Firefox is done: the owner reports it works well
    (session 14). Desktop Safari is not a target (D-039). Left, each a few minutes:
    - **After a day of writing: Library > Versions** on a real script (the database upgraded to version 2 on first
@@ -570,6 +585,26 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 ## Session log
 
 Newest first. Copy the template for each new session.
+
+### Session 19: 2026-09-27: Thank-you, screen reader, real files on disk (P4-22, P4-17, P5-01)
+
+**Goal:** The owner reported the screen-reader pass done and the creator's permission given, and picked P5-01.
+**Done:** P4-17 (ticked on the owner's word), P4-22 (a line in Help > Start here), P5-01.
+**Changed:** new `src/filesync.js` (pure) and `src/app/files-ui.js`; `Store` has the `files` store (database version 3,
+`putLink` / `loadLinks` / `removeLink`, and `write` drops a removed script's link); persistence.js calls
+`syncLinkedFiles` after saves and `fileScriptOpened` when a script is opened; main.js calls `startFiles`; Export and
+the Library have the new buttons, and a bar above the editor; Help explains it; the e2e page keeps the writer's links
+across a run.
+**Decisions:** D-045, D-046 (answers Q-002: local files first).
+**Problems / surprises:**
+- The browser's private file system works on `file://` pages in Chromium, with handles IndexedDB can keep, so the
+  e2e suite could use real files with only the pickers stood in for.
+- A mutation that stopped saves writing the file was first caught by the wrong check: closing the Export dialog
+  focused the frame, and the "window back in view" path wrote the file instead. The check now proves the write came
+  from the save.
+**Left undone:** P5-04 (other tabs learn of a new link only on reload; the Library does not mark linked scripts); not
+tried with a real picker or a real text editor on the owner's machine.
+**Next session should start with:** merge, then the owner trying it in Chrome or Edge with a real file.
 
 ### Session 18: 2026-09-27: Comparing versions scene by scene (P4-16)
 

@@ -72,6 +72,7 @@ setTimeout(() => {
     W().saveScript = () => {}; // a writer's real script, open in this first load, must not be saved again below
     snapshot = KEYS.map(k => [k, W().localStorage.getItem(k)]);
     dbSnapshot = await dbState();
+    dbSnapshot.links = await Store.loadLinks(await idb()); // links to files on disk (P5-01): put back too
     KEYS.forEach(k => W().localStorage.removeItem(k));
     await setDb({}, {}); // a first run: nothing stored
     // Every frame below would otherwise open the welcome tour first; the tour has its own tests (section 15)
@@ -2557,6 +2558,128 @@ setTimeout(() => {
     cmF.remove();
     await setDb({}, {});
 
+    // 16v. Real files on disk (P5-01): save to a file and keep saving, changes made outside, both changed, permission
+    // again after a reload, open a file, stop saving. The browser's pickers are stood in for; the files are real
+    // (the browser's private file system), as are their handles in IndexedDB.
+    const fvDir = await navigator.storage.getDirectory();
+    const fvFile = async (name, text) => {
+      const hd = await fvDir.getFileHandle(name, { create: true });
+      if (text !== undefined) { const w = await hd.createWritable(); await w.write(text); await w.close(); }
+      return hd;
+    };
+    const fvRead = async (hd) => (await hd.getFile()).text();
+    const fvOutside = async (hd, text) => { await sleep(20); const w = await hd.createWritable(); await w.write(text); await w.close(); }; // another program
+    await setDb({}, {});
+    const fvF = await openRealFrame(1200, 760);
+    const fvW = fvF.contentWindow, fvE = fid(fvF, 'editor');
+    const fvDone = async () => { fvW.flushSave(); await fvW.whenSaved(); await fvW.whenFilesSynced(); await fvW.whenSaved(); await fvW.whenFilesSynced(); };
+    const fvLinks = async () => Store.loadLinks(await idb());
+    check('files: where the browser can, the Library offers Open a file and Export offers Save to a file',
+      shown(fid(fvF, 'libOpenFile')) === false && !fid(fvF, 'libOpenFile').hidden && (fvW.openExport(), setText(fvF, 'x'), fvW.prepareFileChoice(), !fid(fvF, 'fileChoice').hidden) && !fid(fvF, 'saveFileBtn').hidden);
+    fvW.closeModal(fid(fvF, 'export-modal'));
+    // Save to a file
+    const FV_TEXT = 'Title: Disk\n\nINT. DESK - NIGHT\n\nThe cursor blinks.';
+    setText(fvF, FV_TEXT);
+    const fvMoon = await fvFile('moon.fountain');
+    fvW.showSaveFilePicker = async (opts) => { fvW.lastSaveOpts = opts; return fvMoon; };
+    await fvW.saveToDisk();
+    await fvDone();
+    const fvId = fvW.eval('currentScriptId');
+    let fvL = await fvLinks();
+    check('files: Save to a file suggests the title as the name, writes the script (one newline at the end) and keeps the link',
+      fvW.lastSaveOpts.suggestedName === 'disk.fountain' && await fvRead(fvMoon) === FV_TEXT + '\n' && fvL[fvId] && fvL[fvId].name === 'moon.fountain' &&
+      fvL[fvId].synced === FV_TEXT + '\n', [fvW.lastSaveOpts.suggestedName, await fvRead(fvMoon), Object.keys(fvL)]);
+    fvW.openExport();
+    check('files: Export then says where it saves, and offers to stop', /saved to moon\.fountain as you write/.test(fid(fvF, 'fileChoiceSays').textContent) &&
+      fid(fvF, 'saveFileBtn').hidden && !fid(fvF, 'unlinkFileBtn').hidden);
+    fvW.closeModal(fid(fvF, 'export-modal'));
+    // Written because of the save (persistence.js -> syncLinkedFiles), not because the window happened to get focus
+    const fvRealLinked = fvW.syncLinkedFiles, fvRealSync = fvW.syncFile;
+    let fvInSave = false, fvBySave = 0;
+    fvW.syncLinkedFiles = function () { fvInSave = true; try { return fvRealLinked.apply(this, arguments); } finally { fvInSave = false; } };
+    fvW.syncFile = function (id) { if (fvInSave) fvBySave++; return fvRealSync.apply(this, arguments); };
+    appendText(fvF, ' Then stops.');
+    await fvDone();
+    fvW.syncLinkedFiles = fvRealLinked;
+    fvW.syncFile = fvRealSync;
+    check('files: every save writes the file too', fvBySave > 0 && await fvRead(fvMoon) === FV_TEXT + ' Then stops.\n', [fvBySave, await fvRead(fvMoon)]);
+    // Changed in another program, not here: the script takes the file's text, and keeps its own as a version
+    const FV_ELSEWHERE = 'Title: Disk\n\nINT. DESK - NIGHT\n\nEdited in another program.\n';
+    await fvOutside(fvMoon, FV_ELSEWHERE);
+    fvW.dispatchEvent(new fvW.Event('focus'));
+    await fvDone();
+    const fvKept = await Store.loadVersions(await idb(), fvId);
+    check('files: a change made in another program is loaded when the window comes back, and what was here is kept in Versions',
+      fvE.value === FV_ELSEWHERE && fvKept.some(v => v.content === FV_TEXT + ' Then stops.' && /Before loading changes to moon\.fountain/.test(v.note)) &&
+      /Loaded moon\.fountain/.test(fid(fvF, 'notice').textContent), [fvE.value, fvKept.map(v => v.note)]);
+    // Both changed: the writer chooses; the file is never written over first
+    await fvOutside(fvMoon, 'Theirs.\n');
+    appendText(fvF, 'Mine.');
+    await fvDone();
+    check('files: when both changed, a bar asks which wins, and the file is left alone meanwhile',
+      shown(fid(fvF, 'file-bar')) && /changed outside Plainchant, and so was the script here/.test(fid(fvF, 'fileBarText').textContent) &&
+      shown(fid(fvF, 'fileKeepBtn')) && shown(fid(fvF, 'fileLoadBtn')) && !shown(fid(fvF, 'fileAllowBtn')) && await fvRead(fvMoon) === 'Theirs.\n', await fvRead(fvMoon));
+    fid(fvF, 'fileKeepBtn').click();
+    await fvDone();
+    check('files: Keep the script here writes it to the file, and keeps what the file said as a version',
+      await fvRead(fvMoon) === FV_ELSEWHERE + 'Mine.\n' && !shown(fid(fvF, 'file-bar')) &&
+      (await Store.loadVersions(await idb(), fvId)).some(v => v.content === 'Theirs.\n' && /as it was on disk/.test(v.note)), await fvRead(fvMoon));
+    await fvOutside(fvMoon, 'Theirs again.\n');
+    appendText(fvF, ' More mine.');
+    await fvDone();
+    fid(fvF, 'fileLoadBtn').click();
+    await fvDone();
+    check('files: or Load the file takes the file\'s text (what was here goes to Versions)', fvE.value === 'Theirs again.\n' && !shown(fid(fvF, 'file-bar')), fvE.value);
+    // After a reload the browser asks again: the bar asks the writer, and nothing is written until they allow it
+    let fvGranted = false;
+    fvW.eval('fileLinks')[fvId].handle.queryPermission = async () => fvGranted ? 'granted' : 'prompt';
+    fvW.eval('fileLinks')[fvId].handle.requestPermission = async () => { fvGranted = true; return 'granted'; };
+    appendText(fvF, 'Needs permission.');
+    await fvDone();
+    check('files: without permission, a bar asks for it and the file is not written', shown(fid(fvF, 'file-bar')) && shown(fid(fvF, 'fileAllowBtn')) &&
+      !shown(fid(fvF, 'fileKeepBtn')) && /needs your permission again/.test(fid(fvF, 'fileBarText').textContent) && await fvRead(fvMoon) === 'Theirs again.\n');
+    fid(fvF, 'fileAllowBtn').click();
+    await sleep(50); await fvDone();
+    check('files: Allow asks the browser, then the file catches up', !shown(fid(fvF, 'file-bar')) && await fvRead(fvMoon) === 'Theirs again.\nNeeds permission.\n', await fvRead(fvMoon));
+    // Open a file: a new script, linked; the same file again opens the same script
+    const fvSun = await fvFile('sun.fountain', 'Title: Sun\r\n\r\nEXT. DESERT - DAY\r\n\r\nHeat.\r\n');
+    fvW.showOpenFilePicker = async () => [fvSun];
+    const fvCount = () => Object.keys(fvW.getScripts()).length;
+    const fvBefore = fvCount();
+    await fvW.openFromDisk();
+    await fvDone();
+    const fvSunId = fvW.eval('currentScriptId');
+    fvL = await fvLinks();
+    check('files: Open a file opens it as a new script, linked, line endings made plain',
+      fvCount() === fvBefore + 1 && fvE.value === 'Title: Sun\n\nEXT. DESERT - DAY\n\nHeat.\n' && fvL[fvSunId] && fvL[fvSunId].name === 'sun.fountain', [fvE.value, Object.keys(fvL)]);
+    fvW.openScriptById(fvId);
+    await fvW.openFromDisk();
+    await fvDone();
+    check('files: opening the same file again opens the script it is linked to, not a copy', fvCount() === fvBefore + 1 && fvW.eval('currentScriptId') === fvSunId);
+    // Stop saving to it
+    fvW.openExport();
+    fid(fvF, 'unlinkFileBtn').click();
+    await sleep(50); await fvDone();
+    appendText(fvF, 'Not written.');
+    await fvDone();
+    check('files: Stop saving to it forgets the link; the file stays as it was', !(await fvLinks())[fvSunId] && !fid(fvF, 'saveFileBtn').hidden &&
+      !/Not written/.test(await fvRead(fvSun)));
+    fvW.closeModal(fid(fvF, 'export-modal'));
+    // A linked file that is gone: the link goes, the script stays, the writer is told
+    fvW.openScriptById(fvId);
+    await fvDir.removeEntry('moon.fountain');
+    appendText(fvF, 'Gone.');
+    await fvDone();
+    check('files: a file that can no longer be read stops being saved to, and the writer is told',
+      !(await fvLinks())[fvId] && /can no longer be read/.test(fid(fvF, 'notice').textContent) && /Gone\./.test(fvW.getScripts()[fvId].content));
+    await Store.putLink(await idb(), { scriptId: fvSunId, handle: fvSun, name: 'sun.fountain', synced: null, modified: null });
+    await Store.write(await idb(), { remove: [fvSunId] });
+    check('files: a script deleted for good takes its link with it', !(await fvLinks())[fvSunId]);
+    fvW.saveScript = () => {};
+    fvF.remove();
+    await fvDir.removeEntry('sun.fountain');
+    await setDb({}, {});
+
     // Phone: the Library fits a 375px screen and every action is reachable
     await seedLibrary();
     await reloadFrame(m);
@@ -2620,7 +2743,10 @@ setTimeout(() => {
 
   // Put the writer's real data back exactly as it was
   try {
-    if (dbSnapshot) await setDb(dbSnapshot.scripts, dbSnapshot.meta);
+    if (dbSnapshot) {
+      await setDb(dbSnapshot.scripts, dbSnapshot.meta);
+      for (const link of Object.values(dbSnapshot.links || {})) await Store.putLink(await idb(), link);
+    }
   } catch (e) { log.push('FAIL could not restore IndexedDB: ' + e.message); }
   try {
     (snapshot || []).forEach(([k, v]) => v === null ? W().localStorage.removeItem(k) : W().localStorage.setItem(k, v));

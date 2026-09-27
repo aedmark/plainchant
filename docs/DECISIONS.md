@@ -824,9 +824,39 @@ identical to a full redraw) rather than by timing.
 Quest Historian for inspiring the read-aloud time, the video chapters, the narration example and the retro theme.
 The features themselves still carry no one's name (D-038), and the retro theme's Easter egg is not mentioned.
 
+## D-046 Real files on disk: linked scripts, where the browser can  (2026-09-27, status: accepted)
+**Context:** P5-01, and Q-002 (local files or hosted sync first): the owner chose files. The File System Access API
+(`showOpenFilePicker`, `showSaveFilePicker`, writable file handles) is in Chromium browsers only; Firefox, the owner's
+own browser, does not have it.
+**Decision:**
+1. **Linked, not replaced:** the Library (IndexedDB) stays where every script lives, with its autosave, versions and
+   emergency buffer. A script can also be linked to one real file: Library > **Open a file...** makes a new script
+   from a file and links it (the same file again opens the same script); Export > **Save to a file...** links the
+   open script to a new file; **Stop saving to it** unlinks. One file, one script.
+2. **The link** is in a new IndexedDB store, `files` (database version 3), keyed by script: the file's handle (which
+   IndexedDB can keep), its name, and the text and file time they last agreed on. Deleting a script for good deletes
+   its link, as it does its versions. `files-ui.js` writes the store through `Store` directly, like the versions.
+3. **Keeping in step** (`src/filesync.js`, pure): after every save, a linked script whose text differs from what they
+   last agreed on is compared with its file, and so is the open script when it is opened and when the window comes
+   back into view. Whoever changed since they agreed wins; if the file already says what the script says, they
+   simply agree (another tab, or the same words saved elsewhere). **A file changed elsewhere is never written
+   over:** if only the file changed, the script takes its text (what it had is kept in Versions, and Ctrl/Cmd+Z works
+   in the open script); if both changed, a bar above the editor asks: **Load the file** (the script's text goes to
+   Versions) or **Keep the script here** (the file's text goes to Versions first). Files are written with `\n` line
+   endings and one newline at the end; reading uses the Import rules (UTF-8/16, Windows-1252).
+4. **Permission:** after a reload the browser asks again; queryPermission is checked without asking, and when it is
+   not granted a bar with **Allow** appears (requestPermission needs the writer's click). Nothing is written until
+   then. A file that can no longer be read (moved, deleted) is unlinked, and the writer is told.
+5. **Firefox** shows none of it: Import and the .fountain download work as before.
+6. **Testing:** the e2e suite stands in for the pickers with real files in the browser's private file system (OPFS),
+   whose handles behave like picked ones (written, read, kept in IndexedDB); the permission prompt is stood in for on
+   the handle. The e2e page puts the writer's links back with their scripts after a run.
+**Consequences:** another open tab learns of a new link only when reloaded, and the Library does not show which
+scripts are linked yet (both P5-04). Answers Q-002: local files first.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom
   editor for inline element styling (P2-08)?~~ Textarea plus an overlay (D-031).
-- Q-002 Sync (Phase 5): local-file-first via the File System Access API, or hosted accounts?
+- ~~Q-002 Sync (Phase 5): local-file-first via the File System Access API, or hosted accounts?~~ Local files first (D-046).
 - ~~Q-003 iPhone and iPad (D-039): keep them as targets?~~ A distant future milestone, Phase 7 (D-040).

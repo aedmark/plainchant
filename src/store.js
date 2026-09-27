@@ -3,7 +3,8 @@
  *
  * One record per script in the `scripts` store, keyed by id: { id, title, content, updatedAt, deletedAt? }, the same
  * shape the library has always had (D-013), a `meta` store for the open-script pointer, and a `versions` store of
- * kept copies of scripts (P4-05, D-034; src/versions.js decides when), found by script through the `byScript` index.
+ * kept copies of scripts (P4-05, D-034; src/versions.js decides when), found by script through the `byScript` index,
+ * and a `files` store: for a script linked to a real file (P5-01, D-046), the file's handle and when they last agreed.
  * The page keeps the whole library in memory as { [id]: script } and writes only what changed.
  *
  * The pure half (diff, guardSave, reconcile) never touches a browser API and is
@@ -20,10 +21,11 @@
     'use strict';
 
     const DB_NAME = 'plainchant';
-    const DB_VERSION = 2; // 2: the versions store
+    const DB_VERSION = 3; // 2: the versions store; 3: the files store
     const SCRIPTS = 'scripts';
     const META = 'meta';
     const VERSIONS = 'versions';
+    const FILES = 'files';
     const BY_SCRIPT = 'byScript'; // [scriptId, takenAt]: a script's versions, oldest first
     const ofScript = (id) => IDBKeyRange.bound([id, -Infinity], [id, Infinity]);
 
@@ -103,6 +105,7 @@
                 if (!db.objectStoreNames.contains(VERSIONS)) {
                     db.createObjectStore(VERSIONS, { keyPath: 'id' }).createIndex(BY_SCRIPT, ['scriptId', 'takenAt']);
                 }
+                if (!db.objectStoreNames.contains(FILES)) db.createObjectStore(FILES, { keyPath: 'scriptId' });
             };
             request.onsuccess = () => {
                 const db = request.result;
@@ -149,13 +152,17 @@
 
     /**
      * One transaction: remove ids, put records, set meta keys (null removes one). All of it lands, or none. A script
-     * removed for good takes its versions with it.
+     * removed for good takes its versions and its link to a file with it.
      */
     function write(db, change) {
         const removing = (change.remove || []).length > 0;
-        const tx = db.transaction(removing ? [SCRIPTS, META, VERSIONS] : [SCRIPTS, META], 'readwrite');
+        const tx = db.transaction(removing ? [SCRIPTS, META, VERSIONS, FILES] : [SCRIPTS, META], 'readwrite');
         const scripts = tx.objectStore(SCRIPTS);
-        (change.remove || []).forEach((id) => { scripts.delete(id); dropVersionsOf(tx.objectStore(VERSIONS), id); });
+        (change.remove || []).forEach((id) => {
+            scripts.delete(id);
+            dropVersionsOf(tx.objectStore(VERSIONS), id);
+            tx.objectStore(FILES).delete(id);
+        });
         (change.put || []).forEach((s) => scripts.put(s));
         putMeta(tx.objectStore(META), change.meta);
         return finished(tx);
@@ -214,10 +221,34 @@
         return finished(tx);
     }
 
+    /** Links to real files (P5-01): { scriptId, handle, name, synced, modified }, one per script. */
+    function putLink(db, link) {
+        const tx = db.transaction([FILES], 'readwrite');
+        tx.objectStore(FILES).put(link);
+        return finished(tx);
+    }
+
+    /** Every link, as { [scriptId]: link }. */
+    function loadLinks(db) {
+        const tx = db.transaction([FILES], 'readonly');
+        return promised(tx.objectStore(FILES).getAll()).then((list) => {
+            const out = {};
+            list.forEach((l) => { out[l.scriptId] = l; });
+            return out;
+        });
+    }
+
+    function removeLink(db, scriptId) {
+        const tx = db.transaction([FILES], 'readwrite');
+        tx.objectStore(FILES).delete(scriptId);
+        return finished(tx);
+    }
+
     return {
         DB_NAME: DB_NAME,
         diff: diff, guardSave: guardSave, reconcile: reconcile,
         open: open, loadAll: loadAll, write: write, saveScript: saveScript,
-        addVersion: addVersion, loadVersions: loadVersions, removeVersion: removeVersion
+        addVersion: addVersion, loadVersions: loadVersions, removeVersion: removeVersion,
+        putLink: putLink, loadLinks: loadLinks, removeLink: removeLink
     };
 });

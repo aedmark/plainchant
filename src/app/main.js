@@ -18,6 +18,7 @@ async function start() {
     restoreFocusMode();
     maybeShowTour();
     startSafekeeping(); // not awaited: Firefox's prompt waits for the writer
+    startFiles();       // files-ui.js: the links to files on disk (not awaited: a file may be slow to read)
 }
 
 // Resolves once the app has started. Global on purpose: the e2e tests wait on it after every page load.

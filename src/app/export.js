@@ -46,6 +46,7 @@ function openExport() {
     if (!editor.value.trim()) { flashButton(exportBtn, 'Nothing to export', false); return; }
     preparePrintChoice();
     prepareChapters();
+    prepareFileChoice(); // files-ui.js
     openModal(exportModal, { focus: '#exportFountain' });
 }
 

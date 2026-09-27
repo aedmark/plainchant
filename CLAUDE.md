@@ -47,9 +47,10 @@ Sessions are short-lived and context resets between them, so the repo carries th
 | `src/narration.js` | Narration: the time to read a script aloud (dialogue, or dialogue and action, at a reading speed) and YouTube chapters from its top-level sections, with YouTube's rules checked. Pure, UMD, uses `Fountain` (D-038) |
 | `src/adventure.js` | Adventure-game replies for the retro theme: which lines are parser commands (`LOOK`, `INVENTORY`...) and what they answer. Pure, UMD (D-042) |
 | `src/compare.js` | Comparing two texts scene by scene: the parts (opening, then scene by scene), matching them by heading, the line difference, and taking one part back. Pure, UMD, uses `Fountain` (D-044) |
+| `src/filesync.js` | Real files on disk: what to do when a linked script and its file differ (`decide`: write, load, ask, or agree), the text as written to a file (`canon`). Pure, UMD (D-046) |
 | `src/versions.js` | Versions of a script: when to keep one (`due`), making one, which to let go (`prune`). Pure, UMD (D-034) |
 | `src/store.js` | Storage in IndexedDB, global `Store`: pure rules (diff, delete guard, emergency-buffer reconcile) plus thin IndexedDB calls that take the database as an argument. UMD (D-018, D-019, D-020) |
-| `test/` | `fountain.test.js` (parser), `editing.test.js` (typing helpers), `library.test.js` (library rules), `importing.test.js` (import rules), `suggest.test.js` (autocomplete rules), `store.test.js` (storage rules), `paginate.test.js` (print pagination), `stats.test.js` (script stats), `outline.test.js` (outline), `versions.test.js` (version rules), `narration.test.js` (narration time and chapters), `adventure.test.js` (adventure-game replies), `compare.test.js` (comparing versions), `structure.test.js` (app script structure, Node only), `app.e2e.html` (app behaviour), `harness.js`, runners: `index.html`, `run-headless.ps1` (Windows), `run-headless.sh` (Linux/macOS), `run.js` |
+| `test/` | `fountain.test.js` (parser), `editing.test.js` (typing helpers), `library.test.js` (library rules), `importing.test.js` (import rules), `suggest.test.js` (autocomplete rules), `store.test.js` (storage rules), `paginate.test.js` (print pagination), `stats.test.js` (script stats), `outline.test.js` (outline), `versions.test.js` (version rules), `narration.test.js` (narration time and chapters), `adventure.test.js` (adventure-game replies), `compare.test.js` (comparing versions), `filesync.test.js` (files on disk), `structure.test.js` (app script structure, Node only), `app.e2e.html` (app behaviour), `harness.js`, runners: `index.html`, `run-headless.ps1` (Windows), `run-headless.sh` (Linux/macOS), `run.js` |
 | `ROADMAP.md` | The plan, with stable item IDs |
 | `docs/HANDOFF.md` | Current state, next steps, session log |
 | `docs/DECISIONS.md` | Append-only decision record |
@@ -77,6 +78,7 @@ use what an earlier file already defined. Code inside functions runs later and c
 | `focus.js` | Focus mode: the veils around the current block, typewriter scrolling, the toggle and Ctrl/Cmd+Shift+F (D-025) |
 | `export.js` | The Export dialog (the `.fountain` download), and Copy (`copyText`, which the chapters use too) |
 | `import.js` | Import: the Library's picker and drag-and-drop onto the page; `showNotice` messages (defined in `core.js`) |
+| `files-ui.js` | Scripts linked to real files (Chromium only, `fileSupport`): Library > Open a file, Export > Save to a file / Stop saving, writing after saves (`syncLinkedFiles`), reading when opened or back in view, the bar above the editor (Allow; Load the file / Keep the script here) (D-046) |
 | `print.js` | Print / save as PDF: draws the `src/paginate.js` pages as paper-sized sheets in `#print-root`, the paper choice, `beforeprint` (D-021, D-022) |
 | `chapters-ui.js` | Video chapters in the Export dialog (`prepareChapters`, Copy chapters), and `narrationOf` / `narrationHow`, which the stats use for the read-aloud time (D-038) |
 | `stats-ui.js` | The live page count in the preview's header (`scheduleStats`, called by `render()`) and the Script stats window, with the read-aloud time, the scene mix, locations and scene list (D-023, D-028, D-029, D-038) |
@@ -109,7 +111,8 @@ Keep each file's own listeners in that file. Functions the e2e tests call (`save
   `render(true)`, or after the next frame (D-043).
 - The editor's line height must stay a length (`1.6em`), never unitless, and anything copying the editor's text must use
   `copyEditorType` (layout.js): the colour hints only line up if the copies lay out exactly like the textarea (D-031).
-- Scripts live in IndexedDB (database `plainchant`, stores `scripts`, `meta` and `versions`, D-034). localStorage holds only
+- Scripts live in IndexedDB (database `plainchant`, version 3: stores `scripts`, `meta`, `versions` (D-034) and `files`, the
+  links to real files (D-046)). localStorage holds only
   `plainchant_onboarded` (the tour), `plainchant_emergency` (the buffer), `plainchant_paper` (Letter / A4),
   `plainchant_focus` (focus mode), `plainchant_keep_asked` (the browser said no to keeping the library, D-027) and
   `plainchant_settings` (the Settings switches that differ from their defaults, D-032). There is no legacy support and no
@@ -117,7 +120,9 @@ Keep each file's own listeners in that file. Functions the e2e tests call (`save
   but say so in DECISIONS when they do.
 - Every storage write goes through `putScripts` / `saveScript` / `rememberCurrent` in `persistence.js`, never straight
   to IndexedDB or localStorage, so other tabs are told and the emergency buffer stays right. The one exception is the
-  `versions` store, which `versions-ui.js` reads and writes through `Store` (versions are not held in memory; D-034).
+  `versions` store, which `versions-ui.js` reads and writes through `Store` (versions are not held in memory; D-034),
+  and the `files` store, which `files-ui.js` writes through `Store` (D-046). A linked file is only ever written through
+  `syncFile` / `writeLinkedFile` in `files-ui.js`, after `FileSync.decide` says so: never over a change made elsewhere.
 
 ## Running and testing
 

@@ -81,7 +81,7 @@ function putScripts(next) {
     const change = Store.diff(before, next);
     library = next;
     return persist(change).then((ok) => {
-        if (ok) { keepWhenWorthIt(); return true; }
+        if (ok) { keepWhenWorthIt(); syncLinkedFiles(); return true; } // files-ui.js: linked files follow
         const back = Object.assign({}, library);
         change.put.forEach((s) => {
             if (library[s.id] !== s) return;
@@ -95,6 +95,7 @@ function putScripts(next) {
 
 function rememberCurrent() {
     persist({ meta: { currentScriptId: currentScriptId } });
+    fileScriptOpened(); // files-ui.js: a linked script's file may have changed in another program
 }
 
 // --- Starting up ---
@@ -245,6 +246,7 @@ function saveScript(isAuto = false) {
         announce({ put: [stored] });
         finish(true);
         keepWhenWorthIt(); // there is work to keep now: ask the browser to keep it (safekeeping.js)
+        syncLinkedFiles(); // a script linked to a file on disk writes it too (files-ui.js)
     }, (e) => {
         console.error("Save error:", e);
         finish(false);

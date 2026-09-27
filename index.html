@@ -48,6 +48,15 @@
             <button id="helpBtn" class="btn help-btn" aria-label="Help" title="Help (F1)"><span class="txt-short" aria-hidden="true">?</span><span class="txt-long">Help</span></button>
         </div>
     </div>
+    <!-- A script linked to a file on disk (P5-01, files-ui.js): asks for permission again, or which text wins -->
+    <div id="file-bar" class="file-bar" role="region" aria-label="File on disk" hidden>
+        <span id="fileBarText" aria-live="polite"></span>
+        <span class="file-bar-actions">
+            <button type="button" class="mini" id="fileAllowBtn">Allow</button>
+            <button type="button" class="mini" id="fileLoadBtn">Load the file</button>
+            <button type="button" class="mini" id="fileKeepBtn">Keep the script here</button>
+        </span>
+    </div>
     <textarea id="editor" aria-label="Script" placeholder="FADE IN:&#10;&#10;INT. COFFEE SHOP - DAY&#10;&#10;The cafe is entirely empty.&#10;&#10;JOHN&#10;(nervous)&#10;I just wanted a program that let me type without thinking.&#10;&#10;THE ARTISAN&#10;It is done.&#10;&#10;CUT TO:&#10;&#10;EXT. THE VOID - CONTINUOUS"></textarea>
     <!-- What the current line is, and a way to change it. Tab / Shift+Tab do the same from a keyboard; touch has
          no Tab key. Buttons never take focus from the editor, so the on-screen keyboard stays up. -->
@@ -111,6 +120,8 @@
                 <button type="button" class="chip" id="libViewTrash" aria-pressed="false">Recently deleted</button>
             </div>
             <button type="button" class="chip" id="libImport">Import a file&hellip;</button>
+            <!-- A real file, kept linked (P5-01): only where the browser can (Chromium); files-ui.js shows it -->
+            <button type="button" class="chip" id="libOpenFile" hidden>Open a file&hellip;</button>
             <!-- No accept= filter: iOS greys out files whose type it does not know (.fountain). Importing.checkFile decides. -->
             <input type="file" id="importInput" multiple hidden>
         </div>
@@ -177,6 +188,7 @@
                     <li><strong>Export</strong> offers three things. <strong>Download .fountain</strong> saves your script as a file named after its title: plain text, so any text editor opens it, and screenwriting apps that understand Fountain open it as a script. <strong>Print or save as PDF</strong> lays it out as standard screenplay pages (Courier 12pt, numbered, a title page of its own, <em>(MORE)</em> and <em>(CONT&rsquo;D)</em> where a speech runs over a page) and opens your browser&rsquo;s print window; choose <strong>Save as PDF</strong> there to make a PDF. Notes, sections and synopses are left out of the pages. <strong>Video chapters</strong> lists a timestamp for each top-level section (<code class="inline"># Part one</code>), timed by the words read aloud before it, ready to paste into a YouTube description; it says if the list breaks YouTube&rsquo;s rules (at least three chapters, each at least ten seconds).</li>
                     <li>For narrated videos and voice-over, write what is <em>said</em> as dialogue (under a cue such as <code class="inline">NARRATOR</code>) and what is <em>shown</em> as action. <strong>Script stats</strong> gives the read-aloud time, at the reading speed set in <strong>Settings</strong>, which can also count the action as read aloud. <strong>Open the narration example</strong> (below) shows it all at work.</li>
                     <li><strong>Import</strong> (in the Library, or drop a file anywhere on the page) adds a <code class="inline">.fountain</code> or <code class="inline">.txt</code> file as a new script. Nothing you already have is replaced.</li>
+                    <li><strong>Real files</strong> (in Chrome, Edge and other Chromium browsers; not Firefox): <strong>Open a file&hellip;</strong> in the Library opens a <code class="inline">.fountain</code> file and keeps it linked, and <strong>Save to a file&hellip;</strong> in Export links the open script to a new one. Every save then writes the file too, and changes made to it in another program are loaded when you come back to Plainchant (what you had is kept in <strong>Versions</strong>). If both changed, a bar above the editor asks which should win. After the browser restarts it asks for permission again: choose <strong>Allow</strong>.</li>
                     <li><strong>Copy</strong> puts the whole script on the clipboard.</li>
                     <li><strong>Colours in the editor</strong> show what each line is: scene headings warm, character names blue, dialogue a little brighter than action, notes muted. They are only hints; the formatted script is what prints.</li>
                     <li><strong>Settings</strong> (the gear; <strong>Settings</strong> in the phone menu) chooses a dark or light look (or your system's), the size of the editor's text, and can turn off the colours, the blank line Enter adds after action, and capitals as you type.</li>
@@ -184,7 +196,7 @@
                     <li><strong>Outline</strong> (above the formatted script) lists your sections (<code class="inline"># Act One</code>), scenes and synopses (<code class="inline">= ...</code>), with the page each scene starts on. Choose one to jump there; type to find one.</li>
                     <li>The page count above the formatted script (<strong>3 pages &middot; ~3 min</strong>) opens <strong>Script stats</strong>: pages, screen time (about a minute a page), scenes, words, how much each character speaks, the mix of interior and exterior, day and night scenes, each location, and every scene with its page, its length in eighths of a page and who speaks in it (choose one to go there). It also gives the time to read the script aloud.</li>
                 </ul>
-                <div class="callout"><p><strong>Scripts live only in this browser, on this device.</strong> Nothing
+                <div class="callout"><p><strong>Scripts live in this browser, on this device</strong> (and in a file of your own, if you link one). Nothing
                     saves to your filesystem without your consent, and your writing is never sent to a server. Clearing
                     the browser&rsquo;s site data deletes your scripts. Before you do that, be sure to export anything you
                     cannot lose.</p></div>
@@ -335,6 +347,12 @@ Author: Jane Doe</code></td>
                 <h3>Fountain file</h3>
                 <p>Plain text, named after the title. Any text editor opens it, and so does any screenwriting app that reads Fountain.</p>
                 <button type="button" class="btn" id="exportFountain">Download .fountain</button>
+            </section>
+            <section class="export-option" id="fileChoice" hidden>
+                <h3>File on disk</h3>
+                <p id="fileChoiceSays"></p>
+                <button type="button" class="btn" id="saveFileBtn">Save to a file&hellip;</button>
+                <button type="button" class="btn" id="unlinkFileBtn" hidden>Stop saving to it</button>
             </section>
             <section class="export-option">
                 <h3>PDF or paper</h3>
@@ -556,6 +574,7 @@ Is anyone here?</pre></div>
 <script src="src/outline.js"></script>
 <script src="src/versions.js"></script>
 <script src="src/compare.js"></script>
+<script src="src/filesync.js"></script>
 <script src="src/importing.js"></script>
 <script src="src/suggest.js"></script>
 <!-- The app itself, split by concern. Classic scripts (D-001: no build step, and modules cannot load over file://),
@@ -578,6 +597,7 @@ Is anyone here?</pre></div>
 <script src="src/app/focus.js"></script>
 <script src="src/app/export.js"></script>
 <script src="src/app/import.js"></script>
+<script src="src/app/files-ui.js"></script>
 <script src="src/app/print.js"></script>
 <script src="src/app/chapters-ui.js"></script>
 <script src="src/app/stats-ui.js"></script>
