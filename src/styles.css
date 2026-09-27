@@ -500,8 +500,8 @@ body.focus-mode #editor { padding-top: 40vh; padding-bottom: 50vh; }
    Indents are variables so a narrow column can re-proportion them (see @container below). */
 .screenplay-font {
     --ind-char: 22ch;
-    --ind-paren: 16ch;
-    --w-paren: 20ch;
+    --ind-paren: 15ch;
+    --w-paren: 25ch;
     --ind-dialogue: 10ch;
     --w-dialogue: 35ch;
     --ind-transition: 0;          /* flush right, as on paper (D-021) */
@@ -519,7 +519,7 @@ body.focus-mode #editor { padding-top: 40vh; padding-bottom: 50vh; }
 }
 
 /* Spacing comes from margins only: the parser emits no spacer elements. */
-.script-scene-heading { text-transform: uppercase; margin: 1.5rem 0 1rem; } /* plain, as on paper (D-021) */
+.script-scene-heading { text-transform: uppercase; margin: 2rem 0 1rem; } /* plain, as on paper (D-021); two blank lines above, as printed (D-051) */
 .script-scene-num { float: right; font-weight: 400; color: #6b7280; }
 .script-action { margin: 0 0 1rem; width: 100%; white-space: pre-wrap; }
 

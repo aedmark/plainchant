@@ -900,6 +900,21 @@ browser's parser in the e2e suite, and element by element in the unit tests.
 (clicking a line in the desktop preview to move the caret there) is dropped for now: the owner finds the app already
 does what they need there. Either can come back as a new item if that changes.
 
+## D-051 Print spacing and parentheticals follow Final Draft's screenplay template  (2026-09-27, status: accepted; amends D-021 / docs/SPEC-PRINT.md §4)
+**Context:** The owner shared Scrivener's copies of Final Draft's script formats ("Final Draft - Screenplay", Cole and
+Haag, Warner Brothers, BBC). The print spec had said one blank line before a scene heading was Final Draft's default;
+every American template there has two (only the BBC ones have one). Parentheticals there run from 3.0 to 5.5 inches;
+ours ran from 3.1 to 5.1.
+**Decision:**
+1. **Two blank lines before a scene heading**, one before every other element, none at the top of a page. The rule
+   that a heading never ends a page counts the two lines too, including before a second heading straight after it.
+2. **Parentheticals** from column 15 to 40 (3.0 to 5.5 inches), in print and in the preview (`--ind-paren` 15ch,
+   `--w-paren` 25ch). The preview's space above a scene heading is 2rem to match.
+3. Left as they were, with the owner's agreement: the character cue at 3.7 inches (Final Draft's own templates range
+   from 3.5 to 4.1; 3.7 is what most guides give), and no BBC layout.
+**Consequences:** a script prints a little longer (about a line per scene). Page counts, screen time, scene lengths in
+eighths and the Outline's pages all follow, since they use the same layout.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

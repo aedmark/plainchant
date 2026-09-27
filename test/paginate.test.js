@@ -62,7 +62,7 @@ test('geometry: each element sits at its screenplay position and width', () => {
     assert.ok(at('scene').runs.every((r) => !r.bold), 'scene headings are plain on paper (D-021)');
     assert.deepEqual([at('action').col, at('action').width], [0, 60]);
     assert.deepEqual([at('character').col, at('character').width, pgText(at('character'))], [22, 38, 'JOHN (V.O.)']);
-    assert.deepEqual([at('parenthetical').col, at('parenthetical').width], [16, 20]);
+    assert.deepEqual([at('parenthetical').col, at('parenthetical').width], [15, 25], 'Final Draft\'s 3.0 to 5.5 inches (D-051)');
     assert.deepEqual([at('dialogue').col, at('dialogue').width], [10, 35]);
     assert.deepEqual([at('transition').align, pgText(at('transition'))], ['right', 'CUT TO:']);
     assert.deepEqual([at('centered').align, pgText(at('centered'))], ['center', 'THE END']);
@@ -311,4 +311,29 @@ test('speed: a feature-length script (about 120 pages) lays out quickly', () => 
     const ms = Date.now() - t0;
     assert.ok(pages >= 100, pages + ' pages');
     assert.ok(ms < 150, pages + ' pages took ' + ms + ' ms');
+});
+
+test('spacing: two blank lines before a scene heading, one before anything else, none at the top of a page (D-051)', () => {
+    const lines = Paginate.layout(Fountain.parse('INT. A - DAY\n\nShe waits.\n\nBOB\nHi.\n\nCUT TO:\n\nEXT. B - NIGHT\n\nRain.')).pages[0].lines;
+    assert.deepEqual(lines.map((l) => l.row + ':' + l.kind), ['0:scene', '2:action', '4:character', '5:dialogue', '7:transition', '10:scene', '12:action']);
+    const second = Paginate.layout(Fountain.parse('INT. A - DAY\n\nx\n\n===\n\nINT. B - DAY\n\ny')).pages[1].lines;
+    assert.equal(second[0].row + ':' + second[0].kind, '0:scene', 'a scene heading that starts a page has no blank lines above it');
+});
+
+test('spacing: a scene heading still never ends a page, counting its two blank lines', () => {
+    // 50 rows of action leave 4 on a Letter page: the heading would fit after its two blank lines (row 52) but not with
+    // the blank and a line of what follows under it, so it goes over
+    const lines = Paginate.layout(Fountain.parse('INT. A - DAY\n\n' + Array(49).fill('Line.').join('\n') + '\n\nINT. B - DAY\n\nNext.')).pages;
+    assert.equal(lines[0].lines[lines[0].lines.length - 1].kind, 'action');
+    assert.equal(lines[1].lines[0].kind, 'scene');
+});
+
+test('spacing: two headings in a row near the foot of a page go over together (the blank lines between them count)', () => {
+    // 47 rows used; the first heading would land on row 49 and the second on row 52, with no room for a line under it:
+    // counting only one blank line between them, the first would stay behind, alone at the foot of the page
+    const text = 'INT. Z - DAY\n\n' + Array(45).fill('Line.').join('\n') + '\n\nINT. A - DAY\n\nINT. B - DAY\n\nx';
+    const pages = Paginate.layout(Fountain.parse(text)).pages;
+    const endOfFirst = pages[0].lines[pages[0].lines.length - 1];
+    assert.equal(endOfFirst.kind, 'action', 'page 1 ends on the action, not on a heading');
+    assert.deepEqual(pages[1].lines.slice(0, 2).map((l) => l.row + ':' + l.kind), ['0:scene', '3:scene']);
 });

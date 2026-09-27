@@ -74,8 +74,9 @@ test('stats: a length in eighths of a page reads the way schedules write it', ()
 });
 
 test('stats: each scene runs from its heading to the next, in eighths of a printed page, on the paper asked for', () => {
-    // 47 rows: the heading, a blank, 44 lines of action, a blank. 47/54 of a Letter page is 6.96 eighths, of A4 6.48.
-    const text = 'INT. A - DAY\n\n' + stFill(44) + '\n\nINT. B - NIGHT\n\nShort.\n\nEXT. C - DAY\n\nEnd.';
+    // 47 rows: the heading, a blank, 43 lines of action, the two blanks before the next heading (D-051). 47/54 of a
+    // Letter page is 6.96 eighths, of A4 6.48.
+    const text = 'INT. A - DAY\n\n' + stFill(43) + '\n\nINT. B - NIGHT\n\nShort.\n\nEXT. C - DAY\n\nEnd.';
     const letter = Stats.of(text).sceneList, a4 = Stats.of(text, { paper: 'a4' }).sceneList;
     assert.deepEqual(letter.map((sc) => sc.text), ['INT. A - DAY', 'INT. B - NIGHT', 'EXT. C - DAY']);
     assert.equal(letter[0].eighths, 7);

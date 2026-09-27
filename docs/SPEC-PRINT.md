@@ -53,19 +53,19 @@ The first page of the script carries no number; the title page is not counted. P
 | Scene number (`#12#`) | printed in both margins | | left at −6, right just past column 60; only when written in the script |
 | Action | 0 | 60 | leading spaces kept (the parser already keeps them) |
 | Character cue | 22 | 38 | uppercase, extensions as written: `JOHN (V.O.)` |
-| Parenthetical | 16 | 20 | wraps inside its own width |
+| Parenthetical | 15 | 25 | wraps inside its own width (3.0 to 5.5 inches, as Final Draft's screenplay template; was 16 / 20 until D-051) |
 | Dialogue | 10 | 35 | |
 | Transition | right-aligned to column 60 | 60 | so a long one (`SMASH CUT TO BLACK:`) never overflows |
 | Centered (`> text <`) | centered in 60 | 60 | |
 | Lyrics (`~`) | 0 | 60 | italic |
 | Dual dialogue | two columns, 28 wide each, 4 apart | | each side: cue indent 6, paren indent 3, dialogue 0 |
 
-These match the preview's CSS variables (`--ind-char` 22ch, `--ind-dialogue` 10ch, `--w-dialogue` 35ch), except
-the parenthetical width (preview 15ch, print 20) and the transition (preview indents 40ch). The preview will change to
-match, so screen and paper agree.
+These match the preview's CSS variables (`--ind-char` 22ch, `--ind-paren` 15ch, `--w-paren` 25ch, `--ind-dialogue`
+10ch, `--w-dialogue` 35ch), so screen and paper agree.
 
-**Spacing:** one blank line before every element (two before a scene heading is a common house style: §10). No blank
-line between a cue, its parentheticals and its dialogue. A page never starts with a blank line.
+**Spacing:** two blank lines before a scene heading, one before every other element: Final Draft's screenplay template
+(D-051; this spec first said one before a scene heading was Final Draft's default, which its templates show is not so).
+No blank line between a cue, its parentheticals and its dialogue. A page never starts with a blank line.
 
 **Not printed** (the Fountain spec says so): `[[notes]]`, `/* boneyard */`, `# sections`, `= synopses`. A line that
 held only a note disappears. `===` forces a new page.
@@ -181,7 +181,7 @@ for printing. It helps with "how long is this?" (and page count also feeds P4-04
    iPad is where you will export most, (b) is the better first step.
 3. **Scene headings bold?** The preview shows them bold; the industry default is plain. *Recommend: plain on paper, and
    the preview follows.*
-4. **Blank lines before a scene heading:** one *(recommended; Final Draft's default)* or two (airier, more pages)?
+4. ~~**Blank lines before a scene heading:** one or two?~~ Two, as Final Draft's screenplay template (D-051).
 5. **Automatic `(CONT'D)`** when the same character speaks again after only action, within a scene? Final Draft does
    this by default; many spec writers turn it off. *Recommend: off for now* (page-break `(CONT'D)` is always on).
 6. **Scene numbers:** print only those written in the script (`#12#`) *(recommended)*; auto-numbering is a production

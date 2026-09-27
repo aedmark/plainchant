@@ -1306,9 +1306,10 @@ setTimeout(() => {
     check('print: the print stylesheet shows the pages and nothing else', printRules.some(t => /body > :not\(#print-root\)/.test(t) && /display: none/.test(t)) && printRules.some(t => /#print-root \{ display: block/.test(t)), printRules);
     setText(pf, 'INT. A - DAY\n\nJOHN\n(quietly)\nHi.\n\n> SMASH CUT TO BLACK:\n\nEXT. B - DAY');
     const pcs = (sel) => pw.getComputedStyle(fq(pf, sel));
-    check('print: the preview matches paper: plain scene headings, transitions flush right, 20-character parentheticals',
+    check('print: the preview matches paper: plain scene headings, transitions flush right, parentheticals 15 in and 25 wide (D-051)',
       pcs('.script-scene-heading').fontWeight === '400' && pcs('.script-transition').textAlign === 'right' &&
-      Math.abs(parseFloat(pcs('.script-parenthetical').maxWidth) / parseFloat(pcs('.script-character').marginLeft) - 20 / 22) < 0.01,
+      Math.abs(parseFloat(pcs('.script-parenthetical').maxWidth) / parseFloat(pcs('.script-character').marginLeft) - 25 / 22) < 0.01 &&
+      Math.abs(parseFloat(pcs('.script-parenthetical').marginLeft) / parseFloat(pcs('.script-character').marginLeft) - 15 / 22) < 0.01,
       [pcs('.script-scene-heading').fontWeight, pcs('.script-transition').textAlign, pcs('.script-parenthetical').maxWidth, pcs('.script-character').marginLeft]);
     setText(pf, '   ');
     fid(pf, 'exportBtn').click();

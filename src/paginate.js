@@ -29,7 +29,7 @@
         scene: { col: 0, width: 60 },
         action: { col: 0, width: 60 },
         character: { col: 22, width: 38 },
-        parenthetical: { col: 16, width: 20 },
+        parenthetical: { col: 15, width: 25 }, // Final Draft's screenplay template: 3.0 to 5.5 inches (D-051)
         dialogue: { col: 10, width: 35 },
         more: { col: 22, width: 38 },
         transition: { col: 0, width: 60, align: 'right' },
@@ -254,12 +254,18 @@
     }
 
     // The fewest rows the block can leave at the foot of a page (its whole height if it cannot split)
+    // Blank lines before a block (not at the top of a page): two before a scene heading, as in Final Draft's screenplay
+    // template, one before anything else (spec §4, D-051)
+    function leadOf(b) {
+        return b.type === 'scene' ? 2 : 1;
+    }
+
     function minRows(blocks, j) {
         const b = blocks[j];
         if (!b || b.type === 'break') return 0;
         if (b.type === 'scene') {
             const next = blocks[j + 1];
-            return b.lines.length + (next && next.type !== 'break' ? 1 + minRows(blocks, j + 1) : 0);
+            return b.lines.length + (next && next.type !== 'break' ? leadOf(next) + minRows(blocks, j + 1) : 0);
         }
         if (!splittable(b) || !splits(b).length) return height(b);
         return b.type === 'dialogue' ? b.head.length + splits(b)[0].k + 1 : splits(b)[0].k;
@@ -285,7 +291,8 @@
             if (tpl.source !== undefined) line.source = tpl.source;
             page.push(line);
         };
-        const gap = () => (row === 0 ? 0 : 1);
+        let lead = 1; // blank lines before the block being placed (leadOf)
+        const gap = () => (row === 0 ? 0 : lead);
         const free = () => N - row - gap();
         const place = (lines, rows) => {
             const top = row + gap();
@@ -305,6 +312,7 @@
                     dialogueBlock(r.character, speechParas(r.lines, (k) => GEO[k])));
                 b = blocks[i];
             }
+            lead = leadOf(b);
 
             if (b.type === 'scene') { // never the last thing on a page: it needs some of what follows under it
                 if (row > 0 && minRows(blocks, i) > free()) newPage();

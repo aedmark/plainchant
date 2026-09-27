@@ -9,12 +9,11 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-27, session 21: Final Draft export (P3-08, D-049); P3-11 and P2-22 dropped (D-050); the owner
-reports real files in Chrome and import / export on Android work. Before it: the retro theme as pure CGA palette 1
-(D-047, D-048), real files on disk (P5-01), the thank-you to Space Quest Historian (P4-22), comparing versions, fast
-typing on long scripts, adventure-game replies, narration time and video chapters. Everything up to D-048 is in
-`master`; P3-08 is on the working branch, `claude/compassionate-clarke-mxwpzz`, until the owner merges it. Tests:
-`npm test` 331, `bash test/run-headless.sh` 319 unit + 673 e2e, about 55 s._
+_Last updated: 2026-09-27, session 22: print follows Final Draft's screenplay template: two blank lines before a scene
+heading, parentheticals 3.0 to 5.5 inches (D-051). Before it: Final Draft export (P3-08, D-049), P3-11 and P2-22
+dropped (D-050), the retro theme as CGA (D-047, D-048), real files on disk (P5-01), and earlier work. Everything up to
+P3-08 is in `master`; D-051 is on the working branch, `claude/compassionate-clarke-mxwpzz`, until the owner merges it.
+Tests: `npm test` 334, `bash test/run-headless.sh` 322 unit + 673 e2e, about 55 s._
 
 **Where things stand, in one paragraph:** Phases 1 and 2 are done apart from real-device work (P2-09, P2-13) and two
 optional ideas (P2-20 hints, P2-22 desktop click-to-jump). Phase 3's output is done (Fountain export, print / save as
@@ -549,8 +548,8 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 
 ## Next steps (in order)
 
-0. **Merge the branch** for Final Draft export (P3-08; the owner does this, see the git gotcha). If anyone you send
-   scripts to has Final Draft, a real .fdx opened there is the one check the tests cannot make.
+0. **Merge the branch** for the print spacing (D-051; the owner does this, see the git gotcha). If anyone you send
+   scripts to has Final Draft, a real .fdx opened there is still the one check the tests cannot make.
 1. **A hands-on pass by the owner of what sessions 13 and 14 built.** Firefox is done: the owner reports it works well
    (session 14). Desktop Safari is not a target (D-039). Left, each a few minutes:
    - **After a day of writing: Library > Versions** on a real script (the database upgraded to version 2 on first
@@ -594,6 +593,22 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 ## Session log
 
 Newest first. Copy the template for each new session.
+
+### Session 22: 2026-09-27: Print spacing from Final Draft's templates (D-051)
+
+**Goal:** The owner shared Scrivener's Final Draft format files and asked for the two changes they showed.
+**Done:** two blank lines before a scene heading (print, and the preview's spacing to match); parentheticals 3.0 to
+5.5 inches (print and preview). The spec's wrong claim about Final Draft's default is corrected.
+**Changed:** `src/paginate.js` (`leadOf`, used when placing a block and when keeping a heading off a page's foot;
+the parenthetical's geometry), `src/styles.css` (preview), `docs/SPEC-PRINT.md`; tests in `test/paginate.test.js`
+(spacing, and two headings in a row at a page's foot), `test/stats.test.js` (one fewer line of action so the scene
+still rounds differently on Letter and A4) and the e2e preview check.
+**Decisions:** D-051.
+**Problems / surprises:** the files were Scrivener format settings, not .fdx: they confirm the export's element
+names but cannot test it. A mutation showed the first spacing tests missed the case the page-foot rule is for (a
+heading straight after a heading); a test for it was added.
+**Left undone:** nothing.
+**Next session should start with:** merge; then the owner's pick.
 
 ### Session 21: 2026-09-27: Final Draft export (P3-08)
 
