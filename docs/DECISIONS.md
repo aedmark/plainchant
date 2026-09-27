@@ -915,6 +915,17 @@ ours ran from 3.1 to 5.1.
 **Consequences:** a script prints a little longer (about a line per scene). Page counts, screen time, scene lengths in
 eighths and the Outline's pages all follow, since they use the same layout.
 
+## D-052 Export's buttons: "Download a copy" and "Sync with a file"  (2026-09-27, status: accepted; wording for D-046)
+**Context:** Export offered **Download .fountain** and, below it, **Save to a file...**. The owner asked why there
+were two ways to save a .fountain file: the labels did not say that one is a copy and the other a link that stays
+up to date, and the one that keeps writing was the one called "Save".
+**Decision:** both stay (Download is the only way in Firefox, and a one-off copy is still useful in Chromium), named
+for what they do: **Download a copy (.fountain)** and **Download a copy (.fdx)**; **Sync with a file...**
+and **Stop syncing**, under the heading "Sync with a file". "Make script available offline" was considered and not
+used: every script already lives in the browser and the app works offline, so the label would suggest scripts are
+not offline without it. The element ids (`exportFountain`, `saveFileBtn`, `unlinkFileBtn`, ...) are unchanged.
+**Consequences:** none beyond the words.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

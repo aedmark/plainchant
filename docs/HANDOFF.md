@@ -22,14 +22,14 @@ PDF); what is left there is optional (P3-08 to P3-12). Phase 4 is done: the owne
 Chromium. The owner's hands-on pass (Next steps 1) matters more than the next feature.
 
 **What works**
-- **Final Draft export** (P3-08, D-049; `src/fdx.js`). Export > Files > **Download .fdx (Final Draft)**, named after
+- **Final Draft export** (P3-08, D-049; `src/fdx.js`). Export > Files > **Download a copy (.fdx)**, named after
   the title: every element as a Final Draft paragraph of its type, scene numbers, dual dialogue, page breaks, bold /
   italic / underline, centred text, lyrics in italics, and the title page. Notes, sections, synopses and the boneyard
   are left out, as in print. Not yet opened in Final Draft itself.
 - **Real files on disk** (P5-01, D-046; `src/filesync.js`, `src/app/files-ui.js`, the `files` store, database version
   3). In Chromium browsers only (hidden in Firefox): Library > **Open a file...** opens a .fountain file as a script
-  and keeps it linked (the same file again opens the same script); Export > **File on disk** has **Save to a file...**
-  and **Stop saving to it**. Every save writes the linked file too. The file is read again when its script is opened
+  and keeps it linked (the same file again opens the same script); Export > **Sync with a file** has **Sync with a file...**
+  and **Stop syncing** (named for what they do, D-052; the one-off downloads are **Download a copy**). Every save writes the linked file too. The file is read again when its script is opened
   and when the window comes back into view: changed only there, the script takes it (what it had goes to Versions);
   changed in both, a bar above the editor asks **Load the file** or **Keep the script here** (the loser goes to
   Versions either way). A file changed elsewhere is never written over. After a browser restart a bar asks to
@@ -548,7 +548,7 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 
 ## Next steps (in order)
 
-0. **Merge the branch** for the print spacing (D-051; the owner does this, see the git gotcha). If anyone you send
+0. **Merge the branch** for the Export wording (D-052; the owner does this, see the git gotcha). If anyone you send
    scripts to has Final Draft, a real .fdx opened there is still the one check the tests cannot make.
 1. **A hands-on pass by the owner of what sessions 13 and 14 built.** Firefox is done: the owner reports it works well
    (session 14). Desktop Safari is not a target (D-039). Left, each a few minutes:
@@ -562,15 +562,9 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
    - **Narration and chapters** (session 14): read a page of a real script aloud against a clock and set that speed
      in Settings; paste the chapters into a YouTube description (unlisted upload) and see whether YouTube accepts them.
    - Whatever feels wrong is the next session's first job; Settings can switch most new behaviour off meanwhile.
-2. **A screen-reader pass by a person** (P4-17): Orca on the owner's Linux machine, NVDA on Windows if available. The
-   automated sweep (D-035) checks names and contrast, not how the app sounds.
-3. **Then the next feature, the owner's pick.** Candidates, roughly by value:
-   - **P5-01** open and save real `.fountain` files on disk (File System Access API; Chromium only, so it needs a
-     fallback story): the biggest step towards "text is the source of truth".
-   - **P3-11** a real `.pdf` download (only if print windows prove awkward); **P3-12** a page view while writing.
-   - **P2-22** click-to-jump in the desktop preview; **P2-20** first-use hints; **P3-09 / P3-10** Library and export
-     extras; **P3-08** Final Draft export (stretch).
-4. **Owner's non-code items:** a domain, a trademark search and a real icon (P6-01 to P6-03; the icons in `icons/` are
+2. **Then the next feature, the owner's pick.** Candidates: **P3-14** importing `.fdx`; **P3-12** a page view while
+   writing; **P3-09 / P3-10** Library and export extras; **P5-04** real-file extras; **P2-20** first-use hints.
+3. **Owner's non-code items:** a domain, a trademark search and a real icon (P6-01 to P6-03; the icons in `icons/` are
    placeholders).
 
 ## Open questions for the user
@@ -593,6 +587,20 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 ## Session log
 
 Newest first. Copy the template for each new session.
+
+### Session 23: 2026-09-27: Export's buttons say what they do (D-052)
+
+**Goal:** The owner asked why Export had two ways to save a .fountain file.
+**Done:** they differ (a one-off copy in any browser; a file kept in sync, Chromium only), so both stay, renamed:
+**Download a copy (.fountain)** / **(.fdx)**, and **Sync with a file...** / **Stop syncing** under a
+"Sync with a file" heading. The notices, the permission bar, Help and the e2e check names follow.
+**Changed:** `index.html`, `src/app/files-ui.js`, `test/app.e2e.html`, CLAUDE.md, ROADMAP, this file (Next steps
+had gone stale: P4-17, P5-01 and P3-08 done, P3-11 and P2-22 dropped).
+**Decisions:** D-052.
+**Problems / surprises:** the owner suggested "Make script available offline"; not used, because every script is
+already offline (D-052).
+**Left undone:** nothing.
+**Next session should start with:** merge; then the owner's pick.
 
 ### Session 22: 2026-09-27: Print spacing from Final Draft's templates (D-051)
 

@@ -8,7 +8,7 @@
 
 // Where the browser has the File System Access API (Chrome, Edge and other Chromium browsers; not Firefox), a script
 // can be linked to a real .fountain file (D-046). The Library's "Open a file..." opens one and stays linked to it;
-// Export's "Save to a file..." links the open script to a new one. From then on every save also writes the file,
+// Export's "Sync with a file..." links the open script to a new one. From then on every save also writes the file,
 // and the file is read again when the script is opened and when the window comes back into view. The rule for
 // who wins is src/filesync.js: never write over changes made to the file elsewhere. The script itself still lives in
 // the Library (IndexedDB) as always; the link (the file's handle, and the text and time they last agreed on) is in
@@ -73,7 +73,7 @@ function showFileBar(state) {
     if (!state) { fileBarText.textContent = ''; return; }
     const name = fileLinks[state.id] ? fileLinks[state.id].name : 'the file';
     fileBarText.textContent = state.kind === 'allow'
-        ? 'To keep saving to ' + name + ', Plainchant needs your permission again.'
+        ? 'To keep syncing with ' + name + ', Plainchant needs your permission again.'
         : name + ' was changed outside Plainchant, and so was the script here. Which should both become?';
 }
 
@@ -90,7 +90,7 @@ function syncFile(id) {
         let disk;
         try { disk = await readLinkedFile(link); } catch (e) {
             await forgetFile(id);
-            showNotice(link.name + ' can no longer be read (moved or deleted?), so Plainchant has stopped saving to it. The script is safe in the Library.', true);
+            showNotice(link.name + ' can no longer be read (moved or deleted?), so Plainchant has stopped syncing with it. The script is safe in the Library.', true);
             return;
         }
         const action = FileSync.decide({ text: script.content, synced: link.synced, modified: link.modified, disk: disk });
@@ -153,10 +153,10 @@ async function openFromDisk() {
     editor.setSelectionRange(0, 0);
     editor.scrollTop = 0;
     if (mobileMQ.matches) setView('write');
-    showNotice('Opened ' + handle.name + '. Plainchant saves to it as you write.');
+    showNotice('Opened ' + handle.name + '. It stays in sync: every save writes it.');
 }
 
-// Export: "Save to a file..." Global on purpose: the e2e tests call it.
+// Export: "Sync with a file..." Global on purpose: the e2e tests call it.
 async function saveToDisk() {
     flushSave();
     await whenSaved();
@@ -169,7 +169,7 @@ async function saveToDisk() {
     if (other && other !== id) await forgetFile(other);
     await queueFileWork(() => writeLinkedFile({ scriptId: id, handle: handle, name: handle.name, synced: null, modified: null }, script.content));
     prepareFileChoice();
-    showNotice('Saved to ' + handle.name + '. Plainchant keeps saving to it as you write.');
+    showNotice('Synced with ' + handle.name + ': every save writes it from now on.');
 }
 
 async function stopSavingToFile() {
@@ -177,18 +177,18 @@ async function stopSavingToFile() {
     if (!link) return;
     await forgetFile(currentScriptId);
     prepareFileChoice();
-    showNotice('No longer saving to ' + link.name + '. The script stays in the Library.');
+    showNotice('No longer syncing with ' + link.name + '. The script stays in the Library, and the file stays as it is.');
 }
 
-// The Export dialog's "File on disk" section, as it is for the open script. Called by openExport (export.js).
+// The Export dialog's "Sync with a file" section, as it is for the open script. Called by openExport (export.js).
 function prepareFileChoice() {
     const section = document.getElementById('fileChoice');
     section.hidden = !fileSupport;
     if (!fileSupport) return;
     const link = fileLinks[currentScriptId];
     document.getElementById('fileChoiceSays').textContent = link
-        ? 'This script is saved to ' + link.name + ' as you write, as well as in the Library.'
-        : 'Keep this script in a .fountain file of your own as well: every save writes it too.';
+        ? 'This script is synced with ' + link.name + ': every save writes it, and changes made to the file elsewhere come back here.'
+        : 'Keep this script in a .fountain file wherever you like. Every save writes it, and changes made to the file elsewhere come back here.';
     document.getElementById('saveFileBtn').hidden = !!link;
     document.getElementById('unlinkFileBtn').hidden = !link;
 }

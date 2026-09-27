@@ -806,7 +806,7 @@ setTimeout(() => {
     const fdxText = blobSeen ? await blobSeen.text() : '';
     const fdxDoc = new DOMParser().parseFromString(fdxText, 'application/xml');
     const fdxTypesSeen = Array.from(fdxDoc.querySelectorAll('Content > Paragraph[Type], DualDialogue > Paragraph')).map(p => p.getAttribute('Type'));
-    check('export: Download .fdx saves a Final Draft file named after the title, closing the dialog', !!linkSeen && linkSeen.download === 'big-bold.fdx' && active(xf).length === 0, linkSeen);
+    check('export: Download a copy (.fdx) saves a Final Draft file named after the title, closing the dialog', !!linkSeen && linkSeen.download === 'big-bold.fdx' && active(xf).length === 0, linkSeen);
     check('export: the .fdx is well-formed XML a Final Draft reader can walk: every element, dual dialogue, the title page',
       !fdxDoc.querySelector('parsererror') && fdxDoc.documentElement.nodeName === 'FinalDraft' &&
       fdxTypesSeen.join() === 'Scene Heading,Action,Character,Parenthetical,Dialogue,Character,Dialogue,Action,Transition' &&
@@ -2597,10 +2597,10 @@ setTimeout(() => {
     const fvW = fvF.contentWindow, fvE = fid(fvF, 'editor');
     const fvDone = async () => { fvW.flushSave(); await fvW.whenSaved(); await fvW.whenFilesSynced(); await fvW.whenSaved(); await fvW.whenFilesSynced(); };
     const fvLinks = async () => Store.loadLinks(await idb());
-    check('files: where the browser can, the Library offers Open a file and Export offers Save to a file',
+    check('files: where the browser can, the Library offers Open a file and Export offers Sync with a file',
       shown(fid(fvF, 'libOpenFile')) === false && !fid(fvF, 'libOpenFile').hidden && (fvW.openExport(), setText(fvF, 'x'), fvW.prepareFileChoice(), !fid(fvF, 'fileChoice').hidden) && !fid(fvF, 'saveFileBtn').hidden);
     fvW.closeModal(fid(fvF, 'export-modal'));
-    // Save to a file
+    // Sync with a file
     const FV_TEXT = 'Title: Disk\n\nINT. DESK - NIGHT\n\nThe cursor blinks.';
     setText(fvF, FV_TEXT);
     const fvMoon = await fvFile('moon.fountain');
@@ -2609,11 +2609,11 @@ setTimeout(() => {
     await fvDone();
     const fvId = fvW.eval('currentScriptId');
     let fvL = await fvLinks();
-    check('files: Save to a file suggests the title as the name, writes the script (one newline at the end) and keeps the link',
+    check('files: Sync with a file suggests the title as the name, writes the script (one newline at the end) and keeps the link',
       fvW.lastSaveOpts.suggestedName === 'disk.fountain' && await fvRead(fvMoon) === FV_TEXT + '\n' && fvL[fvId] && fvL[fvId].name === 'moon.fountain' &&
       fvL[fvId].synced === FV_TEXT + '\n', [fvW.lastSaveOpts.suggestedName, await fvRead(fvMoon), Object.keys(fvL)]);
     fvW.openExport();
-    check('files: Export then says where it saves, and offers to stop', /saved to moon\.fountain as you write/.test(fid(fvF, 'fileChoiceSays').textContent) &&
+    check('files: Export then says where it saves, and offers to stop', /synced with moon\.fountain: every save writes it/.test(fid(fvF, 'fileChoiceSays').textContent) &&
       fid(fvF, 'saveFileBtn').hidden && !fid(fvF, 'unlinkFileBtn').hidden);
     fvW.closeModal(fid(fvF, 'export-modal'));
     // Written because of the save (persistence.js -> syncLinkedFiles), not because the window happened to get focus
@@ -2679,13 +2679,13 @@ setTimeout(() => {
     await fvW.openFromDisk();
     await fvDone();
     check('files: opening the same file again opens the script it is linked to, not a copy', fvCount() === fvBefore + 1 && fvW.eval('currentScriptId') === fvSunId);
-    // Stop saving to it
+    // Stop syncing
     fvW.openExport();
     fid(fvF, 'unlinkFileBtn').click();
     await sleep(50); await fvDone();
     appendText(fvF, 'Not written.');
     await fvDone();
-    check('files: Stop saving to it forgets the link; the file stays as it was', !(await fvLinks())[fvSunId] && !fid(fvF, 'saveFileBtn').hidden &&
+    check('files: Stop syncing forgets the link; the file stays as it was', !(await fvLinks())[fvSunId] && !fid(fvF, 'saveFileBtn').hidden &&
       !/Not written/.test(await fvRead(fvSun)));
     fvW.closeModal(fid(fvF, 'export-modal'));
     // A linked file that is gone: the link goes, the script stays, the writer is told

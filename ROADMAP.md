@@ -204,7 +204,7 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
 Not committed. Decide only after Phase 3 ships. See open questions in DECISIONS.md.
 
 - [x] P5-01 File System Access API: open and save real files on disk (done, D-046: Chromium browsers only; Library >
-  Open a file, Export > Save to a file; every save writes the file, changes made elsewhere are loaded, a bar asks
+  Open a file, Export > Sync with a file (D-052); every save writes the file, changes made elsewhere are loaded, a bar asks
   when both changed; Firefox keeps Import and the download)
 - [ ] P5-04 Real files, if wanted: tell other open tabs about a new link at once (today a tab learns of it when
   reloaded), and show the linked file's name on the script's row in the Library

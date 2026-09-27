@@ -49,7 +49,7 @@
         </div>
     </div>
     <!-- A script linked to a file on disk (P5-01, files-ui.js): asks for permission again, or which text wins -->
-    <div id="file-bar" class="file-bar" role="region" aria-label="File on disk" hidden>
+    <div id="file-bar" class="file-bar" role="region" aria-label="Synced file" hidden>
         <span id="fileBarText" aria-live="polite"></span>
         <span class="file-bar-actions">
             <button type="button" class="mini" id="fileAllowBtn">Allow</button>
@@ -185,10 +185,10 @@
                     <li>Every change is <strong>saved automatically</strong>, and your last script reopens where you left it.</li>
                     <li><strong>New</strong> starts a blank script. <strong>Library</strong> lists every script you have, and lets you search them, <strong>rename</strong> one (this rewrites its <code class="inline">Title:</code> line), <strong>duplicate</strong> it, or <strong>delete</strong> it.</li>
                     <li>A deleted script is not gone: it waits in <strong>Recently deleted</strong> for 30 days, and you can restore it from there.</li>
-                    <li><strong>Export</strong> offers three things. <strong>Download .fountain</strong> saves your script as a file named after its title: plain text, so any text editor opens it, and screenwriting apps that understand Fountain open it as a script. <strong>Download .fdx</strong> saves it in Final Draft&rsquo;s format, for anyone who works in Final Draft (notes, sections and synopses are left out, as they are when printing). <strong>Print or save as PDF</strong> lays it out as standard screenplay pages (Courier 12pt, numbered, a title page of its own, <em>(MORE)</em> and <em>(CONT&rsquo;D)</em> where a speech runs over a page) and opens your browser&rsquo;s print window; choose <strong>Save as PDF</strong> there to make a PDF. Notes, sections and synopses are left out of the pages. <strong>Video chapters</strong> lists a timestamp for each top-level section (<code class="inline"># Part one</code>), timed by the words read aloud before it, ready to paste into a YouTube description; it says if the list breaks YouTube&rsquo;s rules (at least three chapters, each at least ten seconds).</li>
+                    <li><strong>Export</strong> offers three things. <strong>Download a copy (.fountain)</strong> saves your script as it is now, as a file named after its title: plain text, so any text editor opens it, and screenwriting apps that understand Fountain open it as a script. <strong>Download a copy (.fdx)</strong> saves it in Final Draft&rsquo;s format, for anyone who works in Final Draft (notes, sections and synopses are left out, as they are when printing). <strong>Print or save as PDF</strong> lays it out as standard screenplay pages (Courier 12pt, numbered, a title page of its own, <em>(MORE)</em> and <em>(CONT&rsquo;D)</em> where a speech runs over a page) and opens your browser&rsquo;s print window; choose <strong>Save as PDF</strong> there to make a PDF. Notes, sections and synopses are left out of the pages. <strong>Video chapters</strong> lists a timestamp for each top-level section (<code class="inline"># Part one</code>), timed by the words read aloud before it, ready to paste into a YouTube description; it says if the list breaks YouTube&rsquo;s rules (at least three chapters, each at least ten seconds).</li>
                     <li>For narrated videos and voice-over, write what is <em>said</em> as dialogue (under a cue such as <code class="inline">NARRATOR</code>) and what is <em>shown</em> as action. <strong>Script stats</strong> gives the read-aloud time, at the reading speed set in <strong>Settings</strong>, which can also count the action as read aloud. <strong>Open the narration example</strong> (below) shows it all at work.</li>
                     <li><strong>Import</strong> (in the Library, or drop a file anywhere on the page) adds a <code class="inline">.fountain</code> or <code class="inline">.txt</code> file as a new script. Nothing you already have is replaced.</li>
-                    <li><strong>Real files</strong> (in Chrome, Edge and other Chromium browsers; not Firefox): <strong>Open a file&hellip;</strong> in the Library opens a <code class="inline">.fountain</code> file and keeps it linked, and <strong>Save to a file&hellip;</strong> in Export links the open script to a new one. Every save then writes the file too, and changes made to it in another program are loaded when you come back to Plainchant (what you had is kept in <strong>Versions</strong>). If both changed, a bar above the editor asks which should win. After the browser restarts it asks for permission again: choose <strong>Allow</strong>.</li>
+                    <li><strong>Real files</strong> (in Chrome, Edge and other Chromium browsers; not Firefox): <strong>Open a file&hellip;</strong> in the Library opens a <code class="inline">.fountain</code> file and keeps it linked, and <strong>Sync with a file&hellip;</strong> in Export keeps the open script in a <code class="inline">.fountain</code> file wherever you choose. Unlike a downloaded copy, the file stays in sync: every save writes it, and changes made to it in another program are loaded when you come back to Plainchant (what you had is kept in <strong>Versions</strong>). If both changed, a bar above the editor asks which should win. After the browser restarts it asks for permission again: choose <strong>Allow</strong>.</li>
                     <li><strong>Copy</strong> puts the whole script on the clipboard.</li>
                     <li><strong>Colours in the editor</strong> show what each line is: scene headings warm, character names blue, dialogue a little brighter than action, notes muted. They are only hints; the formatted script is what prints.</li>
                     <li><strong>Settings</strong> (the gear; <strong>Settings</strong> in the phone menu) chooses a dark or light look (or your system's), the size of the editor's text, and can turn off the colours, the blank line Enter adds after action, and capitals as you type.</li>
@@ -345,17 +345,17 @@ Author: Jane Doe</code></td>
         <div class="modal-body">
             <section class="export-option">
                 <h3>Files</h3>
-                <p><strong>.fountain</strong> is plain text, named after the title: any text editor opens it, and so does any screenwriting app that reads Fountain. <strong>.fdx</strong> is Final Draft&rsquo;s own format, for sending to someone who uses Final Draft (most screenwriting apps open it too).</p>
+                <p>A copy of the script as it is now, named after the title. <strong>.fountain</strong> is plain text: any text editor opens it, and so does any screenwriting app that reads Fountain. <strong>.fdx</strong> is Final Draft&rsquo;s own format, for sending to someone who uses Final Draft (most screenwriting apps open it too).</p>
                 <div class="export-buttons">
-                    <button type="button" class="btn" id="exportFountain">Download .fountain</button>
-                    <button type="button" class="btn" id="exportFdx">Download .fdx (Final Draft)</button>
+                    <button type="button" class="btn" id="exportFountain">Download a copy (.fountain)</button>
+                    <button type="button" class="btn" id="exportFdx">Download a copy (.fdx)</button>
                 </div>
             </section>
             <section class="export-option" id="fileChoice" hidden>
-                <h3>File on disk</h3>
+                <h3>Sync with a file</h3>
                 <p id="fileChoiceSays"></p>
-                <button type="button" class="btn" id="saveFileBtn">Save to a file&hellip;</button>
-                <button type="button" class="btn" id="unlinkFileBtn" hidden>Stop saving to it</button>
+                <button type="button" class="btn" id="saveFileBtn">Sync with a file&hellip;</button>
+                <button type="button" class="btn" id="unlinkFileBtn" hidden>Stop syncing</button>
             </section>
             <section class="export-option">
                 <h3>PDF or paper</h3>

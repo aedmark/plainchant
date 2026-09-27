@@ -79,7 +79,7 @@ use what an earlier file already defined. Code inside functions runs later and c
 | `focus.js` | Focus mode: the veils around the current block, typewriter scrolling, the toggle and Ctrl/Cmd+Shift+F (D-025) |
 | `export.js` | The Export dialog (the `.fountain` and `.fdx` downloads), and Copy (`copyText`, which the chapters use too) |
 | `import.js` | Import: the Library's picker and drag-and-drop onto the page; `showNotice` messages (defined in `core.js`) |
-| `files-ui.js` | Scripts linked to real files (Chromium only, `fileSupport`): Library > Open a file, Export > Save to a file / Stop saving, writing after saves (`syncLinkedFiles`), reading when opened or back in view, the bar above the editor (Allow; Load the file / Keep the script here) (D-046) |
+| `files-ui.js` | Scripts linked to real files (Chromium only, `fileSupport`): Library > Open a file, Export > Sync with a file / Stop syncing, writing after saves (`syncLinkedFiles`), reading when opened or back in view, the bar above the editor (Allow; Load the file / Keep the script here) (D-046) |
 | `print.js` | Print / save as PDF: draws the `src/paginate.js` pages as paper-sized sheets in `#print-root`, the paper choice, `beforeprint` (D-021, D-022) |
 | `chapters-ui.js` | Video chapters in the Export dialog (`prepareChapters`, Copy chapters), and `narrationOf` / `narrationHow`, which the stats use for the read-aloud time (D-038) |
 | `stats-ui.js` | The live page count in the preview's header (`scheduleStats`, called by `render()`) and the Script stats window, with the read-aloud time, the scene mix, locations and scene list (D-023, D-028, D-029, D-038) |
