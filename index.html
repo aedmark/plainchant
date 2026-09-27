@@ -174,14 +174,15 @@
                     <li>Every change is <strong>saved automatically</strong>, and your last script reopens where you left it.</li>
                     <li><strong>New</strong> starts a blank script. <strong>Library</strong> lists every script you have, and lets you search them, <strong>rename</strong> one (this rewrites its <code class="inline">Title:</code> line), <strong>duplicate</strong> it, or <strong>delete</strong> it.</li>
                     <li>A deleted script is not gone: it waits in <strong>Recently deleted</strong> for 30 days, and you can restore it from there.</li>
-                    <li><strong>Export</strong> offers two things. <strong>Download .fountain</strong> saves your script as a file named after its title: plain text, so any text editor opens it, and screenwriting apps that understand Fountain open it as a script. <strong>Print or save as PDF</strong> lays it out as standard screenplay pages (Courier 12pt, numbered, a title page of its own, <em>(MORE)</em> and <em>(CONT&rsquo;D)</em> where a speech runs over a page) and opens your browser&rsquo;s print window; choose <strong>Save as PDF</strong> there to make a PDF. Notes, sections and synopses are left out of the pages.</li>
+                    <li><strong>Export</strong> offers three things. <strong>Download .fountain</strong> saves your script as a file named after its title: plain text, so any text editor opens it, and screenwriting apps that understand Fountain open it as a script. <strong>Print or save as PDF</strong> lays it out as standard screenplay pages (Courier 12pt, numbered, a title page of its own, <em>(MORE)</em> and <em>(CONT&rsquo;D)</em> where a speech runs over a page) and opens your browser&rsquo;s print window; choose <strong>Save as PDF</strong> there to make a PDF. Notes, sections and synopses are left out of the pages. <strong>Video chapters</strong> lists a timestamp for each top-level section (<code class="inline"># Part one</code>), timed by the words read aloud before it, ready to paste into a YouTube description; it says if the list breaks YouTube&rsquo;s rules (at least three chapters, each at least ten seconds).</li>
+                    <li>For narrated videos and voice-over, write what is <em>said</em> as dialogue (under a cue such as <code class="inline">NARRATOR</code>) and what is <em>shown</em> as action. <strong>Script stats</strong> gives the read-aloud time, at the reading speed set in <strong>Settings</strong>, which can also count the action as read aloud.</li>
                     <li><strong>Import</strong> (in the Library, or drop a file anywhere on the page) adds a <code class="inline">.fountain</code> or <code class="inline">.txt</code> file as a new script. Nothing you already have is replaced.</li>
                     <li><strong>Copy</strong> puts the whole script on the clipboard.</li>
                     <li><strong>Colours in the editor</strong> show what each line is: scene headings warm, character names blue, dialogue a little brighter than action, notes muted. They are only hints; the formatted script is what prints.</li>
                     <li><strong>Settings</strong> (the gear; <strong>Settings</strong> in the phone menu) chooses a dark or light look (or your system's), the size of the editor's text, and can turn off the colours, the blank line Enter adds after action, and capitals as you type.</li>
                     <li><strong>No connection needed.</strong> Plainchant works offline. Opened from a web address, your browser can also install it as an app: look for <strong>Install</strong> or <strong>Add to Home Screen</strong>.</li>
                     <li><strong>Outline</strong> (above the formatted script) lists your sections (<code class="inline"># Act One</code>), scenes and synopses (<code class="inline">= ...</code>), with the page each scene starts on. Choose one to jump there; type to find one.</li>
-                    <li>The page count above the formatted script (<strong>3 pages &middot; ~3 min</strong>) opens <strong>Script stats</strong>: pages, screen time (about a minute a page), scenes, words, how much each character speaks, the mix of interior and exterior, day and night scenes, each location, and every scene with its page, its length in eighths of a page and who speaks in it (choose one to go there).</li>
+                    <li>The page count above the formatted script (<strong>3 pages &middot; ~3 min</strong>) opens <strong>Script stats</strong>: pages, screen time (about a minute a page), scenes, words, how much each character speaks, the mix of interior and exterior, day and night scenes, each location, and every scene with its page, its length in eighths of a page and who speaks in it (choose one to go there). It also gives the time to read the script aloud.</li>
                 </ul>
                 <div class="callout"><p><strong>Scripts live only in this browser, on this device.</strong> Nothing
                     saves to your filesystem without your consent, and your writing is never sent to a server. Clearing
@@ -320,7 +321,7 @@ Author: Jane Doe</code></td>
     </div>
 </div>
 
-<!-- Export (P3-01, P3-03, D-021): the .fountain file, or screenplay pages to print or save as PDF -->
+<!-- Export (P3-01, P3-03, D-021, P3-13): the .fountain file, screenplay pages to print or save as PDF, video chapters -->
 <div id="export-modal" class="modal-overlay">
     <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="export-title">
         <div class="modal-header">
@@ -344,6 +345,14 @@ Author: Jane Doe</code></td>
                 <p class="print-tip">Your browser&rsquo;s print window opens next. To make a PDF, choose <strong>Save as PDF</strong>
                     as the printer. If the pages show a date or a web address, turn off <strong>Headers and footers</strong> there.</p>
                 <button type="button" class="btn primary" id="printGo">Print or save as PDF&hellip;</button>
+            </section>
+            <section class="export-option">
+                <h3>Video chapters</h3>
+                <p id="chaptersHow">Timestamps for a YouTube description, one for each top-level section (<code class="inline"># Part one</code>), timed by the words read aloud before it.</p>
+                <p id="chaptersPace" class="print-summary"></p>
+                <pre id="chaptersList" class="chapters-list" tabindex="0" aria-label="Chapters" hidden></pre>
+                <ul id="chaptersWarn" class="chapters-warn" hidden></ul>
+                <button type="button" class="btn" id="chaptersCopy">Copy chapters</button>
             </section>
         </div>
     </div>
@@ -379,6 +388,7 @@ Author: Jane Doe</code></td>
             <dl class="stats-tiles">
                 <div><dt>Pages</dt><dd id="statPages"></dd></div>
                 <div><dt>Screen time</dt><dd id="statTime"></dd></div>
+                <div><dt>Read aloud</dt><dd id="statAloud"></dd></div>
                 <div><dt>Scenes</dt><dd id="statScenes"></dd></div>
                 <div><dt>Words</dt><dd id="statWords"></dd></div>
             </dl>
@@ -400,7 +410,7 @@ Author: Jane Doe</code></td>
                 <thead><tr><th scope="col">Scene</th><th scope="col">Page</th><th scope="col">Length</th></tr></thead>
                 <tbody id="statsScenes"></tbody>
             </table>
-            <p class="stats-note">A page is about a minute of screen time; a scene&rsquo;s length is in eighths of a page. Pages are counted as they print, on <span id="statsPaper">US Letter</span> (the paper chosen in Export).</p>
+            <p class="stats-note">A page is about a minute of screen time; a scene&rsquo;s length is in eighths of a page. Pages are counted as they print, on <span id="statsPaper">US Letter</span> (the paper chosen in Export). Read aloud is <span id="statsAloudHow">the dialogue at 150 words a minute</span> (change it in Settings).</p>
         </div>
         <div class="modal-footer">
             <span class="hint-keys"><kbd>Esc</kbd> closes</span>
@@ -442,6 +452,18 @@ Author: Jane Doe</code></td>
             <label class="setting"><input type="checkbox" id="setCues" checked>
                 <span><strong>Guess character names</strong>
                 <span class="setting-note">A name on its own line after a blank line becomes a character when you press <kbd>Enter</kbd>: one your script already uses, in any case, or a new one written with capitals (<code class="inline">Detective Ruiz</code>). <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Z</kbd> undoes a wrong guess. Off: only <kbd>Tab</kbd> or the bar makes a character.</span></span></label>
+            <h3 class="setting-group">Reading aloud</h3>
+            <p class="setting-note setting-intro">For narrated videos and voice-over: the read-aloud time in <strong>Script stats</strong>, and the video chapters in <strong>Export</strong>.</p>
+            <fieldset class="setting-choice">
+                <legend>What is read aloud</legend>
+                <label><input type="radio" name="aloud" value="dialogue" checked> Dialogue only</label>
+                <label><input type="radio" name="aloud" value="all"> Dialogue and action</label>
+            </fieldset>
+            <div class="setting setting-pace">
+                <label for="setPace"><strong>Reading speed</strong></label>
+                <span class="pace-field"><input type="number" id="setPace" class="pace-input" min="80" max="300" step="5" inputmode="numeric" aria-describedby="setPaceNote"> words a minute</span>
+                <span class="setting-note" id="setPaceNote">About 150 is a steady narrator; 130 unhurried, 170 brisk. Time yourself reading a page and put your own number here.</span>
+            </div>
             <p class="setting-more">Focus mode is the <strong>Focus</strong> button (or <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd>); the paper size is in <strong>Export</strong>. Settings are kept in this browser. The preview is always white paper, like the printed page.</p>
         </div>
         <div class="modal-footer">
@@ -525,6 +547,7 @@ Is anyone here?</pre></div>
 <script src="src/store.js"></script>
 <script src="src/paginate.js"></script>
 <script src="src/stats.js"></script>
+<script src="src/narration.js"></script>
 <script src="src/outline.js"></script>
 <script src="src/versions.js"></script>
 <script src="src/importing.js"></script>
@@ -548,6 +571,7 @@ Is anyone here?</pre></div>
 <script src="src/app/export.js"></script>
 <script src="src/app/import.js"></script>
 <script src="src/app/print.js"></script>
+<script src="src/app/chapters-ui.js"></script>
 <script src="src/app/stats-ui.js"></script>
 <script src="src/app/outline-ui.js"></script>
 <script src="src/app/offline.js"></script>

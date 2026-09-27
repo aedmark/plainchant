@@ -1,5 +1,5 @@
 /*
- * Plainchant app script: stats-ui: the live page count in the preview's header, and the Script stats window (P4-04, P4-13 to P4-15)
+ * Plainchant app script: stats-ui: the live page count in the preview's header, and the Script stats window (P4-04, P4-13 to P4-15, P4-18)
  *
  * One of the classic scripts loaded by index.html, in order (see CLAUDE.md, "App scripts"). They share the
  * page's global scope, so top-level functions and consts here are visible to the files after it, and anything
@@ -45,6 +45,8 @@ function openStats() {
     document.getElementById('statTime').textContent = Stats.duration(s.minutes).replace(/^about /, '~');
     document.getElementById('statScenes').textContent = s.scenes;
     document.getElementById('statWords').textContent = s.words.toLocaleString();
+    document.getElementById('statAloud').textContent = '~' + Narration.clock(narrationOf(editor.value).seconds); // P4-18
+    document.getElementById('statsAloudHow').textContent = narrationHow();
     document.getElementById('statsPaper').textContent = paper === 'a4' ? 'A4' : 'US Letter';
 
     const body = document.getElementById('statsCharacters');

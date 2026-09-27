@@ -2244,6 +2244,86 @@ setTimeout(() => {
       /names you use most appear too/.test(fid(acF, 'help-modal').textContent));
     acF.remove();
 
+    // 16r. Narration time and video chapters (P4-18, P3-13): Script stats times the words read aloud, Export lists a
+    // YouTube chapter for each top-level section, and Settings holds the reading speed and what is read aloud
+    W().localStorage.removeItem('plainchant_settings');
+    const nvF = await openFrame(1200, 800);
+    const nvW = nvF.contentWindow;
+    const nvWords = (n) => Array(n).fill('word').join(' ');
+    const NV_SCRIPT = 'Title: Moon\n\nNARRATOR\n' + nvWords(25) + '\n\n# The crash site\n\nThe ship smokes in the dust.\n\nNARRATOR\n' + nvWords(150) +
+      '\n\n# Into the caves\n\n## A side path\n\nNARRATOR\n' + nvWords(75) + '\n\n# Home\n\nNARRATOR\n' + nvWords(50);
+    setText(nvF, NV_SCRIPT);
+    nvW.openStats();
+    check('narration: Script stats gives the read-aloud time, and says how it is counted',
+      fid(nvF, 'statAloud').textContent === '~2:00' && fid(nvF, 'statsAloudHow').textContent === 'the dialogue at 150 words a minute',
+      [fid(nvF, 'statAloud').textContent, fid(nvF, 'statsAloudHow').textContent]);
+    nvW.closeModal(fid(nvF, 'stats-modal'));
+    let nvCopied = null;
+    try { Object.defineProperty(nvW.navigator, 'clipboard', { value: { writeText: (t) => { nvCopied = t; return Promise.resolve(); } }, configurable: true }); } catch (e) { /* keep the real one */ }
+    fid(nvF, 'exportBtn').click();
+    const nvList = () => fid(nvF, 'chaptersList').textContent;
+    const nvWarn = () => fid(nvF, 'chaptersWarn');
+    check('chapters: Export lists one per top-level section, an Intro for the words before them, timed by the words read aloud',
+      shown(fid(nvF, 'chaptersList')) && nvList() === '0:00 Intro\n0:10 The crash site\n1:10 Into the caves\n1:40 Home' && !shown(nvWarn()), [nvList(), nvWarn().textContent]);
+    check('chapters: the total read-aloud time is shown with them', /Read aloud: 2:00, counting the dialogue at 150 words a minute/.test(fid(nvF, 'chaptersPace').textContent), fid(nvF, 'chaptersPace').textContent);
+    fid(nvF, 'chaptersCopy').click();
+    await sleep(50);
+    check('chapters: Copy chapters copies the list as shown, and says so', nvCopied === nvList() && /Copied/.test(fid(nvF, 'chaptersCopy').textContent), [nvCopied, fid(nvF, 'chaptersCopy').textContent]);
+    nvW.closeModal(fid(nvF, 'export-modal'));
+
+    // Settings: the reading speed and what is read aloud
+    fid(nvF, 'settingsBtn').click();
+    const nvPace = fid(nvF, 'setPace');
+    check('reading speed: 150 words a minute by default, with a visible label', nvPace.value === '150' && nvF.contentDocument.querySelector('label[for="setPace"]').textContent === 'Reading speed', nvPace.value);
+    const nvSetPace = (v) => { nvPace.value = v; nvPace.dispatchEvent(new nvW.Event('change', { bubbles: true })); };
+    nvSetPace('100');
+    check('reading speed: a new speed is used and remembered', nvW.eval('settings.pace') === 100 && JSON.parse(nvW.localStorage.getItem('plainchant_settings')).pace === 100,
+      nvW.localStorage.getItem('plainchant_settings'));
+    nvSetPace('1000');
+    check('reading speed: too fast is brought down to 300', nvW.eval('settings.pace') === 300 && nvPace.value === '300', [nvW.eval('settings.pace'), nvPace.value]);
+    nvSetPace('');
+    check('reading speed: an empty box leaves the speed as it was', nvW.eval('settings.pace') === 300 && nvPace.value === '300', [nvW.eval('settings.pace'), nvPace.value]);
+    nvSetPace('150');
+    check('reading speed: back at the default, nothing is stored', nvW.localStorage.getItem('plainchant_settings') === null, nvW.localStorage.getItem('plainchant_settings'));
+    fq(nvF, '#settings-modal input[name="aloud"][value="all"]').click();
+    nvW.closeModal(fid(nvF, 'settings-modal'));
+    nvW.openStats();
+    check('read aloud: "Dialogue and action" counts the action too', fid(nvF, 'statAloud').textContent === '~2:02' &&
+      fid(nvF, 'statsAloudHow').textContent === 'the dialogue and action at 150 words a minute', [fid(nvF, 'statAloud').textContent, fid(nvF, 'statsAloudHow').textContent]);
+    nvW.closeModal(fid(nvF, 'stats-modal'));
+    nvW.setSetting('aloud', 'dialogue');
+
+    // YouTube's rules are pointed out, never forced; no sections means no chapters
+    setText(nvF, '# Cold open\n\nNARRATOR\n' + nvWords(10) + '\n\n# Main\n\nNARRATOR\n' + nvWords(100));
+    fid(nvF, 'exportBtn').click();
+    check('chapters: too few, or too short, is said in words, naming the chapter',
+      shown(nvWarn()) && /at least three/.test(nvWarn().textContent) && /“Cold open” lasts 0:04/.test(nvWarn().textContent) && nvList() === '0:00 Cold open\n0:04 Main', [nvWarn().textContent, nvList()]);
+    nvW.closeModal(fid(nvF, 'export-modal'));
+    setText(nvF, '# One\n\nThe ship lands.\n\n# Two\n\nIt leaves.\n\n# Three\n\nDust settles.');
+    fid(nvF, 'exportBtn').click();
+    check('chapters: with nothing read aloud, one message says why every chapter is at 0:00 (and not one per chapter)',
+      nvWarn().children.length === 1 && /Nothing is read aloud yet/.test(nvWarn().textContent) && /Settings can count the action too/.test(nvWarn().textContent), nvWarn().textContent);
+    // Without the Clipboard API (plain http), the list is copied through a hidden copy: the editor keeps its selection
+    try { Object.defineProperty(nvW.navigator, 'clipboard', { value: { writeText: () => Promise.reject(new Error('no')) }, configurable: true }); } catch (e) { /* keep the real one */ }
+    fid(nvF, 'editor').setSelectionRange(2, 5);
+    fid(nvF, 'chaptersCopy').focus();
+    fid(nvF, 'chaptersCopy').click();
+    await sleep(50);
+    check('chapters: the copy fallback leaves the editor\'s selection alone, the focus on the button, and nothing behind',
+      fid(nvF, 'editor').selectionStart === 2 && fid(nvF, 'editor').selectionEnd === 5 && focusId(nvF) === 'chaptersCopy' &&
+      nvF.contentDocument.querySelectorAll('body > textarea').length === 0, [fid(nvF, 'editor').selectionStart, fid(nvF, 'editor').selectionEnd, focusId(nvF)]);
+    nvW.closeModal(fid(nvF, 'export-modal'));
+    setText(nvF, 'INT. MOON - DAY\n\nNARRATOR\nNo parts here.');
+    fid(nvF, 'exportBtn').click();
+    check('chapters: with no sections, no list, Copy is off, and the dialog says how to make chapters',
+      !shown(fid(nvF, 'chaptersList')) && fid(nvF, 'chaptersCopy').disabled && /start each part with a section/.test(nvWarn().textContent), nvWarn().textContent);
+    nvW.closeModal(fid(nvF, 'export-modal'));
+    nvW.localStorage.setItem('plainchant_settings', JSON.stringify({ pace: 5, aloud: 'everything' }));
+    check('reading aloud: a stored speed or choice out of range is ignored', nvW.eval('readSettings().pace') === 150 && nvW.eval('readSettings().aloud') === 'dialogue');
+    nvW.localStorage.removeItem('plainchant_settings');
+    check('help: narration and chapters are explained', /Video chapters/.test(fid(nvF, 'help-modal').textContent) && /read-aloud time/.test(fid(nvF, 'help-modal').textContent));
+    nvF.remove();
+
     // Phone: the Library fits a 375px screen and every action is reachable
     await seedLibrary();
     await reloadFrame(m);
