@@ -2005,7 +2005,7 @@ setTimeout(() => {
     verP.remove();
     await setDb({}, {});
 
-    // 16o. Themes, text size and the accessibility sweep (P4-06): every state of the app, in both themes, on a desktop
+    // 16o. Themes, text size and the accessibility sweep (P4-06, P4-19): every state of the app, in each theme, on a desktop
     // and a phone, has text that meets 4.5:1 against its background (3:1 when large; the boneyard is dim on purpose),
     // a name for every control, no reference to a missing id, no duplicate id and no unnamed graphic.
     // Runs inside the frame, so its free names are the frame's.
@@ -2091,6 +2091,14 @@ setTimeout(() => {
       af.contentDocument.querySelector('meta[name="theme-color"]').getAttribute('content') === '#f8fafc',
       [rootTheme(), getComputedStyle(af.contentDocument.body).backgroundColor, aw.localStorage.getItem('plainchant_settings')]);
     check('theme: the preview stays white paper', getComputedStyle(fid(af, 'render-target')).backgroundColor === 'rgb(255, 255, 255)');
+    fq(af, '#settings-modal input[name="theme"][value="retro"]').click();
+    check('theme: Retro (P4-19) turns the app EGA blue with square corners and is remembered; the preview stays paper',
+      rootTheme() === 'retro' && getComputedStyle(af.contentDocument.body).backgroundColor === 'rgb(0, 0, 170)' &&
+      getComputedStyle(fq(af, '#settings-modal .modal-content')).borderRadius === '0px' &&
+      JSON.parse(aw.localStorage.getItem('plainchant_settings')).theme === 'retro' &&
+      af.contentDocument.querySelector('meta[name="theme-color"]').getAttribute('content') === '#0000aa' &&
+      getComputedStyle(fid(af, 'render-target')).backgroundColor === 'rgb(255, 255, 255)',
+      [rootTheme(), getComputedStyle(af.contentDocument.body).backgroundColor, aw.localStorage.getItem('plainchant_settings')]);
     fq(af, '#settings-modal input[name="theme"][value="system"]').click();
     check('theme: "Match the system" follows it', rootTheme() === (aw.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'), rootTheme());
     const size14 = parseFloat(getComputedStyle(ae).fontSize);
@@ -2141,7 +2149,7 @@ setTimeout(() => {
       ['preview', (w) => w.setView('preview')], ['library', (w) => { w.setView('write'); w.document.getElementById('libraryBtn').click(); }],
       ['settings', (w) => { w.closeModal(w.document.getElementById('library-modal')); w.openSettings(); }]
     ];
-    for (const theme of ['dark', 'light']) {
+    for (const theme of ['dark', 'light', 'retro']) {
       for (const [width, height, states] of [[1200, 800, sweepStates], [375, 667, phoneStates]]) {
         W().localStorage.setItem('plainchant_settings', JSON.stringify({ theme: theme }));
         const sf3 = await openRealFrame(width, height);

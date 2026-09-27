@@ -179,9 +179,10 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
   speed set in Settings, as a tile in Script stats (D-038)
 - [x] P4-21 A narration example script to show P4-18 / P3-13 at work: a short narrated video essay whose notes say
   what is read aloud and what makes a chapter; from Help, and from Export's Video chapters when a script has none
-- [ ] P4-19 A retro adventure-game theme: a third theme in Settings beside dark and light, after the 16-colour palette
+- [x] P4-19 A retro adventure-game theme: a third theme in Settings beside dark and light, after the 16-colour palette
   of 1980s PC adventure games, softened where the pure colours fail the contrast sweep (D-035: 4.5:1 for text in
-  every state). A new token set under `:root[data-theme="retro"]`; the preview stays paper
+  every state). A new token set under `:root[data-theme="retro"]`; the preview stays paper (done, D-041: "Retro (16
+  colours)" in Settings, white and yellow on EGA blue, square corners, double-bordered dialogs)
 - [ ] P4-20 Small touches, if wanted: a playful reply when an old adventure-game command (`LOOK`, `INVENTORY`) is typed
   on a line of its own, never getting in the way of real text (a cue named LOOK must still work); and a thank-you in
   Help to the creator whose videos prompted P4-18 / P3-13, **only with their permission** to use their name

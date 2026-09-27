@@ -1,5 +1,5 @@
 /*
- * Plainchant app script: settings: the writer's choices (P2-15, P4-06, P2-14, P4-18): theme, text size, colours in the editor, blank lines on Enter, capitals as you type, guessing names, reading aloud
+ * Plainchant app script: settings: the writer's choices (P2-15, P4-06, P2-14, P4-18, P4-19): theme, text size, colours in the editor, blank lines on Enter, capitals as you type, guessing names, reading aloud
  *
  * One of the classic scripts loaded by index.html, in order (see CLAUDE.md, "App scripts"). They share the
  * page's global scope, so top-level functions and consts here are visible to the files after it, and anything
@@ -16,7 +16,7 @@ const SETTING_DEFAULTS = {
     theme: 'dark', size: 'normal', colours: true, paragraphs: true, capitals: true, cues: true,
     pace: Narration.PACE, aloud: 'dialogue'
 };
-const SETTING_CHOICES = { theme: ['dark', 'light', 'system'], size: ['small', 'normal', 'large', 'larger'], aloud: ['dialogue', 'all'] };
+const SETTING_CHOICES = { theme: ['dark', 'light', 'retro', 'system'], size: ['small', 'normal', 'large', 'larger'], aloud: ['dialogue', 'all'] };
 const SETTING_RANGES = { pace: [80, 300] }; // whole numbers, words a minute
 const TEXT_SCALE = { small: 0.875, normal: 1, large: 1.15, larger: 1.3 }; // of the editor's own size (14px; 16px on phones)
 const settingsModal = document.getElementById('settings-modal');

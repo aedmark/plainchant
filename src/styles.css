@@ -124,6 +124,55 @@
     --sh-boneyard: #7d8796;
 }
 
+/* Retro (P4-19, D-041): the 16-colour palette of 1980s PC adventure games and DOS word processors, white and yellow
+   on EGA blue. The pure EGA colours are kept where they pass the contrast sweep; the ones that do not (light magenta,
+   light red, the dark blue of the boneyard) are softened a step. Square corners and hard shadows below. */
+:root[data-theme="retro"] {
+    color-scheme: dark;
+    --bg-void: #0000aa;
+    --bg-raised: #000080;
+    --bg-sunken: #000000;
+    --text-void: #aaaaaa;
+    --text-strong: #ffffff;
+    --text-soft: #55ffff;
+    --text-void-muted: #9c9cdc;
+    --border-void: #5555ff;
+    --border-mid: #5555ff;
+    --border-strong: #aaaaaa;
+    --focus: #ffff55;
+    --btn-bg: #00007a;
+    --btn-text: #ffff55;
+    --btn-hover: #2b2bd0;
+    --btn-success: #007a00;
+    --btn-primary-bg: #aaaaaa;
+    --btn-primary-text: #000000;
+    --btn-primary-hover: #ffffff;
+    --danger: #aa0000;
+    --danger-soft-text: #ff7777;
+    --danger-soft-border: #aa0000;
+    --danger-soft-bg: #000000;
+    --caret: #ffff55;
+    --selection: rgba(85, 255, 255, 0.35);
+    --overlay: rgba(0, 0, 0, 0.7);
+    --overlay-strong: rgba(0, 0, 0, 0.8);
+    --scrollbar: #5555ff;
+    --scrollbar-hover: #aaaaaa;
+    --accent-name: #ffff55;
+    --sh-scene: #ffff55;
+    --sh-character: #55ffff;
+    --sh-dialogue: #ffffff;
+    --sh-parenthetical: #aaaaaa;
+    --sh-transition: #ff88ff;
+    --sh-section: #55ff55;
+    --sh-synopsis: #55cc55;
+    --sh-title: #ffaa55;
+    --sh-note: #ff8888;
+    --sh-boneyard: #7777ff;
+}
+:root[data-theme="retro"] * { border-radius: 0 !important; }
+:root[data-theme="retro"] .modal-content { border: 4px double var(--border-strong); box-shadow: 8px 8px 0 #000000; }
+:root[data-theme="retro"] .modal-header h2 { font-family: var(--font-screenplay); text-transform: uppercase; letter-spacing: 0.08em; }
+
 * {
     box-sizing: border-box;
 }

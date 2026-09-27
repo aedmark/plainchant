@@ -9,20 +9,24 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-27, session 14: narration time and video chapters (P4-18, P3-13, D-038), prompted by a video
-creator who uses the app (their name is deliberately not in the feature), then a narration example script (P4-21).
-P4-18 and P3-13 are in `master`; P4-21 is on the working branch, `claude/compassionate-clarke-mxwpzz`, until the
-owner merges it. Tests: `npm test` 301, `bash test/run-headless.sh` 289 unit + 620 e2e, about 50 s._
+_Last updated: 2026-09-27, session 15: a retro theme (P4-19, D-041). Before it, session 14 built narration time and
+video chapters (P4-18, P3-13, D-038) and a narration example (P4-21), and settled the browsers: Firefox and Chromium,
+with Safari, iPhone and iPad a distant future milestone (D-039, D-040, roadmap Phase 7). Everything up to D-040 is in
+`master`; P4-19 is on the working branch, `claude/compassionate-clarke-mxwpzz`, until the owner merges it. Tests:
+`npm test` 301, `bash test/run-headless.sh` 289 unit + 623 e2e, about 50 s._
 
 **Where things stand, in one paragraph:** Phases 1 and 2 are done apart from real-device work (P2-09, P2-13) and two
 optional ideas (P2-20 hints, P2-22 desktop click-to-jump). Phase 3's output is done (Fountain export, print / save as
 PDF); what is left there is optional (P3-08 to P3-12). Phase 4 is done apart from P4-01 (incremental render), P4-16
-(comparing versions), P4-17 (a screen-reader pass by a person) and two optional touches (P4-19 a retro theme, P4-20
-small adventure-game touches). Phase 5 (real files, sync) is undecided and Phase 6
+(comparing versions), P4-17 (a screen-reader pass by a person) and P4-20 (small adventure-game touches, optional). Phase 5 (real files, sync) is undecided and Phase 6
 (brand) is the owner's. The biggest gap is not code: almost everything from sessions 13 and 14 has only run in headless
 Chromium. The owner's hands-on pass (Next steps 1) matters more than the next feature.
 
 **What works**
+- **Retro theme** (P4-19, D-041). Settings > Theme > **Retro (16 colours)**: white and yellow on EGA blue, the editor's
+  colour hints in EGA colours (softened a step where the pure ones fail contrast), square corners, double-bordered
+  dialogs with a hard shadow and titles in Courier capitals. Remembered like the other themes; the preview stays
+  paper. The accessibility sweep now runs in all three themes.
 - **Narration time and video chapters** (P4-18, P3-13, D-038; `src/narration.js`, `src/app/chapters-ui.js`). For
   narrated videos: write what is said as dialogue (under a cue such as NARRATOR) and what is shown as action. Script
   stats has a **Read aloud** tile (~m:ss): the dialogue and lyrics at a reading speed, 150 words a minute unless set.
@@ -43,7 +47,7 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 - **Autocomplete follow-ups** (P2-21, D-037). After `INT. PLACE - ` the chips offer the script's times of day, then DAY
   and NIGHT (Tab takes the first). With Character chosen on an empty line, the most used names show as chips to tap
   (Tab still cycles the element there). A hidden live region tells a screen reader what is offered.
-- **Themes, text size, accessibility** (P4-06, D-035). Settings has Theme (Dark, the default; Light; Match the system)
+- **Themes, text size, accessibility** (P4-06, D-035). Settings has Theme (Dark, the default; Light; Retro, P4-19; Match the system)
   and Text size in the editor (four steps; never under 16px on a phone). Every colour is a token with a light value;
   the preview stays paper. An accessibility sweep runs with the e2e tests over every window in both themes, desktop
   and phone (contrast 4.5:1, names, references, ids, graphics). The editor is named "Script"; the panes are landmarks;
@@ -177,6 +181,9 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 - Scroll sync no longer divides by zero.
 
 **Verified**
+- **Retro theme (P4-19), session 15:** e2e 623 (choosing it, remembered, the theme colour, square corners, the preview
+  still paper; the sweep over every state in retro on desktop and phone). Mutations: 3 of 3 fail a test (two colours
+  pushed below contrast, the choice removed from Settings).
 - **Narration example (P4-21), session 14:** e2e 620 (section 16r: offered in Export only with no chapters, opens as
   a new script saved at once, its elements, its read-aloud time and chapters both ways, from Help; the screenplay
   example unchanged). Mutations: 5 of 5 fail a test.
@@ -484,7 +491,7 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 
 ## Next steps (in order)
 
-0. **Merge the branch** for the narration example (P4-21; the owner does this, see the git gotcha).
+0. **Merge the branch** for the retro theme (P4-19; the owner does this, see the git gotcha).
 1. **A hands-on pass by the owner of what sessions 13 and 14 built.** Firefox is done: the owner reports it works well
    (session 14). Desktop Safari is not a target (D-039). Left, each a few minutes:
    - **After a day of writing: Library > Versions** on a real script (the database upgraded to version 2 on first
@@ -506,8 +513,8 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
      and the stats half a second later. Measure on a 120-page script on the phone before optimising.
    - **P4-16** compare a version with the text now, scene by scene; take one scene back.
    - **P3-11** a real `.pdf` download (only if print windows prove awkward); **P3-12** a page view while writing.
-   - **P4-19** a retro adventure-game theme and **P4-20** small adventure-game touches (a thank-you in Help needs the
-     creator's permission to use their name first).
+   - **P4-20** small adventure-game touches, to go with the retro theme (a thank-you in Help needs the creator's
+     permission to use their name first).
    - **P2-22** click-to-jump in the desktop preview; **P2-20** first-use hints; **P3-09 / P3-10** Library and export
      extras; **P3-08** Final Draft export (stretch).
 4. **Owner's non-code items:** a domain, a trademark search and a real icon (P6-01 to P6-03; the icons in `icons/` are
@@ -533,6 +540,20 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 ## Session log
 
 Newest first. Copy the template for each new session.
+
+### Session 15: 2026-09-27: A retro theme (P4-19)
+
+**Goal:** The owner merged session 14 and picked P4-19 next.
+**Done:** P4-19.
+**Changed:** a third token set, `:root[data-theme="retro"]`, and three rules under it (square corners, dialog border
+and shadow, dialog titles) in `src/styles.css`; `retro` among the theme choices in `settings.js` and the Settings
+window; the accessibility sweep loops over three themes; CLAUDE.md's colour rule now names three sets.
+**Decisions:** D-041.
+**Problems / surprises:** `--btn-text` and `--btn-bg` double as general text and pressed-state colours, so grey
+Sierra-style buttons with black text would have failed contrast in half the places they are used: the buttons stay
+navy with yellow text, and only the primary button (Done, Print) is grey with black.
+**Left undone:** P4-20 (the small touches); no one has seen the theme outside headless Chromium.
+**Next session should start with:** merge; the owner's look at the theme in Firefox; then the owner's pick.
 
 ### Session 14: 2026-09-27: Narration time and video chapters (P4-18, P3-13, P4-21)
 

@@ -740,6 +740,23 @@ built or checked for Safari, and a Safari-only bug is not a reason to hold anyth
 **Consequences:** P2-09's device pass is Android only; its iOS part is P7-02. The screen-reader pass (P4-17) is NVDA,
 Orca (the owner is on Linux) and TalkBack; VoiceOver waits for P7-02.
 
+## D-041 A retro theme: EGA colours, square corners  (2026-09-27, status: accepted)
+**Context:** P4-19, a nod to the 1980s PC adventure games whose fans prompted D-038.
+**Decision:**
+1. A third theme, **Retro (16 colours)**, beside Dark and Light (not reachable from "Match the system"). White and
+   yellow on EGA blue (`#0000aa`), the look of DOS word processors and adventure games of the time: scene headings
+   yellow, names light cyan, dialogue white, action light grey, sections light green, transitions magenta, notes red.
+2. **Pure EGA where it passes, softened where it does not:** light magenta (`#ff55ff`, 4.3:1 on blue) becomes
+   `#ff88ff`, light red becomes `#ff8888`, the boneyard is `#7777ff` (3.7:1, dim on purpose), the muted text a
+   blue-grey `#9c9cdc`, and the success green behind white text `#007a00`. Every text passes the same sweep as the
+   other themes (4.5:1).
+3. **Shape as well as colour, kept small:** square corners everywhere (one `border-radius: 0 !important` rule under
+   the theme), dialogs with a double border and a hard black shadow, dialog titles in Courier capitals. No pixel font:
+   the app loads nothing from the network and a bundled one would need a licence check; the editor keeps Courier.
+4. The preview and print stay white paper, as in every theme (D-035).
+**Consequences:** a new chrome colour now goes in three token sets; the accessibility sweep runs in three themes
+(a few seconds more; the whole browser run is still about 50 s).
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom
