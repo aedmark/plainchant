@@ -71,9 +71,9 @@ Goal: the "just type" promise. The editor helps; it never interrupts.
   veils over the textarea, the Focus toggle in the element bar and Ctrl/Cmd+Shift+F, remembered
 - [x] P2-08 Editor styling that hints at structure (subtle per-element colour) without becoming a WYSIWYG editor
   (D-031: a coloured copy behind a transparent textarea)
-- [~] P2-09 Real-device pass for the mobile and tablet layouts (iPad and iPhone Safari, Android Chrome: keyboard vs.
-  caret line, no zoom-on-focus, safe areas, rotation, iPad Split View / Stage Manager window sizes, hardware
-  keyboard attached). Serve the folder over LAN with `python -m http.server`. The user reported (2026-09-20) that
+- [~] P2-09 Real-device pass for the mobile and tablet layouts on Android (Chrome and Firefox: keyboard vs. caret
+  line, no zoom-on-focus, safe areas, rotation, split screen, hardware keyboard attached). iPhone and iPad moved to
+  P7-02 (D-040). Serve the folder over LAN with `python -m http.server`. The user reported (2026-09-20) that
   everything was functional on their tablet and other devices, before the typing helpers' soft-keyboard details or
   the tour/help were looked at in particular; specifics (which devices, Split View, Pencil) were not recorded.
 - [x] P2-12 Tablet support (D-009): fix the preview being clipped below ~1110px wide, one pane below 1024px,
@@ -173,7 +173,7 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
   many scenes and pages it takes (done, D-029)
 - [ ] P4-16 Versions, if wanted: compare a version with the text now (what changed, scene by scene) before going
   back, and take one scene from a version rather than the whole script
-- [ ] P4-17 Accessibility by a person: VoiceOver / NVDA / TalkBack reading order and wording, Windows high-contrast
+- [ ] P4-17 Accessibility by a person: NVDA / Orca / TalkBack reading order and wording, Windows high-contrast
   mode, keyboard-only use for a whole session. The automated sweep (D-035) checks names and contrast only
 - [x] P4-18 Narration time: how long the script takes to read aloud (dialogue, or dialogue and action), at a reading
   speed set in Settings, as a tile in Script stats (D-038)
@@ -205,6 +205,18 @@ Not committed. Decide only after Phase 3 ships. See open questions in DECISIONS.
 - [x] P6-04 Rename the GitHub repository to `plainchant`, point `origin` at it, push, and move the project to a
   `plainchant` folder (done 2026-09-20 by the owner: renamed on GitHub, re-cloned; fresh clone verified, all tests pass)
 
+## Phase 7: Apple platforms (distant future)
+
+Not planned (D-039, D-040): the app targets Firefox and Chromium-based browsers, and Mac and iOS writers have plenty of
+Apple-only writing tools. The iOS-minded work already in the app (the 16px text floor, keyboard-safe sizing, safe
+areas) stays; nothing new is built or checked for Safari until this phase is picked up.
+
+- [ ] P7-01 Safari on the Mac: a pass over every feature (colour hints' wrap check, IndexedDB and versions,
+  persistent storage, print and `@page`, the service worker), fixing what differs
+- [ ] P7-02 iPhone and iPad (every browser there is WebKit): the real-device part of P2-09 (soft keyboard vs. caret,
+  zoom-on-focus, Split View / Stage Manager, Pencil, hardware keyboard), tapping the preview (P2-10), the caret above
+  the keyboard (P2-16), Share > Print > PDF, VoiceOver, installing to the home screen
+
 ## Known limitations (deliberate, revisit)
 
 - Notes (`[[...]]`) that span several lines are not recognised; single-line notes are.
@@ -218,5 +230,7 @@ Not committed. Decide only after Phase 3 ships. See open questions in DECISIONS.
   it back; Settings switches guessing off.
 - Printing goes through the browser's print window (D-021); there is no direct `.pdf` download yet (P3-11).
 - The preview is always white paper, whatever the theme (D-035).
+- Safari (Mac, iPhone, iPad) is not supported or tested (D-039, D-040): it may work, but nothing is fixed for it until
+  Phase 7.
 - Narration time (D-038) counts words only: pauses, music and footage with no narration are not timed, so chapter
   timestamps are a starting point to check against the finished video.

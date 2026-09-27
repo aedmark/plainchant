@@ -349,7 +349,7 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
   `visualViewport`. The **tour and Help have not been seen on a device**, and their wording has had no review from
   anyone but me.
 - Automated runs are headless Chromium only. The owner uses the app in Firefox and reports it works well (session 14,
-  after sessions 13 and 14's features); desktop Safari is no longer a target (D-039). Whether iOS is, is open (Q-003). iPad Safari's "desktop-class" browsing mode and Split View / Stage
+  after sessions 13 and 14's features); Safari (Mac, iPhone, iPad) is a distant future milestone, Phase 7 (D-039, D-040): the iOS notes below are for then. iPad Safari's "desktop-class" browsing mode and Split View / Stage
   Manager window widths are reasoned about, not observed.
 - Apple Pencil handwriting and hardware-keyboard use on tablets are unchecked (P2-13).
 - **Typing helpers on real input methods.** Tests fire keyboard-shaped events (`keydown` Tab, `beforeinput`
@@ -489,7 +489,7 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
    (session 14). Desktop Safari is not a target (D-039). Left, each a few minutes:
    - **After a day of writing: Library > Versions** on a real script (the database upgraded to version 2 on first
      load; with two tabs open, reload the older one). Try Go back, then Ctrl+Z.
-   - **On the phone / tablet:** type at the bottom of a long script (three lines of room above the keyboard?), tap a
+   - **On an Android phone / tablet** (iOS waits for Phase 7): type at the bottom of a long script (three lines of room above the keyboard?), tap a
      line in Preview (does the keyboard come up?), Focus mode, suggestions for the time of day after `INT. X - `.
    - **Name guessing:** write normally for a while. Does Enter ever take an action line for a character? If so, the
      planned fix is to require a known name for single words (D-036).
@@ -497,7 +497,7 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
    - **Narration and chapters** (session 14): read a page of a real script aloud against a clock and set that speed
      in Settings; paste the chapters into a YouTube description (unlisted upload) and see whether YouTube accepts them.
    - Whatever feels wrong is the next session's first job; Settings can switch most new behaviour off meanwhile.
-2. **A screen-reader pass by a person** (P4-17): VoiceOver on the iPad or Mac, NVDA on Windows if available. The
+2. **A screen-reader pass by a person** (P4-17): Orca on the owner's Linux machine, NVDA on Windows if available. The
    automated sweep (D-035) checks names and contrast, not how the app sounds.
 3. **Then the next feature, the owner's pick.** Candidates, roughly by value:
    - **P5-01** open and save real `.fountain` files on disk (File System Access API; Chromium only, so it needs a
@@ -523,7 +523,7 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 - Tab takes the first suggestion (names, places, times of day): right? The times of day are new (D-037).
 - Should the preview follow the theme too (a dark page), or stay paper as now (D-035)?
 - Phase 5: real files on disk (P5-01) or hosted sync (P5-02) first? Q-002 in DECISIONS.
-- iPhone and iPad: still targets? Every browser there is Safari underneath (Q-003, D-039).
+- ~~iPhone and iPad: still targets?~~ No: Safari on the Mac, iPhone and iPad is Phase 7, a distant future milestone (D-040).
 - Narration (D-038): is 150 words a minute the right default, and should chapters also be offered from scenes (for
   scripts with no sections)? Should the header's page count show the read-aloud time for narrated scripts?
 - ~~Plain textarea or a rich editor (Q-001)?~~ A textarea with a coloured layer behind it (D-031).
@@ -553,7 +553,7 @@ instead of selecting the editor; Help explains both.
 - The mutation run on `src/narration.js` found one untested guard (a negative speed); a test was added. App-side
   mutations (9) all failed a test, listed under "Verified".
 **Later:** the owner confirmed the example button works, reported Firefox works well, and dropped desktop Safari
-(D-039, with Q-003 on iOS). The e2e checks on the narration example no longer pin its words (the owner reworded it).
+(D-039), then iPhone, iPad and Safari as a distant future milestone (D-040, roadmap Phase 7). The e2e checks on the narration example no longer pin its words (the owner reworded it).
 **Left undone:** a real device; a real YouTube upload with the chapters. One unrelated timing
 check tripped once under load (see the gotcha).
 **Next session should start with:** "Next steps" above: merge, then the owner's hands-on pass.

@@ -731,10 +731,18 @@ headless Chromium; Firefox is checked by hand.
 Safari" cannot simply mean "not iOS". The app already carries iOS work (the 16px text floor, the keyboard sizing,
 P2-09 lists iPad and iPhone). Whether iOS stays a target is open (Q-003).
 
+## D-040 iPhone, iPad and Safari: a distant future milestone  (2026-09-27, status: accepted)
+**Context:** Q-003, left by D-039: every browser on iPhone and iPad is WebKit, so dropping Safari reaches iOS too.
+**Decision:** Safari on the Mac, iPhone and iPad together become Phase 7 in the roadmap, a distant future milestone
+("Mac users have plenty of Apple-only writing tools"). Phones and tablets are Android (Chrome, Firefox) for now. The
+iOS-minded work already in the app stays (it is harmless elsewhere and would be needed again), but nothing new is
+built or checked for Safari, and a Safari-only bug is not a reason to hold anything back.
+**Consequences:** P2-09's device pass is Android only; its iOS part is P7-02. The screen-reader pass (P4-17) is NVDA,
+Orca (the owner is on Linux) and TalkBack; VoiceOver waits for P7-02.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom
   editor for inline element styling (P2-08)?~~ Textarea plus an overlay (D-031).
 - Q-002 Sync (Phase 5): local-file-first via the File System Access API, or hosted accounts?
-- Q-003 iPhone and iPad (D-039): every browser there is WebKit. Keep them as targets (the phone layout was built for
-  them), or support phones and tablets on Android only?
+- ~~Q-003 iPhone and iPad (D-039): keep them as targets?~~ A distant future milestone, Phase 7 (D-040).
