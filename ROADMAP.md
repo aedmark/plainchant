@@ -176,8 +176,8 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
 - [x] P4-16 Versions, if wanted: compare a version with the text now (what changed, scene by scene) before going
   back, and take one scene from a version rather than the whole script (done, D-044: a version's Compare in the
   Versions window; Use the version's scene / Put back scene, undoable)
-- [ ] P4-17 Accessibility by a person: NVDA / Orca / TalkBack reading order and wording, Windows high-contrast
-  mode, keyboard-only use for a whole session. The automated sweep (D-035) checks names and contrast only
+- [x] P4-17 Accessibility by a person: NVDA / Orca / TalkBack reading order and wording, Windows high-contrast
+  mode, keyboard-only use for a whole session. The automated sweep (D-035) checks names and contrast only (done: the owner checked it with a screen reader, 2026-09-27)
 - [x] P4-18 Narration time: how long the script takes to read aloud (dialogue, or dialogue and action), at a reading
   speed set in Settings, as a tile in Script stats (D-038)
 - [x] P4-21 A narration example script to show P4-18 / P3-13 at work: a short narrated video essay whose notes say
@@ -189,8 +189,8 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
 - [x] P4-20 Small touches, if wanted: a playful reply when an old adventure-game command (`LOOK`, `INVENTORY`) is typed
   on a line of its own, never getting in the way of real text (a cue named LOOK must still work) (done, D-042: in the
   retro theme only, as the notice; the thank-you in Help is now P4-22)
-- [ ] P4-22 A thank-you in Help to the creator whose videos prompted P4-18 / P3-13 / P4-19 / P4-20, **only with their
-  permission** to use their name (split from P4-20)
+- [x] P4-22 A thank-you in Help to the creator whose videos prompted P4-18 / P3-13 / P4-19 / P4-20, **only with their
+  permission** to use their name (split from P4-20) (done, D-045: permission given; a line at the foot of Help > Start here)
 
 ## Phase 5: Sync and share (open questions)
 

@@ -2367,6 +2367,8 @@ setTimeout(() => {
     nvW.localStorage.setItem('plainchant_settings', JSON.stringify({ pace: 5, aloud: 'everything' }));
     check('reading aloud: a stored speed or choice out of range is ignored', nvW.eval('readSettings().pace') === 150 && nvW.eval('readSettings().aloud') === 'dialogue');
     nvW.localStorage.removeItem('plainchant_settings');
+    check('help: the thank-you to Space Quest Historian (P4-22, with their permission) is in Start here',
+      /With thanks to Space Quest Historian, whose videos about adventure games inspired/.test(fq(nvF, 'section.help-section[data-section="start"]').textContent));
     check('help: narration and chapters are explained', /Video chapters/.test(fid(nvF, 'help-modal').textContent) && /read-aloud time/.test(fid(nvF, 'help-modal').textContent));
     nvF.remove();
 

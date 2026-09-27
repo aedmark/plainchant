@@ -18,8 +18,7 @@ and iPad are roadmap Phase 7). Everything up to P4-01 is in `master`; P4-16 is o
 
 **Where things stand, in one paragraph:** Phases 1 and 2 are done apart from real-device work (P2-09, P2-13) and two
 optional ideas (P2-20 hints, P2-22 desktop click-to-jump). Phase 3's output is done (Fountain export, print / save as
-PDF); what is left there is optional (P3-08 to P3-12). Phase 4 is done apart from P4-17 (a screen-reader pass by a person) and P4-22 (a thank-you in Help, waiting on the
-creator's permission). Phase 5 (real files, sync) is undecided and Phase 6
+PDF); what is left there is optional (P3-08 to P3-12). Phase 4 is done: the owner checked the app with a screen reader (P4-17) and the thank-you to Space Quest Historian is in Help (P4-22, with their permission, D-045). Phase 5 (real files, sync) is undecided and Phase 6
 (brand) is the owner's. The biggest gap is not code: almost everything from sessions 13 and 14 has only run in headless
 Chromium. The owner's hands-on pass (Next steps 1) matters more than the next feature.
 
@@ -546,7 +545,6 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
    - **P5-01** open and save real `.fountain` files on disk (File System Access API; Chromium only, so it needs a
      fallback story): the biggest step towards "text is the source of truth".
    - **P3-11** a real `.pdf` download (only if print windows prove awkward); **P3-12** a page view while writing.
-   - **P4-22** a thank-you in Help to the creator, once they agree to their name being used.
    - **P2-22** click-to-jump in the desktop preview; **P2-20** first-use hints; **P3-09 / P3-10** Library and export
      extras; **P3-08** Final Draft export (stretch).
 4. **Owner's non-code items:** a domain, a trademark search and a real icon (P6-01 to P6-03; the icons in `icons/` are

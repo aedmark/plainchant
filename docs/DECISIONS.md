@@ -818,6 +818,12 @@ identical to a full redraw) rather than by timing.
 5. **Where:** in the Versions window itself (a version's **Compare**, and **All versions** to return), not a new
    window. The rules are a pure module, `src/compare.js`; the view is `compare-ui.js`.
 
+## D-045 The thank-you names Space Quest Historian  (2026-09-27, status: accepted)
+**Context:** D-038 kept the creator's name out of the features they prompted; P4-22 waited for their permission.
+**Decision:** The owner reports permission is given. A single line at the foot of Help > Start here thanks Space
+Quest Historian for inspiring the read-aloud time, the video chapters, the narration example and the retro theme.
+The features themselves still carry no one's name (D-038), and the retro theme's Easter egg is not mentioned.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

@@ -724,6 +724,7 @@ code.inline, .help-table code.inline {
     font: 0.85em ui-monospace, Consolas, monospace;
     white-space: normal;
 }
+.help-thanks { margin: 0.5rem 0 0; font-size: 0.75rem; color: var(--text-void-muted); }
 .help-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
 
 /* Welcome tour */
