@@ -740,7 +740,7 @@ built or checked for Safari, and a Safari-only bug is not a reason to hold anyth
 **Consequences:** P2-09's device pass is Android only; its iOS part is P7-02. The screen-reader pass (P4-17) is NVDA,
 Orca (the owner is on Linux) and TalkBack; VoiceOver waits for P7-02.
 
-## D-041 A retro theme: EGA colours, square corners  (2026-09-27, status: accepted)
+## D-041 A retro theme: EGA colours, square corners  (2026-09-27, status: superseded in part by D-047: the colours are now CGA)
 **Context:** P4-19, a nod to the 1980s PC adventure games whose fans prompted D-038.
 **Decision:**
 1. A third theme, **Retro (16 colours)**, beside Dark and Light (not reachable from "Match the system"). White and
@@ -853,6 +853,21 @@ own browser, does not have it.
    the handle. The e2e page puts the writer's links back with their scripts after a run.
 **Consequences:** another open tab learns of a new link only when reloaded, and the Library does not show which
 scripts are linked yet (both P5-04). Answers Q-002: local files first.
+
+## D-047 The retro theme is CGA now  (2026-09-27, status: accepted; replaces D-041's colours)
+**Context:** The owner asked for the CGA look instead of EGA blue: "Cyan, Purple, Yellow.. You know the one."
+**Decision:**
+1. **Black**, with CGA palette 1's **light cyan** (`#55ffff`: action, links, buttons' text), **light magenta**
+   (`#ff55ff`: character names, the title page, frames) and **white** (dialogue, headings, sections). Strictly,
+   palette 1's fourth colour is white and yellow belongs to the other palette (with green and red); the owner asked for
+   yellow, so **yellow** (`#ffff55`) marks scene headings, transitions, the caret and the focus ring. Swapping it for
+   white would make it pure palette 1.
+2. Dimmer steps for what stays quieter: dark cyan (`#00aaaa`: parentheticals, muted text), dark magenta (`#aa00aa`:
+   borders, the dialogs' hard shadow), grey (`#aaaaaa` synopses, `#666666` the boneyard, dim on purpose at 3.7:1),
+   and a very dark magenta (`#1c001c`) for raised surfaces and buttons. Every text passes the sweep (4.5:1), most by far.
+3. Unchanged from D-041: the setting's value (`retro`, so a writer's choice carries over), square corners, double
+   borders, Courier dialog titles, the preview as paper, and the adventure replies (D-042). The Settings label is now
+   **Retro (CGA)**. The dialogs' shadow is a token now, not a literal black (which vanished on a black page).
 
 ## Open questions
 

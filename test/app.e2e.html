@@ -2093,11 +2093,11 @@ setTimeout(() => {
       [rootTheme(), getComputedStyle(af.contentDocument.body).backgroundColor, aw.localStorage.getItem('plainchant_settings')]);
     check('theme: the preview stays white paper', getComputedStyle(fid(af, 'render-target')).backgroundColor === 'rgb(255, 255, 255)');
     fq(af, '#settings-modal input[name="theme"][value="retro"]').click();
-    check('theme: Retro (P4-19) turns the app EGA blue with square corners and is remembered; the preview stays paper',
-      rootTheme() === 'retro' && getComputedStyle(af.contentDocument.body).backgroundColor === 'rgb(0, 0, 170)' &&
+    check('theme: Retro (P4-19, D-047) turns the app CGA black with square corners and is remembered; the preview stays paper',
+      rootTheme() === 'retro' && getComputedStyle(af.contentDocument.body).backgroundColor === 'rgb(0, 0, 0)' &&
       getComputedStyle(fq(af, '#settings-modal .modal-content')).borderRadius === '0px' &&
       JSON.parse(aw.localStorage.getItem('plainchant_settings')).theme === 'retro' &&
-      af.contentDocument.querySelector('meta[name="theme-color"]').getAttribute('content') === '#0000aa' &&
+      af.contentDocument.querySelector('meta[name="theme-color"]').getAttribute('content') === '#000000' &&
       getComputedStyle(fid(af, 'render-target')).backgroundColor === 'rgb(255, 255, 255)',
       [rootTheme(), getComputedStyle(af.contentDocument.body).backgroundColor, aw.localStorage.getItem('plainchant_settings')]);
     fq(af, '#settings-modal input[name="theme"][value="system"]').click();

@@ -185,7 +185,8 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
 - [x] P4-19 A retro adventure-game theme: a third theme in Settings beside dark and light, after the 16-colour palette
   of 1980s PC adventure games, softened where the pure colours fail the contrast sweep (D-035: 4.5:1 for text in
   every state). A new token set under `:root[data-theme="retro"]`; the preview stays paper (done, D-041: "Retro (16
-  colours)" in Settings, white and yellow on EGA blue, square corners, double-bordered dialogs)
+  colours)" in Settings, white and yellow on EGA blue, square corners, double-bordered dialogs; then CGA, D-047:
+  "Retro (CGA)", cyan, magenta, white and yellow on black)
 - [x] P4-20 Small touches, if wanted: a playful reply when an old adventure-game command (`LOOK`, `INVENTORY`) is typed
   on a line of its own, never getting in the way of real text (a cue named LOOK must still work) (done, D-042: in the
   retro theme only, as the notice; the thank-you in Help is now P4-22)

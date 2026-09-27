@@ -124,53 +124,53 @@
     --sh-boneyard: #7d8796;
 }
 
-/* Retro (P4-19, D-041): the 16-colour palette of 1980s PC adventure games and DOS word processors, white and yellow
-   on EGA blue. The pure EGA colours are kept where they pass the contrast sweep; the ones that do not (light magenta,
-   light red, the dark blue of the boneyard) are softened a step. Square corners and hard shadows below. */
+/* Retro (P4-19, D-041, D-047): CGA. Black, with palette 1's light cyan, light magenta and white, and yellow (from the
+   other palette) for scene headings, the caret and the focus ring. A few dimmer steps (dark cyan, dark magenta, grey)
+   for what must stay quieter; every text passes the contrast sweep. Square corners and hard shadows below. */
 :root[data-theme="retro"] {
     color-scheme: dark;
-    --bg-void: #0000aa;
-    --bg-raised: #000080;
+    --bg-void: #000000;
+    --bg-raised: #1c001c;
     --bg-sunken: #000000;
-    --text-void: #aaaaaa;
+    --text-void: #55ffff;
     --text-strong: #ffffff;
     --text-soft: #55ffff;
-    --text-void-muted: #9c9cdc;
-    --border-void: #5555ff;
-    --border-mid: #5555ff;
-    --border-strong: #aaaaaa;
+    --text-void-muted: #00aaaa;
+    --border-void: #aa00aa;
+    --border-mid: #aa00aa;
+    --border-strong: #ff55ff;
     --focus: #ffff55;
-    --btn-bg: #00007a;
-    --btn-text: #ffff55;
-    --btn-hover: #2b2bd0;
-    --btn-success: #007a00;
-    --btn-primary-bg: #aaaaaa;
+    --btn-bg: #1c001c;
+    --btn-text: #55ffff;
+    --btn-hover: #3a003a;
+    --btn-success: #007a7a;
+    --btn-primary-bg: #55ffff;
     --btn-primary-text: #000000;
     --btn-primary-hover: #ffffff;
-    --danger: #aa0000;
-    --danger-soft-text: #ff7777;
-    --danger-soft-border: #aa0000;
+    --danger: #aa00aa;
+    --danger-soft-text: #ff55ff;
+    --danger-soft-border: #aa00aa;
     --danger-soft-bg: #000000;
     --caret: #ffff55;
-    --selection: rgba(85, 255, 255, 0.35);
-    --overlay: rgba(0, 0, 0, 0.7);
-    --overlay-strong: rgba(0, 0, 0, 0.8);
-    --scrollbar: #5555ff;
-    --scrollbar-hover: #aaaaaa;
+    --selection: rgba(255, 85, 255, 0.35);
+    --overlay: rgba(0, 0, 0, 0.75);
+    --overlay-strong: rgba(0, 0, 0, 0.85);
+    --scrollbar: #aa00aa;
+    --scrollbar-hover: #ff55ff;
     --accent-name: #ffff55;
     --sh-scene: #ffff55;
-    --sh-character: #55ffff;
+    --sh-character: #ff55ff;
     --sh-dialogue: #ffffff;
-    --sh-parenthetical: #aaaaaa;
-    --sh-transition: #ff88ff;
-    --sh-section: #55ff55;
-    --sh-synopsis: #55cc55;
-    --sh-title: #ffaa55;
-    --sh-note: #ff8888;
-    --sh-boneyard: #7777ff;
+    --sh-parenthetical: #00aaaa;
+    --sh-transition: #ffff55;
+    --sh-section: #ffffff;
+    --sh-synopsis: #aaaaaa;
+    --sh-title: #ff55ff;
+    --sh-note: #c864c8;
+    --sh-boneyard: #666666;
 }
 :root[data-theme="retro"] * { border-radius: 0 !important; }
-:root[data-theme="retro"] .modal-content { border: 4px double var(--border-strong); box-shadow: 8px 8px 0 #000000; }
+:root[data-theme="retro"] .modal-content { border: 4px double var(--border-strong); box-shadow: 8px 8px 0 var(--border-mid); }
 :root[data-theme="retro"] .modal-header h2 { font-family: var(--font-screenplay); text-transform: uppercase; letter-spacing: 0.08em; }
 
 * {

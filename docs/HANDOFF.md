@@ -9,12 +9,12 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-27, session 19: real files on disk (P5-01, D-046), after the thank-you to Space Quest Historian
-(P4-22, D-045) and the owner's screen-reader pass (P4-17). Before them: comparing versions (P4-16), fast typing on
-long scripts (P4-01), adventure-game replies, the retro theme, narration time and video chapters, and the browser
-targets (Firefox and Chromium; Safari, iPhone and iPad are roadmap Phase 7). Everything up to P4-22 is in `master`;
-P5-01 is on the working branch, `claude/compassionate-clarke-mxwpzz`, until the owner merges it. Tests: `npm test`
-323, `bash test/run-headless.sh` 311 unit + 670 e2e, about 55 s._
+_Last updated: 2026-09-27, session 20: the retro theme is CGA now (D-047). Before it, session 19 added real files on
+disk (P5-01, D-046) and the thank-you to Space Quest Historian (P4-22, D-045); earlier: comparing versions, fast typing
+on long scripts, adventure-game replies, narration time and video chapters, and the browser targets (Firefox and
+Chromium; Safari, iPhone and iPad are roadmap Phase 7). Everything up to P5-01 is in `master`; the CGA change is on the
+working branch, `claude/compassionate-clarke-mxwpzz`, until the owner merges it. Tests: `npm test` 323,
+`bash test/run-headless.sh` 311 unit + 670 e2e, about 55 s._
 
 **Where things stand, in one paragraph:** Phases 1 and 2 are done apart from real-device work (P2-09, P2-13) and two
 optional ideas (P2-20 hints, P2-22 desktop click-to-jump). Phase 3's output is done (Fountain export, print / save as
@@ -47,10 +47,10 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
   and who speaks there, INVENTORY counts words and scripts, SCORE counts pages out of 120, XYZZY: "Nothing happens."
   The text and Enter are exactly as in any other theme; a character called LOOK, a line made a character, a line
   inside a speech and Enter mid-line never answer. Not mentioned in Help (it is an Easter egg).
-- **Retro theme** (P4-19, D-041). Settings > Theme > **Retro (16 colours)**: white and yellow on EGA blue, the editor's
-  colour hints in EGA colours (softened a step where the pure ones fail contrast), square corners, double-bordered
-  dialogs with a hard shadow and titles in Courier capitals. Remembered like the other themes; the preview stays
-  paper. The accessibility sweep now runs in all three themes.
+- **Retro theme** (P4-19, D-041, D-047). Settings > Theme > **Retro (CGA)**: black, with CGA's light cyan (action),
+  light magenta (names, frames), white (dialogue) and yellow (scene headings, transitions, the caret), square corners,
+  double-bordered dialogs with a hard magenta shadow and titles in Courier capitals. Remembered like the other themes;
+  the preview stays paper. The accessibility sweep runs in all three themes. (It was EGA blue until D-047.)
 - **Narration time and video chapters** (P4-18, P3-13, D-038; `src/narration.js`, `src/app/chapters-ui.js`). For
   narrated videos: write what is said as dialogue (under a cue such as NARRATOR) and what is shown as action. Script
   stats has a **Read aloud** tile (~m:ss): the dialogue and lyrics at a reading speed, 150 words a minute unless set.
@@ -540,8 +540,9 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 
 ## Next steps (in order)
 
-0. **Merge the branch** for real files on disk (P5-01; the owner does this, see the git gotcha). Try it in Chrome or
-   Edge: Export > Save to a file, write a little, open the file in a text editor, change it there, come back.
+0. **Merge the branch** for the CGA theme (the owner does this, see the git gotcha). Still worth doing from session
+   19: try real files in Chrome or Edge (Export > Save to a file, write a little, change the file in a text editor,
+   come back).
 1. **A hands-on pass by the owner of what sessions 13 and 14 built.** Firefox is done: the owner reports it works well
    (session 14). Desktop Safari is not a target (D-039). Left, each a few minutes:
    - **After a day of writing: Library > Versions** on a real script (the database upgraded to version 2 on first
@@ -585,6 +586,17 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 ## Session log
 
 Newest first. Copy the template for each new session.
+
+### Session 20: 2026-09-27: The retro theme becomes CGA (D-047)
+
+**Goal:** The owner asked for the CGA look ("Cyan, Purple, Yellow") in place of the retro theme's EGA blue.
+**Done:** the `retro` token set rewritten: black, light cyan, light magenta, white, and yellow (which is from CGA's
+other palette; the owner asked for it). Label "Retro (CGA)"; the dialogs' hard shadow is now a token (magenta).
+**Changed:** `src/styles.css` (the retro block), the Settings label, the e2e retro check (black, `#000000`).
+**Decisions:** D-047 (D-041's colours superseded).
+**Problems / surprises:** none: every colour passes the sweep with room to spare (the lowest, the notes, 6.1:1).
+**Left undone:** nothing.
+**Next session should start with:** merge; then the owner's pick.
 
 ### Session 19: 2026-09-27: Thank-you, screen reader, real files on disk (P4-22, P4-17, P5-01)
 
