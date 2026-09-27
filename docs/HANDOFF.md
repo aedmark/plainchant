@@ -9,22 +9,27 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-27, session 17: typing on long scripts made fast (P4-01, D-043). Before it, session 16 added
-adventure-game replies (P4-20, D-042), session 15 the retro theme (P4-19, D-041), and session 14 narration time and
-video chapters (P4-18, P3-13, D-038), a narration example (P4-21) and the browser targets (Firefox and Chromium;
-Safari, iPhone and iPad are roadmap Phase 7, D-039, D-040). Everything up to P4-20 is in `master`; P4-01 is on the
-working branch, `claude/compassionate-clarke-mxwpzz`, until the owner merges it. Tests: `npm test` 307,
-`bash test/run-headless.sh` 295 unit + 642 e2e, about 55 s._
+_Last updated: 2026-09-27, session 18: comparing versions scene by scene (P4-16, D-044). Before it, session 17 made
+typing on long scripts fast (P4-01, D-043), session 16 added adventure-game replies (P4-20), session 15 the retro theme
+(P4-19), and session 14 narration time, video chapters and the browser targets (Firefox and Chromium; Safari, iPhone
+and iPad are roadmap Phase 7). Everything up to P4-01 is in `master`; P4-16 is on the working branch,
+`claude/compassionate-clarke-mxwpzz`, until the owner merges it. Tests: `npm test` 316, `bash test/run-headless.sh`
+304 unit + 654 e2e, about 55 s._
 
 **Where things stand, in one paragraph:** Phases 1 and 2 are done apart from real-device work (P2-09, P2-13) and two
 optional ideas (P2-20 hints, P2-22 desktop click-to-jump). Phase 3's output is done (Fountain export, print / save as
-PDF); what is left there is optional (P3-08 to P3-12). Phase 4 is done apart from P4-16
-(comparing versions), P4-17 (a screen-reader pass by a person) and P4-22 (a thank-you in Help, waiting on the
+PDF); what is left there is optional (P3-08 to P3-12). Phase 4 is done apart from P4-17 (a screen-reader pass by a person) and P4-22 (a thank-you in Help, waiting on the
 creator's permission). Phase 5 (real files, sync) is undecided and Phase 6
 (brand) is the owner's. The biggest gap is not code: almost everything from sessions 13 and 14 has only run in headless
 Chromium. The owner's hands-on pass (Next steps 1) matters more than the next feature.
 
 **What works**
+- **Comparing versions** (P4-16, D-044; `src/compare.js`, `src/app/compare-ui.js`). In Library > Versions, each version
+  has **Compare**: the Versions window then shows only the scenes that differ since that version (and the title page
+  or opening, if it changed), each with the lines that went (struck through, −) and came (underlined, +) and two
+  lines either side, the rest folded. A changed scene has **Use the version's scene**, a deleted one **Put back
+  scene** (it goes back where it was). Like Go back, the text there now is kept as a version first, and in the open
+  script Ctrl/Cmd+Z undoes it. **All versions** returns to the list.
 - **Fast typing on long scripts** (P4-01, D-043). The preview is patched block by block instead of rebuilt on every
   keystroke (`Fountain.blocks`, `drawPreview` in core.js), and on a script of more than about 18 pages it follows
   just after the typed text is painted. Typing a character in a 162-page script went from about 116 ms to about 30
@@ -193,6 +198,12 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 - Scroll sync no longer divides by zero.
 
 **Verified**
+- **Comparing versions (P4-16), session 18:** `npm test` 316 (9 new in `test/compare.test.js`); e2e 654 (section 16u:
+  the summary and only the differing scenes, del / ins, headings as text, taking a changed scene and putting a removed
+  one back in the open script (stored, kept as a version first, undoable), in a script that is not open, the way
+  back, a version the same as now, a change from another tab kept; the comparison is in the accessibility sweep in
+  all three themes). Mutations: 14 in `src/compare.js` and 8 in the app: all fail a test, after the fixes in the
+  session log (one equivalent tie-break in the matching left alone).
 - **Incremental preview (P4-01), session 17:** `npm test` 307 (`Fountain.blocks`); e2e 642 (section 16t: 40 random
   edits of every kind on a short and a long script, the preview checked identical to a full redraw every five;
   untouched blocks are the same elements; on a long script the keystroke does not wait and the preview follows; a
@@ -516,7 +527,7 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 
 ## Next steps (in order)
 
-0. **Merge the branch** for fast typing on long scripts (P4-01; the owner does this, see the git gotcha).
+0. **Merge the branch** for comparing versions (P4-16; the owner does this, see the git gotcha).
 1. **A hands-on pass by the owner of what sessions 13 and 14 built.** Firefox is done: the owner reports it works well
    (session 14). Desktop Safari is not a target (D-039). Left, each a few minutes:
    - **After a day of writing: Library > Versions** on a real script (the database upgraded to version 2 on first
@@ -534,7 +545,6 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 3. **Then the next feature, the owner's pick.** Candidates, roughly by value:
    - **P5-01** open and save real `.fountain` files on disk (File System Access API; Chromium only, so it needs a
      fallback story): the biggest step towards "text is the source of truth".
-   - **P4-16** compare a version with the text now, scene by scene; take one scene back.
    - **P3-11** a real `.pdf` download (only if print windows prove awkward); **P3-12** a page view while writing.
    - **P4-22** a thank-you in Help to the creator, once they agree to their name being used.
    - **P2-22** click-to-jump in the desktop preview; **P2-20** first-use hints; **P3-09 / P3-10** Library and export
@@ -562,6 +572,26 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 ## Session log
 
 Newest first. Copy the template for each new session.
+
+### Session 18: 2026-09-27: Comparing versions scene by scene (P4-16)
+
+**Goal:** The owner merged P4-01 and picked P4-16.
+**Done:** P4-16.
+**Changed:** new `src/compare.js` (pure) and `src/app/compare-ui.js` (after `versions-ui.js`), in `index.html`, `sw.js`
+and the test runners; `versions-ui.js` gained a Compare button and `replaceScriptText` (shared with `goBackTo`); Help
+explains Compare; e2e section 16u and a "compare" state in the accessibility sweep.
+**Decisions:** D-044.
+**Problems / surprises:**
+- The parser takes lowercase `int.` headings as scenes (Fountain allows it; D-004 is about cues), so a test assumption
+  was wrong; matching ignores case anyway.
+- The first screenshots showed whole scenes for a one-line change; the view now folds unchanged lines two away from a
+  change (`Compare.around`).
+- Mutations on `src/compare.js` found an untested edge (putting a scene back into an empty script), an untested rule
+  (past the size limit only the matching ends are compared) and one redundant check, removed. In the app, one
+  redundant line went, and a test now changes the script while Compare is open (another tab) to prove a scene is
+  taken from the latest text.
+**Left undone:** not seen outside headless Chromium; moving a scene shows as removed and added (by design, D-044).
+**Next session should start with:** merge; then the owner's pick (P5-01 real files, P4-17 a screen-reader pass...).
 
 ### Session 17: 2026-09-27: Fast typing on long scripts (P4-01)
 

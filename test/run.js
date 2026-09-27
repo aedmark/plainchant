@@ -15,6 +15,7 @@ globalThis.Outline = require('../src/outline.js');
 globalThis.Versions = require('../src/versions.js');
 globalThis.Narration = require('../src/narration.js');
 globalThis.Adventure = require('../src/adventure.js');
+globalThis.Compare = require('../src/compare.js');
 
 require('./fountain.test.js');
 require('./editing.test.js');
@@ -28,6 +29,7 @@ require('./outline.test.js');
 require('./versions.test.js');
 require('./narration.test.js');
 require('./adventure.test.js');
+require('./compare.test.js');
 require('./structure.test.js'); // reads files, so it runs here only (not in the browser runner)
 
 const results = harness.runTests();

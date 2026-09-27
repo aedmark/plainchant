@@ -2130,6 +2130,8 @@ setTimeout(() => {
       ['library', (w) => w.document.getElementById('libraryBtn').click()],
       ['recently deleted', (w) => w.document.getElementById('libViewTrash').click()],
       ['versions', async (w) => { w.closeModal(w.document.getElementById('library-modal')); await w.openVersions(w.eval('currentScriptId')); }],
+      ['compare', async (w) => { const sc = w.getScripts()[w.eval('currentScriptId')];
+        await w.openCompare({ id: 'sweep-v', scriptId: sc.id, updatedAt: Date.now(), content: sc.content.replace('Hi.', 'Hi there.') + '\n\nEXT. GONE - DAY\n\nOnce.' }); }],
       ['help', (w) => { w.closeModal(w.document.getElementById('versions-modal')); w.openHelp('start'); }],
       ['help: elements', (w) => w.showHelpSection('elements')],
       ['help: keys', (w) => w.showHelpSection('keys')],
@@ -2486,6 +2488,72 @@ setTimeout(() => {
     irTimes.sort((a, b) => a - b);
     check('incremental preview: a keystroke on a 120-page script takes under 60 ms (median of nine)', irTimes[4] < 60, irTimes.map(Math.round));
     irF.remove();
+
+    // 16u. Comparing a version (P4-16): scene by scene, from a version's Compare button, and one scene taken back
+    const CM_WAS = 'Title: Moon\n\nINT. KITCHEN - NIGHT\n\nMara waits.\n\nMARA\nHello?\n\nEXT. ROOF - DAY\n\nWind.\n\nINT. HALL <b>X</b> - DAY\n\nSteps.';
+    const CM_NOW = 'Title: Moon\n\nINT. KITCHEN - NIGHT\n\nMara paces.\n\nMARA\nHello?\n\nINT. HALL <b>X</b> - DAY\n\nSteps.\n\nEXT. GARDEN - DAWN\n\nBirds.';
+    const CM_T = Date.now() - 2 * DAY_MS;
+    await setDb({ cm: { id: 'cm', title: 'Moon', content: CM_NOW, updatedAt: CM_T }, co: { id: 'co', title: 'Other', content: CM_NOW, updatedAt: CM_T } }, { currentScriptId: 'cm' });
+    const cmF = await openRealFrame(1200, 760);
+    const cmW = cmF.contentWindow, cmE = fid(cmF, 'editor');
+    await Store.addVersion(await idb(), { id: 'cmv', scriptId: 'cm', title: 'Moon', content: CM_WAS, updatedAt: CM_T - DAY_MS, takenAt: CM_T }, cmW.Versions, Date.now());
+    await Store.addVersion(await idb(), { id: 'cov', scriptId: 'co', title: 'Moon', content: CM_WAS, updatedAt: CM_T - DAY_MS, takenAt: CM_T }, cmW.Versions, Date.now());
+    const cmItems = () => Array.from(cmF.contentDocument.querySelectorAll('#versions-list .compare-item'));
+    await cmW.openVersions('cm');
+    fq(cmF, '#versions-list [data-id="cmv"] [data-action="compare"]').click();
+    await sleep(150);
+    check('compare: a version\'s Compare shows only the scenes that differ, and a summary, focus on the way back',
+      cmItems().map(x => x.querySelector('h3').textContent).join('|') === 'INT. KITCHEN - NIGHT|EXT. ROOF - DAY|EXT. GARDEN - DAWN' &&
+      /1 scene changed, 1 scene removed, 1 scene added\. 1 scene the same\./.test(fid(cmF, 'compareSummary').textContent) &&
+      cmF.contentDocument.activeElement.dataset.action === 'compare-back',
+      [cmItems().map(x => x.querySelector('h3').textContent), fid(cmF, 'compareSummary').textContent]);
+    const cmKitchen = cmItems()[0];
+    check('compare: a changed scene shows the line that went and the one that came, as del and ins, with signs',
+      cmKitchen.querySelector('del').textContent === '−Mara waits.' && cmKitchen.querySelector('ins').textContent === '+Mara paces.' &&
+      /Changed since the version/.test(cmKitchen.textContent), cmKitchen.textContent);
+    check('compare: a removed scene can be put back, an added one has nothing to take',
+      cmItems()[1].querySelector('[data-action="take-scene"]').textContent === 'Put back scene' && !cmItems()[2].querySelector('[data-action="take-scene"]'));
+    check('compare: headings are the writer\'s text, never markup', !fq(cmF, '#versions-list b') && /HALL <B>X<\/B>/.test(fid(cmF, 'versions-list').textContent) === false);
+    // Take the kitchen back
+    cmKitchen.querySelector('[data-action="take-scene"]').click();
+    await sleep(250); await cmW.whenSaved(); await sleep(100);
+    const cmAfter = CM_NOW.replace('Mara paces.', 'Mara waits.');
+    const cmKept = await Store.loadVersions(await idb(), 'cm');
+    check('compare: taking a changed scene puts the version\'s scene in the editor and in storage, and nothing else',
+      cmE.value === cmAfter && (await stored()).cm.content === cmAfter, cmE.value);
+    check('compare: the text from before is kept as a version first, saying what was taken',
+      cmKept.some(v => v.content === CM_NOW && /Before taking “INT. KITCHEN - NIGHT” from the version of/.test(v.note)), cmKept.map(v => v.note));
+    check('compare: the comparison redraws without that scene, and says what happened',
+      cmItems().map(x => x.querySelector('h3').textContent).join('|') === 'EXT. ROOF - DAY|EXT. GARDEN - DAWN' &&
+      /Took “INT. KITCHEN - NIGHT” from the version of/.test(fid(cmF, 'versions-status').textContent), fid(cmF, 'versions-status').textContent);
+    cmItems()[0].querySelector('[data-action="take-scene"]').click();
+    await sleep(250); await cmW.whenSaved(); await sleep(100);
+    check('compare: a removed scene goes back where it was, before the next scene still there',
+      cmE.value === CM_WAS.replace('Steps.', 'Steps.\n\nEXT. GARDEN - DAWN\n\nBirds.'), cmE.value);
+    cmE.focus();
+    cmF.contentDocument.execCommand('undo');
+    check('compare: in the open script Ctrl/Cmd+Z undoes a taken scene', cmE.value === cmAfter, cmE.value);
+    fq(cmF, '#versions-list [data-action="compare-back"]').click();
+    check('compare: the way back lists the versions again, focus on that version\'s Compare',
+      !!fq(cmF, '#versions-list .version-item') && cmF.contentDocument.activeElement.closest('[data-id]').dataset.id === 'cmv' &&
+      cmF.contentDocument.activeElement.dataset.action === 'compare');
+    // A script that is not open changes in the Library
+    cmW.closeModal(fid(cmF, 'versions-modal'));
+    await cmW.openVersions('co');
+    fq(cmF, '#versions-list [data-id="cov"] [data-action="compare"]').click();
+    await sleep(150);
+    // Meanwhile the script changes (another tab): the scene is taken from the text as it is now, not as it was
+    cmW.putScripts(Object.assign({}, cmW.getScripts(), { co: Object.assign({}, cmW.getScripts().co, { content: CM_NOW.replace('Title: Moon', 'Title: Moon, again') }) }));
+    cmItems()[0].querySelector('[data-action="take-scene"]').click();
+    await sleep(250); await cmW.whenSaved(); await sleep(100);
+    check('compare: in a script that is not open, the scene is taken in storage (keeping a change made since) and the open script is untouched',
+      (await stored()).co.content === cmAfter.replace('Title: Moon', 'Title: Moon, again') && cmE.value === cmAfter, [(await stored()).co.content, cmE.value]);
+    await cmW.openCompare({ id: 'same', scriptId: 'co', content: (await stored()).co.content, updatedAt: Date.now() });
+    check('compare: a version that is the same as now says so', cmItems().length === 0 && /is the same as the text now/.test(fid(cmF, 'compareSummary').textContent));
+    cmW.closeModal(fid(cmF, 'versions-modal'));
+    cmW.saveScript = () => {};
+    cmF.remove();
+    await setDb({}, {});
 
     // Phone: the Library fits a 375px screen and every action is reachable
     await seedLibrary();

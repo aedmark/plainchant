@@ -173,8 +173,9 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
 - [x] P4-14 Stats, scene mix: INT / EXT and DAY / NIGHT counts (and other times of day) read from the scene headings (done, D-029)
 - [x] P4-15 Stats, locations: each distinct location (the heading without INT./EXT. and the time of day), with how
   many scenes and pages it takes (done, D-029)
-- [ ] P4-16 Versions, if wanted: compare a version with the text now (what changed, scene by scene) before going
-  back, and take one scene from a version rather than the whole script
+- [x] P4-16 Versions, if wanted: compare a version with the text now (what changed, scene by scene) before going
+  back, and take one scene from a version rather than the whole script (done, D-044: a version's Compare in the
+  Versions window; Use the version's scene / Put back scene, undoable)
 - [ ] P4-17 Accessibility by a person: NVDA / Orca / TalkBack reading order and wording, Windows high-contrast
   mode, keyboard-only use for a whole session. The automated sweep (D-035) checks names and contrast only
 - [x] P4-18 Narration time: how long the script takes to read aloud (dialogue, or dialogue and action), at a reading

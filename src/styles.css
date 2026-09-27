@@ -820,6 +820,22 @@ code.inline, .help-table code.inline {
 .version-name { margin-top: 0.1rem; color: var(--accent-name); overflow-wrap: anywhere; }
 .version-note { margin-top: 0.1rem; font-size: 0.8125rem; color: var(--text-void-muted); }
 .versions-note { padding-inline: 0; }
+/* Comparing a version with the text now (P4-16): removed lines struck through, added ones underlined, each with its
+   sign, so the colour is never the only cue */
+.compare-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 0.75rem; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-void); }
+.compare-summary { margin: 0; flex: 1 1 16rem; font-size: 0.8125rem; color: var(--text-strong); }
+.compare-item { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-void); }
+.compare-heading { margin: 0; font: 600 0.875rem var(--font-screenplay); color: var(--text-strong); overflow-wrap: anywhere; }
+.compare-status { margin: 0.1rem 0 0.5rem; font-size: 0.75rem; color: var(--text-void-muted); }
+.compare-lines { margin: 0 0 0.5rem; padding: 0.4rem 0.6rem; border: 1px solid var(--border-void); background: var(--bg-sunken);
+    font: 0.8125rem/1.5 var(--font-screenplay); color: var(--text-void); overflow-wrap: anywhere; }
+.compare-line { display: block; white-space: pre-wrap; text-decoration: none; }
+.compare-sign { display: inline-block; width: 1.25em; }
+del.compare-line { color: var(--danger-soft-text); text-decoration: line-through; }
+ins.compare-line { color: var(--sh-section); text-decoration: underline; text-underline-offset: 0.2em; }
+.compare-line .compare-sign { text-decoration: none; }
+.compare-fold { color: var(--text-void-muted); font-family: var(--font-ui); font-size: 0.75rem; }
+.compare-more { margin: 0.25rem 0 0; font: 0.75rem var(--font-ui); color: var(--text-void-muted); }
 #versions-status:empty { display: none; }
 #versions-status { padding: 0.6rem 1rem; border-top: 1px solid var(--border-void); background: var(--bg-raised); font-size: 0.8125rem; color: var(--btn-text); }
 .library-note { margin: 0; padding: 0.75rem 1rem; font-size: 0.8125rem; line-height: 1.5; color: var(--text-void-muted); }

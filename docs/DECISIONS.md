@@ -798,6 +798,26 @@ about 45 (headless Chromium in the development container). Budget, in the e2e su
 under 60 ms (median of nine), with its correctness checked exactly (a random mix of edits must leave the preview
 identical to a full redraw) rather than by timing.
 
+## D-044 Comparing a version scene by scene, and taking one scene back  (2026-09-27, status: accepted)
+**Context:** P4-16: before going back to a version, see what changed; take one scene rather than the whole script.
+**Decision:**
+1. **Parts:** a script is its opening (the title page and anything before the first scene) and then one part per
+   scene, heading to heading. Parts that differ only in trailing blank lines are the same.
+2. **Matching:** scenes pair up by heading (case, spaces and scene numbers aside) with a longest common subsequence,
+   so a heading used several times pairs up in order. Between two matched scenes, those left over pair up in order as
+   changed (an edited heading); the rest were removed or added. Moving a scene shows as removed in one place and
+   added in another: honest, and taking it back works either way.
+3. **Showing:** only the parts that differ, each with its lines as they went (`del`, struck through, a minus sign)
+   and came (`ins`, underlined, a plus sign), two unchanged lines either side of a change and the rest folded into
+   "… 8 lines the same". Colour is never the only cue. Parts past 500 by 500 lines compare only their matching ends.
+4. **Taking back:** a changed scene (or the opening) is replaced by the version's; a removed one is put back before
+   the next scene that is still there, or at the end; blank lines between scenes stay right. An added scene has
+   nothing to take. Taking works like going back (D-034): the text there now is kept as a version first ("Before
+   taking “INT. KITCHEN - NIGHT” from the version of ..."), and in the open script Ctrl/Cmd+Z undoes it. `goBackTo`
+   and taking a scene share `replaceScriptText`.
+5. **Where:** in the Versions window itself (a version's **Compare**, and **All versions** to return), not a new
+   window. The rules are a pure module, `src/compare.js`; the view is `compare-ui.js`.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

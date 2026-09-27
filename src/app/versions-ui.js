@@ -1,5 +1,5 @@
 /*
- * Plainchant app script: versions-ui: a script's kept versions (P4-05): go back to one, copy one, name one, delete one
+ * Plainchant app script: versions-ui: a script's kept versions (P4-05): go back to one, copy one, name one, delete one (comparing one is compare-ui.js)
  *
  * One of the classic scripts loaded by index.html, in order (see CLAUDE.md, "App scripts"). They share the
  * page's global scope, so top-level functions and consts here are visible to the files after it, and anything
@@ -51,6 +51,8 @@ function versionRow(v, script, now) {
         h('div', { class: 'script-meta', text: words.toLocaleString() + (words === 1 ? ' word' : ' words') + ' · ' + change +
             (v.title && v.title !== script.title ? ' · titled “' + v.title + '”' : '') }),
         h('div', { class: 'script-actions' }, [
+            h('button', { type: 'button', class: 'mini', 'data-action': 'compare', 'aria-label': 'Compare the version of ' + when + ' with the text now, scene by scene',
+                text: 'Compare' }),
             h('button', { type: 'button', class: 'mini', 'data-action': 'go-back', 'aria-label': 'Go back to the version of ' + when, text: 'Go back' }),
             h('button', { type: 'button', class: 'mini', 'data-action': 'copy-version', 'aria-label': 'Copy the version of ' + when + ' as a new script', text: 'Copy' }),
             h('button', { type: 'button', class: 'mini danger' + (armed ? ' armed' : ''), 'data-action': 'delete-version',
@@ -96,32 +98,41 @@ async function openVersions(id) {
     openModal(versionsModal, { focus: '#versionName' });
 }
 
-// The script's text becomes the version's; the text there now is kept as a version first (unless one already has
-// it). The open script changes through applyEdit, so Ctrl/Cmd+Z undoes it too.
-async function goBackTo(v) {
-    const id = v.scriptId;
+// The script's text becomes `text`; the text there now is kept as a version first (unless one already has it), with
+// `note`. The open script changes through applyEdit, so Ctrl/Cmd+Z undoes it too. False if there was nothing to do.
+// Global on purpose: compare-ui.js takes a scene back with it.
+async function replaceScriptText(id, text, note) {
     const isOpen = id === currentScriptId;
     if (isOpen) flushSave();
     await whenSaved();
     const script = getScripts()[id];
-    if (!script || script.deletedAt) return;
-    const now = Date.now(), when = versionWhen(v.updatedAt, now);
-    if (script.content === v.content) { versionsSay('That version is the same as the text now.'); return; }
+    if (!script || script.deletedAt || script.content === text) return false;
+    const now = Date.now();
     const kept = await Store.loadVersions(scriptDb, id);
     if (!kept.some((k) => k.content === script.content)) {
-        await Store.addVersion(scriptDb, Versions.make(script, newId(), now, { note: 'Before going back to ' + when }), Versions, now);
+        await Store.addVersion(scriptDb, Versions.make(script, newId(), now, { note: note }), Versions, now);
     }
     if (isOpen) {
-        applyEdit(Editing.diffEdit(editor.value, v.content, editor.selectionStart, editor.selectionEnd), { keepFocus: true });
+        applyEdit(Editing.diffEdit(editor.value, text, editor.selectionStart, editor.selectionEnd), { keepFocus: true });
         flushSave();
     } else {
         putScripts(Object.assign({}, getScripts(), {
-            [id]: Object.assign({}, script, { content: v.content, title: Fountain.extractTitle(v.content), updatedAt: now })
+            [id]: Object.assign({}, script, { content: text, title: Fountain.extractTitle(text), updatedAt: now })
         }));
     }
     await whenSaved();
-    await reloadVersions();
     renderLibrary();
+    return true;
+}
+
+async function goBackTo(v) {
+    const when = versionWhen(v.updatedAt, Date.now());
+    if (!await replaceScriptText(v.scriptId, v.content, 'Before going back to ' + when)) {
+        const script = getScripts()[v.scriptId];
+        if (script && script.content === v.content) versionsSay('That version is the same as the text now.');
+        return;
+    }
+    await reloadVersions();
     versionsSay('Back to the version of ' + when + '. The text you had is kept as a version too.');
 }
 
@@ -176,7 +187,8 @@ versionsList.addEventListener('click', (e) => {
     const row = button && button.closest('.version-item');
     const v = row && versionsShown.find((x) => x.id === row.dataset.id);
     if (!v) return;
-    if (button.dataset.action === 'go-back') goBackTo(v);
+    if (button.dataset.action === 'compare') openCompare(v); // compare-ui.js
+    else if (button.dataset.action === 'go-back') goBackTo(v);
     else if (button.dataset.action === 'copy-version') copyVersion(v);
     else if (button.dataset.action === 'delete-version') deleteVersion(v);
 });
