@@ -9,22 +9,26 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-27, session 16: adventure-game replies in the retro theme (P4-20, D-042). Before it, session 15
-added the retro theme (P4-19, D-041), and session 14 narration time and video chapters (P4-18, P3-13, D-038), a
-narration example (P4-21) and the browser targets (Firefox and Chromium; Safari, iPhone and iPad are roadmap Phase 7,
-D-039, D-040). Everything up to P4-19 is in `master`; P4-20 is on the working branch,
-`claude/compassionate-clarke-mxwpzz`, until the owner merges it. Tests: `npm test` 306, `bash test/run-headless.sh`
-294 unit + 633 e2e, about 50 s._
+_Last updated: 2026-09-27, session 17: typing on long scripts made fast (P4-01, D-043). Before it, session 16 added
+adventure-game replies (P4-20, D-042), session 15 the retro theme (P4-19, D-041), and session 14 narration time and
+video chapters (P4-18, P3-13, D-038), a narration example (P4-21) and the browser targets (Firefox and Chromium;
+Safari, iPhone and iPad are roadmap Phase 7, D-039, D-040). Everything up to P4-20 is in `master`; P4-01 is on the
+working branch, `claude/compassionate-clarke-mxwpzz`, until the owner merges it. Tests: `npm test` 307,
+`bash test/run-headless.sh` 295 unit + 642 e2e, about 55 s._
 
 **Where things stand, in one paragraph:** Phases 1 and 2 are done apart from real-device work (P2-09, P2-13) and two
 optional ideas (P2-20 hints, P2-22 desktop click-to-jump). Phase 3's output is done (Fountain export, print / save as
-PDF); what is left there is optional (P3-08 to P3-12). Phase 4 is done apart from P4-01 (incremental render), P4-16
+PDF); what is left there is optional (P3-08 to P3-12). Phase 4 is done apart from P4-16
 (comparing versions), P4-17 (a screen-reader pass by a person) and P4-22 (a thank-you in Help, waiting on the
 creator's permission). Phase 5 (real files, sync) is undecided and Phase 6
 (brand) is the owner's. The biggest gap is not code: almost everything from sessions 13 and 14 has only run in headless
 Chromium. The owner's hands-on pass (Next steps 1) matters more than the next feature.
 
 **What works**
+- **Fast typing on long scripts** (P4-01, D-043). The preview is patched block by block instead of rebuilt on every
+  keystroke (`Fountain.blocks`, `drawPreview` in core.js), and on a script of more than about 18 pages it follows
+  just after the typed text is painted. Typing a character in a 162-page script went from about 116 ms to about 30
+  (Enter: about 150 to 45) in headless Chromium here; most of what is left is the browser laying out the textarea.
 - **Adventure-game replies** (P4-20, D-042; `src/adventure.js`, `src/app/adventure-ui.js`). In the retro theme only,
   pressing Enter on `look`, `inventory`, `score`, `xyzzy`, `plugh`, `get all`, `save game` or `restore game` typed
   alone in its own paragraph answers in the notice at the foot of the screen: LOOK names the scene the caret is in
@@ -189,6 +193,12 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 - Scroll sync no longer divides by zero.
 
 **Verified**
+- **Incremental preview (P4-01), session 17:** `npm test` 307 (`Fountain.blocks`); e2e 642 (section 16t: 40 random
+  edits of every kind on a short and a long script, the preview checked identical to a full redraw every five;
+  untouched blocks are the same elements; on a long script the keystroke does not wait and the preview follows; a
+  render that is not typing draws at once and drops the waiting draw; a preview emptied by something else is redrawn
+  whole; the budget, under 60 ms on 120 pages). Mutations: 9 of 9 fail a test (one, redrawing a single extra block,
+  survived at first: the check now also requires the block just above the edit to be kept).
 - **Adventure replies (P4-20), session 16:** `npm test` 306 (5 new in `test/adventure.test.js`); e2e 633 (section 16s:
   LOOK in retro, the text identical to the dark theme's, nothing in dark, INVENTORY, an ordinary line, inside a speech,
   a character called LOOK, a line made a character, Enter mid-line, the facts for the caret's scene). Mutations: 7 of
@@ -506,7 +516,7 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 
 ## Next steps (in order)
 
-0. **Merge the branch** for the adventure replies (P4-20; the owner does this, see the git gotcha).
+0. **Merge the branch** for fast typing on long scripts (P4-01; the owner does this, see the git gotcha).
 1. **A hands-on pass by the owner of what sessions 13 and 14 built.** Firefox is done: the owner reports it works well
    (session 14). Desktop Safari is not a target (D-039). Left, each a few minutes:
    - **After a day of writing: Library > Versions** on a real script (the database upgraded to version 2 on first
@@ -524,8 +534,6 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 3. **Then the next feature, the owner's pick.** Candidates, roughly by value:
    - **P5-01** open and save real `.fountain` files on disk (File System Access API; Chromium only, so it needs a
      fallback story): the biggest step towards "text is the source of truth".
-   - **P4-01** incremental render: each keystroke now parses the whole script for the preview and the colour layer,
-     and the stats half a second later. Measure on a 120-page script on the phone before optimising.
    - **P4-16** compare a version with the text now, scene by scene; take one scene back.
    - **P3-11** a real `.pdf` download (only if print windows prove awkward); **P3-12** a page view while writing.
    - **P4-22** a thank-you in Help to the creator, once they agree to their name being used.
@@ -554,6 +562,25 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 ## Session log
 
 Newest first. Copy the template for each new session.
+
+### Session 17: 2026-09-27: Fast typing on long scripts (P4-01)
+
+**Goal:** The owner merged P4-20 and asked for P4-01 ("so I stop hearing about it").
+**Done:** P4-01.
+**Changed:** `Fountain.blocks` (and `toHTML` built from it); `drawPreview` and `render(typed)` in core.js; typing.js
+calls `render(true)`; e2e section 16t; CLAUDE.md says only `drawPreview` writes to the preview.
+**Decisions:** D-043.
+**Problems / surprises:**
+- Measuring first changed the plan: parsing (2-9 ms) was never the problem; laying out a rebuilt 162-page preview
+  (about 90 ms) was, triggered when the colour layer read the editor's geometry. So no incremental parser.
+- The preview in `index.html` starts with a comment and whitespace; a full rebuild used to remove them, patching
+  did not, so the first draw now empties it.
+- `innerHTML` read back is re-serialised, so the e2e compares against a full redraw serialised the same way.
+- The "redraw stays quick" timing check failed once more under load (39 ms); measured on its own it went from 13-24
+  ms before this change to 11-12 after.
+**Left undone:** not measured on a real phone or in Firefox; the stats (half a second after typing stops) still
+paginate the whole script, which is fine as long as it stays off the keystroke.
+**Next session should start with:** merge; then the owner's pick (P5-01, P4-16...).
 
 ### Session 16: 2026-09-27: Adventure-game replies (P4-20)
 

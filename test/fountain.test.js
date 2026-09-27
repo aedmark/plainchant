@@ -450,3 +450,14 @@ test('toHTML: every line of a speech says which source line it is (for tapping t
     const lines = (html.match(/data-line="(\d+)"/g) || []).map((m) => Number(m.replace(/\D/g, '')));
     assert.deepEqual(lines, lines.slice().sort((a, b) => a - b), 'in reading order, so the preview can find the caret\'s line');
 });
+
+test('blocks: the preview one block at a time, each with the line it starts on; together they are toHTML', () => {
+    const text = 'Title: Blocks\n\nINT. HALL - DAY #3#\n\nShe waits.\n\nMARA\n(softly)\nHi.\n\nDEV ^\nHey.\n\n> THE END <\n\n===';
+    const tokens = Fountain.parse(text);
+    const b = Fountain.blocks(tokens);
+    assert.equal(b.map((x) => x.html).join(''), Fountain.toHTML(tokens));
+    assert.deepEqual(b.map((x) => x.line), [0, 2, 4, 6, 13, 15], 'the dual-dialogue pair is one block, at its first line');
+    assert.ok(b[3].html.indexOf('script-dual') !== -1 && b[3].html.indexOf('MARA') !== -1 && b[3].html.indexOf('DEV') !== -1);
+    b.forEach((x) => assert.ok(/^<(div|hr)\b/.test(x.html), 'one element: ' + x.html.slice(0, 30)));
+    assert.deepEqual(Fountain.blocks([]), []);
+});

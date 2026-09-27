@@ -774,6 +774,30 @@ Orca (the owner is on Linux) and TalkBack; VoiceOver waits for P7-02.
    real feature (Export, Versions, autosave). The rules are a pure module, `src/adventure.js`.
 5. **No name:** the thank-you to the creator is left out until they agree to it (P4-22).
 
+## D-043 The preview drawn block by block, and after the paint on long scripts  (2026-09-27, status: accepted)
+**Context:** P4-01. Measured before changing anything, typing one character in a 162-page script in headless
+Chromium took about 116 ms (median; up to 475 ms). Parsing, building the HTML and the colour layer were about 20 ms
+of it: the rest was the browser laying out the whole preview again, because `render()` replaced it with
+`innerHTML` on every keystroke. With the preview left alone a keystroke took 24 ms.
+**Decision:**
+1. **Block by block:** `Fountain.blocks(tokens)` gives the preview as one HTML string per top-level element (a dual
+   pair is one), with its first source line; `toHTML` is their join. `drawPreview` (core.js) keeps the blocks that
+   did not change at either end and replaces only those between, as the colour layer already does with lines (D-031).
+2. **Line numbers do not break the match:** a block is compared with its `data-line` numbers counted from its own
+   first line, so after an Enter the blocks below still match; their `data-line` attributes are moved on in place.
+   (User text cannot fake `data-line="`: quotes are escaped.)
+3. **After the paint, on long scripts only:** a keystroke (`render(true)`, from typing.js) on a script of more than 400
+   tokens (about 18 pages) leaves the preview for just after the browser has painted the typed text (a frame, then a
+   task; a 100 ms timer too, for a tab without frames), one redraw for a burst of keys. Everything else (short
+   scripts, opening a script, the Library, the examples) draws at once, and drops a draw still waiting, so what reads
+   the preview right after (scrolling to the caret) sees it current. The colour layer, which shows the typed text,
+   is always drawn at once.
+4. **No incremental parser:** parsing all 162 pages is 2 to 9 ms; not worth the complexity.
+**Consequences:** on 162 pages a typed character went from about 116 ms to about 30, an Enter from about 150 to
+about 45 (headless Chromium in the development container). Budget, in the e2e suite: a keystroke on a 120-page script
+under 60 ms (median of nine), with its correctness checked exactly (a random mix of edits must leave the preview
+identical to a full redraw) rather than by timing.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

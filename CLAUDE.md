@@ -36,7 +36,7 @@ Sessions are short-lived and context resets between them, so the repo carries th
 | `icons/`, `manifest.webmanifest`, `sw.js` | The placeholder icon (SVG + PNG sizes), the web app manifest and the service worker: offline and installable when served over http(s). `sw.js`'s file list must match what the page loads (`test/structure.test.js` checks) (D-026) |
 | `src/styles.css` | All the CSS. Desktop-first; the mobile block mirrors `MOBILE_QUERY` / `FIT_QUERY` in `src/app/layout.js` |
 | `src/app/*.js` | The app itself, one file per concern, loaded in order by `index.html` (see "App scripts" below, D-014) |
-| `src/fountain.js` | Fountain parser + HTML renderer, and the editor's line kinds (`classifyLines`, `shade`). Pure, UMD, no DOM (D-003) |
+| `src/fountain.js` | Fountain parser + HTML renderer (`toHTML`, and `blocks` for the preview's block-by-block redraw), and the editor's line kinds (`classifyLines`, `shade`). Pure, UMD, no DOM (D-003) |
 | `src/editing.js` | Typing helpers (Tab, smart Enter, auto-uppercase, guessing a name on Enter): text + caret in, edit out. Pure, UMD (D-010, D-036) |
 | `src/library.js` | Library data rules (search, soft delete, restore, purge, duplicate, rename): scripts object in, new object out. Pure, UMD (D-013) |
 | `src/importing.js` | Import rules: which files to accept, decoding (UTF-8/16, Windows-1252), line endings. Pure, UMD (D-016) |
@@ -61,7 +61,7 @@ use what an earlier file already defined. Code inside functions runs later and c
 
 | File | Owns |
 | --- | --- |
-| `core.js` | `editor` / `renderTarget` / `page` references, `newId`, `currentScriptId`, `autoSaveTimer`, `showNotice`, `render()` (one parse for the preview and the colour hints) |
+| `core.js` | `editor` / `renderTarget` / `page` references, `newId`, `currentScriptId`, `autoSaveTimer`, `showNotice`, `render()` (one parse for the preview and the colour hints; `render(true)` for a keystroke lets a long script's preview follow after the paint) and `drawPreview` (the preview patched block by block, D-043) |
 | `layout.js` | One pane at a time, the phone menu, keyboard-safe sizing (`fitToViewport`), the caret kept clear of the keyboard (`keepCaretClear`, D-030), a tap on the one-pane preview going to that line (D-033), scroll sync, measuring where text falls in the editor (`textTopIn` / `textTop`, the cached `textAbovePx`) |
 | `persistence.js` | The in-memory library, IndexedDB writes and the emergency buffer, the no-storage notice, restoring the last script, New, the trash purge, save on hide (D-019) |
 | `dialogs.js` | `openModal` / `closeModal`: the one accessible helper for every modal window |
@@ -102,6 +102,9 @@ Keep each file's own listeners in that file. Functions the e2e tests call (`save
   has no name (D-035).
 - A new writer's choice goes in Settings (`settings.js`, `SETTING_DEFAULTS`), and a pure rule it changes takes it as
   an option (as `Editing.enter` / `autoCase` do), so the rule stays testable in Node.
+- Nothing writes to the preview (`#page`) but `drawPreview` (core.js): it keeps its own record of the blocks drawn, and
+  starts again from scratch if the element count stops matching. Read the preview only after a `render()` that is not
+  `render(true)`, or after the next frame (D-043).
 - The editor's line height must stay a length (`1.6em`), never unitless, and anything copying the editor's text must use
   `copyEditorType` (layout.js): the colour hints only line up if the copies lay out exactly like the textarea (D-031).
 - Scripts live in IndexedDB (database `plainchant`, stores `scripts`, `meta` and `versions`, D-034). localStorage holds only

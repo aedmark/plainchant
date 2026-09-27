@@ -136,7 +136,9 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
 
 ## Phase 4: Scale and polish
 
-- [ ] P4-01 Incremental render: only re-render changed blocks; debounce; feature-length (120 page) performance budget
+- [x] P4-01 Incremental render: only re-render changed blocks; debounce; feature-length (120 page) performance budget
+  (done, D-043: the preview patched block by block; on long scripts it follows just after the paint; a typed
+  character on 162 pages went from about 116 ms to about 30; budget: under 60 ms on 120 pages, in the e2e suite)
 - [x] P4-02 Offline: self-host fonts, service worker, installable PWA (D-026): fonts in `fonts/`, `sw.js` and
   `manifest.webmanifest` when served over http(s), placeholder icons in `icons/`
 - [x] P4-03 Outline navigator (sections, synopses, scenes; click to jump) (D-024): an Outline window from the

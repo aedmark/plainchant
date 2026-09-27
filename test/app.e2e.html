@@ -2410,6 +2410,83 @@ setTimeout(() => {
       (await avRun('retro', AV_BEFORE, 'look around', null, 7)).said === '');
     W().localStorage.removeItem('plainchant_settings');
 
+    // 16t. The preview drawn block by block (P4-01): after any edit it is exactly what a full redraw gives, the blocks
+    // an edit did not touch are the same elements (not rebuilt), and on a long script a keystroke does not wait for it
+    W().localStorage.removeItem('plainchant_settings');
+    const irF = await openFrame(1200, 800);
+    const irW = irF.contentWindow, irE = fid(irF, 'editor'), irPage = fid(irF, 'page');
+    const irFull = () => { // a full redraw, serialised the way the browser serialises the preview
+      const d = irF.contentDocument.createElement('div');
+      d.innerHTML = irW.Fountain.toHTML(irW.Fountain.parse(irE.value || irE.getAttribute('placeholder')));
+      return d.innerHTML;
+    };
+    const irType = (at, text, del) => {
+      irE.focus();
+      irE.setSelectionRange(at, at + (del || 0));
+      irF.contentDocument.execCommand(text ? 'insertText' : 'delete', false, text);
+    };
+    const irSettle = () => new Promise(r => setTimeout(r, 150)); // the deferred draw: a frame, or 100 ms at most
+    let irSeed = 7;
+    const irRand = (n) => { irSeed = (irSeed * 1103515245 + 12345) % 2147483648; return irSeed % n; };
+    const IR_BITS = ['x', '\n', '\n\n', 'MARA\n', 'INT. HALL - DAY\n\n', ' ^', '(beat)\n', '# Part\n\n', '= note\n\n', '> END <\n\n', '[[n]]', '/*', '*/', ''];
+    const irOne = 'INT. ROOM - DAY\n\nShe crosses to the window.\n\nMARA\nI have been here all week.\n\nDEV ^\n(quietly)\nThen change it.\n\n';
+    for (const [label, base] of [['a short script', 'Title: Short\n\n' + irOne.repeat(3)], ['a long script (the preview waits)', 'Title: Long\n\n' + irOne.repeat(200)]]) {
+      setText(irF, base);
+      await irSettle();
+      const bad = [];
+      for (let i = 0; i < 40; i++) {
+        const bit = IR_BITS[irRand(IR_BITS.length)];
+        const at = irRand(irE.value.length + 1);
+        irType(at, bit, bit ? 0 : Math.min(irRand(30), irE.value.length - at));
+        if (i % 5 === 4 || i === 39) { await irSettle(); if (irPage.innerHTML !== irFull()) bad.push(i); }
+      }
+      check('incremental preview, ' + label + ': after every kind of edit it is exactly a full redraw (line numbers too)', bad.length === 0, bad);
+    }
+    // Typing inside one block rebuilds that block only
+    setText(irF, 'Title: Long\n\n' + irOne.repeat(200));
+    await irSettle();
+    const irFirst = irPage.children[3], irLast = irPage.lastElementChild, irCount = irPage.children.length;
+    const irAt = irE.value.indexOf('She crosses', irE.value.length / 2);
+    const irEdited = Array.from(irPage.children).findIndex(el => Number(el.dataset.line) === irE.value.slice(0, irAt).split('\n').length - 1);
+    const irAbove = irPage.children[irEdited - 1];
+    irType(irAt, 'Slowly, s');
+    irType(irE.value.indexOf('She crosses', irE.value.length / 2), '\n\n');
+    await irSettle();
+    check('incremental preview: blocks away from the edit, even the one just above it, are the same elements (only their line numbers move)',
+      irEdited > 3 && irPage.children[3] === irFirst && irPage.children[irEdited - 1] === irAbove && irPage.lastElementChild === irLast &&
+      irPage.children.length === irCount + 1 && irPage.innerHTML === irFull(),
+      [irEdited, irPage.children[3] === irFirst, irPage.children[irEdited - 1] === irAbove, irPage.lastElementChild === irLast, irPage.children.length - irCount]);
+    // On a long script a keystroke leaves the preview for just after the paint; anything but typing draws at once
+    const irBefore = irPage.innerHTML;
+    irType(irE.value.length, 'z');
+    check('incremental preview: on a long script the keystroke does not wait for the preview', irPage.innerHTML === irBefore);
+    await irSettle();
+    check('incremental preview: ...which follows a moment later', irPage.innerHTML === irFull() && irPage.innerHTML !== irBefore);
+    irType(irE.value.length, 'y');
+    irE.setRangeText('INT. NEW PLACE - NIGHT\n\n', 0, 0); // changed some other way (a script opened), then drawn at once
+    irW.render();
+    check('incremental preview: a render that is not typing draws at once', irPage.innerHTML === irFull());
+    await irSettle();
+    check('incremental preview: ...and the draw still waiting from the keystroke is dropped, not drawn over it', irPage.innerHTML === irFull());
+    irPage.textContent = '';
+    irW.render();
+    check('incremental preview: if something else emptied the preview, it is drawn whole again', irPage.innerHTML === irFull());
+    // The budget: a keystroke on a feature-length script (about 120 pages), everything it runs plus the layout it
+    // causes. About 25 ms in headless Chromium; the budget leaves room for a slow machine.
+    setText(irF, 'Title: Feature\n\n' + irOne.repeat(560));
+    await irSettle();
+    const irTimes = [];
+    for (let i = 0; i < 9; i++) {
+      const t0 = performance.now();
+      irType(Math.floor(irE.value.length / 2) + i * 41, i % 3 ? 'k' : '\n');
+      void irF.contentDocument.body.offsetHeight;
+      irTimes.push(performance.now() - t0);
+      await irSettle();
+    }
+    irTimes.sort((a, b) => a - b);
+    check('incremental preview: a keystroke on a 120-page script takes under 60 ms (median of nine)', irTimes[4] < 60, irTimes.map(Math.round));
+    irF.remove();
+
     // Phone: the Library fits a 375px screen and every action is reachable
     await seedLibrary();
     await reloadFrame(m);

@@ -5,6 +5,7 @@
  *
  *   Fountain.parse(text)      -> tokens
  *   Fountain.toHTML(tokens)   -> HTML string (all user text escaped)
+ *   Fountain.blocks(tokens)   -> [{ html, line }]: the same HTML, one top-level element per block, and its source line
  *   Fountain.extractTitle(t)  -> best-effort script title, capped for list labels (Fountain.fullTitle: uncapped)
  *   Fountain.setTitle(t, s)   -> the text with its Title: line set to s (creates the title page if there is none)
  *   Fountain.fileName(t, ext) -> a safe file name for exporting t, e.g. "big-fish.fountain"
@@ -306,36 +307,44 @@
         return html + '</div>';
     }
 
-    function toHTML(tokens) {
-        let html = '';
+    // The preview, one block per top-level element (a dual-dialogue pair is one block), each with the source line it
+    // starts on: the app redraws only the blocks that changed (P4-01). toHTML is all of them.
+    function blocks(tokens) {
+        const out = [];
         for (let i = 0; i < tokens.length; i++) {
             const t = tokens[i];
+            let html = '';
             switch (t.type) {
-                case 'title_page': html += renderTitlePage(t); break;
+                case 'title_page': html = renderTitlePage(t); break;
                 case 'scene':
-                    html += '<div ' + attrs(t, 'script-scene-heading') + '>' + inline(t.text) +
+                    html = '<div ' + attrs(t, 'script-scene-heading') + '>' + inline(t.text) +
                         (t.number ? '<span class="script-scene-num">' + escapeHTML(t.number) + '</span>' : '') + '</div>';
                     break;
-                case 'action': html += '<div ' + attrs(t, 'script-action') + '>' + inline(t.text) + '</div>'; break;
+                case 'action': html = '<div ' + attrs(t, 'script-action') + '>' + inline(t.text) + '</div>'; break;
                 case 'dialogue':
                     if (t.dual === 'left' && tokens[i + 1] && tokens[i + 1].dual === 'right') {
-                        html += '<div class="script-dual">' + renderDialogue(t) + renderDialogue(tokens[i + 1]) + '</div>';
+                        html = '<div class="script-dual">' + renderDialogue(t) + renderDialogue(tokens[i + 1]) + '</div>';
                         i++;
                     } else {
-                        html += renderDialogue(t);
+                        html = renderDialogue(t);
                     }
                     break;
-                case 'transition': html += '<div ' + attrs(t, 'script-transition') + '>' + inline(t.text) + '</div>'; break;
-                case 'centered': html += '<div ' + attrs(t, 'script-centered') + '>' + inline(t.text) + '</div>'; break;
-                case 'lyrics': html += '<div ' + attrs(t, 'script-lyrics') + '>' + inline(t.text) + '</div>'; break;
+                case 'transition': html = '<div ' + attrs(t, 'script-transition') + '>' + inline(t.text) + '</div>'; break;
+                case 'centered': html = '<div ' + attrs(t, 'script-centered') + '>' + inline(t.text) + '</div>'; break;
+                case 'lyrics': html = '<div ' + attrs(t, 'script-lyrics') + '>' + inline(t.text) + '</div>'; break;
                 case 'section':
-                    html += '<div ' + attrs(t, 'script-section depth-' + Math.min(t.depth, 6)) + '>' + inline(t.text) + '</div>';
+                    html = '<div ' + attrs(t, 'script-section depth-' + Math.min(t.depth, 6)) + '>' + inline(t.text) + '</div>';
                     break;
-                case 'synopsis': html += '<div ' + attrs(t, 'script-synopsis') + '>' + inline(t.text) + '</div>'; break;
-                case 'page_break': html += '<hr ' + attrs(t, 'script-page-break') + '>'; break;
+                case 'synopsis': html = '<div ' + attrs(t, 'script-synopsis') + '>' + inline(t.text) + '</div>'; break;
+                case 'page_break': html = '<hr ' + attrs(t, 'script-page-break') + '>'; break;
             }
+            if (html) out.push({ html: html, line: t.line });
         }
-        return html;
+        return out;
+    }
+
+    function toHTML(tokens) {
+        return blocks(tokens).map(function (b) { return b.html; }).join('');
     }
 
     /**
@@ -466,7 +475,7 @@
     }
 
     return {
-        parse: parse, toHTML: toHTML, extractTitle: extractTitle, fullTitle: fullTitle, setTitle: setTitle,
+        parse: parse, toHTML: toHTML, blocks: blocks, extractTitle: extractTitle, fullTitle: fullTitle, setTitle: setTitle,
         fileName: fileName, classifyLines: classifyLines, shade: shade, escapeHTML: escapeHTML, inline: inline, runs: runs
     };
 });

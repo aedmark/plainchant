@@ -193,7 +193,7 @@ editor.addEventListener('input', (e) => {
         const edit = Editing.autoCase(editor.value, editor.selectionStart, elementMode, { guess: settings.capitals });
         if (edit) applyEdit(edit);
     }
-    render();
+    render(true); // typed: on a long script the preview follows a moment later (core.js)
     scheduleSync();
 
     // Quietly auto-save after 2 seconds of typing inactivity
