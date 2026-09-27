@@ -76,6 +76,7 @@ Goal: the "just type" promise. The editor helps; it never interrupts.
   P7-02 (D-040). Serve the folder over LAN with `python -m http.server`. The user reported (2026-09-20) that
   everything was functional on their tablet and other devices, before the typing helpers' soft-keyboard details or
   the tour/help were looked at in particular; specifics (which devices, Split View, Pencil) were not recorded.
+  2026-09-27: the owner reports import and export work on Android (and real files in Chrome).
 - [x] P2-12 Tablet support (D-009): fix the preview being clipped below ~1110px wide, one pane below 1024px,
   inline actions from 700px, readable editor column, screenplay re-proportions by column width (container queries),
   touch-device viewport fitting. Verified at 640-1366px in a headless browser; real iPads are P2-09.
@@ -102,8 +103,9 @@ Goal: the "just type" promise. The editor helps; it never interrupts.
 - [x] P2-21 Autocomplete follow-ups, if wanted after the writer has tried P2-04: suggest the time of day after
   `INT. PLACE - ` (DAY, NIGHT, plus any already used); offer names on an empty cue line after Character is chosen;
   announce suggestions to screen readers. (D-037: all three; names on an empty line are for tapping, Tab keeps cycling)
-- [ ] P2-22 Desktop: click a line in the preview to put the editor's caret there (P2-10 is one-pane only, so selecting
+- [-] P2-22 Desktop: click a line in the preview to put the editor's caret there (P2-10 is one-pane only, so selecting
   preview text to copy is never disturbed; a desktop version needs a gesture that cannot be mistaken for selecting)
+  (dropped for now, D-050: the owner finds the app already does what they need here)
 
 ## Phase 3: Output and library
 
@@ -123,14 +125,18 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
   and dual dialogue (P3-06); nothing prints until P3-03
 - [x] P3-05 Title page rendering as its own page (unnumbered, not counted; spec §6)
 - [x] P3-06 Dual dialogue in print layout (side by side, never split)
-- [ ] P3-11 Direct `.pdf` download: a hand-written PDF writer (`src/pdf.js`) with PDF's built-in Courier fonts, fed by
-  the same page layout (spec §8b). Only if the owner chooses it (spec §10.2)
+- [-] P3-11 Direct `.pdf` download: a hand-written PDF writer (`src/pdf.js`) with PDF's built-in Courier fonts, fed by
+  the same page layout (spec §8b). Only if the owner chooses it (spec §10.2) (dropped, D-050: printing through the
+  browser to PDF is enough)
 - [ ] P3-12 Page view in the preview: the paginated sheets, page numbers and breaks while writing (spec §8c). Optional
 - [x] P3-07 Library management: search, rename (rewrites the script's own `Title:` line), duplicate, delete with
   Undo and a 30-day Recently deleted, restore, delete forever (two clicks) (D-013)
 - [ ] P3-09 Library extras, if wanted: sort options (name, date created), multi-select, export a single script
   from its row, and a storage-usage indicator (`navigator.storage.estimate()`; Recently deleted holds space)
-- [ ] P3-08 Final Draft `.fdx` export (stretch)
+- [x] P3-08 Final Draft `.fdx` export (stretch) (done, D-049: Export > Download .fdx; every printed element, scene
+  numbers, dual dialogue, page breaks, emphasis and the title page)
+- [ ] P3-14 Final Draft `.fdx` import, if wanted: read a .fdx into a new script (the reverse of P3-08's mapping; today
+  Import refuses .fdx and says to export it as Fountain)
 - [x] P3-13 Video chapters: YouTube timestamps from the script's top-level sections, timed by narration (P4-18),
   with Copy, in the Export dialog; says which of YouTube's rules a list breaks (at least three, ten seconds each) (D-038)
 
@@ -239,7 +245,7 @@ areas) stays; nothing new is built or checked for Safari until this phase is pic
   off for that visit.
 - Name guessing (D-036) takes a short Title Case line without a full stop ("Silence") for a new character. Undo takes
   it back; Settings switches guessing off.
-- Printing goes through the browser's print window (D-021); there is no direct `.pdf` download yet (P3-11).
+- Printing goes through the browser's print window (D-021); a direct `.pdf` download was dropped (P3-11, D-050).
 - The preview is always white paper, whatever the theme (D-035).
 - Safari (Mac, iPhone, iPad) is not supported or tested (D-039, D-040): it may work, but nothing is fixed for it until
   Phase 7.

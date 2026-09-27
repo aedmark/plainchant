@@ -9,12 +9,12 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-27, session 20: the retro theme is CGA now, pure palette 1 (D-047, D-048). Before it,
-session 19 added real files on disk (P5-01, D-046) and the thank-you to Space Quest Historian (P4-22, D-045); earlier:
-comparing versions, fast typing on long scripts, adventure-game replies, narration time and video chapters, and the
-browser targets (Firefox and Chromium; Safari, iPhone and iPad are roadmap Phase 7). Everything up to D-047 is in
-`master`; D-048 (yellow to white) is on the working branch, `claude/compassionate-clarke-mxwpzz`, until the owner
-merges it. Tests: `npm test` 323, `bash test/run-headless.sh` 311 unit + 670 e2e, about 55 s._
+_Last updated: 2026-09-27, session 21: Final Draft export (P3-08, D-049); P3-11 and P2-22 dropped (D-050); the owner
+reports real files in Chrome and import / export on Android work. Before it: the retro theme as pure CGA palette 1
+(D-047, D-048), real files on disk (P5-01), the thank-you to Space Quest Historian (P4-22), comparing versions, fast
+typing on long scripts, adventure-game replies, narration time and video chapters. Everything up to D-048 is in
+`master`; P3-08 is on the working branch, `claude/compassionate-clarke-mxwpzz`, until the owner merges it. Tests:
+`npm test` 331, `bash test/run-headless.sh` 319 unit + 673 e2e, about 55 s._
 
 **Where things stand, in one paragraph:** Phases 1 and 2 are done apart from real-device work (P2-09, P2-13) and two
 optional ideas (P2-20 hints, P2-22 desktop click-to-jump). Phase 3's output is done (Fountain export, print / save as
@@ -23,6 +23,10 @@ PDF); what is left there is optional (P3-08 to P3-12). Phase 4 is done: the owne
 Chromium. The owner's hands-on pass (Next steps 1) matters more than the next feature.
 
 **What works**
+- **Final Draft export** (P3-08, D-049; `src/fdx.js`). Export > Files > **Download .fdx (Final Draft)**, named after
+  the title: every element as a Final Draft paragraph of its type, scene numbers, dual dialogue, page breaks, bold /
+  italic / underline, centred text, lyrics in italics, and the title page. Notes, sections, synopses and the boneyard
+  are left out, as in print. Not yet opened in Final Draft itself.
 - **Real files on disk** (P5-01, D-046; `src/filesync.js`, `src/app/files-ui.js`, the `files` store, database version
   3). In Chromium browsers only (hidden in Firefox): Library > **Open a file...** opens a .fountain file as a script
   and keeps it linked (the same file again opens the same script); Export > **File on disk** has **Save to a file...**
@@ -205,6 +209,11 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 - Scroll sync no longer divides by zero.
 
 **Verified**
+- **Final Draft export (P3-08), session 21:** `npm test` 331 (8 in `test/fdx.test.js`); e2e 673 (the button's
+  download, its name, the file well-formed by the browser's XML parser with every element, dual dialogue, the scene
+  number, the page break and the title page; an empty script exports nothing). Mutations: 23, all fail a test after
+  the fixes in the session log.
+- **Owner, 2026-09-27:** real files in Chrome, and import / export on Android, work.
 - **Real files (P5-01), session 19:** `npm test` 323 (7 new in `test/filesync.test.js`); e2e 670 (section 16v, with
   real files in the browser's private file system standing in for picked ones: save to a file, every save writes it
   (proved to come from the save), a change made elsewhere loaded, both changed (Keep the script here / Load the
@@ -540,9 +549,8 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 
 ## Next steps (in order)
 
-0. **Merge the branch** for the CGA theme (the owner does this, see the git gotcha). Still worth doing from session
-   19: try real files in Chrome or Edge (Export > Save to a file, write a little, change the file in a text editor,
-   come back).
+0. **Merge the branch** for Final Draft export (P3-08; the owner does this, see the git gotcha). If anyone you send
+   scripts to has Final Draft, a real .fdx opened there is the one check the tests cannot make.
 1. **A hands-on pass by the owner of what sessions 13 and 14 built.** Firefox is done: the owner reports it works well
    (session 14). Desktop Safari is not a target (D-039). Left, each a few minutes:
    - **After a day of writing: Library > Versions** on a real script (the database upgraded to version 2 on first
@@ -586,6 +594,22 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 ## Session log
 
 Newest first. Copy the template for each new session.
+
+### Session 21: 2026-09-27: Final Draft export (P3-08)
+
+**Goal:** The owner reported real files and Android import / export working, dropped P3-11 and P2-22, and picked P3-08.
+**Done:** P3-08; P3-11 and P2-22 marked dropped; P3-14 (.fdx import) added.
+**Changed:** new `src/fdx.js` (pure) in `index.html`, `sw.js` and the test runners; Export's first section is "Files"
+with Download .fountain and Download .fdx; `exportFdx` in export.js; Help explains it.
+**Decisions:** D-049, D-050.
+**Problems / surprises:**
+- The file-writing tool turned `\uFFFE\uFFFF` in a regular expression into the raw characters; put back as escapes.
+- A mutation that left a syntax error crashed the suite without a FAIL line, and my script counted it as surviving;
+  the mutation scripts now also treat a missing "passed" line as caught.
+- Mutations found a real flaw: a paragraph that was only a note became an empty Final Draft paragraph (a stray blank
+  line); now it is left out.
+**Left undone:** a real Final Draft opening the file; .fdx import (P3-14).
+**Next session should start with:** merge; then the owner's pick.
 
 ### Session 20: 2026-09-27: The retro theme becomes CGA (D-047)
 

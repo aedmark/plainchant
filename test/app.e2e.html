@@ -798,8 +798,30 @@ setTimeout(() => {
     fid(xf, 'exportFountain').click();
     check('export: accents survive and slashes cannot reach the file system', linkSeen.download === 'café-amélie-part-2.fountain', linkSeen.download);
 
+    // Final Draft (P3-08): a well-formed .fdx, named after the title, every element in it
+    linkSeen = null; blobSeen = null;
+    setText(xf, 'Title: Big & Bold\nAuthor: Me\n\nINT. HOUSE - DAY #3#\n\nShe *waits*. [[note]]\n\nMARA\n(soft)\nHi.\n\nDEV ^\nHey.\n\n> END <\n\n===\n\nCUT TO:');
+    exportBtnEl.click();
+    fid(xf, 'exportFdx').click();
+    const fdxText = blobSeen ? await blobSeen.text() : '';
+    const fdxDoc = new DOMParser().parseFromString(fdxText, 'application/xml');
+    const fdxTypesSeen = Array.from(fdxDoc.querySelectorAll('Content > Paragraph[Type], DualDialogue > Paragraph')).map(p => p.getAttribute('Type'));
+    check('export: Download .fdx saves a Final Draft file named after the title, closing the dialog', !!linkSeen && linkSeen.download === 'big-bold.fdx' && active(xf).length === 0, linkSeen);
+    check('export: the .fdx is well-formed XML a Final Draft reader can walk: every element, dual dialogue, the title page',
+      !fdxDoc.querySelector('parsererror') && fdxDoc.documentElement.nodeName === 'FinalDraft' &&
+      fdxTypesSeen.join() === 'Scene Heading,Action,Character,Parenthetical,Dialogue,Character,Dialogue,Action,Transition' &&
+      fdxDoc.querySelector('Paragraph[Type="Scene Heading"]').getAttribute('Number') === '3' &&
+      fdxDoc.querySelector('Paragraph[Type="Transition"]').getAttribute('StartsNewPage') === 'Yes' &&
+      fdxDoc.querySelector('TitlePage').textContent.indexOf('Big & Bold') !== -1 && fdxText.indexOf('note') === -1,
+      [fdxTypesSeen.join(), fdxDoc.querySelector('parsererror') && fdxDoc.querySelector('parsererror').textContent]);
+    await sleep(2100);
+
     linkSeen = null;
     setText(xf, '   \n ');
+    exportBtnEl.click();
+    fid(xf, 'exportFdx').click();
+    check('export: an empty script gives no .fdx either', linkSeen === null && exportBtnEl.innerText === 'Nothing to export');
+    await sleep(2100);
     exportBtnEl.click();
     check('export: an empty script downloads nothing and says so', linkSeen === null && exportBtnEl.innerText === 'Nothing to export' && !exportBtnEl.classList.contains('success'));
     await sleep(2100);

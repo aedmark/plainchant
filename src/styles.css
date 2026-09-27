@@ -1033,6 +1033,7 @@ ins.compare-line { color: var(--sh-section); text-decoration: underline; text-un
 .notice:empty { display: none; }
 /* --- Print / save as PDF (P3-03, D-021): src/app/print.js draws #print-root; nothing else reaches paper --- */
 .export-option + .export-option { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border-void); }
+.export-buttons { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .export-option h3 { margin: 0 0 0.35rem; font-size: 0.875rem; color: var(--text-strong); }
 .export-option p { margin: 0 0 0.75rem; font-size: 0.8125rem; color: var(--text-void-muted); }
 .print-summary { color: var(--text-strong) !important; }

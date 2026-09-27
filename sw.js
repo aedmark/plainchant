@@ -27,6 +27,7 @@ const APP_FILES = [
     'src/versions.js',
     'src/compare.js',
     'src/filesync.js',
+    'src/fdx.js',
     'src/importing.js',
     'src/suggest.js',
     'src/app/core.js',

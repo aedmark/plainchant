@@ -1,5 +1,5 @@
 /*
- * Plainchant app script: export: the Export dialog, the .fountain download, and Copy (the chapters are in chapters-ui.js)
+ * Plainchant app script: export: the Export dialog, the .fountain and .fdx downloads, and Copy (the chapters are in chapters-ui.js)
  *
  * One of the classic scripts loaded by index.html, in order (see CLAUDE.md, "App scripts"). They share the
  * page's global scope, so top-level functions and consts here are visible to the files after it, and anything
@@ -60,7 +60,17 @@ function exportScript() {
     flashButton(exportBtn, 'Exported!');
 }
 
+// Export: the same script as a Final Draft file (P3-08, src/fdx.js). Global on purpose: the e2e tests call it.
+function exportFdx() {
+    const text = editor.value;
+    closeModal(exportModal);
+    if (!text.trim()) { flashButton(exportBtn, 'Nothing to export', false); return; }
+    downloadText(Fountain.fileName(text, 'fdx'), Fdx.of(text));
+    flashButton(exportBtn, 'Exported!');
+}
+
 exportBtn.addEventListener('click', openExport);
+document.getElementById('exportFdx').addEventListener('click', exportFdx);
 document.getElementById('exportFountain').addEventListener('click', exportScript);
 
 // The async Clipboard API works even while the editor is hidden (previewing on a phone) but needs a secure context;

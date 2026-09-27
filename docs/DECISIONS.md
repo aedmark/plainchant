@@ -876,6 +876,30 @@ and named versions, and noted that white would make it pure palette 1. The owner
 magenta and white; the dimmer steps (dark cyan, dark magenta, greys) stay for quieter text. Scene headings, dialogue
 and sections are all white in the editor; the headings still stand out by their capitals and blank lines.
 
+## D-049 Final Draft export: the printed script, as Final Draft paragraphs  (2026-09-27, status: accepted)
+**Context:** P3-08. `.fdx` is the industry's exchange format; writers send scripts to people who use Final Draft.
+**Decision:**
+1. `src/fdx.js` (pure) turns the parse into Final Draft XML: a paragraph per element, of Final Draft's types (Scene
+   Heading with the scene number in `Number`, Action, Character with its extension, Parenthetical, Dialogue,
+   Transition). Centred text is Action aligned centre; a lyric is italic (Dialogue in a speech, Action alone); a page
+   break makes the next paragraph `StartsNewPage`; dual dialogue is a `DualDialogue` block; bold, italic and
+   underline are styled `Text` runs (`Fountain.runs`); a line break inside a paragraph stays.
+2. **What prints, goes:** notes, the boneyard, sections and synopses are left out, as in print (D-021). A paragraph
+   with nothing left (only a note) is not written, rather than leaving an empty line.
+3. **Title page:** Final Draft's `TitlePage`: title, credit, author and source centred a third of the way down;
+   draft date, contact and copyright at the foot on the left, one paragraph per line.
+4. Text is XML-escaped; characters XML 1.0 cannot hold (most control characters) are dropped.
+5. **Where:** Export's first section is now **Files**, with **Download .fountain** and **Download .fdx (Final
+   Draft)**, both named after the title. Import still refuses .fdx (P3-14 would read it).
+**Consequences:** not opened in Final Draft itself here (no copy to test with); the XML is checked well-formed by the
+browser's parser in the e2e suite, and element by element in the unit tests.
+
+## D-050 Dropped: a direct PDF download, and desktop click-to-jump  (2026-09-27, status: accepted)
+**Context:** the owner reviewed what was left.
+**Decision:** P3-11 (a hand-written PDF writer) is dropped: printing through the browser to PDF is enough. P2-22
+(clicking a line in the desktop preview to move the caret there) is dropped for now: the owner finds the app already
+does what they need there. Either can come back as a new item if that changes.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom
