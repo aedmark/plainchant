@@ -46,14 +46,14 @@ const EXAMPLE_SCRIPT = [
 // --- The narration example (P4-21): a narrated video, for the read-aloud time and the video chapters (D-038). Its
 // notes explain what counts; its chapters keep YouTube's rules, read either way ("Dialogue only" or "and action").
 const NARRATION_EXAMPLE = [
-    'Title: Why Broom Closet Odyssey Still Works',
+    'Title: Inside the Broom Closet: How the Odyssey Still Works',
     'Credit: A video essay by',
     'Author: Your Name Here',
     '',
     '= A narrated video: what is said is dialogue under NARRATOR, what is shown is action. Script stats says how long it takes to read aloud, and Export turns the # parts into YouTube chapters.',
     '',
     'NARRATOR',
-    'Some games age badly. Some age like milk left on a spaceship. And then there is Broom Closet Odyssey, a game about a janitor that somehow still works, forty years later.',
+    'Some games age badly. Some age like milk left on a spaceship. And then there is Space Odyssey, a game about a custodian that somehow still works, forty years later.',
     '',
     'Title card over the opening screen. [[Action is what the viewer sees. The read-aloud time counts only dialogue, unless Settings says to count the action too.]]',
     '',
@@ -88,7 +88,7 @@ const NARRATION_EXAMPLE = [
     'NARRATOR',
     'So, is it worth playing today? Absolutely. Just save often, save in different slots, and never, ever trust a vending machine.',
     '',
-    '~Thanks for watching, and don\'t forget to mop!',
+    '~Thanks for watching, and don\'t forget your towel! (oh wait... wrong game!)',
     '',
     'NARRATOR',
     'I will see you next time.',
