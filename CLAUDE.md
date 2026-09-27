@@ -44,9 +44,10 @@ Sessions are short-lived and context resets between them, so the repo carries th
 | `src/paginate.js` | Print pagination: tokens in, pages of positioned lines out, on the Courier grid (60 columns, 54 rows Letter / 58 A4) with the page-break rules. Pure, UMD, uses `Fountain` (D-021, docs/SPEC-PRINT.md) |
 | `src/stats.js` | Script stats: pages (as printed), screen time, scenes, words, per-character speeches and words, per scene its page, length in eighths and speakers, the INT / EXT and time-of-day mix, and the locations (`Stats.heading`). Pure, UMD, uses `Fountain` and `Paginate` (D-023, D-028, D-029) |
 | `src/outline.js` | The outline: sections, scenes (with the page each starts on) and synopses, and which one a line is in. Pure, UMD, uses `Fountain` and `Paginate` (D-024) |
+| `src/narration.js` | Narration: the time to read a script aloud (dialogue, or dialogue and action, at a reading speed) and YouTube chapters from its top-level sections, with YouTube's rules checked. Pure, UMD, uses `Fountain` (D-038) |
 | `src/versions.js` | Versions of a script: when to keep one (`due`), making one, which to let go (`prune`). Pure, UMD (D-034) |
 | `src/store.js` | Storage in IndexedDB, global `Store`: pure rules (diff, delete guard, emergency-buffer reconcile) plus thin IndexedDB calls that take the database as an argument. UMD (D-018, D-019, D-020) |
-| `test/` | `fountain.test.js` (parser), `editing.test.js` (typing helpers), `library.test.js` (library rules), `importing.test.js` (import rules), `suggest.test.js` (autocomplete rules), `store.test.js` (storage rules), `paginate.test.js` (print pagination), `stats.test.js` (script stats), `outline.test.js` (outline), `versions.test.js` (version rules), `structure.test.js` (app script structure, Node only), `app.e2e.html` (app behaviour), `harness.js`, runners: `index.html`, `run-headless.ps1` (Windows), `run-headless.sh` (Linux/macOS), `run.js` |
+| `test/` | `fountain.test.js` (parser), `editing.test.js` (typing helpers), `library.test.js` (library rules), `importing.test.js` (import rules), `suggest.test.js` (autocomplete rules), `store.test.js` (storage rules), `paginate.test.js` (print pagination), `stats.test.js` (script stats), `outline.test.js` (outline), `versions.test.js` (version rules), `narration.test.js` (narration time and chapters), `structure.test.js` (app script structure, Node only), `app.e2e.html` (app behaviour), `harness.js`, runners: `index.html`, `run-headless.ps1` (Windows), `run-headless.sh` (Linux/macOS), `run.js` |
 | `ROADMAP.md` | The plan, with stable item IDs |
 | `docs/HANDOFF.md` | Current state, next steps, session log |
 | `docs/DECISIONS.md` | Append-only decision record |
@@ -66,14 +67,15 @@ use what an earlier file already defined. Code inside functions runs later and c
 | `library-ui.js` | The Library dialog (data rules are in `src/library.js`) |
 | `versions-ui.js` | The Versions window, from a script's row in the Library: name, go back, copy, delete. Reads and writes the `versions` store through `Store` directly (D-034) |
 | `example.js`, `help.js`, `tour.js` | The example script, the Help window, the welcome tour |
-| `settings.js` | The Settings window and `settings` (theme, text size, colours, blank lines on Enter, capitals as you type, guessing names; `setSetting`), stored in `plainchant_settings`; applies the theme and size as it loads (D-032, D-035) |
+| `settings.js` | The Settings window and `settings` (theme, text size, colours, blank lines on Enter, capitals as you type, guessing names, what is read aloud and the reading speed; `setSetting`), stored in `plainchant_settings`; applies the theme and size as it loads (D-032, D-035, D-038) |
 | `typing.js` | Tab, smart Enter, auto-uppercase, the element bar, autocomplete chips (rules are in `src/editing.js` and `src/suggest.js`) |
 | `shade.js` | The editor's colour hints: a coloured copy of the text behind the textarea (whose own text is transparent), redrawn line by line from `render()`'s parse, with a wrap check that switches it off if it ever misaligns (D-031) |
 | `focus.js` | Focus mode: the veils around the current block, typewriter scrolling, the toggle and Ctrl/Cmd+Shift+F (D-025) |
-| `export.js` | The Export dialog (the `.fountain` download), and Copy |
+| `export.js` | The Export dialog (the `.fountain` download), and Copy (`copyText`, which the chapters use too) |
 | `import.js` | Import: the Library's picker and drag-and-drop onto the page; `showNotice` messages (defined in `core.js`) |
 | `print.js` | Print / save as PDF: draws the `src/paginate.js` pages as paper-sized sheets in `#print-root`, the paper choice, `beforeprint` (D-021, D-022) |
-| `stats-ui.js` | The live page count in the preview's header (`scheduleStats`, called by `render()`) and the Script stats window, with the scene mix, locations and scene list (D-023, D-028, D-029) |
+| `chapters-ui.js` | Video chapters in the Export dialog (`prepareChapters`, Copy chapters), and `narrationOf` / `narrationHow`, which the stats use for the read-aloud time (D-038) |
+| `stats-ui.js` | The live page count in the preview's header (`scheduleStats`, called by `render()`) and the Script stats window, with the read-aloud time, the scene mix, locations and scene list (D-023, D-028, D-029, D-038) |
 | `outline-ui.js` | The Outline window and `jumpToLine` (caret to a line, the line near the top of the editor, the preview following) (D-024) |
 | `offline.js` | Registers `sw.js` and links the manifest, only when served over http(s) (`offlineState`) (D-026) |
 | `safekeeping.js` | Asking the browser to keep the library (`navigator.storage.persist()`) once there is work to keep, and the line at the foot of the Library saying whether it agreed (D-027) |

@@ -9,21 +9,29 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-26, end of session 13. Session 13 was long: sixteen roadmap items, D-023 to D-037 (stats and
-scene stats, outline, focus mode, offline, persistent storage, the caret above the keyboard, colour hints, settings,
-tapping the preview, versions, themes and text size with an accessibility sweep, guessing names, autocomplete
-follow-ups). All the code is merged into `master` (through P2-21); only this wrap-up of the docs is new on the working
-branch, `claude/compassionate-clarke-mxwpzz`. Tests: `npm test` 290, `bash test/run-headless.sh` 278 unit + 597 e2e, about
-50 s._
+_Last updated: 2026-09-27, session 14: narration time and video chapters (P4-18, P3-13, D-038), prompted by a video
+creator who uses the app (their name is deliberately not in the feature). Session 13's sixteen items (D-023 to
+D-037) are all in `master`; session 14's work is on the working branch, `claude/compassionate-clarke-mxwpzz`, until
+the owner merges it. Tests: `npm test` 301, `bash test/run-headless.sh` 289 unit + 613 e2e, about 50 s._
 
 **Where things stand, in one paragraph:** Phases 1 and 2 are done apart from real-device work (P2-09, P2-13) and two
 optional ideas (P2-20 hints, P2-22 desktop click-to-jump). Phase 3's output is done (Fountain export, print / save as
 PDF); what is left there is optional (P3-08 to P3-12). Phase 4 is done apart from P4-01 (incremental render), P4-16
-(comparing versions) and P4-17 (a screen-reader pass by a person). Phase 5 (real files, sync) is undecided and Phase 6
-(brand) is the owner's. The biggest gap is not code: almost everything from session 13 has only run in headless
+(comparing versions), P4-17 (a screen-reader pass by a person) and two optional touches (P4-19 a retro theme, P4-20
+small adventure-game touches). Phase 5 (real files, sync) is undecided and Phase 6
+(brand) is the owner's. The biggest gap is not code: almost everything from sessions 13 and 14 has only run in headless
 Chromium. The owner's hands-on pass (Next steps 1) matters more than the next feature.
 
 **What works**
+- **Narration time and video chapters** (P4-18, P3-13, D-038; `src/narration.js`, `src/app/chapters-ui.js`). For
+  narrated videos: write what is said as dialogue (under a cue such as NARRATOR) and what is shown as action. Script
+  stats has a **Read aloud** tile (~m:ss): the dialogue and lyrics at a reading speed, 150 words a minute unless set.
+  Settings has a **Reading aloud** group: *What is read aloud* (Dialogue only, or Dialogue and action) and *Reading
+  speed* (80 to 300). Export has a third section, **Video chapters**: a timestamp for each top-level section (`#`),
+  timed by the words read aloud before it, an "Intro" at 0:00 for words before the first, and **Copy chapters**. It
+  says, in words, when the list breaks YouTube's rules (fewer than three chapters; a chapter under ten seconds, named)
+  and how to make chapters when there are no sections; it never changes the list. Copy without the Clipboard API now
+  goes through a hidden copy, leaving the editor's selection alone.
 - **Autocomplete follow-ups** (P2-21, D-037). After `INT. PLACE - ` the chips offer the script's times of day, then DAY
   and NIGHT (Tab takes the first). With Character chosen on an empty line, the most used names show as chips to tap
   (Tab still cycles the element there). A hidden live region tells a screen reader what is offered.
@@ -161,6 +169,13 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 - Scroll sync no longer divides by zero.
 
 **Verified**
+- **Narration and chapters (P4-18, P3-13), session 14:** `npm test` 301 (11 new in `test/narration.test.js`);
+  `bash test/run-headless.sh` 289 unit + **613 e2e** (section 16r: the stats tile, the chapter list and Copy, the
+  speed clamped and remembered, "Dialogue and action", too few / too short / nothing read / no sections, the copy
+  fallback, a bad stored setting, Help; the accessibility sweep covers the new controls in both themes). Mutations:
+  21 of 22 in `src/narration.js` failed a test, and a test was added for the 22nd (a negative speed); the app-side
+  mutations (9: the speed's clamp and empty box, the stored range, Copy off and the list hidden with no chapters, the
+  one "nothing read" message, the copy fallback's focus and clean-up, the stats using the settings) all failed a test.
 - **Autocomplete follow-ups (P2-21), session 13:** `npm test` 290 (4 new in `test/suggest.test.js`, one changed:
   "- " after a location now offers times); `bash test/run-headless.sh` 278 unit + **597 e2e** (section 16q: times
   through the real Tab, narrowed, cleared; names on an empty cue line, not taken by Tab, tapped; what a screen reader
@@ -291,6 +306,8 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
   and phone in headless Edge.
 
 **Not verified / not done**
+- **Narration timing against a real video:** 150 words a minute and "words only" (no pauses, music or silent footage)
+  are estimates. Worth timing a real narrated script and comparing its chapter timestamps with the finished video.
 - **P4-06 without a real screen reader:** the sweep checks names and contrast, not how VoiceOver, NVDA or TalkBack read
   the app, nor Windows high-contrast mode. The light theme has only been seen in headless Chromium screenshots.
 - **Versions (P4-05) against the owner's real library:** the database upgrade from version 1 to 2 has only run in the
@@ -454,8 +471,7 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 
 ## Next steps (in order)
 
-0. **Merge the branch** for this wrap-up's docs commit (the owner does this; see the git gotcha). The code is already
-   in `master`.
+0. **Merge the branch** for session 14 (narration and chapters; the owner does this, see the git gotcha).
 1. **A hands-on pass by the owner of what session 13 built** (nothing of it has been on a real device or in
    Firefox / Safari). Most useful first, each a few minutes:
    - **A long real script in Firefox and Safari**: do the colour hints appear (if not, the wrap check switched them
@@ -467,6 +483,8 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
    - **Name guessing:** write normally for a while. Does Enter ever take an action line for a character? If so, the
      planned fix is to require a known name for single words (D-036).
    - **Firefox's "keep your data" prompt** (persistent storage): does it appear, and what does the Library say after?
+   - **Narration and chapters** (session 14): read a page of a real script aloud against a clock and set that speed
+     in Settings; paste the chapters into a YouTube description (unlisted upload) and see whether YouTube accepts them.
    - Whatever feels wrong is the next session's first job; Settings can switch most new behaviour off meanwhile.
 2. **A screen-reader pass by a person** (P4-17): VoiceOver on the iPad or Mac, NVDA on Windows if available. The
    automated sweep (D-035) checks names and contrast, not how the app sounds.
@@ -477,6 +495,8 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
      and the stats half a second later. Measure on a 120-page script on the phone before optimising.
    - **P4-16** compare a version with the text now, scene by scene; take one scene back.
    - **P3-11** a real `.pdf` download (only if print windows prove awkward); **P3-12** a page view while writing.
+   - **P4-19** a retro adventure-game theme and **P4-20** small adventure-game touches (a thank-you in Help needs the
+     creator's permission to use their name first).
    - **P2-22** click-to-jump in the desktop preview; **P2-20** first-use hints; **P3-09 / P3-10** Library and export
      extras; **P3-08** Final Draft export (stretch).
 4. **Owner's non-code items:** a domain, a trademark search and a real icon (P6-01 to P6-03; the icons in `icons/` are
@@ -492,6 +512,8 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 - Tab takes the first suggestion (names, places, times of day): right? The times of day are new (D-037).
 - Should the preview follow the theme too (a dark page), or stay paper as now (D-035)?
 - Phase 5: real files on disk (P5-01) or hosted sync (P5-02) first? Q-002 in DECISIONS.
+- Narration (D-038): is 150 words a minute the right default, and should chapters also be offered from scenes (for
+  scripts with no sections)? Should the header's page count show the read-aloud time for narrated scripts?
 - ~~Plain textarea or a rich editor (Q-001)?~~ A textarea with a coloured layer behind it (D-031).
 
 ---
@@ -499,6 +521,25 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 ## Session log
 
 Newest first. Copy the template for each new session.
+
+### Session 14: 2026-09-27: Narration time and video chapters (P4-18, P3-13)
+
+**Goal:** The owner wanted to honour a video creator who uses Plainchant with a feature for their kind of work
+(narrated videos about games), leaving the creator's name out of it. Of the ideas offered, the owner chose narration
+timing and YouTube chapters, and asked for the retro theme and smaller touches to go on the roadmap.
+**Done:** P4-18, P3-13; P4-19 and P4-20 added to the roadmap.
+**Changed:** new `src/narration.js` (pure, UMD) and `src/app/chapters-ui.js`, both in `index.html` and `sw.js`;
+Settings gained `aloud` and `pace` (a number range, `SETTING_RANGES`, new in `validSetting`); Script stats has a fifth
+tile (the tiles are now two rows); Export has a Video chapters section; `copyText`'s fallback uses a hidden textarea
+instead of selecting the editor; Help explains both.
+**Decisions:** D-038.
+**Problems / surprises:**
+- Five stats tiles in one row wrapped "~2 min" on a desktop; grouped as pages / screen time / read aloud over scenes
+  / words.
+- The mutation run on `src/narration.js` found one untested guard (a negative speed); a test was added. App-side
+  mutations (9) all failed a test, listed under "Verified".
+**Left undone:** a real device, Firefox and Safari; a real YouTube upload with the chapters.
+**Next session should start with:** "Next steps" above: merge, then the owner's hands-on pass.
 
 ### Session 13: 2026-09-26: Stats, outline, focus, offline, versions, settings, themes and more (sixteen items)
 

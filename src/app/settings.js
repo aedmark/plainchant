@@ -1,5 +1,5 @@
 /*
- * Plainchant app script: settings: the writer's choices (P2-15, P4-06, P2-14): theme, text size, colours in the editor, blank lines on Enter, capitals as you type, guessing names
+ * Plainchant app script: settings: the writer's choices (P2-15, P4-06, P2-14, P4-18): theme, text size, colours in the editor, blank lines on Enter, capitals as you type, guessing names, reading aloud
  *
  * One of the classic scripts loaded by index.html, in order (see CLAUDE.md, "App scripts"). They share the
  * page's global scope, so top-level functions and consts here are visible to the files after it, and anything
@@ -9,10 +9,15 @@
 // Each setting has a default and is remembered per browser in one localStorage key, which holds only what differs
 // from the defaults (D-032). The rules they switch live elsewhere: Editing.enter / Editing.autoCase take them as
 // options (typing.js passes them), the colour layer (shade.js) is drawn or cleared, and the theme and text size are
-// on the page's root element (D-035). The theme is applied as this file loads, before the page is first drawn.
+// on the page's root element (D-035). Narration.of takes the reading speed and what is read aloud (stats-ui.js and
+// chapters-ui.js pass them, D-038). The theme is applied as this file loads, before the page is first drawn.
 const SETTINGS_KEY = 'plainchant_settings';
-const SETTING_DEFAULTS = { theme: 'dark', size: 'normal', colours: true, paragraphs: true, capitals: true, cues: true };
-const SETTING_CHOICES = { theme: ['dark', 'light', 'system'], size: ['small', 'normal', 'large', 'larger'] };
+const SETTING_DEFAULTS = {
+    theme: 'dark', size: 'normal', colours: true, paragraphs: true, capitals: true, cues: true,
+    pace: Narration.PACE, aloud: 'dialogue'
+};
+const SETTING_CHOICES = { theme: ['dark', 'light', 'system'], size: ['small', 'normal', 'large', 'larger'], aloud: ['dialogue', 'all'] };
+const SETTING_RANGES = { pace: [80, 300] }; // whole numbers, words a minute
 const TEXT_SCALE = { small: 0.875, normal: 1, large: 1.15, larger: 1.3 }; // of the editor's own size (14px; 16px on phones)
 const settingsModal = document.getElementById('settings-modal');
 const settingBoxes = {
@@ -21,11 +26,13 @@ const settingBoxes = {
     capitals: document.getElementById('setCapitals'),
     cues: document.getElementById('setCues')
 };
+const paceBox = document.getElementById('setPace');
 const systemLight = window.matchMedia('(prefers-color-scheme: light)');
 
 function validSetting(name, value) {
     if (!(name in SETTING_DEFAULTS)) return false;
     if (SETTING_CHOICES[name]) return SETTING_CHOICES[name].indexOf(value) !== -1;
+    if (SETTING_RANGES[name]) return Number.isInteger(value) && value >= SETTING_RANGES[name][0] && value <= SETTING_RANGES[name][1];
     return typeof value === typeof SETTING_DEFAULTS[name];
 }
 
@@ -78,6 +85,7 @@ function setSetting(name, value) {
 // The window's controls show the settings as they are
 function showSettings() {
     Object.keys(settingBoxes).forEach((k) => { settingBoxes[k].checked = settings[k]; });
+    paceBox.value = settings.pace;
     settingsModal.querySelectorAll('input[type="radio"]').forEach((r) => { r.checked = settings[r.name] === r.value; });
 }
 
@@ -92,4 +100,11 @@ applyLook();
 document.getElementById('settingsBtn').addEventListener('click', openSettings);
 Object.keys(settingBoxes).forEach((k) => settingBoxes[k].addEventListener('change', () => setSetting(k, settingBoxes[k].checked)));
 settingsModal.querySelectorAll('input[type="radio"]').forEach((r) => r.addEventListener('change', () => { if (r.checked) setSetting(r.name, r.value); }));
+// A speed typed out of range is brought into it; anything that is not a number leaves the speed as it was
+paceBox.addEventListener('change', () => {
+    const n = Math.round(Number(paceBox.value));
+    const [low, high] = SETTING_RANGES.pace;
+    if (paceBox.value.trim() && Number.isFinite(n)) setSetting('pace', Math.min(high, Math.max(low, n)));
+    showSettings();
+});
 systemLight.addEventListener('change', () => { if (settings.theme === 'system') applyLook(); });

@@ -694,6 +694,33 @@ is to require a known name for single words.
    DEV." or "Times of day: NIGHT, DAY. Tab takes NIGHT." It is cleared when the chips go.
 **Consequences:** `Suggest.at(text, caret, mode)` takes the chosen element and may return `tab: false`.
 
+## D-038 Narration time and video chapters  (2026-09-27, status: accepted)
+**Context:** P4-18 and P3-13. Writers of narrated videos (essays, Let's Plays, voice-over) want to know how long a
+script takes to read aloud, and YouTube chapters for the description. A page a minute is a film measure and says
+nothing about narration.
+**Decision:**
+1. **What is read aloud:** dialogue and lyrics, by default. Settings can add action and centred text ("Dialogue and
+   action") for writers who write narration as plain paragraphs. Never scene headings, cues, parentheticals,
+   transitions, sections, synopses, notes or the boneyard. This matches the usual split for narrated scripts: what
+   is *said* is dialogue (under a cue such as NARRATOR), what is *shown* is action. Dual dialogue counts both sides.
+2. **Reading speed:** words a minute, 150 by default (a steady narrator), a whole number from 80 to 300 in Settings;
+   a number typed outside that range is brought into it. The writer is told to time themselves and use their own.
+3. **Time:** the words read aloud divided by the speed, rounded to the second. It ignores pauses, music and footage
+   with no narration: an estimate, which is why the stats say "~".
+4. **Chapters:** one per top-level section (the shallowest `#` depth the script uses, so `##` parts inside `#`
+   chapters stay inside them), each starting at the words read aloud before its section line. Words before the first
+   section become an "Intro" at 0:00 (YouTube requires the first chapter at 0:00). Titles are the section's plain
+   text; an empty section is "Chapter N". Timestamps are `m:ss`, or `h:mm:ss` from an hour.
+5. **YouTube's rules are pointed out, never enforced:** at least three chapters, each at least ten seconds. The
+   Export dialog lists what breaks them, naming the chapter; nothing is merged or dropped, because the fix belongs in
+   the script. With nothing read aloud at all, one message says why every chapter is at 0:00.
+6. **Where:** the read-aloud time is a tile in Script stats (not the header badge, which stays pages and screen
+   time); the chapters are a third section in Export, with Copy chapters. The rules are a pure module
+   (`src/narration.js`); the app's parts are in `chapters-ui.js`, whose `narrationOf` the stats use too.
+7. **No creator's name:** the feature was prompted by one creator's work but carries no one's name or brand.
+**Consequences:** Copy's fallback without the Clipboard API now copies through a hidden textarea instead of
+selecting the editor, so it can copy any text (the chapters) and leaves the editor's selection alone.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

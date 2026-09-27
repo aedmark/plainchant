@@ -1,5 +1,5 @@
 /*
- * Plainchant app script: export: the Export dialog, the .fountain download, and Copy
+ * Plainchant app script: export: the Export dialog, the .fountain download, and Copy (the chapters are in chapters-ui.js)
  *
  * One of the classic scripts loaded by index.html, in order (see CLAUDE.md, "App scripts"). They share the
  * page's global scope, so top-level functions and consts here are visible to the files after it, and anything
@@ -45,6 +45,7 @@ const exportModal = document.getElementById('export-modal');
 function openExport() {
     if (!editor.value.trim()) { flashButton(exportBtn, 'Nothing to export', false); return; }
     preparePrintChoice();
+    prepareChapters();
     openModal(exportModal, { focus: '#exportFountain' });
 }
 
@@ -61,15 +62,25 @@ function exportScript() {
 exportBtn.addEventListener('click', openExport);
 document.getElementById('exportFountain').addEventListener('click', exportScript);
 
-// The async Clipboard API works even while the textarea is hidden (previewing on a phone) but needs a secure
-// context; fall back to selecting the textarea and execCommand elsewhere (e.g. plain http on a LAN).
+// The async Clipboard API works even while the editor is hidden (previewing on a phone) but needs a secure context;
+// elsewhere (e.g. plain http on a LAN) the text goes through a hidden copy and execCommand, leaving the editor's own
+// selection and the focus where they were. Global on purpose: chapters-ui.js copies with it too.
 async function copyText(text) {
     try {
         await navigator.clipboard.writeText(text);
         return true;
     } catch (e) {
-        editor.select();
-        return document.execCommand('copy');
+        const back = document.activeElement;
+        const scratch = document.body.appendChild(document.createElement('textarea'));
+        scratch.value = text;
+        scratch.setAttribute('readonly', '');
+        scratch.className = 'sr-only';
+        scratch.select();
+        let ok = false;
+        try { ok = document.execCommand('copy'); } catch (err) { /* not copied */ }
+        scratch.remove();
+        if (back && back.focus) back.focus({ preventScroll: true });
+        return ok;
     }
 }
 

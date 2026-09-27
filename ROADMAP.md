@@ -131,6 +131,8 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
 - [ ] P3-09 Library extras, if wanted: sort options (name, date created), multi-select, export a single script
   from its row, and a storage-usage indicator (`navigator.storage.estimate()`; Recently deleted holds space)
 - [ ] P3-08 Final Draft `.fdx` export (stretch)
+- [x] P3-13 Video chapters: YouTube timestamps from the script's top-level sections, timed by narration (P4-18),
+  with Copy, in the Export dialog; says which of YouTube's rules a list breaks (at least three, ten seconds each) (D-038)
 
 ## Phase 4: Scale and polish
 
@@ -173,6 +175,14 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
   back, and take one scene from a version rather than the whole script
 - [ ] P4-17 Accessibility by a person: VoiceOver / NVDA / TalkBack reading order and wording, Windows high-contrast
   mode, keyboard-only use for a whole session. The automated sweep (D-035) checks names and contrast only
+- [x] P4-18 Narration time: how long the script takes to read aloud (dialogue, or dialogue and action), at a reading
+  speed set in Settings, as a tile in Script stats (D-038)
+- [ ] P4-19 A retro adventure-game theme: a third theme in Settings beside dark and light, after the 16-colour palette
+  of 1980s PC adventure games, softened where the pure colours fail the contrast sweep (D-035: 4.5:1 for text in
+  every state). A new token set under `:root[data-theme="retro"]`; the preview stays paper
+- [ ] P4-20 Small touches, if wanted: a playful reply when an old adventure-game command (`LOOK`, `INVENTORY`) is typed
+  on a line of its own, never getting in the way of real text (a cue named LOOK must still work); and a thank-you in
+  Help to the creator whose videos prompted P4-18 / P3-13, **only with their permission** to use their name
 
 ## Phase 5: Sync and share (open questions)
 
@@ -206,3 +216,5 @@ Not committed. Decide only after Phase 3 ships. See open questions in DECISIONS.
   it back; Settings switches guessing off.
 - Printing goes through the browser's print window (D-021); there is no direct `.pdf` download yet (P3-11).
 - The preview is always white paper, whatever the theme (D-035).
+- Narration time (D-038) counts words only: pauses, music and footage with no narration are not timed, so chapter
+  timestamps are a starting point to check against the finished video.
