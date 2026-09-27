@@ -32,12 +32,14 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
   says, in words, when the list breaks YouTube's rules (fewer than three chapters; a chapter under ten seconds, named)
   and how to make chapters when there are no sections; it never changes the list. Copy without the Clipboard API now
   goes through a hidden copy, leaving the editor's selection alone.
-- **The narration example** (P4-21; `NARRATION_EXAMPLE` in `src/app/example.js`). "Why Broom Closet Odyssey Still
-  Works", a short video essay about a made-up game: NARRATOR speeches, a clip of the game's own voice, action as what
-  is shown, a `##` part inside a chapter, a sung sign-off, and notes saying what counts. Four chapters (Intro, The
-  setup, The puzzles, Final thoughts) that keep YouTube's rules whichever way it is read aloud; ~0:53 at 150 words a
-  minute. **Open the narration example** is in Help (Start here), and in Export's Video chapters in place of Copy
-  when the script has no chapters. It opens as a new script, like the screenplay example.
+- **The narration example** (P4-21; `NARRATION_EXAMPLE` in `src/app/example.js`). "Inside the Broom Closet: How the
+  Odyssey Still Works" (the owner's retitle), a short video essay about a made-up game: NARRATOR speeches, a clip of
+  the game's own voice, action as what is shown, a `##` part inside a chapter, a sung sign-off, and notes saying what
+  counts. Four chapters (Intro, The setup, The puzzles, Final thoughts) that keep YouTube's rules whichever way it is
+  read aloud; under a minute at 150 words a minute. **Open the narration example** is in Help (Start here), and in
+  Export's Video chapters in place of Copy when the script has no chapters. It opens as a new script, like the
+  screenplay example. Its wording is free to change: the tests check its shape (four chapters, an Intro, no broken
+  YouTube rule either way, what the app shows matching `Narration.of`), not its words or times.
 - **Autocomplete follow-ups** (P2-21, D-037). After `INT. PLACE - ` the chips offer the script's times of day, then DAY
   and NIGHT (Tab takes the first). With Character chosen on an empty line, the most used names show as chips to tap
   (Tab still cycles the element there). A hidden live region tells a screen reader what is offered.

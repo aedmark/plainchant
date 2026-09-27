@@ -2325,7 +2325,7 @@ setTimeout(() => {
     nvW.saveScript = (auto) => nvSaves.push(auto); // the frame's saves are switched off; this one only listens
     fid(nvF, 'chaptersExample').click();
     check('narration example: opens as a new script, saved at once, the dialog closed',
-      /^Title: Why Broom Closet Odyssey Still Works/.test(fid(nvF, 'editor').value) && nvW.eval('currentScriptId') !== nvIdBefore &&
+      fid(nvF, 'editor').value === nvW.eval('NARRATION_EXAMPLE') && nvW.eval('currentScriptId') !== nvIdBefore &&
       nvSaves[nvSaves.length - 1] === true && active(nvF).length === 0, [fid(nvF, 'editor').value.slice(0, 40), nvSaves, active(nvF)]);
     nvW.saveScript = () => {};
     const nvTypes = nvW.Fountain.parse(fid(nvF, 'editor').value).map(t => t.type);
@@ -2333,23 +2333,26 @@ setTimeout(() => {
       ['title_page', 'dialogue', 'lyrics', 'action', 'section', 'centered'].every(t => nvTypes.indexOf(t) !== -1) &&
       /\(V\.O\.\)/.test(fid(nvF, 'editor').value) && /\n## /.test(fid(nvF, 'editor').value) && /\[\[/.test(fid(nvF, 'editor').value), nvTypes);
     nvW.openStats();
-    check('narration example: its read-aloud time', fid(nvF, 'statAloud').textContent === '~0:53', fid(nvF, 'statAloud').textContent);
+    // The example's words are the owner's to change: these checks hold for any wording that keeps its shape
+    const nvEx = (aloud) => nvW.Narration.of(nvW.eval('NARRATION_EXAMPLE'), { pace: 150, aloud: aloud });
+    check('narration example: its read-aloud time, as the rules count it', fid(nvF, 'statAloud').textContent === '~' + nvW.Narration.clock(nvEx('dialogue').seconds) &&
+      nvEx('dialogue').seconds > 30, fid(nvF, 'statAloud').textContent);
     nvW.closeModal(fid(nvF, 'stats-modal'));
     fid(nvF, 'exportBtn').click();
     check('narration example: four chapters that keep YouTube\'s rules, and the example is no longer offered',
-      nvList() === '0:00 Intro\n0:12 The setup\n0:24 The puzzles\n0:39 Final thoughts' && !shown(nvWarn()) && !shown(fid(nvF, 'chaptersExample')) && shown(fid(nvF, 'chaptersCopy')), [nvList(), nvWarn().textContent]);
+      nvList() === nvW.Narration.chapterList(nvEx('dialogue').chapters) && /^0:00 Intro\n/.test(nvList()) && nvList().split('\n').length === 4 && !shown(nvWarn()) && !shown(fid(nvF, 'chaptersExample')) && shown(fid(nvF, 'chaptersCopy')), [nvList(), nvWarn().textContent]);
     nvW.closeModal(fid(nvF, 'export-modal'));
     nvW.setSetting('aloud', 'all');
     fid(nvF, 'exportBtn').click();
     check('narration example: counting the action too, the chapters move and still keep the rules',
-      nvList() === '0:00 Intro\n0:15 The setup\n0:29 The puzzles\n0:47 Final thoughts' && !shown(nvWarn()), [nvList(), nvWarn().textContent]);
+      nvList() === nvW.Narration.chapterList(nvEx('all').chapters) && nvList() !== nvW.Narration.chapterList(nvEx('dialogue').chapters) && !shown(nvWarn()), [nvList(), nvWarn().textContent]);
     nvW.closeModal(fid(nvF, 'export-modal'));
     nvW.setSetting('aloud', 'dialogue');
     setText(nvF, 'my draft');
     nvW.openHelp('start');
     fid(nvF, 'helpLoadNarration').click();
     check('narration example: Help opens it too, and the screenplay example is still the screenplay',
-      /^Title: Why Broom Closet Odyssey/.test(fid(nvF, 'editor').value) && active(nvF).length === 0 &&
+      fid(nvF, 'editor').value === nvW.eval('NARRATION_EXAMPLE') && active(nvF).length === 0 &&
       (nvW.loadExampleScript(), /^Title: The Last Coffee/.test(fid(nvF, 'editor').value)), fid(nvF, 'editor').value.slice(0, 40));
     nvW.localStorage.setItem('plainchant_settings', JSON.stringify({ pace: 5, aloud: 'everything' }));
     check('reading aloud: a stored speed or choice out of range is ignored', nvW.eval('readSettings().pace') === 150 && nvW.eval('readSettings().aloud') === 'dialogue');
