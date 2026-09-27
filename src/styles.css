@@ -124,9 +124,9 @@
     --sh-boneyard: #7d8796;
 }
 
-/* Retro (P4-19, D-041, D-047): CGA. Black, with palette 1's light cyan, light magenta and white, and yellow (from the
-   other palette) for scene headings, the caret and the focus ring. A few dimmer steps (dark cyan, dark magenta, grey)
-   for what must stay quieter; every text passes the contrast sweep. Square corners and hard shadows below. */
+/* Retro (P4-19, D-041, D-047, D-048): CGA palette 1. Black, light cyan, light magenta and white, nothing else at full
+   strength; a few dimmer steps (dark cyan, dark magenta, grey) for what must stay quieter. Every text passes the
+   contrast sweep. Square corners and hard shadows below. */
 :root[data-theme="retro"] {
     color-scheme: dark;
     --bg-void: #000000;
@@ -139,7 +139,7 @@
     --border-void: #aa00aa;
     --border-mid: #aa00aa;
     --border-strong: #ff55ff;
-    --focus: #ffff55;
+    --focus: #ffffff;
     --btn-bg: #1c001c;
     --btn-text: #55ffff;
     --btn-hover: #3a003a;
@@ -151,18 +151,18 @@
     --danger-soft-text: #ff55ff;
     --danger-soft-border: #aa00aa;
     --danger-soft-bg: #000000;
-    --caret: #ffff55;
+    --caret: #ffffff;
     --selection: rgba(255, 85, 255, 0.35);
     --overlay: rgba(0, 0, 0, 0.75);
     --overlay-strong: rgba(0, 0, 0, 0.85);
     --scrollbar: #aa00aa;
     --scrollbar-hover: #ff55ff;
-    --accent-name: #ffff55;
-    --sh-scene: #ffff55;
+    --accent-name: #ffffff;
+    --sh-scene: #ffffff;
     --sh-character: #ff55ff;
     --sh-dialogue: #ffffff;
     --sh-parenthetical: #00aaaa;
-    --sh-transition: #ffff55;
+    --sh-transition: #ffffff;
     --sh-section: #ffffff;
     --sh-synopsis: #aaaaaa;
     --sh-title: #ff55ff;

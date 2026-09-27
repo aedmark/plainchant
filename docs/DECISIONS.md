@@ -869,6 +869,13 @@ scripts are linked yet (both P5-04). Answers Q-002: local files first.
    borders, Courier dialog titles, the preview as paper, and the adventure replies (D-042). The Settings label is now
    **Retro (CGA)**. The dialogs' shadow is a token now, not a literal black (which vanished on a black page).
 
+## D-048 The retro theme is pure CGA palette 1  (2026-09-27, status: accepted; amends D-047)
+**Context:** D-047 used yellow (from CGA's other palette) for scene headings, transitions, the caret, the focus ring
+and named versions, and noted that white would make it pure palette 1. The owner chose white.
+**Decision:** those five are white (`#ffffff`). At full strength the theme is now only black, light cyan, light
+magenta and white; the dimmer steps (dark cyan, dark magenta, greys) stay for quieter text. Scene headings, dialogue
+and sections are all white in the editor; the headings still stand out by their capitals and blank lines.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

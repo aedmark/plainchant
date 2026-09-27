@@ -9,12 +9,12 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-27, session 20: the retro theme is CGA now (D-047). Before it, session 19 added real files on
-disk (P5-01, D-046) and the thank-you to Space Quest Historian (P4-22, D-045); earlier: comparing versions, fast typing
-on long scripts, adventure-game replies, narration time and video chapters, and the browser targets (Firefox and
-Chromium; Safari, iPhone and iPad are roadmap Phase 7). Everything up to P5-01 is in `master`; the CGA change is on the
-working branch, `claude/compassionate-clarke-mxwpzz`, until the owner merges it. Tests: `npm test` 323,
-`bash test/run-headless.sh` 311 unit + 670 e2e, about 55 s._
+_Last updated: 2026-09-27, session 20: the retro theme is CGA now, pure palette 1 (D-047, D-048). Before it,
+session 19 added real files on disk (P5-01, D-046) and the thank-you to Space Quest Historian (P4-22, D-045); earlier:
+comparing versions, fast typing on long scripts, adventure-game replies, narration time and video chapters, and the
+browser targets (Firefox and Chromium; Safari, iPhone and iPad are roadmap Phase 7). Everything up to D-047 is in
+`master`; D-048 (yellow to white) is on the working branch, `claude/compassionate-clarke-mxwpzz`, until the owner
+merges it. Tests: `npm test` 323, `bash test/run-headless.sh` 311 unit + 670 e2e, about 55 s._
 
 **Where things stand, in one paragraph:** Phases 1 and 2 are done apart from real-device work (P2-09, P2-13) and two
 optional ideas (P2-20 hints, P2-22 desktop click-to-jump). Phase 3's output is done (Fountain export, print / save as
@@ -47,8 +47,8 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
   and who speaks there, INVENTORY counts words and scripts, SCORE counts pages out of 120, XYZZY: "Nothing happens."
   The text and Enter are exactly as in any other theme; a character called LOOK, a line made a character, a line
   inside a speech and Enter mid-line never answer. Not mentioned in Help (it is an Easter egg).
-- **Retro theme** (P4-19, D-041, D-047). Settings > Theme > **Retro (CGA)**: black, with CGA's light cyan (action),
-  light magenta (names, frames), white (dialogue) and yellow (scene headings, transitions, the caret), square corners,
+- **Retro theme** (P4-19, D-041, D-047, D-048). Settings > Theme > **Retro (CGA)**: black, with CGA palette 1's light
+  cyan (action), light magenta (names, frames) and white (dialogue, scene headings, the caret), square corners,
   double-bordered dialogs with a hard magenta shadow and titles in Courier capitals. Remembered like the other themes;
   the preview stays paper. The accessibility sweep runs in all three themes. (It was EGA blue until D-047.)
 - **Narration time and video chapters** (P4-18, P3-13, D-038; `src/narration.js`, `src/app/chapters-ui.js`). For
@@ -593,7 +593,8 @@ Newest first. Copy the template for each new session.
 **Done:** the `retro` token set rewritten: black, light cyan, light magenta, white, and yellow (which is from CGA's
 other palette; the owner asked for it). Label "Retro (CGA)"; the dialogs' hard shadow is now a token (magenta).
 **Changed:** `src/styles.css` (the retro block), the Settings label, the e2e retro check (black, `#000000`).
-**Decisions:** D-047 (D-041's colours superseded).
+**Decisions:** D-047 (D-041's colours superseded); then, after the owner merged it, D-048: yellow swapped for white,
+so the theme is pure palette 1.
 **Problems / surprises:** none: every colour passes the sweep with room to spare (the lowest, the notes, 6.1:1).
 **Left undone:** nothing.
 **Next session should start with:** merge; then the owner's pick.
