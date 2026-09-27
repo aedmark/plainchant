@@ -66,7 +66,7 @@ use what an earlier file already defined. Code inside functions runs later and c
 | `dialogs.js` | `openModal` / `closeModal`: the one accessible helper for every modal window |
 | `library-ui.js` | The Library dialog (data rules are in `src/library.js`) |
 | `versions-ui.js` | The Versions window, from a script's row in the Library: name, go back, copy, delete. Reads and writes the `versions` store through `Store` directly (D-034) |
-| `example.js`, `help.js`, `tour.js` | The example script, the Help window, the welcome tour |
+| `example.js`, `help.js`, `tour.js` | The example scripts (the screenplay, and the narration example for the read-aloud time and chapters; `loadExampleScript(text)`), the Help window, the welcome tour |
 | `settings.js` | The Settings window and `settings` (theme, text size, colours, blank lines on Enter, capitals as you type, guessing names, what is read aloud and the reading speed; `setSetting`), stored in `plainchant_settings`; applies the theme and size as it loads (D-032, D-035, D-038) |
 | `typing.js` | Tab, smart Enter, auto-uppercase, the element bar, autocomplete chips (rules are in `src/editing.js` and `src/suggest.js`) |
 | `shade.js` | The editor's colour hints: a coloured copy of the text behind the textarea (whose own text is transparent), redrawn line by line from `render()`'s parse, with a wrap check that switches it off if it ever misaligns (D-031) |

@@ -34,7 +34,8 @@ function prepareChapters() {
     chaptersText = Narration.chapterList(n.chapters);
     chaptersList.textContent = chaptersText;
     chaptersList.hidden = !n.chapters.length;
-    chaptersCopy.disabled = !n.chapters.length;
+    chaptersCopy.hidden = !n.chapters.length;
+    document.getElementById('chaptersExample').hidden = !!n.chapters.length; // with no chapters, an example instead
     document.getElementById('chaptersPace').textContent = 'Read aloud: ' + Narration.clock(n.seconds) +
         ', counting ' + narrationHow() + ' (change it in Settings).';
 

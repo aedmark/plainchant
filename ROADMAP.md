@@ -177,6 +177,8 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
   mode, keyboard-only use for a whole session. The automated sweep (D-035) checks names and contrast only
 - [x] P4-18 Narration time: how long the script takes to read aloud (dialogue, or dialogue and action), at a reading
   speed set in Settings, as a tile in Script stats (D-038)
+- [x] P4-21 A narration example script to show P4-18 / P3-13 at work: a short narrated video essay whose notes say
+  what is read aloud and what makes a chapter; from Help, and from Export's Video chapters when a script has none
 - [ ] P4-19 A retro adventure-game theme: a third theme in Settings beside dark and light, after the 16-colour palette
   of 1980s PC adventure games, softened where the pure colours fail the contrast sweep (D-035: 4.5:1 for text in
   every state). A new token set under `:root[data-theme="retro"]`; the preview stays paper

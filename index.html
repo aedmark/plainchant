@@ -175,7 +175,7 @@
                     <li><strong>New</strong> starts a blank script. <strong>Library</strong> lists every script you have, and lets you search them, <strong>rename</strong> one (this rewrites its <code class="inline">Title:</code> line), <strong>duplicate</strong> it, or <strong>delete</strong> it.</li>
                     <li>A deleted script is not gone: it waits in <strong>Recently deleted</strong> for 30 days, and you can restore it from there.</li>
                     <li><strong>Export</strong> offers three things. <strong>Download .fountain</strong> saves your script as a file named after its title: plain text, so any text editor opens it, and screenwriting apps that understand Fountain open it as a script. <strong>Print or save as PDF</strong> lays it out as standard screenplay pages (Courier 12pt, numbered, a title page of its own, <em>(MORE)</em> and <em>(CONT&rsquo;D)</em> where a speech runs over a page) and opens your browser&rsquo;s print window; choose <strong>Save as PDF</strong> there to make a PDF. Notes, sections and synopses are left out of the pages. <strong>Video chapters</strong> lists a timestamp for each top-level section (<code class="inline"># Part one</code>), timed by the words read aloud before it, ready to paste into a YouTube description; it says if the list breaks YouTube&rsquo;s rules (at least three chapters, each at least ten seconds).</li>
-                    <li>For narrated videos and voice-over, write what is <em>said</em> as dialogue (under a cue such as <code class="inline">NARRATOR</code>) and what is <em>shown</em> as action. <strong>Script stats</strong> gives the read-aloud time, at the reading speed set in <strong>Settings</strong>, which can also count the action as read aloud.</li>
+                    <li>For narrated videos and voice-over, write what is <em>said</em> as dialogue (under a cue such as <code class="inline">NARRATOR</code>) and what is <em>shown</em> as action. <strong>Script stats</strong> gives the read-aloud time, at the reading speed set in <strong>Settings</strong>, which can also count the action as read aloud. <strong>Open the narration example</strong> (below) shows it all at work.</li>
                     <li><strong>Import</strong> (in the Library, or drop a file anywhere on the page) adds a <code class="inline">.fountain</code> or <code class="inline">.txt</code> file as a new script. Nothing you already have is replaced.</li>
                     <li><strong>Copy</strong> puts the whole script on the clipboard.</li>
                     <li><strong>Colours in the editor</strong> show what each line is: scene headings warm, character names blue, dialogue a little brighter than action, notes muted. They are only hints; the formatted script is what prints.</li>
@@ -191,6 +191,7 @@
                 <div class="help-actions">
                     <button type="button" class="btn" id="helpTakeTour">Take the tour</button>
                     <button type="button" class="btn" id="helpLoadExample">Open the example script</button>
+                    <button type="button" class="btn" id="helpLoadNarration" data-narration-example>Open the narration example</button>
                 </div>
                 <p style="margin-top:1.25rem;font-size:.75rem;color:var(--text-void-muted)"><em>Plainchant</em> is music with no ornament: a single line, sung unaccompanied. Plain text works the same way.</p>
             </section>
@@ -353,6 +354,7 @@ Author: Jane Doe</code></td>
                 <pre id="chaptersList" class="chapters-list" tabindex="0" aria-label="Chapters" hidden></pre>
                 <ul id="chaptersWarn" class="chapters-warn" hidden></ul>
                 <button type="button" class="btn" id="chaptersCopy">Copy chapters</button>
+                <button type="button" class="btn" id="chaptersExample" data-narration-example hidden>Open the narration example</button>
             </section>
         </div>
     </div>

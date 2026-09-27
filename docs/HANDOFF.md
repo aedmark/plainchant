@@ -10,9 +10,9 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 ## Current state
 
 _Last updated: 2026-09-27, session 14: narration time and video chapters (P4-18, P3-13, D-038), prompted by a video
-creator who uses the app (their name is deliberately not in the feature). Session 13's sixteen items (D-023 to
-D-037) are all in `master`; session 14's work is on the working branch, `claude/compassionate-clarke-mxwpzz`, until
-the owner merges it. Tests: `npm test` 301, `bash test/run-headless.sh` 289 unit + 613 e2e, about 50 s._
+creator who uses the app (their name is deliberately not in the feature), then a narration example script (P4-21).
+P4-18 and P3-13 are in `master`; P4-21 is on the working branch, `claude/compassionate-clarke-mxwpzz`, until the
+owner merges it. Tests: `npm test` 301, `bash test/run-headless.sh` 289 unit + 620 e2e, about 50 s._
 
 **Where things stand, in one paragraph:** Phases 1 and 2 are done apart from real-device work (P2-09, P2-13) and two
 optional ideas (P2-20 hints, P2-22 desktop click-to-jump). Phase 3's output is done (Fountain export, print / save as
@@ -32,6 +32,12 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
   says, in words, when the list breaks YouTube's rules (fewer than three chapters; a chapter under ten seconds, named)
   and how to make chapters when there are no sections; it never changes the list. Copy without the Clipboard API now
   goes through a hidden copy, leaving the editor's selection alone.
+- **The narration example** (P4-21; `NARRATION_EXAMPLE` in `src/app/example.js`). "Why Broom Closet Odyssey Still
+  Works", a short video essay about a made-up game: NARRATOR speeches, a clip of the game's own voice, action as what
+  is shown, a `##` part inside a chapter, a sung sign-off, and notes saying what counts. Four chapters (Intro, The
+  setup, The puzzles, Final thoughts) that keep YouTube's rules whichever way it is read aloud; ~0:53 at 150 words a
+  minute. **Open the narration example** is in Help (Start here), and in Export's Video chapters in place of Copy
+  when the script has no chapters. It opens as a new script, like the screenplay example.
 - **Autocomplete follow-ups** (P2-21, D-037). After `INT. PLACE - ` the chips offer the script's times of day, then DAY
   and NIGHT (Tab takes the first). With Character chosen on an empty line, the most used names show as chips to tap
   (Tab still cycles the element there). A hidden live region tells a screen reader what is offered.
@@ -169,6 +175,9 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 - Scroll sync no longer divides by zero.
 
 **Verified**
+- **Narration example (P4-21), session 14:** e2e 620 (section 16r: offered in Export only with no chapters, opens as
+  a new script saved at once, its elements, its read-aloud time and chapters both ways, from Help; the screenplay
+  example unchanged). Mutations: 5 of 5 fail a test.
 - **Narration and chapters (P4-18, P3-13), session 14:** `npm test` 301 (11 new in `test/narration.test.js`);
   `bash test/run-headless.sh` 289 unit + **613 e2e** (section 16r: the stats tile, the chapter list and Copy, the
   speed clamped and remembered, "Dialogue and action", too few / too short / nothing read / no sections, the copy
@@ -355,6 +364,9 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 - **The Windows runner** (`npm run test:browser:windows`) has not run since session 11.
 
 **Gotchas for the next session**
+- **One timing check can trip on a busy machine:** "hints: on a 120-page script a keystroke's redraw stays quick"
+  (section 16k) allows 20 ms and once read exactly 20 while mutation runs were going. If it fails alone, run again
+  before hunting; if it fails twice, it is real.
 - **Test fixtures: a line in capitals parses as a character cue.** `A.` or `B.` alone on a line after a blank line is a
   cue, not action; use lowercase words in action fixtures (it cost two false failures in session 12).
 - **The e2e page is one shared script scope.** New helpers need new names: `typeInto` and `cs2` already exist and
@@ -471,7 +483,7 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 
 ## Next steps (in order)
 
-0. **Merge the branch** for session 14 (narration and chapters; the owner does this, see the git gotcha).
+0. **Merge the branch** for the narration example (P4-21; the owner does this, see the git gotcha).
 1. **A hands-on pass by the owner of what session 13 built** (nothing of it has been on a real device or in
    Firefox / Safari). Most useful first, each a few minutes:
    - **A long real script in Firefox and Safari**: do the colour hints appear (if not, the wrap check switched them
@@ -522,12 +534,14 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 
 Newest first. Copy the template for each new session.
 
-### Session 14: 2026-09-27: Narration time and video chapters (P4-18, P3-13)
+### Session 14: 2026-09-27: Narration time and video chapters (P4-18, P3-13, P4-21)
 
 **Goal:** The owner wanted to honour a video creator who uses Plainchant with a feature for their kind of work
 (narrated videos about games), leaving the creator's name out of it. Of the ideas offered, the owner chose narration
 timing and YouTube chapters, and asked for the retro theme and smaller touches to go on the roadmap.
-**Done:** P4-18, P3-13; P4-19 and P4-20 added to the roadmap.
+**Done:** P4-18, P3-13; P4-19 and P4-20 added to the roadmap. After the owner merged those and drafted a Discord
+tutorial for the creator, P4-21: a narration example script, from Help and from Export's chapters when there are none
+(Copy chapters is now hidden, not disabled, when there is nothing to copy: the app has no disabled button style).
 **Changed:** new `src/narration.js` (pure, UMD) and `src/app/chapters-ui.js`, both in `index.html` and `sw.js`;
 Settings gained `aloud` and `pace` (a number range, `SETTING_RANGES`, new in `validSetting`); Script stats has a fifth
 tile (the tiles are now two rows); Export has a Video chapters section; `copyText`'s fallback uses a hidden textarea
@@ -538,7 +552,8 @@ instead of selecting the editor; Help explains both.
   / words.
 - The mutation run on `src/narration.js` found one untested guard (a negative speed); a test was added. App-side
   mutations (9) all failed a test, listed under "Verified".
-**Left undone:** a real device, Firefox and Safari; a real YouTube upload with the chapters.
+**Left undone:** a real device, Firefox and Safari; a real YouTube upload with the chapters. One unrelated timing
+check tripped once under load (see the gotcha).
 **Next session should start with:** "Next steps" above: merge, then the owner's hands-on pass.
 
 ### Session 13: 2026-09-26: Stats, outline, focus, offline, versions, settings, themes and more (sixteen items)
