@@ -89,7 +89,8 @@ Keep each file's own listeners in that file. Functions the e2e tests call (`save
 
 ## Conventions
 
-- Vanilla JS, no frameworks. Modern syntax is fine (evergreen browsers).
+- Vanilla JS, no frameworks. Modern syntax is fine (evergreen browsers). Targets: Firefox and Chromium-based browsers;
+  desktop Safari is not one (D-039).
 - Classic `<script>` files, not ES modules (`file://` blocks module imports).
 - The parser must never touch the DOM, `window` or Node-only APIs. Escape all user text before it reaches HTML.
 - Match existing CSS variable names and class names (`script-*` for rendered screenplay elements).

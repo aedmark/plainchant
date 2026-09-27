@@ -721,8 +721,20 @@ nothing about narration.
 **Consequences:** Copy's fallback without the Clipboard API now copies through a hidden textarea instead of
 selecting the editor, so it can copy any text (the chapters) and leaves the editor's selection alone.
 
+## D-039 Browsers: Firefox and Chromium; not desktop Safari  (2026-09-27, status: accepted)
+**Context:** The owner uses Firefox daily ("Firefox loves Plainchant and works great") and does not want to spend
+effort on Safari: writers on a Mac can install Firefox.
+**Decision:** The supported browsers are Firefox and Chromium-based ones (Chrome, Edge, Brave...), current versions.
+Desktop Safari is not a target: no Safari-only fixes and no Safari checks before shipping. The automated tests stay
+headless Chromium; Firefox is checked by hand.
+**Consequences:** On iPhone and iPad every browser, Firefox included, runs on Safari's engine (WebKit), so "not
+Safari" cannot simply mean "not iOS". The app already carries iOS work (the 16px text floor, the keyboard sizing,
+P2-09 lists iPad and iPhone). Whether iOS stays a target is open (Q-003).
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom
   editor for inline element styling (P2-08)?~~ Textarea plus an overlay (D-031).
 - Q-002 Sync (Phase 5): local-file-first via the File System Access API, or hosted accounts?
+- Q-003 iPhone and iPad (D-039): every browser there is WebKit. Keep them as targets (the phone layout was built for
+  them), or support phones and tablets on Android only?

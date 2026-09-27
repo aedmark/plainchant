@@ -326,9 +326,8 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
   (reload it). Worth opening Library → Versions on a real script after a day of writing.
 - **P2-10 has not been tapped on a real phone:** whether iOS brings the keyboard up from the tap (it should: the focus
   happens inside the tap's own event) and whether a long-press to copy ever ends in a jump.
-- **Colour hints (P2-08) only seen in headless Chromium.** Firefox and Safari may wrap the copy a hair differently:
-  then the wrap check turns the hints off and the editor looks as before (a console warning says so). Worth a look in
-  both, with a long script, and with IME / dictation on a phone. The colours themselves are the owner's call.
+- **Colour hints (P2-08):** the owner reports the app works well in Firefox (session 14); not yet looked at with a
+  very long script, or with IME / dictation on a phone. Desktop Safari is not a target (D-039).
 - **P2-16 has not been on a phone or tablet.** Whether three lines feels right, and whether iOS Safari's own scrolling
   fights it, is for the owner to try: type at the bottom of a long script with the keyboard up.
 - **Persistent storage (P4-12) has not met a real browser's yes.** Not seen: Firefox's prompt (and whether it wants a
@@ -349,8 +348,8 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
   spirit but the specifics below remain unobserved by me. `fitToViewport()` itself is tested only with a fake
   `visualViewport`. The **tour and Help have not been seen on a device**, and their wording has had no review from
   anyone but me.
-- Automated runs are headless Chromium only. The owner has used the app in Firefox and Safari (storage, 2026-09-25),
-  but nothing from session 13 has been seen there. iPad Safari's "desktop-class" browsing mode and Split View / Stage
+- Automated runs are headless Chromium only. The owner uses the app in Firefox and reports it works well (session 14,
+  after sessions 13 and 14's features); desktop Safari is no longer a target (D-039). Whether iOS is, is open (Q-003). iPad Safari's "desktop-class" browsing mode and Split View / Stage
   Manager window widths are reasoned about, not observed.
 - Apple Pencil handwriting and hardware-keyboard use on tablets are unchecked (P2-13).
 - **Typing helpers on real input methods.** Tests fire keyboard-shaped events (`keydown` Tab, `beforeinput`
@@ -486,10 +485,8 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 ## Next steps (in order)
 
 0. **Merge the branch** for the narration example (P4-21; the owner does this, see the git gotcha).
-1. **A hands-on pass by the owner of what session 13 built** (nothing of it has been on a real device or in
-   Firefox / Safari). Most useful first, each a few minutes:
-   - **A long real script in Firefox and Safari**: do the colour hints appear (if not, the wrap check switched them
-     off: the console says so), does the light theme look right (Settings > Theme), does Script stats look right.
+1. **A hands-on pass by the owner of what sessions 13 and 14 built.** Firefox is done: the owner reports it works well
+   (session 14). Desktop Safari is not a target (D-039). Left, each a few minutes:
    - **After a day of writing: Library > Versions** on a real script (the database upgraded to version 2 on first
      load; with two tabs open, reload the older one). Try Go back, then Ctrl+Z.
    - **On the phone / tablet:** type at the bottom of a long script (three lines of room above the keyboard?), tap a
@@ -526,6 +523,7 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 - Tab takes the first suggestion (names, places, times of day): right? The times of day are new (D-037).
 - Should the preview follow the theme too (a dark page), or stay paper as now (D-035)?
 - Phase 5: real files on disk (P5-01) or hosted sync (P5-02) first? Q-002 in DECISIONS.
+- iPhone and iPad: still targets? Every browser there is Safari underneath (Q-003, D-039).
 - Narration (D-038): is 150 words a minute the right default, and should chapters also be offered from scenes (for
   scripts with no sections)? Should the header's page count show the read-aloud time for narrated scripts?
 - ~~Plain textarea or a rich editor (Q-001)?~~ A textarea with a coloured layer behind it (D-031).
@@ -554,7 +552,9 @@ instead of selecting the editor; Help explains both.
   / words.
 - The mutation run on `src/narration.js` found one untested guard (a negative speed); a test was added. App-side
   mutations (9) all failed a test, listed under "Verified".
-**Left undone:** a real device, Firefox and Safari; a real YouTube upload with the chapters. One unrelated timing
+**Later:** the owner confirmed the example button works, reported Firefox works well, and dropped desktop Safari
+(D-039, with Q-003 on iOS). The e2e checks on the narration example no longer pin its words (the owner reworded it).
+**Left undone:** a real device; a real YouTube upload with the chapters. One unrelated timing
 check tripped once under load (see the gotcha).
 **Next session should start with:** "Next steps" above: merge, then the owner's hands-on pass.
 
