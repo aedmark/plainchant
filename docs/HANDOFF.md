@@ -9,20 +9,28 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-27, session 15: a retro theme (P4-19, D-041). Before it, session 14 built narration time and
-video chapters (P4-18, P3-13, D-038) and a narration example (P4-21), and settled the browsers: Firefox and Chromium,
-with Safari, iPhone and iPad a distant future milestone (D-039, D-040, roadmap Phase 7). Everything up to D-040 is in
-`master`; P4-19 is on the working branch, `claude/compassionate-clarke-mxwpzz`, until the owner merges it. Tests:
-`npm test` 301, `bash test/run-headless.sh` 289 unit + 623 e2e, about 50 s._
+_Last updated: 2026-09-27, session 16: adventure-game replies in the retro theme (P4-20, D-042). Before it, session 15
+added the retro theme (P4-19, D-041), and session 14 narration time and video chapters (P4-18, P3-13, D-038), a
+narration example (P4-21) and the browser targets (Firefox and Chromium; Safari, iPhone and iPad are roadmap Phase 7,
+D-039, D-040). Everything up to P4-19 is in `master`; P4-20 is on the working branch,
+`claude/compassionate-clarke-mxwpzz`, until the owner merges it. Tests: `npm test` 306, `bash test/run-headless.sh`
+294 unit + 633 e2e, about 50 s._
 
 **Where things stand, in one paragraph:** Phases 1 and 2 are done apart from real-device work (P2-09, P2-13) and two
 optional ideas (P2-20 hints, P2-22 desktop click-to-jump). Phase 3's output is done (Fountain export, print / save as
 PDF); what is left there is optional (P3-08 to P3-12). Phase 4 is done apart from P4-01 (incremental render), P4-16
-(comparing versions), P4-17 (a screen-reader pass by a person) and P4-20 (small adventure-game touches, optional). Phase 5 (real files, sync) is undecided and Phase 6
+(comparing versions), P4-17 (a screen-reader pass by a person) and P4-22 (a thank-you in Help, waiting on the
+creator's permission). Phase 5 (real files, sync) is undecided and Phase 6
 (brand) is the owner's. The biggest gap is not code: almost everything from sessions 13 and 14 has only run in headless
 Chromium. The owner's hands-on pass (Next steps 1) matters more than the next feature.
 
 **What works**
+- **Adventure-game replies** (P4-20, D-042; `src/adventure.js`, `src/app/adventure-ui.js`). In the retro theme only,
+  pressing Enter on `look`, `inventory`, `score`, `xyzzy`, `plugh`, `get all`, `save game` or `restore game` typed
+  alone in its own paragraph answers in the notice at the foot of the screen: LOOK names the scene the caret is in
+  and who speaks there, INVENTORY counts words and scripts, SCORE counts pages out of 120, XYZZY: "Nothing happens."
+  The text and Enter are exactly as in any other theme; a character called LOOK, a line made a character, a line
+  inside a speech and Enter mid-line never answer. Not mentioned in Help (it is an Easter egg).
 - **Retro theme** (P4-19, D-041). Settings > Theme > **Retro (16 colours)**: white and yellow on EGA blue, the editor's
   colour hints in EGA colours (softened a step where the pure ones fail contrast), square corners, double-bordered
   dialogs with a hard shadow and titles in Courier capitals. Remembered like the other themes; the preview stays
@@ -181,6 +189,10 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 - Scroll sync no longer divides by zero.
 
 **Verified**
+- **Adventure replies (P4-20), session 16:** `npm test` 306 (5 new in `test/adventure.test.js`); e2e 633 (section 16s:
+  LOOK in retro, the text identical to the dark theme's, nothing in dark, INVENTORY, an ordinary line, inside a speech,
+  a character called LOOK, a line made a character, Enter mid-line, the facts for the caret's scene). Mutations: 7 of
+  7 in `src/adventure.js` and 7 of 7 in `adventure-ui.js` fail a test.
 - **Retro theme (P4-19), session 15:** e2e 623 (choosing it, remembered, the theme colour, square corners, the preview
   still paper; the sweep over every state in retro on desktop and phone). Mutations: 3 of 3 fail a test (two colours
   pushed below contrast, the choice removed from Settings).
@@ -373,7 +385,10 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 
 **Gotchas for the next session**
 - **One timing check can trip on a busy machine:** "hints: on a 120-page script a keystroke's redraw stays quick"
-  (section 16k) allows 20 ms and once read exactly 20 while mutation runs were going. If it fails alone, run again
+  (section 16k) allows 20 ms and has read 20 and 31 while mutation runs were going (twice, sessions 14 and 16).
+  Its Node twin, "speed: a feature-length script (about 120 pages) lays out quickly" (`test/paginate.test.js`, 150 ms),
+  failed most runs in session 16's container: the same code from session 13 took 150-240 ms there too, so it was the
+  machine, not a change. On the owner's machine both have always passed. If it fails alone, run again
   before hunting; if it fails twice, it is real.
 - **Test fixtures: a line in capitals parses as a character cue.** `A.` or `B.` alone on a line after a blank line is a
   cue, not action; use lowercase words in action fixtures (it cost two false failures in session 12).
@@ -491,7 +506,7 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 
 ## Next steps (in order)
 
-0. **Merge the branch** for the retro theme (P4-19; the owner does this, see the git gotcha).
+0. **Merge the branch** for the adventure replies (P4-20; the owner does this, see the git gotcha).
 1. **A hands-on pass by the owner of what sessions 13 and 14 built.** Firefox is done: the owner reports it works well
    (session 14). Desktop Safari is not a target (D-039). Left, each a few minutes:
    - **After a day of writing: Library > Versions** on a real script (the database upgraded to version 2 on first
@@ -513,8 +528,7 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
      and the stats half a second later. Measure on a 120-page script on the phone before optimising.
    - **P4-16** compare a version with the text now, scene by scene; take one scene back.
    - **P3-11** a real `.pdf` download (only if print windows prove awkward); **P3-12** a page view while writing.
-   - **P4-20** small adventure-game touches, to go with the retro theme (a thank-you in Help needs the creator's
-     permission to use their name first).
+   - **P4-22** a thank-you in Help to the creator, once they agree to their name being used.
    - **P2-22** click-to-jump in the desktop preview; **P2-20** first-use hints; **P3-09 / P3-10** Library and export
      extras; **P3-08** Final Draft export (stretch).
 4. **Owner's non-code items:** a domain, a trademark search and a real icon (P6-01 to P6-03; the icons in `icons/` are
@@ -540,6 +554,20 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 ## Session log
 
 Newest first. Copy the template for each new session.
+
+### Session 16: 2026-09-27: Adventure-game replies (P4-20)
+
+**Goal:** The owner merged P4-19 and picked P4-20.
+**Done:** P4-20 (the replies). Its second half, a thank-you in Help naming the creator, needs their permission and is
+now P4-22.
+**Changed:** new `src/adventure.js` (pure) and `src/app/adventure-ui.js` (after `typing.js`), in `index.html`, `sw.js`
+and both test runners; e2e section 16s.
+**Decisions:** D-042.
+**Problems / surprises:** the e2e tests cannot set `elementMode` as `window.elementMode` (a top-level `let` is not a
+window property): `eval('elementMode = ...')` does it. The browser timing check tripped again once under mutation load, and the Node pagination speed test (150 ms) failed
+most runs in this container; the session 13 code was just as slow here, so the container was slower, not the code.
+**Left undone:** P4-22 (waiting on permission); the replies have not been seen outside headless Chromium.
+**Next session should start with:** merge; then the owner's pick (P5-01, P4-16, P4-01...).
 
 ### Session 15: 2026-09-27: A retro theme (P4-19)
 

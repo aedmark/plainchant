@@ -757,6 +757,23 @@ Orca (the owner is on Linux) and TalkBack; VoiceOver waits for P7-02.
 **Consequences:** a new chrome colour now goes in three token sets; the accessibility sweep runs in three themes
 (a few seconds more; the whole browser run is still about 50 s).
 
+## D-042 Adventure-game replies: retro theme only, the notice only  (2026-09-27, status: accepted)
+**Context:** P4-20: answer old text-parser commands, without ever getting in the way of writing.
+**Decision:**
+1. **Only in the retro theme** (D-041): it belongs to that look, and a writer in Dark or Light never meets it.
+2. **Only a whole line that is a command,** in any case: LOOK (AROUND), INVENTORY / INV / TAKE INVENTORY, SCORE,
+   XYZZY, PLUGH, GET / TAKE ALL, SAVE GAME, RESTORE GAME. Everyday single words (wait, help, save, quit) are left out:
+   they could be a line of the script. And only when Enter is pressed at the end of that line, the line is a
+   paragraph of its own (a blank line above), the writer has not made it a character (the element bar), and it is not
+   the name of a character in the script (a character called LOOK is left alone).
+3. **Read, never write:** the answer is shown in the notice at the foot of the screen (already a polite live region,
+   so screen readers hear it). The listener is on the document in the capture phase so it reads the line before
+   typing.js rewrites it; it never cancels anything, so the text and Enter are exactly as in any other theme.
+4. **Answers use the script:** LOOK names the scene the caret is in and who speaks there; INVENTORY counts the words
+   and the Library; SCORE counts pages out of 120; the rest are the classic answers ("Nothing happens.") or point at a
+   real feature (Export, Versions, autosave). The rules are a pure module, `src/adventure.js`.
+5. **No name:** the thank-you to the creator is left out until they agree to it (P4-22).
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

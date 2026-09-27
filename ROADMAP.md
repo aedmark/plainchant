@@ -183,9 +183,11 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
   of 1980s PC adventure games, softened where the pure colours fail the contrast sweep (D-035: 4.5:1 for text in
   every state). A new token set under `:root[data-theme="retro"]`; the preview stays paper (done, D-041: "Retro (16
   colours)" in Settings, white and yellow on EGA blue, square corners, double-bordered dialogs)
-- [ ] P4-20 Small touches, if wanted: a playful reply when an old adventure-game command (`LOOK`, `INVENTORY`) is typed
-  on a line of its own, never getting in the way of real text (a cue named LOOK must still work); and a thank-you in
-  Help to the creator whose videos prompted P4-18 / P3-13, **only with their permission** to use their name
+- [x] P4-20 Small touches, if wanted: a playful reply when an old adventure-game command (`LOOK`, `INVENTORY`) is typed
+  on a line of its own, never getting in the way of real text (a cue named LOOK must still work) (done, D-042: in the
+  retro theme only, as the notice; the thank-you in Help is now P4-22)
+- [ ] P4-22 A thank-you in Help to the creator whose videos prompted P4-18 / P3-13 / P4-19 / P4-20, **only with their
+  permission** to use their name (split from P4-20)
 
 ## Phase 5: Sync and share (open questions)
 

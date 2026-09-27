@@ -2368,6 +2368,48 @@ setTimeout(() => {
     check('help: narration and chapters are explained', /Video chapters/.test(fid(nvF, 'help-modal').textContent) && /read-aloud time/.test(fid(nvF, 'help-modal').textContent));
     nvF.remove();
 
+    // 16s. Adventure-game replies (P4-20): in the retro theme, Enter on a parser command alone answers in the notice;
+    // the text and Enter itself are exactly as in any other theme
+    const avRun = async (theme, before, typed, mode, back) => {
+      W().localStorage.setItem('plainchant_settings', JSON.stringify(theme === 'dark' ? {} : { theme: theme }));
+      const f = await openFrame(1200, 700);
+      const w = f.contentWindow, e = fid(f, 'editor');
+      setText(f, before);
+      e.focus();
+      e.setSelectionRange(e.value.length, e.value.length);
+      f.contentDocument.execCommand('insertText', false, typed);
+      if (back) e.setSelectionRange(e.value.length - back, e.value.length - back);
+      if (mode) w.eval('elementMode = ' + JSON.stringify(mode)); // a top-level let: not a window property
+      w.showNotice('');
+      const ev = new w.InputEvent('beforeinput', { inputType: 'insertLineBreak', bubbles: true, cancelable: true });
+      e.dispatchEvent(ev);
+      await sleep(30);
+      const out = { text: e.value, prevented: ev.defaultPrevented, said: fid(f, 'notice').textContent };
+      f.remove();
+      return out;
+    };
+    const AV_BEFORE = 'INT. KITCHEN - NIGHT\n\nMARA\nHi.\n\nDEV\nHey.\n\n';
+    const avRetro = await avRun('retro', AV_BEFORE, 'look');
+    const avDark = await avRun('dark', AV_BEFORE, 'look');
+    check('adventure: in the retro theme, LOOK on its own describes the scene the caret is in',
+      avRetro.said === 'You are in INT. KITCHEN - NIGHT. MARA and DEV are here.', avRetro.said);
+    check('adventure: and Enter does exactly what it does in any other theme (the text is untouched)',
+      avRetro.text === avDark.text && avRetro.prevented === avDark.prevented && avRetro.text.indexOf(AV_BEFORE + 'look\n') === 0, [avRetro.text.slice(AV_BEFORE.length), avDark.text.slice(AV_BEFORE.length)]);
+    check('adventure: not in the other themes', avDark.said === '', avDark.said);
+    const avInv = await avRun('retro', AV_BEFORE, 'Inventory');
+    check('adventure: INVENTORY counts the words (as the Library does)', /^You are carrying 9 words, \d+ scripts? and an unreasonable amount of coffee\.$/.test(avInv.said), avInv.said);
+    check('adventure: an ordinary line says nothing', (await avRun('retro', AV_BEFORE, 'look at that')).said === '');
+    check('adventure: nor a command inside a speech', (await avRun('retro', AV_BEFORE + 'JO\n', 'look')).said === '');
+    check('adventure: nor a character called LOOK', (await avRun('retro', AV_BEFORE + 'LOOK\nOver here.\n\n', 'LOOK')).said === '');
+    check('adventure: nor a line the writer made a character', (await avRun('retro', AV_BEFORE, 'look', 'character')).said === '');
+    const avF = await openFrame(1200, 700);
+    const avFacts = avF.contentWindow.adventureFacts('INT. KITCHEN - NIGHT\n\nMARA\nHi.\n\nEXT. ROOF - DAY\n\nDEV\nHey.', 2);
+    check('adventure: the facts are for the scene the caret is in, not the last one', avFacts.scene === 'INT. KITCHEN - NIGHT' && avFacts.characters.join() === 'MARA', avFacts);
+    avF.remove();
+    check('adventure: nor Enter in the middle of a line (it splits "look around", which is no command)',
+      (await avRun('retro', AV_BEFORE, 'look around', null, 7)).said === '');
+    W().localStorage.removeItem('plainchant_settings');
+
     // Phone: the Library fits a 375px screen and every action is reachable
     await seedLibrary();
     await reloadFrame(m);
