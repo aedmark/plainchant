@@ -4,6 +4,10 @@ Public write-ups of the project's progress, for readers who are not developers. 
 `<article class="dev-diary">`, no page around it) ready to paste into a blog or site; the owner publishes them. The
 format follows the owner's template (D-053).
 
+**[index.html](index.html)** is the diary's front page: every entry, newest first, with a line about each. Each
+entry ends with links to the one before, the index and the one after. The links are relative, so the files are
+published together under the same names.
+
 | Date | Entry | Covers |
 | --- | --- | --- |
 | 2026-09-20 | [Writing Before Formatting](2026-09-20-writing-before-formatting.html) | The prototype, the repo's memory, the parser, never losing words, phones and tablets, typing helpers (sessions 1 to 3) |
@@ -18,9 +22,11 @@ format follows the owner's template (D-053).
 
 - Only when the owner asks, usually after a milestone. Source: the session log in `docs/HANDOFF.md` since the last
   entry, DECISIONS, and the git log. Check every claim against the code.
-- One file per entry, `YYYY-MM-DD-slug.html`, dated when the work happened; add a row above.
+- One file per entry, `YYYY-MM-DD-slug.html`, dated when the work happened. Add it at the top of `index.html` (date,
+  title, one line), add a row to the table above, give it the same `<nav class="dev-diary-nav">` as the others, and
+  add the "next" link to the entry before it.
 - Structure as the others: `<header>` with `<h1>Plainchant Dev Diary: Title</h1>`, the date, the repo link; a short
-  opening; `<h2>` sections in plain words; then **Where the Project Stands** and **Next: ...**.
+  opening; `<h2>` sections in plain words; then **Where the Project Stands**, **Next: ...** and the nav.
 - Written for writers, not developers: what changed for someone using the app, and why; technical detail only where
   it tells a story (a measurement, a bug found). No roadmap IDs or decision numbers.
 - No names of people: the creator thanked in Help is described, not named (D-045 keeps the name to Help).

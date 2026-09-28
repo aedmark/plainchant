@@ -593,7 +593,8 @@ Newest first. Copy the template for each new session.
 
 **Goal:** The owner asked to establish a devlog, built retroactively, using their other project's dev diary as the
 template.
-**Done:** `docs/devlog/`: seven entries (2026-09-20 to 2026-09-27) and a README with the index and how to write one.
+**Done:** `docs/devlog/`: seven entries (2026-09-20 to 2026-09-27), `index.html` listing them, previous / index / next
+links at the foot of each, and a README with how to write one.
 Every claim was checked against the code, the session log or DECISIONS. CLAUDE.md lists the folder and adds a step to
 the end-of-session protocol (only when the owner asks).
 **Decisions:** D-053.

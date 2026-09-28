@@ -56,7 +56,7 @@ Sessions are short-lived and context resets between them, so the repo carries th
 | `ROADMAP.md` | The plan, with stable item IDs |
 | `docs/HANDOFF.md` | Current state, next steps, session log |
 | `docs/DECISIONS.md` | Append-only decision record |
-| `docs/devlog/` | The public dev diary: one HTML fragment per entry, written when the owner asks; how to write one is in its README (D-053) |
+| `docs/devlog/` | The public dev diary: one HTML fragment per entry and `index.html` listing them, written when the owner asks; how to write one is in its README (D-053) |
 
 ## App scripts (`src/app/`)
 

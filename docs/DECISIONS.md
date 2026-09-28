@@ -937,6 +937,9 @@ limits the name to Help). Seven retroactive entries cover 2026-09-20 to 2026-09-
 asks.
 **Consequences:** the diary is history, like the session log: a later entry corrects an earlier one rather than
 rewriting it. Nothing in the app or the tests reads it.
+**Update, same session:** at the owner's request the entries are linked: `docs/devlog/index.html` lists them newest
+first, and each entry ends with a `dev-diary-nav` (previous, all entries, next). Relative links, so the files are
+published together.
 
 ## Open questions
 
