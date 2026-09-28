@@ -2918,7 +2918,7 @@ setTimeout(() => {
     const QE_TEXT = 'INT. HALL - DAY\n\nShe waits by the door.\n\nMARA\n(quietly)\nIs anyone there?\n\nThe lights go out.';
     const qeBox = () => fq(qeF, '.quick-edit');
     const qeField = () => fq(qeF, '.quick-edit-field');
-    const qeLine = (sel, text) => Array.from(qeDoc.querySelectorAll(sel + ' [data-line]')).find((el) => el.textContent.indexOf(text) !== -1);
+    const qeLine = (sel, text) => Array.from(qeDoc.querySelectorAll(sel + ' [data-line]')).filter((el) => el.textContent.indexOf(text) !== -1).pop(); // the line itself, not its block
     const qeDbl = (el) => el.dispatchEvent(new qeW.MouseEvent('dblclick', { bubbles: true, cancelable: true }));
     const qeKey = (key, mods) => qeField().dispatchEvent(new qeW.KeyboardEvent('keydown', Object.assign({ key: key, bubbles: true, cancelable: true }, mods || {})));
     const qeType = (text) => { const f = qeField(); f.value = text; f.dispatchEvent(new qeW.Event('input', { bubbles: true })); };
@@ -2927,7 +2927,7 @@ setTimeout(() => {
     qeDbl(qeLine('#page', 'Is anyone there?'));
     check('quick edit: a double-click on a line of a speech opens the whole speech as plain text, focused',
       !!qeBox() && qeField().value === 'MARA\n(quietly)\nIs anyone there?' && qeDoc.activeElement === qeField(), qeField() && qeField().value);
-    const qeCue = qeLine('#page', 'MARA').closest('[data-line]');
+    const qeCue = fq(qeF, '#page [data-line="4"]');
     const qeDy = qeBox().getBoundingClientRect().top - qeCue.getBoundingClientRect().top;
     check('quick edit: the box sits over the paragraph, across the preview\'s column', qeDy > -20 && qeDy < 5 &&
       qeBox().getBoundingClientRect().width >= fid(qeF, 'page').getBoundingClientRect().width, qeDy);
@@ -3018,7 +3018,7 @@ setTimeout(() => {
     qePtr('pointerup', qeTapAt);
     qeTapAt.click();
     await sleep(600);
-    check('quick edit: a quick tap still goes to the line in Write, and opens nothing', qeP.contentDocument.body.dataset.view === 'write' && !fq(qeP, '.quick-edit'));
+    check('quick edit: a quick tap still goes to the line in Write, and opens nothing', qeP.contentDocument.body.dataset.view === 'write' && !fq(qeP, '.quick-edit'), [qeP.contentDocument.body.dataset.view, !!fq(qeP, '.quick-edit'), fq(qeP, '.quick-edit-field') && fq(qeP, '.quick-edit-field').value, JSON.stringify(qePE.value.slice(0, 40))]);
     qePW.saveScript = () => {};
     qeP.remove();
     check('help: quick edits are explained', /Quick edits in the preview/.test(fid(m, 'help-modal').textContent));

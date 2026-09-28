@@ -48,9 +48,9 @@ function placeQuickEdit(box, anchor) {
 // Opens the paragraph of the preview line `el`. Global on purpose: the e2e tests call it.
 function openQuickEdit(el) {
     closeQuickEdit(true);
-    if (!editor.value.trim() || !el) return; // a blank script: the preview is showing the example, not the writer's text
+    if (!el) return;
     const para = Editing.paragraphAt(editor.value, Number(el.dataset.line));
-    if (para.start === para.end) return;
+    if (para.start === para.end) return; // a blank line, or a blank script (the preview is showing the example)
     const original = editor.value.slice(para.start, para.end);
     const box = document.createElement('div');
     box.className = 'quick-edit';
