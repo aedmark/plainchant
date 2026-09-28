@@ -1,0 +1,107 @@
+<article class="dev-diary">
+  <header>
+    <h1>Plainchant Dev Diary: Paper</h1>
+    <p class="date">September 25, 2026</p>
+    <p><strong><a href="https://github.com/aedmark/plainchant">Github Repo</a></strong></p>
+  </header>
+
+  <p>
+    A screenplay is not really finished until it is on paper, or on the PDF
+    that stands in for paper. Readers, producers and competitions all expect
+    the same thing: Courier 12 point, the standard margins, numbered pages,
+    and speeches that carry over a page break in the traditional way.
+  </p>
+
+  <p>
+    Plainchant can now produce exactly that.
+  </p>
+
+  <h2>Screenplays Live on a Grid</h2>
+
+  <p>
+    The hard part of printing a screenplay is not the styling. It is deciding
+    where each page ends. Browsers can split content across pages, but they
+    know nothing about screenplay conventions, and they each do it a little
+    differently.
+  </p>
+
+  <p>
+    Fortunately, screenplays are built on a grid. Courier 12 point is exactly
+    ten characters to the inch, and six lines to the inch. So a page is simply
+    60 characters wide and 54 lines tall on US Letter (58 on A4), and every
+    element sits at a whole number of characters from the margin: dialogue ten
+    in, a character's name twenty-two in, and so on.
+  </p>
+
+  <p>
+    That means the app can count lines instead of measuring pixels, the same
+    way professional screenwriting programs do. The page layout is worked out
+    by a small, separate module that never touches the screen, and is tested
+    line by line.
+  </p>
+
+  <h2>The Rules of the Page</h2>
+
+  <p>
+    Pagination follows the conventions a script reader expects:
+  </p>
+
+  <ul>
+    <li>A scene heading never sits alone at the foot of a page</li>
+    <li>A speech that runs over a page ends with <em>(MORE)</em>, and carries
+      on under the character's name with <em>(CONT'D)</em></li>
+    <li>A character's name is never left alone at the foot of a page, and a
+      speech only breaks between sentences</li>
+    <li>The title page is a page of its own, and the first page of the script
+      carries no number</li>
+    <li>Dual dialogue, two characters speaking at once, prints side by side</li>
+  </ul>
+
+  <h2>The First Real PDF</h2>
+
+  <p>
+    The first version only broke a long paragraph where a sentence happened
+    to end a line. The first real PDF showed why that was not good enough: one
+    page ended with six empty lines, because no line ended in quite the right
+    place.
+  </p>
+
+  <p>
+    Pages can now break at any sentence end, and the rest of the paragraph is
+    rewrapped on the next page. That is what a writer would do by hand, and it
+    fills pages the way readers expect.
+  </p>
+
+  <h2>Printing Without a PDF Library</h2>
+
+  <p>
+    Plainchant has no dependencies, and adding a PDF-generating library would
+    have broken that rule. Instead, the app draws the pages as real,
+    paper-sized sheets and hands them to the browser's own print window.
+    Choosing <strong>Save as PDF</strong> there makes the file.
+  </p>
+
+  <p>
+    Printing lives in the <strong>Export</strong> window, alongside the
+    <code>.fountain</code> download, with a choice of US Letter or A4. A
+    seventh button in the toolbar would have crowded it off the edge on
+    smaller screens.
+  </p>
+
+  <h2>Where the Project Stands</h2>
+
+  <p>
+    Scripts print as proper screenplay pages, to paper or to PDF, and the
+    output has since been checked both ways on a real printer. The tests have
+    grown to 191 unit tests and 409 checks of the app.
+  </p>
+
+  <h2>Next: Knowing Your Script</h2>
+
+  <p>
+    With the pages counted properly, the app can finally answer questions a
+    writer actually asks. How many pages is this? How long will it run? Which
+    scenes are dragging? And how do I get to the third act without scrolling
+    for a minute?
+  </p>
+</article>

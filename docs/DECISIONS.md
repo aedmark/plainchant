@@ -926,6 +926,18 @@ used: every script already lives in the browser and the app works offline, so th
 not offline without it. The element ids (`exportFountain`, `saveFileBtn`, `unlinkFileBtn`, ...) are unchanged.
 **Consequences:** none beyond the words.
 
+## D-053 A public dev diary in docs/devlog  (2026-09-28, status: accepted)
+**Context:** The owner asked to start a devlog, written retroactively for the project so far, using the template
+from their other project's dev diary (an `<article class="dev-diary">` fragment: a header with the title, date and
+repo link, plain-language sections, then "Where the Project Stands" and "Next").
+**Decision:** `docs/devlog/`, one HTML fragment per entry, named by the date of the work it covers; an index and the
+rules for writing one in its README. Written for writers rather than developers, in the project's voice, with no
+roadmap IDs, no decision numbers and no people's names (the creator thanked in Help is described, not named: D-045
+limits the name to Help). Seven retroactive entries cover 2026-09-20 to 2026-09-27. New entries only when the owner
+asks.
+**Consequences:** the diary is history, like the session log: a later entry corrects an earlier one rather than
+rewriting it. Nothing in the app or the tests reads it.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

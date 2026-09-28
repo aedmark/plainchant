@@ -26,6 +26,7 @@ Sessions are short-lived and context resets between them, so the repo carries th
 2. Rewrite the **Current state** and **Next steps** sections of `docs/HANDOFF.md` so they are true right now.
 3. Add a session-log entry at the top of the log using the template in HANDOFF.md.
 4. Never leave "Current state" describing something that is no longer true. Handoff docs that lie are worse than none.
+5. If the owner asks for a dev-diary entry, write it in `docs/devlog/` from the session log since the last one.
 
 ## Layout
 
@@ -55,6 +56,7 @@ Sessions are short-lived and context resets between them, so the repo carries th
 | `ROADMAP.md` | The plan, with stable item IDs |
 | `docs/HANDOFF.md` | Current state, next steps, session log |
 | `docs/DECISIONS.md` | Append-only decision record |
+| `docs/devlog/` | The public dev diary: one HTML fragment per entry, written when the owner asks; how to write one is in its README (D-053) |
 
 ## App scripts (`src/app/`)
 

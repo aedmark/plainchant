@@ -1,0 +1,105 @@
+<article class="dev-diary">
+  <header>
+    <h1>Plainchant Dev Diary: Somewhere Safer for the Words</h1>
+    <p class="date">September 25, 2026</p>
+    <p><strong><a href="https://github.com/aedmark/plainchant">Github Repo</a></strong></p>
+  </header>
+
+  <p>
+    This stretch of work was almost invisible from the outside, and it may be
+    the most important so far. Plainchant keeps every script in the browser
+    itself, on your own machine, with no account and no server. That promise
+    is only as good as the place the scripts are kept.
+  </p>
+
+  <h2>First, a Small Convenience</h2>
+
+  <p>
+    Before the big job, autocomplete arrived. As you type a character's name
+    or a scene's location, suggestions appear in the row of buttons above the
+    editor, taken from the names and places already in your script.
+    <strong>Tab</strong> takes the first one. <strong>Enter</strong> never
+    does, because Enter should always mean "new line" and nothing else.
+  </p>
+
+  <h2>The Problem With the Old Storage</h2>
+
+  <p>
+    Scripts had been saved in the browser's simplest storage, which has two
+    problems. It holds only about five megabytes for the whole app, and the
+    way it was used meant the entire library was rewritten on every save. One
+    script is small, but a writer's collection is not, and every keystroke's
+    save was getting a little heavier.
+  </p>
+
+  <p>
+    The fix was to move everything into the browser's proper database,
+    IndexedDB, which can hold far more and can save one script at a time.
+    This was planned carefully and written up as a specification before a
+    single line changed, because the move is not a simple swap.
+  </p>
+
+  <h2>The Unload Race</h2>
+
+  <p>
+    The old storage saved instantly. The database saves "soon": the browser
+    promises to finish the write, but not before your code moves on. That is
+    fine, until someone closes the tab mid-sentence and the browser shuts the
+    page down before the database has finished.
+  </p>
+
+  <p>
+    So Plainchant now keeps a small emergency copy of the script you are
+    working on, written instantly every time it saves. If the database write
+    never lands, the next time you open the app the emergency copy is
+    compared with what the database holds, and the newer words win.
+  </p>
+
+  <p>
+    Two open tabs also now tell each other when a script changes, so one tab
+    does not quietly overwrite the other's work.
+  </p>
+
+  <h2>A Testing Surprise</h2>
+
+  <p>
+    The automated tests run in a headless browser with a trick that makes
+    time pass faster than real time. It turned out that the database never
+    finishes anything under that trick: time raced past its replies, and not
+    a single write ever completed. The tests now run in real time instead. They
+    take about fifty seconds, which is a fair price for testing the real
+    thing.
+  </p>
+
+  <h2>No Legacy Baggage</h2>
+
+  <p>
+    The first version of the move carefully copied old scripts across and kept
+    the old storage as a fallback. But nobody is writing real work in
+    Plainchant yet, so all of that was removed. There is one way to store
+    scripts now, and it is the good one. That makes the code simpler and
+    leaves fewer places for words to go missing.
+  </p>
+
+  <p>
+    Around the same time, development moved from Windows to Arch Linux, and the
+    test runner moved with it.
+  </p>
+
+  <h2>Where the Project Stands</h2>
+
+  <p>
+    Scripts now live in a real database, with an instant emergency copy, and
+    tabs that keep each other informed. It has been confirmed on Arch Linux
+    in Firefox, and the full suite passes on the development machine.
+  </p>
+
+  <h2>Next: Paper</h2>
+
+  <p>
+    A screenplay that cannot be printed is not finished. The next job is
+    turning Plainchant's preview into real screenplay pages: the right
+    margins, the right page breaks, and a PDF that anyone in the industry would
+    recognise.
+  </p>
+</article>

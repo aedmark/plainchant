@@ -9,11 +9,11 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-27, session 22: print follows Final Draft's screenplay template: two blank lines before a scene
-heading, parentheticals 3.0 to 5.5 inches (D-051). Before it: Final Draft export (P3-08, D-049), P3-11 and P2-22
-dropped (D-050), the retro theme as CGA (D-047, D-048), real files on disk (P5-01), and earlier work. Everything up to
-P3-08 is in `master`; D-051 is on the working branch, `claude/compassionate-clarke-mxwpzz`, until the owner merges it.
-Tests: `npm test` 334, `bash test/run-headless.sh` 322 unit + 673 e2e, about 55 s._
+_Last updated: 2026-09-28, session 24: a public dev diary, seven entries written retroactively (`docs/devlog/`,
+D-053). Before it: Export's buttons renamed (D-052), print following Final Draft's screenplay template (D-051), Final
+Draft export (P3-08), and earlier work. Everything up to D-052 is in `master`; the diary is on the working branch,
+`claude/compassionate-clarke-mxwpzz`, until the owner merges it. Tests: `npm test` 334, `bash test/run-headless.sh`
+322 unit + 673 e2e, about 55 s._
 
 **Where things stand, in one paragraph:** Phases 1 and 2 are done apart from real-device work (P2-09, P2-13) and two
 optional ideas (P2-20 hints, P2-22 desktop click-to-jump). Phase 3's output is done (Fountain export, print / save as
@@ -548,7 +548,8 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 
 ## Next steps (in order)
 
-0. **Merge the branch** for the Export wording (D-052; the owner does this, see the git gotcha). If anyone you send
+0. **Merge the branch** for the dev diary (D-053; the owner does this, see the git gotcha); read the entries before
+   publishing them. If anyone you send
    scripts to has Final Draft, a real .fdx opened there is still the one check the tests cannot make.
 1. **A hands-on pass by the owner of what sessions 13 and 14 built.** Firefox is done: the owner reports it works well
    (session 14). Desktop Safari is not a target (D-039). Left, each a few minutes:
@@ -587,6 +588,20 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 ## Session log
 
 Newest first. Copy the template for each new session.
+
+### Session 24: 2026-09-28: A dev diary (D-053)
+
+**Goal:** The owner asked to establish a devlog, built retroactively, using their other project's dev diary as the
+template.
+**Done:** `docs/devlog/`: seven entries (2026-09-20 to 2026-09-27) and a README with the index and how to write one.
+Every claim was checked against the code, the session log or DECISIONS. CLAUDE.md lists the folder and adds a step to
+the end-of-session protocol (only when the owner asks).
+**Decisions:** D-053.
+**Problems / surprises:** the session log has no entry for session 9 (import); the git log and D-016 filled the gap.
+The first entries mention that the code is written with an AI coding assistant (it explains the roadmap / handoff /
+decisions scheme); that is the owner's call to keep or cut.
+**Left undone:** publishing, which is the owner's.
+**Next session should start with:** merge; then the owner's pick.
 
 ### Session 23: 2026-09-27: Export's buttons say what they do (D-052)
 

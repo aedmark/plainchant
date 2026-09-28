@@ -1,0 +1,131 @@
+<article class="dev-diary">
+  <header>
+    <h1>Plainchant Dev Diary: A Name and a Front Door</h1>
+    <p class="date">September 20, 2026</p>
+    <p><strong><a href="https://github.com/aedmark/plainchant">Github Repo</a></strong></p>
+  </header>
+
+  <p>
+    The second half of the first day was about everything around the writing:
+    how a newcomer finds their way in, what the app is called, and how a
+    writer keeps track of more than one script.
+  </p>
+
+  <h2>A Welcome, and Help That Helps</h2>
+
+  <p>
+    The first time you open the app, a short welcome tour now explains the two
+    panes, how the typing helpers work, and where your work is kept. It never
+    appears again unless you ask for it.
+  </p>
+
+  <p>
+    Behind the <strong>?</strong> button there is now a full Help window: a
+    Fountain cheat sheet, every keyboard shortcut, and what each button does.
+    Every example in the cheat sheet is checked by the tests against the real
+    parser, so the Help can never quietly drift away from what the app
+    actually does.
+  </p>
+
+  <p>
+    All of the app's windows share one helper for opening and closing, which
+    means they all behave the same way for keyboard and screen-reader users:
+    focus moves into the window, stays there, and returns where it came from.
+  </p>
+
+  <h2>Choosing a Name</h2>
+
+  <p>
+    Three names were in circulation at once: "SLASH Frictionless
+    Screenwriter" on the page, "NeuroFountain" on the repository, and "The
+    Void" and "The Canvas" on the panes. The brief for a new one was calm and
+    a little whimsical.
+  </p>
+
+  <p>
+    Plenty of good names were already taken. Vellum is a well-known book
+    formatting app, which is the opposite of the pitch. Foolscap and Dormouse
+    are already quiet writing apps. Plainsong was perfect, and two apps already
+    use it.
+  </p>
+
+  <p>
+    So the app is called <strong>Plainchant</strong>: the same music under its
+    other name. Plainchant is unaccompanied, unornamented singing, a single
+    line of melody. Fountain works the same way: plain text first, with the
+    formatting layered on afterwards.
+  </p>
+
+  <p>
+    The repository was renamed to match. The domain, a trademark search and a
+    real logo are still on the list.
+  </p>
+
+  <h2>A Library</h2>
+
+  <p>
+    Scripts can now be searched, renamed, duplicated and deleted from the
+    Library. Deleting is gentle: a script goes to <strong>Recently
+    deleted</strong> first and can be brought back, and it is only removed for
+    good after thirty days or when you say so twice.
+  </p>
+
+  <p>
+    Renaming a script simply changes the <code>Title:</code> line in its text,
+    because the text is the script. Nothing about a script is hidden away
+    outside what you wrote.
+  </p>
+
+  <h2>Getting Scripts In and Out</h2>
+
+  <p>
+    Export now downloads a proper <code>.fountain</code> file named after the
+    script's title, which any text editor and most screenwriting apps can
+    open.
+  </p>
+
+  <p>
+    Import works the other way: pick a <code>.fountain</code> or
+    <code>.txt</code> file from the Library, or drop it onto the page. It reads
+    files written on Windows, Mac and Linux alike, including older ones in
+    Windows' own text encoding. An import always adds a new script and never
+    replaces anything.
+  </p>
+
+  <h2>Tidying the House</h2>
+
+  <p>
+    The app was one very long HTML file, with nearly a thousand lines of
+    script and seven hundred of styling inside it. The code now lives in a
+    set of small files, one per job, and the styling in its own stylesheet.
+  </p>
+
+  <p>
+    The split was done mechanically, and then checked: every original line of
+    code was proven to exist exactly once in the new files. A new structure
+    test fails if a file is forgotten, a name is declared twice, or a file
+    grows past five hundred lines.
+  </p>
+
+  <h2>Where the Project Stands</h2>
+
+  <p>
+    The app has a name, a welcome, Help, a Library, and a way in and out for
+    scripts. The tests have grown to 144 unit tests and 330 checks of the app
+    itself.
+  </p>
+
+  <h2>Next: Suggestions, and a Safer Place for Scripts</h2>
+
+  <p>
+    Two things are next. Typing a character's name for the fiftieth time
+    should not require typing all of it, so the app should suggest names and
+    locations it has already seen.
+  </p>
+
+  <p>
+    And the scripts themselves live somewhere with a hard size limit, which is
+    fine for a few short films and not fine for a writer's whole body of work.
+    That needs a careful plan before any code is written.
+  </p>
+</article>

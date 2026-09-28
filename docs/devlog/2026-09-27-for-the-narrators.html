@@ -1,0 +1,142 @@
+<article class="dev-diary">
+  <header>
+    <h1>Plainchant Dev Diary: For the Narrators</h1>
+    <p class="date">September 27, 2026</p>
+    <p><strong><a href="https://github.com/aedmark/plainchant">Github Repo</a></strong></p>
+  </header>
+
+  <p>
+    Some good news arrived this week: a YouTuber who makes long, narrated
+    videos about the history of classic adventure games has been writing with
+    Plainchant, and likes it.
+  </p>
+
+  <p>
+    That raised a nice question. How do you thank someone like that? The
+    answer was to build something for the kind of work they do: scripts that
+    are read aloud to a microphone rather than performed on a set. None of it
+    carries anyone's name. It is simply there for every narrator who needs it.
+  </p>
+
+  <h2>How Long Will This Take to Read?</h2>
+
+  <p>
+    A screenplay's page count predicts screen time well enough, at roughly a
+    minute a page. It says very little about a narrated video, where the
+    words are everything and the pictures follow.
+  </p>
+
+  <p>
+    Script stats now include a <strong>read-aloud time</strong>, based on the
+    words actually spoken. By default that means dialogue, which is how a
+    narrator usually writes. A setting includes the action lines as well, for
+    writers who read everything aloud. The reading speed starts at 150 words
+    a minute and can be set anywhere from 80 to 300, so after reading a page
+    against a clock, a narrator can make the estimate their own.
+  </p>
+
+  <h2>Chapters for YouTube</h2>
+
+  <p>
+    YouTube turns a list of timestamps in a video's description into
+    chapters. Working those out by hand means scrubbing through a finished
+    video and writing down times.
+  </p>
+
+  <p>
+    Plainchant can now do it from the script. Each top-level section
+    (<code># Part one</code>) becomes a chapter, timed by the words read
+    aloud before it. The <strong>Export</strong> window lists them, ready to
+    copy and paste.
+  </p>
+
+  <p>
+    YouTube is strict about chapters, and quietly ignores a list that breaks
+    its rules. So Plainchant checks them first:
+  </p>
+
+  <ul>
+    <li>The first chapter must start at 0:00, so an "Intro" is added when
+      there are words before the first section</li>
+    <li>There must be at least three chapters</li>
+    <li>Each chapter must be at least ten seconds long</li>
+  </ul>
+
+  <p>
+    If the list breaks a rule, Plainchant says which one, instead of letting
+    the writer find out after uploading.
+  </p>
+
+  <p>
+    There is also a short narration example in Help, a script about how the
+    Odyssey still works, to show all of this in action.
+  </p>
+
+  <h2>A Retro Theme</h2>
+
+  <p>
+    Anyone who grew up with adventure games remembers the colours. There is
+    now a <strong>Retro</strong> theme in Settings, with square corners and
+    hard shadows.
+  </p>
+
+  <p>
+    It started out in the navy blue of EGA-era games, and soon became pure
+    CGA: black, cyan, magenta and white, the four colours many of us first
+    saw on a computer screen. Every colour still passes the same readability
+    check as the other themes.
+  </p>
+
+  <h2>A Few Old Commands</h2>
+
+  <p>
+    In the retro theme only, the app understands a handful of commands from
+    old text-parser games. Type one on a line of its own, press
+    <strong>Enter</strong>, and an answer appears:
+  </p>
+
+  <ul>
+    <li><strong>LOOK</strong> tells you which scene you are in, and who is
+      speaking there</li>
+    <li><strong>INVENTORY</strong> counts the words and scripts you are
+      carrying, and an unreasonable amount of coffee</li>
+    <li><strong>SCORE</strong> gives your page count out of a possible 120</li>
+    <li><strong>XYZZY</strong> does exactly what it always did</li>
+  </ul>
+
+  <p>
+    There are a few more to discover. None of them ever change the script:
+    the answer only appears on screen, and the line you typed stays exactly
+    as you wrote it.
+  </p>
+
+  <h2>Which Browsers</h2>
+
+  <p>
+    Plainchant was tried in Firefox this week and works well there, as it does
+    in Chrome, Edge and other Chromium browsers. Those are the targets.
+  </p>
+
+  <p>
+    Safari, on the Mac, iPhone and iPad, is now a distant future milestone.
+    Mac users have plenty of Apple-only writing tools, and Firefox is one
+    download away.
+  </p>
+
+  <h2>Where the Project Stands</h2>
+
+  <p>
+    Phase four of the roadmap, the extras, is nearly done. What remains is the
+    work that was being put off: making long scripts fast, and comparing one
+    version of a script with another.
+  </p>
+
+  <h2>Next: Long Scripts, and Real Files</h2>
+
+  <p>
+    A feature-length script has started to feel sluggish when typing. That is
+    next, to be measured before anything changes. After that, the biggest
+    remaining step: letting a script live in a real file on your own disk,
+    where every other program can see it too.
+  </p>
+</article>

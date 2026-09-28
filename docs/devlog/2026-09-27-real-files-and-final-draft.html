@@ -1,0 +1,157 @@
+<article class="dev-diary">
+  <header>
+    <h1>Plainchant Dev Diary: Real Files and Final Draft</h1>
+    <p class="date">September 27, 2026</p>
+    <p><strong><a href="https://github.com/aedmark/plainchant">Github Repo</a></strong></p>
+  </header>
+
+  <p>
+    The second half of this week went back to the roadmap items that had been
+    waiting the longest: making long scripts fast, comparing versions, and
+    getting scripts out of the browser and into the places the rest of the
+    industry works.
+  </p>
+
+  <h2>Measure First</h2>
+
+  <p>
+    Typing into a feature-length script had started to feel heavy. The obvious
+    suspect was the parser, which reads the whole script again on every
+    keystroke. Rewriting it to read only the part that changed would have
+    been a large job.
+  </p>
+
+  <p>
+    Measuring first changed the plan completely. Parsing a 162-page script
+    took between two and nine milliseconds, which is nothing. The real cost
+    was the browser laying out the entire preview again from scratch, about
+    ninety milliseconds every time.
+  </p>
+
+  <p>
+    So the parser stayed as it was. The preview is now patched block by
+    block: only the paragraphs that actually changed are replaced. On long
+    scripts, the preview also waits until the letter you typed is on screen
+    before it catches up. On that 162-page script, a keystroke went from about
+    116 milliseconds to about 30, and pressing Enter from about 150 to about
+    45.
+  </p>
+
+  <h2>What Changed Since Then?</h2>
+
+  <p>
+    Versions have been kept automatically for a while. Now any version can be
+    <strong>compared</strong> with the script as it is today. The comparison
+    goes scene by scene, matching scenes by their headings, and shows only
+    the scenes that differ: lines that went are struck through, lines that
+    came are underlined, and everything unchanged is folded away.
+  </p>
+
+  <p>
+    A single scene can then be taken back from the old version, without
+    touching the rest of the script. Before anything changes, the current text
+    is kept as a version too, so taking a scene back can itself be undone.
+  </p>
+
+  <h2>A Person, Not a Test</h2>
+
+  <p>
+    The automated accessibility checks can tell whether every button has a
+    name. They cannot tell what the app sounds like. This week Plainchant was
+    used with a real screen reader, by a person, and passed.
+  </p>
+
+  <p>
+    Help also now carries a short thank-you to the video creator whose work
+    inspired the narration features. It was added with their permission, and
+    it is the only place in Plainchant where a name appears.
+  </p>
+
+  <h2>Scripts in Real Files</h2>
+
+  <p>
+    Plainchant keeps scripts inside the browser. That is safe and simple, but
+    it means other programs cannot see them: not your backups, not a cloud
+    folder, not a text editor.
+  </p>
+
+  <p>
+    In Chrome, Edge and other Chromium browsers, a script can now be kept in
+    sync with a real <code>.fountain</code> file, wherever you choose to put
+    it. Open one from the Library, or link the current script to a new one
+    from Export. From then on, every save writes the file too. Edit the file
+    in another program, and the changes come back into Plainchant the next
+    time you return to it.
+  </p>
+
+  <p>
+    The rule that makes this safe is simple: Plainchant never writes over a
+    change made somewhere else. If only the file changed, the script takes the
+    file's text. If only the script changed, the file is written. If both
+    changed, a bar above the editor asks which should win, and whichever loses
+    is kept in Versions either way.
+  </p>
+
+  <p>
+    Firefox does not allow web pages to keep writing to a file, so there it
+    still has Import and the download, which cover the same ground by hand.
+  </p>
+
+  <p>
+    Even the button names got a second look. Export offered "Download
+    .fountain" and "Save to a file", which sounded like the same thing twice.
+    They are now <strong>Download a copy</strong>, for a one-off file, and
+    <strong>Sync with a file</strong>, for one that stays up to date.
+  </p>
+
+  <h2>Final Draft</h2>
+
+  <p>
+    Much of the film and television industry still runs on Final Draft. Export
+    can now save a script as a Final Draft <code>.fdx</code> file, with every
+    element as the right Final Draft paragraph type: scene headings with
+    their numbers, characters, parentheticals, dialogue, transitions, dual
+    dialogue side by side, page breaks, bold, italics and underlining, and
+    the title page. Notes and synopses are left out, as they are in print.
+  </p>
+
+  <p>
+    Along the way, a set of Final Draft's own screenplay templates turned up.
+    Comparing them with Plainchant's print layout found two differences: Final
+    Draft leaves two blank lines before every scene heading, not one, and its
+    parentheticals are a little wider. Plainchant's printed pages and preview
+    now match both. Scripts print slightly longer as a result, about a line
+    per scene, which is closer to what a reader holding a Final Draft script
+    would expect.
+  </p>
+
+  <h2>Where the Project Stands</h2>
+
+  <p>
+    The core app is complete: writing, formatting, a Library, versions,
+    printing and PDF, statistics, an outline, themes, working offline, real
+    files, and Fountain and Final Draft export. Two ideas were dropped along
+    the way: a hand-made PDF writer, because printing to PDF through the
+    browser does the job, and clicking the desktop preview to jump to a line,
+    because the app already does what is needed there.
+  </p>
+
+  <p>
+    The tests now stand at 334 unit tests under Node, and 322 unit tests plus
+    673 checks of the app in a real browser.
+  </p>
+
+  <h2>Next: Into the Writer's Hands</h2>
+
+  <p>
+    The most valuable next step is still not a feature. It is a writer using
+    Plainchant for a real project on real devices, especially Android phones
+    and tablets, and noting what feels wrong.
+  </p>
+
+  <p>
+    On the roadmap after that: opening Final Draft files as well as saving
+    them, a page-by-page view while writing, and the brand work that a real
+    release needs, from a domain name to an icon that is not a placeholder.
+  </p>
+</article>

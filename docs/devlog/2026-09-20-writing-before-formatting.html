@@ -1,0 +1,133 @@
+<article class="dev-diary">
+  <header>
+    <h1>Plainchant Dev Diary: Writing Before Formatting</h1>
+    <p class="date">September 20, 2026</p>
+    <p><strong><a href="https://github.com/aedmark/plainchant">Github Repo</a></strong></p>
+  </header>
+
+  <p>
+    Plainchant started life in July as a single web page with a rather
+    unwieldy name: the SLASH Frictionless Screenwriter. It had a text box on
+    one side and a formatted screenplay on the other. You typed, and it tried
+    to guess what you meant.
+  </p>
+
+  <p>
+    The idea behind it has not changed since. Plenty of writers, many of
+    them neurodivergent, get stuck on screenplay formatting: margins, capital
+    letters, where a character's name goes, what a transition looks like. The
+    app should handle all of that, so the writer can simply write.
+  </p>
+
+  <p>
+    This week the prototype became a real project.
+  </p>
+
+  <h2>A Project With a Memory</h2>
+
+  <p>
+    Most of the code is written in short working sessions with an AI coding
+    assistant, and each session starts with no memory of the last. So before
+    any features, the project got a way to remember:
+  </p>
+
+  <ul>
+    <li>A roadmap, where every piece of work has a permanent ID</li>
+    <li>A handoff document, rewritten at the end of every session so it always
+      says where things stand right now</li>
+    <li>A decision record, where every choice a future session might question
+      is written down with its reasons</li>
+  </ul>
+
+  <p>
+    That last one has already paid for itself. Decisions do not get argued
+    twice when the reasons are one search away.
+  </p>
+
+  <h2>A Parser That Does Not Guess</h2>
+
+  <p>
+    Scripts are written in Fountain, a plain-text screenplay format. You type
+    <code>INT. KITCHEN - NIGHT</code> and it becomes a scene heading; a name in
+    capitals on its own line becomes a character about to speak.
+  </p>
+
+  <p>
+    The prototype guessed a lot. A lowercase "cut to:" became a transition,
+    sometimes. Guessing makes behaviour unpredictable and impossible to test,
+    so the new parser follows the Fountain rules exactly. Where a writer
+    expects some leniency, such as typing a name in lowercase, the
+    <em>editor</em> fixes the text as they type, and the parser stays strict.
+  </p>
+
+  <p>
+    The parser is a small, separate module with its own tests. It knows
+    nothing about the page it runs on, which means the same file can be tested
+    on its own and shipped in the app unchanged.
+  </p>
+
+  <h2>Never Lose Words</h2>
+
+  <p>
+    One rule outranks almost everything else: a writer's words must not
+    disappear. Reloading the page now brings back the script you were
+    working on. Saving happens as you type, and once more when you switch away
+    from the tab or close it.
+    And clearing the editor by accident does not overwrite the saved script;
+    <strong>New</strong> is the way to start fresh.
+  </p>
+
+  <h2>Phones, and Then Tablets</h2>
+
+  <p>
+    The prototype split the screen in half on every device, which on a phone
+    meant two unusable slivers. Phones now show one pane at a time, the
+    script or the formatted preview, with a menu for everything else.
+  </p>
+
+  <p>
+    Tablets turned out to be the most likely device of all, and measuring them
+    found a real bug: anywhere below about 1,100 pixels wide, the preview was
+    being clipped by up to 341 pixels. Screens under 1,024 pixels now get the
+    one-pane layout too, and the screenplay sizes itself to the column it is
+    given rather than to the window.
+  </p>
+
+  <h2>Helping Hands While Typing</h2>
+
+  <p>
+    The first typing helpers arrived the same day:
+  </p>
+
+  <ul>
+    <li><strong>Tab</strong> turns the current line into the next element: a
+      character, a scene heading, a transition</li>
+    <li><strong>Enter</strong> knows what usually comes next, so after a
+      character's name you are ready to type what they say</li>
+    <li>Scene headings and character names become capitals as you type</li>
+    <li>On a touch screen, a row of buttons above the keyboard does what Tab
+      does, since tablets and phones rarely have one</li>
+  </ul>
+
+  <p>
+    Every one of these goes through the browser's own editing commands, so
+    <strong>Undo</strong> still works exactly as a writer expects.
+  </p>
+
+  <h2>Where the Project Stands</h2>
+
+  <p>
+    The first phase of the roadmap is complete: restoring the last script, a
+    proper parser, and saving that keeps up. There are now 94 unit tests and
+    267 checks that drive the real app in a browser, clicking buttons and
+    typing text the way a person would.
+  </p>
+
+  <h2>Next: A Front Door</h2>
+
+  <p>
+    The app works, but a newcomer opening it for the first time would have no
+    idea what to type. It needs a welcome, a proper Help window, and, while
+    we are at it, a name that is not "Frictionless".
+  </p>
+</article>

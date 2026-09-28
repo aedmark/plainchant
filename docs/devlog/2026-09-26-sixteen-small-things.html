@@ -1,0 +1,150 @@
+<article class="dev-diary">
+  <header>
+    <h1>Plainchant Dev Diary: Sixteen Small Things</h1>
+    <p class="date">September 26, 2026</p>
+    <p><strong><a href="https://github.com/aedmark/plainchant">Github Repo</a></strong></p>
+  </header>
+
+  <p>
+    This was the longest single stretch of work so far, and it had an
+    unusual rhythm. Instead of one big feature, it was sixteen small ones,
+    picked from the roadmap one at a time. Each was built, tested, merged and
+    tried before the next one began.
+  </p>
+
+  <p>
+    Together they turn Plainchant from a text box that formats into something
+    closer to a writing room.
+  </p>
+
+  <h2>Knowing Your Script</h2>
+
+  <p>
+    The preview's header now shows a live page count, worked out exactly as
+    the script would print. Behind it, a <strong>Script stats</strong> window
+    shows:
+  </p>
+
+  <ul>
+    <li>Pages, estimated screen time and word count</li>
+    <li>Who speaks, how often, and how much</li>
+    <li>Every scene's page and length, in the eighths of a page that
+      schedulers use</li>
+    <li>The balance of interior and exterior scenes, and of day and night</li>
+    <li>Every location, and how often the story returns to it</li>
+  </ul>
+
+  <p>
+    An <strong>Outline</strong> window lists the script's sections, scenes and
+    synopses, each with the page it starts on. Choosing one jumps straight
+    there.
+  </p>
+
+  <h2>Writing With Fewer Distractions</h2>
+
+  <p>
+    <strong>Focus mode</strong> dims everything but the paragraph you are
+    working on, and keeps your line in the middle of the screen, like a
+    typewriter.
+  </p>
+
+  <p>
+    On tablets and phones, the line you are typing now always stays at least
+    three lines clear of the on-screen keyboard. Tapping a line in the preview
+    takes you to that line in the script.
+  </p>
+
+  <p>
+    Character names can now be guessed as you type: write a new name in
+    capitals, press <strong>Enter</strong>, and the app treats it as someone
+    about to speak. Suggestions now include times of day, and on an empty
+    line where a character's name belongs, the names already in the script.
+  </p>
+
+  <h2>Colour, Without Leaving Plain Text</h2>
+
+  <p>
+    The editor now tints each line by what it is: scene headings, character
+    names, dialogue, notes. This was harder than it sounds, because the editor
+    is deliberately a plain text box, which is the most reliable thing a
+    browser offers for typing, especially on phones. Plain text boxes cannot
+    be coloured.
+  </p>
+
+  <p>
+    So there is a trick. The text box's own letters are transparent, and a
+    coloured copy of the text sits exactly behind it. The two only line up if
+    they lay out identically, and three separate measuring problems were found
+    by tests along the way. The worst was a line height that differed by a
+    sixty-fourth of a pixel per line: invisible on a short script, and
+    seventy-seven pixels adrift after 4,900 lines. The colours now switch
+    themselves off if they ever stop lining up, rather than show something
+    wrong.
+  </p>
+
+  <h2>Keeping Work Safe</h2>
+
+  <p>
+    <strong>Versions</strong> are now kept automatically as you write: more
+    of them for recent work, thinning out with age. Any script's versions can
+    be opened from the Library, and any version can be brought back, or
+    copied into a script of its own.
+  </p>
+
+  <p>
+    The app also asks the browser, once there is work worth keeping, not to
+    clear its storage when space runs short. The Library says plainly whether
+    the browser agreed.
+  </p>
+
+  <h2>Working Offline</h2>
+
+  <p>
+    Plainchant now loads nothing from the internet. Its fonts are bundled
+    with it. Served from a website, it works offline and can be installed like
+    an app. Opened straight from a folder on your computer, it needs no
+    network at all.
+  </p>
+
+  <h2>Settings, Themes, and Everyone</h2>
+
+  <p>
+    A <strong>Settings</strong> window arrived, so the helpers can be switched
+    off by anyone who finds them more hindrance than help. There is a light
+    theme alongside the dark one, and a choice of text size.
+  </p>
+
+  <p>
+    Every theme is now covered by an automated accessibility check. It opens
+    every window, checks that every control has a name a screen reader can
+    announce, and checks that all text is readable against its background.
+    It found two real problems on its first run: the editor itself had no
+    name, and the tagline was too faint to read comfortably.
+  </p>
+
+  <h2>Tests That Test the Tests</h2>
+
+  <p>
+    Almost every one of the sixteen items was checked with mutation testing: a
+    script deliberately breaks the new code one line at a time, and confirms
+    that some test fails each time. A change that no test notices points to a
+    missing test, or a line of code that was never needed. Both turned up, and
+    both were fixed.
+  </p>
+
+  <h2>Where the Project Stands</h2>
+
+  <p>
+    Phases one and two of the roadmap are essentially complete. The tests
+    have grown to 290 unit tests and 597 checks of the app itself.
+  </p>
+
+  <h2>Next: A Writer's Hands</h2>
+
+  <p>
+    Almost all of this has only run in an automated browser. The next step
+    that matters most is not a feature: it is a real writer using it on a real
+    script, on a real phone and a real tablet, and telling us what feels
+    wrong.
+  </p>
+</article>
