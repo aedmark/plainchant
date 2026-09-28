@@ -961,6 +961,7 @@ ins.compare-line { color: var(--sh-section); text-decoration: underline; text-un
     #render-target { padding: 1rem; overscroll-behavior: contain; -webkit-tap-highlight-color: transparent; }
 
     .modal-close { min-width: 44px; min-height: 44px; }
+    .panes-switch { display: none; } /* Write | Preview in the top bar instead (P2-23) */
 }
 
 /* --- TABLET TIER of the one-pane layout (700px and up) ---
@@ -1072,6 +1073,26 @@ ins.compare-line { color: var(--sh-section); text-decoration: underline; text-un
     body > :not(#print-root) { display: none !important; }
     #print-root { display: block; }
 }
+
+/* --- Panes on a desktop (P2-23, D-056): both, the editor alone or the preview alone. body[data-panes] is set by
+   panes.js only where both panes could show; the one-pane layout (phones, tablets) has its own Write | Preview. --- */
+.panes-switch { display: inline-flex; gap: 2px; padding: 2px; border-radius: 0.3rem; background: #f3f4f6; border: 1px solid #e5e7eb; }
+.panes-switch button { display: grid; place-items: center; width: 26px; height: 22px; padding: 0; border: 0; border-radius: 0.2rem; background: transparent; color: #4b5563; cursor: pointer; }
+.panes-switch button:hover { background: #e5e7eb; color: #111827; }
+.panes-switch button[aria-pressed="true"] { background: #1f2937; color: #ffffff; }
+/* In the editor's header (the preview hidden) it takes the theme's colours, like the buttons beside it */
+.button-group .panes-switch { align-self: center; background: var(--btn-bg); border-color: var(--border-void); }
+.button-group .panes-switch button { width: 30px; height: 28px; color: var(--btn-text); }
+.button-group .panes-switch button:hover { background: var(--btn-hover); color: var(--text-strong); }
+.button-group .panes-switch button[aria-pressed="true"] { background: var(--btn-hover); color: var(--text-strong); box-shadow: inset 0 0 0 1px var(--focus); }
+body[data-panes="write"] .pane-canvas { display: none; }
+body[data-panes="write"] .pane-void { border-right: 0; }
+body[data-panes="write"] #editor { padding-inline: max(1.5rem, calc((100% - 44rem) / 2)); } /* a readable line, in the middle */
+body[data-panes="preview"] { flex-direction: column; }
+body[data-panes="preview"] .pane-void { flex: none; border-right: 0; }
+body[data-panes="preview"] .pane-void > :not(.header):not(.file-bar) { display: none; }
+body[data-panes="preview"] .pane-void > .header > div:first-child { display: block; } /* room for the pane's name again */
+body[data-panes="preview"] .pane-canvas { flex: 1; min-height: 0; }
 
 /* --- Page view (P3-12): the preview as the printed sheets, scaled to the pane by src/app/sheets-ui.js (zoom).
    Paper on a grey desk; like the preview and print, literal colours, the same in every theme. --- */

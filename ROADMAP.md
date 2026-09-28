@@ -107,6 +107,14 @@ Goal: the "just type" promise. The editor helps; it never interrupts.
   preview text to copy is never disturbed; a desktop version needs a gesture that cannot be mistaken for selecting)
   (dropped for now, D-050: the owner finds the app already does what they need here)
 
+- [x] P2-23 Desktop: the editor alone, the preview alone, or both (the owner's request, 2026-09-28) (done, D-056: three
+  buttons in the preview's header, moving to the editor's while the preview is hidden; Ctrl/Cmd+Shift+1 / 2 / 3)
+- [ ] P2-24 Quick edits in the preview (the owner's idea, 2026-09-28): touch up a line without going back to the text.
+  Sketch, not yet agreed: double-click (or, on touch, press and hold) a block in the preview and it opens in place as
+  a small box holding that block's own Fountain lines (every printed line now knows its source line, D-054); Enter
+  or clicking away puts the change into the script as one edit (so Ctrl/Cmd+Z undoes it), Esc leaves it. The script
+  text stays the one source of truth; the preview never becomes a second editor.
+
 ## Phase 3: Output and library
 
 Goal: get finished work out of the app in industry-standard shapes, and manage many scripts.

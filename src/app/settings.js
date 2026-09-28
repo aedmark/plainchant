@@ -14,9 +14,9 @@
 const SETTINGS_KEY = 'plainchant_settings';
 const SETTING_DEFAULTS = {
     theme: 'dark', size: 'normal', colours: true, paragraphs: true, capitals: true, cues: true,
-    pace: Narration.PACE, aloud: 'dialogue', pageView: false
+    pace: Narration.PACE, aloud: 'dialogue', pageView: false, panes: 'both'
 };
-const SETTING_CHOICES = { theme: ['dark', 'light', 'retro', 'system'], size: ['small', 'normal', 'large', 'larger'], aloud: ['dialogue', 'all'] };
+const SETTING_CHOICES = { panes: ['both', 'write', 'preview'], theme: ['dark', 'light', 'retro', 'system'], size: ['small', 'normal', 'large', 'larger'], aloud: ['dialogue', 'all'] };
 const SETTING_RANGES = { pace: [80, 300] }; // whole numbers, words a minute
 const TEXT_SCALE = { small: 0.875, normal: 1, large: 1.15, larger: 1.3 }; // of the editor's own size (14px; 16px on phones)
 const settingsModal = document.getElementById('settings-modal');

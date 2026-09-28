@@ -1,0 +1,106 @@
+<article class="dev-diary">
+  <header>
+    <h1>Plainchant Dev Diary: Room to Write</h1>
+    <p class="date">September 28, 2026</p>
+    <p><strong><a href="https://github.com/aedmark/plainchant">Github Repo</a></strong></p>
+  </header>
+
+  <p>
+    Since the very first prototype, Plainchant on a computer has meant two
+    panes side by side: your text on the left, the formatted screenplay on
+    the right. It is a good way to learn Fountain, and a good way to check a
+    page. It is not always a good way to write.
+  </p>
+
+  <p>
+    Sometimes you want nothing but the words. Sometimes you want to read the
+    script as a reader would, without the plain text beside it. Until today,
+    only phones and tablets could do that.
+  </p>
+
+  <h2>One Pane, or Both</h2>
+
+  <p>
+    Above the preview there are now three small buttons:
+  </p>
+
+  <ul>
+    <li><strong>Editor only</strong>: the text on its own, held to a
+      comfortable line length in the middle of the screen rather than
+      stretched from edge to edge</li>
+    <li><strong>Editor and preview</strong>: the familiar side by side</li>
+    <li><strong>Preview only</strong>: the formatted script across the whole
+      window, with New, Library, Export and the rest still right above it</li>
+  </ul>
+
+  <p>
+    When the preview is hidden, the buttons move up into the editor's own
+    header, so they are always where you can see them. From the keyboard,
+    <strong>Ctrl</strong> (or <strong>Cmd</strong>) +
+    <strong>Shift</strong> + <strong>1</strong>, <strong>2</strong> or
+    <strong>3</strong> does the same, and puts you straight back in the text.
+    Plainchant remembers your choice.
+  </p>
+
+  <p>
+    Nothing else changes when a pane is hidden. The colours in the editor
+    follow its new width, focus mode still works, and the Page view simply
+    waits until the preview is showing again before it catches up.
+  </p>
+
+  <h2>A Lesson From an Ad Blocker</h2>
+
+  <p>
+    Shortly after Page view shipped, it stopped working for its first real
+    user. The browser's console had the answer: an ad blocker had refused to
+    load one of the app's files.
+  </p>
+
+  <p>
+    The file was called <code>pageview.js</code>. To a person, that means
+    "the code for Page view". To an ad blocker, "pageview" is the word
+    analytics companies use for counting visitors, so the file looked exactly
+    like a tracker and was blocked. Plainchant has no trackers of any kind,
+    but the blocker had no way of knowing that from a file name.
+  </p>
+
+  <p>
+    The file has a new name, and the tests now refuse any file name that an
+    ad blocker is likely to mistake for tracking. The automated tests run in a
+    browser with no extensions, so they could never have caught this on their
+    own. It took a real person, in a real browser.
+  </p>
+
+  <h2>An Idea for Later: Editing the Preview</h2>
+
+  <p>
+    One more idea came up this week: fixing a typo straight in the formatted
+    preview, without going back to the text. It is on the roadmap, with a
+    first sketch. Double-click a paragraph in the preview and it opens in
+    place, showing that paragraph's own lines, ready for a quick touch-up.
+    The text would stay the one true version of the script, and the preview
+    would never become a second, competing editor.
+  </p>
+
+  <h2>Where the Project Stands</h2>
+
+  <p>
+    The tests now stand at 338 unit tests under Node, and 325 unit tests plus
+    711 checks of the app in a real browser. The new layouts are also covered
+    by the accessibility check, in every theme.
+  </p>
+
+  <h2>Next: The Writer's Choice</h2>
+
+  <p>
+    The next step is whichever matters most to the people writing with
+    Plainchant: quick edits in the preview, opening Final Draft files, or
+    something the hands-on testing turns up first.
+  </p>
+
+  <nav class="dev-diary-nav" aria-label="Dev diary">
+    <a href="2026-09-28-seeing-the-pages.html" rel="prev">&larr; Seeing the Pages</a>
+    &middot;
+    <a href="index.html">All entries</a>
+  </nav>
+</article>

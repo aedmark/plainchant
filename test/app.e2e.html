@@ -2169,7 +2169,9 @@ setTimeout(() => {
       ['focus mode', (w) => { w.closeModal(w.document.getElementById('tour-modal')); w.setFocusMode(true); }],
       ['suggestions', (w) => { w.setFocusMode(false); const e = w.document.getElementById('editor'); e.value += '\n\nMA'; e.focus();
         e.setSelectionRange(e.value.length, e.value.length); e.dispatchEvent(new w.Event('input')); w.syncElementState(); }],
-      ['page view', (w) => w.setPageView(true)]
+      ['page view', (w) => w.setPageView(true)],
+      ['editor only', (w) => w.setPanes('write')],
+      ['preview only', (w) => w.setPanes('preview')]
     ];
     const phoneStates = [
       ['main', () => {}], ['menu', (w) => w.document.getElementById('menuBtn').click()],
@@ -2829,6 +2831,79 @@ setTimeout(() => {
     pvP.remove();
     W().localStorage.removeItem('plainchant_settings');
     if (pvPaper) W().localStorage.setItem('plainchant_paper', pvPaper);
+
+    // 16x. Panes on a desktop (P2-23): both, the editor alone or the preview alone; the switch moves to whichever
+    // header shows, the keyboard does the same, it is remembered, and phones and tablets keep their Write | Preview
+    W().localStorage.removeItem('plainchant_settings');
+    const pnF = await openFrame(1200, 800);
+    const pnW = pnF.contentWindow, pnE = fid(pnF, 'editor');
+    const pnSwitch = fid(pnF, 'panesSwitch');
+    const pnBtn = (p) => fq(pnF, '#panesSwitch [data-panes="' + p + '"]');
+    const pnPressed = () => Array.from(pnSwitch.querySelectorAll('button')).filter((b) => b.getAttribute('aria-pressed') === 'true').map((b) => b.dataset.panes).join();
+    const pnKey = (fr, code) => fr.contentDocument.dispatchEvent(new fr.contentWindow.KeyboardEvent('keydown', { code: code, key: code.slice(-1), ctrlKey: true, shiftKey: true, bubbles: true, cancelable: true }));
+    setText(pnF, PV_TEXT);
+    check('panes: both at first, the switch in the preview\'s header saying so, and each button named',
+      pnPressed() === 'both' && pnSwitch.closest('.canvas-tools') && shown(pnE) && shown(fq(pnF, '.pane-canvas')) &&
+      ['Editor only', 'Editor and preview', 'Preview only'].every((n, i) => pnSwitch.querySelectorAll('button')[i].getAttribute('aria-label') === n));
+    pnBtn('write').focus();
+    pnBtn('write').click();
+    const pnVoidW = fq(pnF, '.pane-void').getBoundingClientRect().width;
+    check('panes: editor only hides the preview, and the editor takes the whole width', !shown(fq(pnF, '.pane-canvas')) && Math.abs(pnVoidW - 1200) < 2, pnVoidW);
+    check('panes: the switch moves to the editor\'s header, still showing and still focused', pnSwitch.closest('.pane-void .button-group') && shown(pnSwitch) &&
+      pnPressed() === 'write' && pnF.contentDocument.activeElement === pnBtn('write'));
+    const pnPad = parseFloat(cs(pnF, pnE).paddingLeft);
+    check('panes: alone, the editor holds its text to a readable width in the middle', pnPad > 200 && Math.abs(pnPad - parseFloat(cs(pnF, pnE).paddingRight)) < 1, pnPad);
+    await sleep(60);
+    const pnShade = fq(pnF, '.editor-shade');
+    check('panes: the colour hints follow the wider editor (still on, lined up)', pnF.contentDocument.body.classList.contains('shaded') &&
+      Math.abs(pnShade.getBoundingClientRect().width - (pnE.getBoundingClientRect().width - (pnE.offsetWidth - pnE.clientWidth))) < 1 && pnE.clientWidth > 1100 &&
+      cs(pnF, pnShade).paddingLeft === cs(pnF, pnE).paddingLeft, [pnShade.getBoundingClientRect().width, pnE.clientWidth]);
+    check('panes: remembered with the settings', JSON.parse(W().localStorage.getItem('plainchant_settings') || '{}').panes === 'write');
+    pnBtn('preview').click();
+    check('panes: preview only hides the text, keeps the actions above the preview, and the preview takes the width',
+      !shown(pnE) && !shown(fq(pnF, '.element-bar')) && shown(fid(pnF, 'libraryBtn')) && shown(fid(pnF, 'exportBtn')) &&
+      Math.abs(fq(pnF, '.pane-canvas').getBoundingClientRect().width - 1200) < 2 && pnSwitch.closest('.canvas-tools') && pnPressed() === 'preview');
+    check('panes: the actions sit above the preview, not beside it', fq(pnF, '.pane-void .header').getBoundingClientRect().bottom <= fq(pnF, '.pane-canvas').getBoundingClientRect().top + 1);
+    // The keyboard: Ctrl/Cmd+Shift+1, 2, 3; back to the editor puts the caret there
+    pnKey(pnF, 'Digit2');
+    check('panes: Ctrl/Cmd+Shift+2 shows both, and the caret goes back to the text', pnPressed() === 'both' && shown(pnE) && shown(fq(pnF, '.pane-canvas')) && focusId(pnF) === 'editor');
+    pnKey(pnF, 'Digit1');
+    check('panes: Ctrl/Cmd+Shift+1 the editor alone', pnPressed() === 'write' && !shown(fq(pnF, '.pane-canvas')));
+    pnKey(pnF, 'Digit3');
+    check('panes: Ctrl/Cmd+Shift+3 the preview alone', pnPressed() === 'preview' && !shown(pnE));
+    // Page view is not drawn while the preview is hidden, and catches up when it shows
+    pnW.setPanes('both');
+    pnW.setPageView(true);
+    pnW.setPanes('write');
+    const pnStale = fid(pnF, 'sheets').innerHTML;
+    appendText(pnF, '\n\nINT. NEW PLACE - NIGHT\n\nAdded while the preview was hidden.');
+    await sleep(400);
+    check('panes: with the preview hidden, typing draws no pages', fid(pnF, 'sheets').innerHTML === pnStale);
+    pnW.setPanes('both');
+    pnW.buildPrintPages();
+    check('panes: shown again, the pages have caught up', fid(pnF, 'sheets').innerHTML === fid(pnF, 'print-root').innerHTML);
+    pnW.setPageView(false);
+    pnW.setPanes('write');
+    pnF.remove();
+    // Remembered after a reload
+    const pnR = await openFrame(1200, 800);
+    check('panes: still the editor alone after a reload', pnR.contentDocument.body.dataset.panes === 'write' && !shown(fq(pnR, '.pane-canvas')) &&
+      fid(pnR, 'panesSwitch').closest('.pane-void .button-group'));
+    pnR.remove();
+    // Phones and tablets: one pane at a time already; the switch is not shown and the choice does not apply
+    const pnP = await openFrame(375, 667);
+    check('panes: on a phone the switch is hidden and the choice does not apply (Write | Preview as before)',
+      !shown(fid(pnP, 'panesSwitch')) && pnP.contentDocument.body.dataset.panes === undefined && (pnP.contentWindow.setView('preview'), shown(fq(pnP, '.pane-canvas'))));
+    pnP.remove();
+    const pnT = await openFrame(800, 1000);
+    pnT.contentWindow.setView('write');
+    pnKey(pnT, 'Digit3');
+    const pnTPrev = pnT.contentDocument.body.dataset.view;
+    pnKey(pnT, 'Digit1');
+    check('panes: on a tablet, Ctrl/Cmd+Shift+3 and 1 switch Preview and Write', pnTPrev === 'preview' && pnT.contentDocument.body.dataset.view === 'write');
+    pnT.remove();
+    check('help: the panes and their keys are explained', /Editor only/.test(fid(m, 'help-modal').textContent) && /Shift<\/kbd>\+<kbd>1/.test(fid(m, 'help-modal').innerHTML));
+    W().localStorage.removeItem('plainchant_settings');
 
     // Phone: the Library fits a 375px screen and every action is reachable
     await seedLibrary();

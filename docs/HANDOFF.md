@@ -9,11 +9,12 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-28, session 26: the page view's script renamed so ad blockers load it (D-055). Before it:
-page view while writing (P3-12, D-054), the dev diary (D-053, which now tracks the work), Export's buttons renamed
-(D-052), print following Final Draft's screenplay template (D-051), Final Draft export (P3-08), and earlier work.
-Everything up to P3-12 is in `master`; D-055 is on the working branch, `claude/compassionate-clarke-mxwpzz`, until the
-owner merges it. Tests: `npm test` 338, `bash test/run-headless.sh` 325 unit + 694 e2e, about 60 s.____
+_Last updated: 2026-09-28, session 27: the editor alone, the preview alone, or both, on a desktop (P2-23, D-056),
+with its dev-diary entry, "Room to Write"; P2-24 (quick edits in the preview) sketched on the roadmap for the owner.
+Before it: page view (P3-12) and its ad-blocker rename (D-055), the dev diary (D-053), Final Draft export and layout,
+and earlier work. Everything up to D-055 is in `master`; P2-23 is on the working branch,
+`claude/compassionate-clarke-mxwpzz`, until the owner merges it. Tests: `npm test` 338, `bash test/run-headless.sh`
+325 unit + 711 e2e, about 60 s._____
 
 **Where things stand, in one paragraph:** Phases 1 and 2 are done apart from real-device work (P2-09, P2-13) and two
 optional ideas (P2-20 hints, P2-22 desktop click-to-jump). Phase 3's output is done (Fountain export, print / save as
@@ -22,6 +23,10 @@ PDF, Final Draft export, and the page view while writing); what is left there is
 Chromium. The owner's hands-on pass (Next steps 1) matters more than the next feature.
 
 **What works**
+- **Editor only, both, preview only** (P2-23, D-056; `src/app/panes.js`). On a desktop, three small buttons above
+  the preview (moving to the editor's header while the preview is hidden) and Ctrl/Cmd+Shift+1 / 2 / 3: the editor
+  alone (text held to a readable width in the middle), both, or the preview alone (the action buttons above it).
+  Remembered with the settings. Phones and tablets keep Write | Preview; there 1 / 3 switch them.
 - **Page view** (P3-12, D-054; `src/app/sheets-ui.js`). A **Page view** switch in the preview's header shows the
   script as the sheets it prints on (the same drawing as printing, on the paper last printed on), scaled to the pane:
   page numbers, breaks, (MORE) / (CONT'D), the title page. It follows typing after a short pause, redrawing only the
@@ -559,8 +564,7 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 
 0. **Merge the branch** (the owner does this, see the git gotcha).
    **For the dev diary** (smaller changes a writer would notice, for the next entry; clear the list when it is
-   written): Page view failed to load behind some ad blockers, which stopped the preview drawing; fixed by renaming
-   a file (D-055). The latest entry, "Seeing the Pages", covers everything else up to session 26.
+   written): nothing yet. The latest entry, "Room to Write", covers everything up to session 27.
    If anyone you send scripts to has Final Draft, a real .fdx opened there is still the one check the tests cannot make.
 1. **A hands-on pass by the owner of what sessions 13 and 14 built.** Firefox is done: the owner reports it works well
    (session 14). Desktop Safari is not a target (D-039). Left, each a few minutes:
@@ -576,7 +580,8 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
    - **Page view** (session 25): switch it on in Firefox (does it scale?) and on a phone; type on a long script
      with it on (does the short pause feel right?).
    - Whatever feels wrong is the next session's first job; Settings can switch most new behaviour off meanwhile.
-2. **Then the next feature, the owner's pick.** Candidates: **P3-14** importing `.fdx`; **P3-09 / P3-10** Library and export extras; **P5-04** real-file extras; **P2-20** first-use hints.
+2. **Then the next feature, the owner's pick.** Candidates: **P2-24** quick edits in the preview (the owner's idea;
+   agree the sketch on the roadmap first); **P3-14** importing `.fdx`; **P3-09 / P3-10** Library and export extras; **P5-04** real-file extras; **P2-20** first-use hints.
 3. **Owner's non-code items:** a domain, a trademark search and a real icon (P6-01 to P6-03; the icons in `icons/` are
    placeholders).
 
@@ -600,6 +605,18 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 ## Session log
 
 Newest first. Copy the template for each new session.
+
+### Session 27: 2026-09-28: The editor alone, the preview alone, or both (P2-23)
+
+**Goal:** The owner asked for a way to hide either pane on a desktop, and floated editing in the preview.
+**Done:** P2-23 (new `src/app/panes.js`, after sheets-ui.js; the switch in `index.html`; the `panes` setting; CSS;
+Help; e2e section 16x and two states in the accessibility sweep). P2-24 added to the roadmap as a sketch for the
+owner. Dev-diary entry "Room to Write" (with the ad-blocker fix from session 26).
+**Decisions:** D-056.
+**Problems / surprises:** a check of mine compared the colour layer's width with the editor's outer width; the layer
+leaves out the scrollbar by design (copyEditorType). The app was right.
+**Left undone:** P2-24 until the owner agrees the sketch; not seen in Firefox.
+**Next session should start with:** merge; then the owner's pick.
 
 ### Session 26: 2026-09-28: Page view blocked by an ad blocker (D-055)
 

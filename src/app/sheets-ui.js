@@ -59,7 +59,7 @@ function drawPages(tokens) {
 
 // Called by render() with its parse: the pages follow a moment after typing pauses, and at once for anything else
 function schedulePages(tokens, typed) {
-    if (!settings.pageView) return;
+    if (!settings.pageView || panesShown() === 'write') return; // hidden: drawn when it shows again (panes.js)
     pagesTokens = tokens;
     clearTimeout(pagesTimer);
     if (typed === true) pagesTimer = setTimeout(() => drawPages(), PAGES_DELAY);

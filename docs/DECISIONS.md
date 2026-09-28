@@ -979,6 +979,25 @@ sponsor, popup, metric, collect, counter, visitor or impression in it. The servi
 **Consequences:** new files need blocker-safe names. The rule cannot prove a name is safe (the lists are long and
 change), only keep out the obvious ones; headless test runs have no blocker to find the rest.
 
+## D-056 On a desktop, the editor alone, the preview alone, or both  (2026-09-28, status: accepted; P2-23)
+**Context:** The owner found the one glaring gap: no way to hide either pane on a wide screen. Phones and tablets
+already show one pane at a time (D-009).
+**Decision:**
+1. **Three small buttons** (Editor only, Editor and preview, Preview only; icons with names and tooltips) in the
+   preview's header. With the preview hidden they move into the editor's header, the only header then showing, and
+   take the theme's colours there. **Ctrl/Cmd+Shift+1 / 2 / 3** do the same (by key position, so any layout works);
+   from the keyboard the caret goes back to the text. On a phone or tablet the buttons are hidden and 1 / 3 switch
+   Write / Preview.
+2. **Editor alone:** the text is held to about 44rem in the middle (as on a tablet), not stretched across the screen.
+   **Preview alone:** the editor's text, element bar and colour layer are hidden; its header stays, above the
+   preview, so New, Library, Export and the rest are one click away.
+3. Remembered as the setting `panes` ('both', 'write', 'preview') in `plainchant_settings`. `body[data-panes]` is set
+   only where both panes could show (not under `MOBILE_QUERY`), so the one-pane CSS never meets it.
+4. The page view is not drawn while the preview is hidden; it catches up when the preview shows again.
+**Consequences:** nothing reads the preview while it is hidden; the flowing preview (#page) is still drawn (cheap,
+and switching back is instant). P2-24 (quick edits in the preview) is the owner's follow-up idea, sketched on the
+roadmap, not agreed yet.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

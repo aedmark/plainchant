@@ -50,6 +50,7 @@ const APP_FILES = [
     'src/app/files-ui.js',
     'src/app/print.js',
     'src/app/sheets-ui.js',
+    'src/app/panes.js',
     'src/app/chapters-ui.js',
     'src/app/stats-ui.js',
     'src/app/outline-ui.js',
