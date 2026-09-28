@@ -968,6 +968,17 @@ breaks.
 **Consequences:** with page view on, the script is paginated twice after a pause (the page count too, stats-ui.js):
 a few milliseconds on a feature-length script. Not seen in Firefox yet (its `zoom`).
 
+## D-055 No file the app loads is named like a tracker  (2026-09-28, status: accepted; amends D-054's file name)
+**Context:** The page view's script, `src/app/pageview.js`, was refused by the owner's ad blocker
+(`net::ERR_BLOCKED_BY_CLIENT`): "pageview" is analytics vocabulary, and blocker lists match it in file names. The app
+shares one script scope, so `render()` then failed on the missing `schedulePages` and the preview stopped drawing.
+**Decision:** the file is `src/app/sheets-ui.js`. `test/structure.test.js` fails if any file in `sw.js`'s list (every
+file the page loads) has a name with pageview, analytic, track, beacon, telemetry, pixel, advert, ad / ads, banner,
+sponsor, popup, metric, collect, counter, visitor or impression in it. The service worker's cache is renamed
+(`plainchant-v3`) so the old file is cleared out.
+**Consequences:** new files need blocker-safe names. The rule cannot prove a name is safe (the lists are long and
+change), only keep out the obvious ones; headless test runs have no blocker to find the rest.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

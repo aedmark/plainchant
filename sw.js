@@ -9,7 +9,7 @@
  * Scripts live in IndexedDB, not here. test/structure.test.js checks that APP_FILES lists exactly what the page loads.
  * Change CACHE when files are removed or renamed, so the old copies are cleared out.
  */
-const CACHE = 'plainchant-v2';
+const CACHE = 'plainchant-v3';
 const APP_FILES = [
     './',
     'index.html',
@@ -49,7 +49,7 @@ const APP_FILES = [
     'src/app/import.js',
     'src/app/files-ui.js',
     'src/app/print.js',
-    'src/app/pageview.js',
+    'src/app/sheets-ui.js',
     'src/app/chapters-ui.js',
     'src/app/stats-ui.js',
     'src/app/outline-ui.js',

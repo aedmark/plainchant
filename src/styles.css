@@ -1073,7 +1073,7 @@ ins.compare-line { color: var(--sh-section); text-decoration: underline; text-un
     #print-root { display: block; }
 }
 
-/* --- Page view (P3-12): the preview as the printed sheets, scaled to the pane by src/app/pageview.js (zoom).
+/* --- Page view (P3-12): the preview as the printed sheets, scaled to the pane by src/app/sheets-ui.js (zoom).
    Paper on a grey desk; like the preview and print, literal colours, the same in every theme. --- */
 #sheets { display: none; }
 #render-target.pages { background-color: #d4d4d8; }

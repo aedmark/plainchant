@@ -85,7 +85,7 @@ use what an earlier file already defined. Code inside functions runs later and c
 | `import.js` | Import: the Library's picker and drag-and-drop onto the page; `showNotice` messages (defined in `core.js`) |
 | `files-ui.js` | Scripts linked to real files (Chromium only, `fileSupport`): Library > Open a file, Export > Sync with a file / Stop syncing, writing after saves (`syncLinkedFiles`), reading when opened or back in view, the bar above the editor (Allow; Load the file / Keep the script here) (D-046) |
 | `print.js` | Print / save as PDF: draws the `src/paginate.js` pages as paper-sized sheets in `#print-root` (`printSheet`), the paper choice, `beforeprint` (D-021, D-022) |
-| `pageview.js` | Page view: the preview as those same sheets while writing, in `#sheets` (`drawPages`, only the changed sheets; `schedulePages`, called by `render()`), scaled to the pane; `previewShown()`, the preview element showing now (D-054) |
+| `sheets-ui.js` | Page view: the preview as those same sheets while writing, in `#sheets` (`drawPages`, only the changed sheets; `schedulePages`, called by `render()`), scaled to the pane; `previewShown()`, the preview element showing now (D-054) |
 | `chapters-ui.js` | Video chapters in the Export dialog (`prepareChapters`, Copy chapters), and `narrationOf` / `narrationHow`, which the stats use for the read-aloud time (D-038) |
 | `stats-ui.js` | The live page count in the preview's header (`scheduleStats`, called by `render()`) and the Script stats window, with the read-aloud time, the scene mix, locations and scene list (D-023, D-028, D-029, D-038) |
 | `outline-ui.js` | The Outline window and `jumpToLine` (caret to a line, the line near the top of the editor, the preview following) (D-024) |
@@ -114,7 +114,7 @@ Keep each file's own listeners in that file. Functions the e2e tests call (`save
   an option (as `Editing.enter` / `autoCase` do), so the rule stays testable in Node.
 - Nothing writes to the preview (`#page`) but `drawPreview` (core.js): it keeps its own record of the blocks drawn, and
   starts again from scratch if the element count stops matching. Read the preview only after a `render()` that is not
-  `render(true)`, or after the next frame (D-043). Likewise nothing but `drawPages` (pageview.js) writes the page view
+  `render(true)`, or after the next frame (D-043). Likewise nothing but `drawPages` (sheets-ui.js) writes the page view
   (`#sheets`); code that looks for a line in the preview uses `previewShown()` (D-054).
 - The editor's line height must stay a length (`1.6em`), never unitless, and anything copying the editor's text must use
   `copyEditorType` (layout.js): the colour hints only line up if the copies lay out exactly like the textarea (D-031).

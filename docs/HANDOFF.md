@@ -9,11 +9,11 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-28, session 25: page view while writing (P3-12, D-054), with its dev-diary entry, "Seeing the
-Pages". Before it: the dev diary (D-053, which now tracks the work), Export's buttons renamed (D-052), print following
-Final Draft's screenplay template (D-051), Final Draft export (P3-08), and earlier work. Everything before session 25
-is in `master`; P3-12 is on the working branch, `claude/compassionate-clarke-mxwpzz`, until the owner merges it.
-Tests: `npm test` 337, `bash test/run-headless.sh` 325 unit + 694 e2e, about 60 s.___
+_Last updated: 2026-09-28, session 26: the page view's script renamed so ad blockers load it (D-055). Before it:
+page view while writing (P3-12, D-054), the dev diary (D-053, which now tracks the work), Export's buttons renamed
+(D-052), print following Final Draft's screenplay template (D-051), Final Draft export (P3-08), and earlier work.
+Everything up to P3-12 is in `master`; D-055 is on the working branch, `claude/compassionate-clarke-mxwpzz`, until the
+owner merges it. Tests: `npm test` 338, `bash test/run-headless.sh` 325 unit + 694 e2e, about 60 s.____
 
 **Where things stand, in one paragraph:** Phases 1 and 2 are done apart from real-device work (P2-09, P2-13) and two
 optional ideas (P2-20 hints, P2-22 desktop click-to-jump). Phase 3's output is done (Fountain export, print / save as
@@ -22,7 +22,7 @@ PDF, Final Draft export, and the page view while writing); what is left there is
 Chromium. The owner's hands-on pass (Next steps 1) matters more than the next feature.
 
 **What works**
-- **Page view** (P3-12, D-054; `src/app/pageview.js`). A **Page view** switch in the preview's header shows the
+- **Page view** (P3-12, D-054; `src/app/sheets-ui.js`). A **Page view** switch in the preview's header shows the
   script as the sheets it prints on (the same drawing as printing, on the paper last printed on), scaled to the pane:
   page numbers, breaks, (MORE) / (CONT'D), the title page. It follows typing after a short pause, redrawing only the
   sheets that changed. Scrolling, going to the caret, the Outline's jump and tapping a line on a phone work on the
@@ -431,6 +431,10 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 - **The Windows runner** (`npm run test:browser:windows`) has not run since session 11.
 
 **Gotchas for the next session**
+- **Ad blockers block files named like trackers.** `src/app/pageview.js` never loaded behind the owner's blocker
+  (`net::ERR_BLOCKED_BY_CLIENT`), and every render then failed on the missing `schedulePages`. It is `sheets-ui.js`
+  now, and `test/structure.test.js` rejects names with words such as pageview, analytics, track, beacon, ads, banner,
+  metric or counter (D-055). Headless test runs have no blocker, so they cannot catch this.
 - **One timing check can trip on a busy machine:** "hints: on a 120-page script a keystroke's redraw stays quick"
   (section 16k) allows 20 ms and has read 20 and 31 while mutation runs were going (twice, sessions 14 and 16).
   Its Node twin, "speed: a feature-length script (about 120 pages) lays out quickly" (`test/paginate.test.js`, 150 ms),
@@ -555,7 +559,8 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 
 0. **Merge the branch** (the owner does this, see the git gotcha).
    **For the dev diary** (smaller changes a writer would notice, for the next entry; clear the list when it is
-   written): nothing yet. The latest entry, "Seeing the Pages", covers everything up to session 25.
+   written): Page view failed to load behind some ad blockers, which stopped the preview drawing; fixed by renaming
+   a file (D-055). The latest entry, "Seeing the Pages", covers everything else up to session 26.
    If anyone you send scripts to has Final Draft, a real .fdx opened there is still the one check the tests cannot make.
 1. **A hands-on pass by the owner of what sessions 13 and 14 built.** Firefox is done: the owner reports it works well
    (session 14). Desktop Safari is not a target (D-039). Left, each a few minutes:
@@ -595,6 +600,18 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 ## Session log
 
 Newest first. Copy the template for each new session.
+
+### Session 26: 2026-09-28: Page view blocked by an ad blocker (D-055)
+
+**Goal:** The owner reported the app not drawing: `pageview.js` "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT",
+then "schedulePages is not defined" from `render()`.
+**Done:** renamed `src/app/pageview.js` to `src/app/sheets-ui.js` (every reference, `sw.js`'s list, its cache name to
+`plainchant-v3`); a structure test that no file the app loads is named like a tracker.
+**Decisions:** D-055.
+**Problems / surprises:** "pageview" is web-analytics vocabulary, so blocker lists refuse any file called that. The
+headless runs have no extensions, so every test passed.
+**Left undone:** the owner reloading with the blocker on to confirm.
+**Next session should start with:** merge; then the owner's pick.
 
 ### Session 25: 2026-09-28: Page view (P3-12)
 

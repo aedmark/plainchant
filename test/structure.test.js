@@ -99,6 +99,16 @@ test('offline: the service worker keeps a copy of exactly the files the app uses
     listed.filter((f) => f !== './').forEach((f) => assert.ok(fs.existsSync(path.join(root, f)), f + ' is listed but missing'));
 });
 
+// Ad and tracker blockers refuse files whose names look like tracking (a file once called pageview.js never loaded
+// behind uBlock Origin, and the app stopped drawing: D-055). Nothing the page loads may be named like that.
+test('structure: no file the app loads has a name an ad or tracker blocker would block', () => {
+    const sw = readRoot('sw.js');
+    const files = Array.from(sw.match(/const APP_FILES = \[([\s\S]*?)\];/)[1].matchAll(/'([^']+)'/g)).map((m) => m[1]);
+    const TRACKY = /page-?views?|analytic|track|beacon|telemetr|pixel|advert|(^|[^a-z])ads?([^a-z]|$)|banner|sponsor|popup|metric|collect|counter|visitor|impression/i;
+    files.forEach((f) => assert.ok(!TRACKY.test(path.basename(f)), f + ' looks like a tracker to ad blockers: rename it'));
+    assert.ok(TRACKY.test('pageview.js') && TRACKY.test('ads.js') && !TRACKY.test('sheets-ui.js') && !TRACKY.test('headings.js'));
+});
+
 test('offline: the manifest makes the app installable (name, start, standalone, 192 and 512 icons, a maskable one)', () => {
     assert.equal(manifest.name, 'Plainchant');
     assert.equal(manifest.start_url, './');

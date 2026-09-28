@@ -1,5 +1,5 @@
 /*
- * Plainchant app script: pageview: the preview as the printed pages, while writing (P3-12)
+ * Plainchant app script: sheets-ui: the preview as the printed pages, while writing (P3-12)
  *
  * One of the classic scripts loaded by index.html, in order (see CLAUDE.md, "App scripts"). They share the
  * page's global scope, so top-level functions and consts here are visible to the files after it, and anything
