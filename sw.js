@@ -51,6 +51,7 @@ const APP_FILES = [
     'src/app/print.js',
     'src/app/sheets-ui.js',
     'src/app/panes.js',
+    'src/app/quick-edit.js',
     'src/app/chapters-ui.js',
     'src/app/stats-ui.js',
     'src/app/outline-ui.js',

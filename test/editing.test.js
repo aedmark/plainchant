@@ -479,3 +479,26 @@ test('blockAt: a line of spaces counts as blank, and the caret at a line end bel
     assert.equal(blk(text, 6), '   ');
     assert.equal(blk('Alpha\nBeta', 5), 'Alpha\nBeta');
 });
+
+// ---------- paragraphAt: the paragraph a source line is in, for quick edits in the preview (P2-24) ----------
+
+const QE_TEXT = 'INT. HALL - DAY\n\nShe waits.\nAnd waits.\n\nMARA\n(beat)\nHello.\n\n\nThe end.';
+const qePara = (line) => { const p = Editing.paragraphAt(QE_TEXT, line); return [QE_TEXT.slice(p.start, p.end), p.first, p.last]; };
+
+test('paragraphAt: any line of a paragraph gives the whole paragraph, with its first and last lines', () => {
+    assert.deepEqual(qePara(0), ['INT. HALL - DAY', 0, 0]);
+    assert.deepEqual(qePara(2), ['She waits.\nAnd waits.', 2, 3]);
+    assert.deepEqual(qePara(3), ['She waits.\nAnd waits.', 2, 3]);
+    assert.deepEqual(qePara(7), ['MARA\n(beat)\nHello.', 5, 7], 'a line of a speech gives the whole speech, cue and all');
+    assert.deepEqual(qePara(10), ['The end.', 10, 10], 'the last line, with no newline after it');
+});
+
+test('paragraphAt: a blank line is its own (empty) paragraph; a line past the end is the last line', () => {
+    const p = Editing.paragraphAt(QE_TEXT, 8);
+    assert.equal(p.start, p.end);
+    assert.equal(p.first, 8);
+    assert.deepEqual(qePara(99), ['The end.', 10, 10]);
+    assert.deepEqual(qePara(-3), ['INT. HALL - DAY', 0, 0]);
+    const one = Editing.paragraphAt('Only line', 0);
+    assert.deepEqual([one.start, one.end, one.first, one.last], [0, 9, 0, 0]);
+});

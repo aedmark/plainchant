@@ -335,8 +335,24 @@
         return { start: starts[first], end: starts[last] + lines[last].length };
     }
 
+    /**
+     * The paragraph source line `line` is in, for a quick edit in the preview (P2-24): the same run of non-blank lines as
+     * blockAt, found by line number instead of offset. Returns { start, end } as character offsets and the paragraph's
+     * first and last line numbers. A line past the end counts as the last line; a blank line is a paragraph of its own.
+     */
+    function paragraphAt(text, line) {
+        const s = String(text);
+        const lines = s.split('\n');
+        const n = Math.max(0, Math.min(Math.floor(line) || 0, lines.length - 1));
+        let at = 0;
+        for (let i = 0; i < n; i++) at += lines[i].length + 1;
+        const b = blockAt(s, at);
+        const first = s.slice(0, b.start).split('\n').length - 1;
+        return { start: b.start, end: b.end, first: first, last: first + s.slice(b.start, b.end).split('\n').length - 1 };
+    }
+
     return {
         kindAt: kindAt, enter: enter, looksLikeCue: looksLikeCue, cycleTarget: cycleTarget, tab: tab, setType: setType, autoCase: autoCase,
-        diffEdit: diffEdit, lineInfo: lineInfo, inDialogueBlock: inDialogueBlock, blockAt: blockAt
+        diffEdit: diffEdit, lineInfo: lineInfo, inDialogueBlock: inDialogueBlock, blockAt: blockAt, paragraphAt: paragraphAt
     };
 });

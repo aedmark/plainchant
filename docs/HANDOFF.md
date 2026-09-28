@@ -9,12 +9,11 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-28, session 27: the editor alone, the preview alone, or both, on a desktop (P2-23, D-056),
-with its dev-diary entry, "Room to Write"; P2-24 (quick edits in the preview) sketched on the roadmap for the owner.
-Before it: page view (P3-12) and its ad-blocker rename (D-055), the dev diary (D-053), Final Draft export and layout,
-and earlier work. Everything up to D-055 is in `master`; P2-23 is on the working branch,
-`claude/compassionate-clarke-mxwpzz`, until the owner merges it. Tests: `npm test` 338, `bash test/run-headless.sh`
-325 unit + 712 e2e, about 60 s._____
+_Last updated: 2026-09-28, session 28: quick edits in the preview (P2-24, D-057), with its dev-diary entry,
+"Touching Up the Page". Before it: the editor alone, the preview alone, or both (P2-23), page view (P3-12) and its
+ad-blocker rename (D-055), the dev diary (D-053), and earlier work. Everything up to P2-23 is in `master`; P2-24 is on
+the working branch, `claude/compassionate-clarke-mxwpzz`, until the owner merges it. Tests: `npm test` 340,
+`bash test/run-headless.sh` 327 unit + 731 e2e, about 60 s.______
 
 **Where things stand, in one paragraph:** Phases 1 and 2 are done apart from real-device work (P2-09, P2-13) and two
 optional ideas (P2-20 hints, P2-22 desktop click-to-jump). Phase 3's output is done (Fountain export, print / save as
@@ -23,6 +22,10 @@ PDF, Final Draft export, and the page view while writing); what is left there is
 Chromium. The owner's hands-on pass (Next steps 1) matters more than the next feature.
 
 **What works**
+- **Quick edits in the preview** (P2-24, D-057; `src/app/quick-edit.js`, `Editing.paragraphAt`). Double-click a
+  line of the preview or of the page view (touch: press and hold) and its paragraph opens in a box over it as plain
+  text; Enter or clicking away keeps it (one edit, Ctrl/Cmd+Z undoes it, even when it was made with the editor
+  hidden), Shift+Enter is a new line, Esc leaves it. A short tap on a phone still goes to the line in Write.
 - **Editor only, both, preview only** (P2-23, D-056; `src/app/panes.js`). On a desktop, three small buttons above
   the preview (moving to the editor's header while the preview is hidden) and Ctrl/Cmd+Shift+1 / 2 / 3: the editor
   alone (text held to a readable width in the middle), both, or the preview alone (the action buttons above it).
@@ -564,7 +567,7 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 
 0. **Merge the branch** (the owner does this, see the git gotcha).
    **For the dev diary** (smaller changes a writer would notice, for the next entry; clear the list when it is
-   written): nothing yet. The latest entry, "Room to Write", covers everything up to session 27.
+   written): nothing yet. The latest entry, "Touching Up the Page", covers everything up to session 28.
    If anyone you send scripts to has Final Draft, a real .fdx opened there is still the one check the tests cannot make.
 1. **A hands-on pass by the owner of what sessions 13 and 14 built.** Firefox is done: the owner reports it works well
    (session 14). Desktop Safari is not a target (D-039). Left, each a few minutes:
@@ -577,11 +580,12 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
    - **Firefox's "keep your data" prompt** (persistent storage): does it appear, and what does the Library say after?
    - **Narration and chapters** (session 14): read a page of a real script aloud against a clock and set that speed
      in Settings; paste the chapters into a YouTube description (unlisted upload) and see whether YouTube accepts them.
+   - **Quick edits** (session 28): double-click a line in Firefox; press and hold one on an Android phone (does the
+     phone's own text-selection menu get in the way?).
    - **Page view** (session 25): switch it on in Firefox (does it scale?) and on a phone; type on a long script
      with it on (does the short pause feel right?).
    - Whatever feels wrong is the next session's first job; Settings can switch most new behaviour off meanwhile.
-2. **Then the next feature, the owner's pick.** Candidates: **P2-24** quick edits in the preview (the owner's idea;
-   agree the sketch on the roadmap first); **P3-14** importing `.fdx`; **P3-09 / P3-10** Library and export extras; **P5-04** real-file extras; **P2-20** first-use hints.
+2. **Then the next feature, the owner's pick.** Candidates: **P3-14** importing `.fdx`; **P3-09 / P3-10** Library and export extras; **P5-04** real-file extras; **P2-20** first-use hints.
 3. **Owner's non-code items:** a domain, a trademark search and a real icon (P6-01 to P6-03; the icons in `icons/` are
    placeholders).
 
@@ -605,6 +609,18 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 ## Session log
 
 Newest first. Copy the template for each new session.
+
+### Session 28: 2026-09-28: Quick edits in the preview (P2-24)
+
+**Goal:** The owner agreed the sketch for P2-24 ("write it up!").
+**Done:** P2-24: `Editing.paragraphAt` (2 unit tests); new `src/app/quick-edit.js` (after panes.js; `index.html`,
+`sw.js`); CSS; Help; e2e section 16y and a "quick edit" state in the accessibility sweep. Dev-diary entry "Touching
+Up the Page".
+**Decisions:** D-057.
+**Problems / surprises:** with the editor hidden, an edit could not go through the editor's undo; the editor is
+shown off-screen for that moment instead of falling back to setting its value (which would lose undo).
+**Left undone:** not tried on a real touch screen (Android's own long-press menu may compete) or in Firefox.
+**Next session should start with:** merge; then the owner's pick.
 
 ### Session 27: 2026-09-28: The editor alone, the preview alone, or both (P2-23)
 

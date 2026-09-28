@@ -1,0 +1,98 @@
+<article class="dev-diary">
+  <header>
+    <h1>Plainchant Dev Diary: Touching Up the Page</h1>
+    <p class="date">September 28, 2026</p>
+    <p><strong><a href="https://github.com/aedmark/plainchant">Github Repo</a></strong></p>
+  </header>
+
+  <p>
+    Reading a script back is when you find the typos. A name spelled two
+    ways, a line that wants one more word, a parenthetical that says
+    "beat" for the third time on the page. Until now, fixing any of them
+    meant finding the same spot again in the plain text, which is exactly
+    the kind of small friction Plainchant is meant to remove.
+  </p>
+
+  <h2>Double-Click to Fix</h2>
+
+  <p>
+    Now you can fix it where you found it. Double-click any line of the
+    formatted preview, and its paragraph opens right there, in a small box
+    over the page, as the plain text you wrote. On a phone or tablet, press
+    and hold the line instead.
+  </p>
+
+  <ul>
+    <li><strong>Enter</strong> keeps the change, and so does clicking
+      anywhere else</li>
+    <li><strong>Shift + Enter</strong> starts a new line, for a speech that
+      needs one</li>
+    <li><strong>Esc</strong> leaves everything as it was</li>
+  </ul>
+
+  <p>
+    A line of dialogue opens the whole speech, name and all, because a
+    speech is one piece of writing. It works in Page view too: double-click
+    a line on a sheet, and the box opens over that sheet.
+  </p>
+
+  <h2>One Script, Not Two</h2>
+
+  <p>
+    The obvious way to build this would have been to make the formatted page
+    itself editable, like a word processor. It is also the way screenwriting
+    apps most often get into trouble: two views of the same script that can
+    each be changed, and slowly disagree about what the script actually
+    says.
+  </p>
+
+  <p>
+    So Plainchant does not do that. The box holds the script's own text, and
+    a kept change goes into the script exactly as if you had typed it in the
+    editor. Everything else follows from there, as it always does: the
+    preview redraws, the page count updates, the script saves, and a file
+    you sync with is written. There is still only one script.
+  </p>
+
+  <p>
+    That also means <strong>Ctrl</strong> (or <strong>Cmd</strong>) +
+    <strong>Z</strong> in the editor undoes a quick edit, like any other
+    change. That holds even when the edit was made with the editor hidden,
+    in the preview-only layout or on a phone. For that one moment the app
+    quietly brings the editor back, out of sight, so the change still goes
+    into its undo history.
+  </p>
+
+  <h2>Small Safeguards</h2>
+
+  <p>
+    If the script changes while a box is open (in another tab, say, or
+    from a synced file), the quick edit is not written over it. Plainchant
+    says so instead. And a quick tap on a phone still does what it always
+    did: it takes you to that line in the editor. Only a press and hold
+    opens the box.
+  </p>
+
+  <h2>Where the Project Stands</h2>
+
+  <p>
+    The tests now stand at 340 unit tests under Node, and 327 unit tests plus
+    731 checks of the app in a real browser, including the accessibility
+    check with a quick edit open, in every theme.
+  </p>
+
+  <h2>Next: Real Hands, Real Screens</h2>
+
+  <p>
+    Press and hold is the part most worth trying on a real phone, where the
+    phone's own text-selection menu may want the same gesture. After that,
+    the next step is the writer's choice, and opening Final Draft files is
+    still near the top of the list.
+  </p>
+
+  <nav class="dev-diary-nav" aria-label="Dev diary">
+    <a href="2026-09-28-room-to-write.html" rel="prev">&larr; Room to Write</a>
+    &middot;
+    <a href="index.html">All entries</a>
+  </nav>
+</article>

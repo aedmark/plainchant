@@ -40,7 +40,7 @@ Sessions are short-lived and context resets between them, so the repo carries th
 | `src/styles.css` | All the CSS. Desktop-first; the mobile block mirrors `MOBILE_QUERY` / `FIT_QUERY` in `src/app/layout.js` |
 | `src/app/*.js` | The app itself, one file per concern, loaded in order by `index.html` (see "App scripts" below, D-014) |
 | `src/fountain.js` | Fountain parser + HTML renderer (`toHTML`, and `blocks` for the preview's block-by-block redraw), and the editor's line kinds (`classifyLines`, `shade`). Pure, UMD, no DOM (D-003) |
-| `src/editing.js` | Typing helpers (Tab, smart Enter, auto-uppercase, guessing a name on Enter): text + caret in, edit out. Pure, UMD (D-010, D-036) |
+| `src/editing.js` | Typing helpers (Tab, smart Enter, auto-uppercase, guessing a name on Enter), and the paragraph a line is in (`blockAt`, `paragraphAt`): text + caret in, edit out. Pure, UMD (D-010, D-036) |
 | `src/library.js` | Library data rules (search, soft delete, restore, purge, duplicate, rename): scripts object in, new object out. Pure, UMD (D-013) |
 | `src/importing.js` | Import rules: which files to accept, decoding (UTF-8/16, Windows-1252), line endings. Pure, UMD (D-016) |
 | `src/suggest.js` | Autocomplete rules: names, locations and times of day from the script, what to offer for the word being typed (and names on an empty cue line). Pure, UMD, uses `Fountain` and `Editing` (D-017, D-037) |
@@ -87,6 +87,7 @@ use what an earlier file already defined. Code inside functions runs later and c
 | `print.js` | Print / save as PDF: draws the `src/paginate.js` pages as paper-sized sheets in `#print-root` (`printSheet`), the paper choice, `beforeprint` (D-021, D-022) |
 | `sheets-ui.js` | Page view: the preview as those same sheets while writing, in `#sheets` (`drawPages`, only the changed sheets; `schedulePages`, called by `render()`), scaled to the pane; `previewShown()`, the preview element showing now (D-054) |
 | `panes.js` | On a desktop: both panes, the editor alone or the preview alone (`setPanes`, `panesShown()`; `body[data-panes]`, set only where both could show), the switch that moves between the headers, Ctrl/Cmd+Shift+1 / 2 / 3 (D-056) |
+| `quick-edit.js` | Quick edits in the preview: double-click (touch: press and hold) a line and its paragraph opens in a box over it (`openQuickEdit` / `closeQuickEdit`), kept through `applyEdit` as one undoable edit (D-057) |
 | `chapters-ui.js` | Video chapters in the Export dialog (`prepareChapters`, Copy chapters), and `narrationOf` / `narrationHow`, which the stats use for the read-aloud time (D-038) |
 | `stats-ui.js` | The live page count in the preview's header (`scheduleStats`, called by `render()`) and the Script stats window, with the read-aloud time, the scene mix, locations and scene list (D-023, D-028, D-029, D-038) |
 | `outline-ui.js` | The Outline window and `jumpToLine` (caret to a line, the line near the top of the editor, the preview following) (D-024) |

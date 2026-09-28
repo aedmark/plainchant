@@ -19,6 +19,7 @@ published together under the same names.
 | 2026-09-27 | [Real Files and Final Draft](2026-09-27-real-files-and-final-draft.html) | Fast typing, comparing versions, screen reader and thank-you, real files, Final Draft export and layout (sessions 17 to 23) |
 | 2026-09-28 | [Seeing the Pages](2026-09-28-seeing-the-pages.html) | Page view while writing (session 25) |
 | 2026-09-28 | [Room to Write](2026-09-28-room-to-write.html) | One pane or both on a desktop, the ad-blocker rename, the preview-editing sketch (sessions 26 and 27) |
+| 2026-09-28 | [Touching Up the Page](2026-09-28-touching-up-the-page.html) | Quick edits in the preview (session 28) |
 
 ## Writing an entry
 

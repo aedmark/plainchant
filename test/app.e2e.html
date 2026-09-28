@@ -2171,7 +2171,8 @@ setTimeout(() => {
         e.setSelectionRange(e.value.length, e.value.length); e.dispatchEvent(new w.Event('input')); w.syncElementState(); }],
       ['page view', (w) => w.setPageView(true)],
       ['editor only', (w) => w.setPanes('write')],
-      ['preview only', (w) => w.setPanes('preview')]
+      ['preview only', (w) => w.setPanes('preview')],
+      ['quick edit', (w) => { w.setPanes('both'); w.setPageView(false); w.render(); w.openQuickEdit(w.document.querySelector('#page [data-line]')); }]
     ];
     const phoneStates = [
       ['main', () => {}], ['menu', (w) => w.document.getElementById('menuBtn').click()],
@@ -2907,6 +2908,120 @@ setTimeout(() => {
     check('panes: on a tablet, Ctrl/Cmd+Shift+3 and 1 switch Preview and Write', pnTPrev === 'preview' && pnT.contentDocument.body.dataset.view === 'write');
     pnT.remove();
     check('help: the panes and their keys are explained', /Editor only/.test(fid(m, 'help-modal').textContent) && /Shift<\/kbd>\+<kbd>1/.test(fid(m, 'help-modal').innerHTML));
+    W().localStorage.removeItem('plainchant_settings');
+
+    // 16y. Quick edits in the preview (P2-24): double-click (or press and hold) a line and its paragraph opens in a
+    // box; Enter or clicking away puts the change into the script as one undoable edit, Esc leaves it
+    W().localStorage.removeItem('plainchant_settings');
+    const qeF = await openFrame(1200, 800);
+    const qeW = qeF.contentWindow, qeE = fid(qeF, 'editor'), qeDoc = qeF.contentDocument;
+    const QE_TEXT = 'INT. HALL - DAY\n\nShe waits by the door.\n\nMARA\n(quietly)\nIs anyone there?\n\nThe lights go out.';
+    const qeBox = () => fq(qeF, '.quick-edit');
+    const qeField = () => fq(qeF, '.quick-edit-field');
+    const qeLine = (sel, text) => Array.from(qeDoc.querySelectorAll(sel + ' [data-line]')).find((el) => el.textContent.indexOf(text) !== -1);
+    const qeDbl = (el) => el.dispatchEvent(new qeW.MouseEvent('dblclick', { bubbles: true, cancelable: true }));
+    const qeKey = (key, mods) => qeField().dispatchEvent(new qeW.KeyboardEvent('keydown', Object.assign({ key: key, bubbles: true, cancelable: true }, mods || {})));
+    const qeType = (text) => { const f = qeField(); f.value = text; f.dispatchEvent(new qeW.Event('input', { bubbles: true })); };
+    setText(qeF, QE_TEXT);
+    qeW.render();
+    qeDbl(qeLine('#page', 'Is anyone there?'));
+    check('quick edit: a double-click on a line of a speech opens the whole speech as plain text, focused',
+      !!qeBox() && qeField().value === 'MARA\n(quietly)\nIs anyone there?' && qeDoc.activeElement === qeField(), qeField() && qeField().value);
+    const qeCue = qeLine('#page', 'MARA').closest('[data-line]');
+    const qeDy = qeBox().getBoundingClientRect().top - qeCue.getBoundingClientRect().top;
+    check('quick edit: the box sits over the paragraph, across the preview\'s column', qeDy > -20 && qeDy < 5 &&
+      qeBox().getBoundingClientRect().width >= fid(qeF, 'page').getBoundingClientRect().width, qeDy);
+    check('quick edit: the box is named, and says how it works', qeBox().getAttribute('aria-label') === 'Quick edit' &&
+      /Enter keeps the change/.test(fid(qeF, 'quickEditHint').textContent) && qeField().getAttribute('aria-describedby') === 'quickEditHint');
+    qeKey('Enter', { shiftKey: true });
+    check('quick edit: Shift+Enter does not close it (a new line)', !!qeBox());
+    qeType('MARA\n(quietly)\nIs anybody there?');
+    qeKey('Enter');
+    check('quick edit: Enter puts the change into the script, only that paragraph, and closes the box',
+      !qeBox() && qeE.value === QE_TEXT.replace('anyone', 'anybody'), qeE.value);
+    qeW.render();
+    check('quick edit: the preview shows the change', !!qeLine('#page', 'Is anybody there?'));
+    qeE.focus();
+    qeDoc.execCommand('undo');
+    check('quick edit: Ctrl/Cmd+Z in the editor undoes it, as one edit', qeE.value === QE_TEXT, qeE.value);
+    // Esc leaves it; clicking away keeps it
+    qeW.render();
+    qeDbl(qeLine('#page', 'She waits'));
+    qeType('She waits by the window.');
+    qeKey('Escape');
+    check('quick edit: Esc leaves the script as it was', !qeBox() && qeE.value === QE_TEXT);
+    qeDbl(qeLine('#page', 'She waits'));
+    qeType('She waits by the window.');
+    qeField().blur();
+    check('quick edit: clicking away keeps the change', !qeBox() && qeE.value === QE_TEXT.replace('the door', 'the window'));
+    // Changed meanwhile: not kept, and the writer is told
+    setText(qeF, QE_TEXT);
+    qeW.render();
+    qeDbl(qeLine('#page', 'lights go out'));
+    qeType('The lights flicker.');
+    qeE.value = QE_TEXT.replace('The lights go out.', 'Darkness.');
+    qeKey('Enter');
+    check('quick edit: if the script changed meanwhile, the quick edit is not kept and the writer is told',
+      qeE.value.indexOf('flicker') === -1 && /quick edit was not kept/.test(fid(qeF, 'notice').textContent));
+    // Page view: a line on a sheet opens its paragraph too
+    setText(qeF, QE_TEXT);
+    qeW.setPageView(true);
+    qeDbl(qeLine('#sheets', 'She waits'));
+    check('quick edit: in page view, a line on a sheet opens its paragraph over the sheet', qeField() && qeField().value === 'She waits by the door.' &&
+      Math.abs(qeBox().getBoundingClientRect().left - (fq(qeF, '#sheets .print-page:nth-child(2)') || fq(qeF, '#sheets .print-page')).getBoundingClientRect().left) > 20);
+    qeType('She paces.');
+    qeKey('Enter');
+    check('quick edit: kept from page view, and the sheets follow', qeE.value.indexOf('She paces.') !== -1 && (qeW.drawPages(), !!qeLine('#sheets', 'She paces.')));
+    qeW.setPageView(false);
+    // The preview alone: the editor is hidden, the edit still goes in, and can still be undone
+    setText(qeF, QE_TEXT);
+    qeW.setPanes('preview');
+    qeW.render();
+    qeDbl(qeLine('#page', 'Is anyone there?'));
+    qeType('MARA\nHello?');
+    qeKey('Enter');
+    check('quick edit: with the preview alone, the change goes in (the editor stays hidden)', qeE.value.indexOf('MARA\nHello?') !== -1 && !shown(qeE) &&
+      !qeDoc.body.classList.contains('quick-applying'), qeE.value);
+    qeW.setPanes('both');
+    qeE.focus();
+    qeDoc.execCommand('undo');
+    check('quick edit: made with the editor hidden, it still undoes in the editor afterwards', qeE.value === QE_TEXT, qeE.value);
+    // A blank script shows the example in the preview: nothing to edit
+    setText(qeF, '');
+    qeW.render();
+    qeDbl(fq(qeF, '#page [data-line]'));
+    check('quick edit: on a blank script (the example showing) a double-click opens nothing', !qeBox() && qeE.value === '');
+    qeW.saveScript = () => {};
+    qeF.remove();
+    // Phone: press and hold opens it; the release is not a tap (which would go to Write); a quick tap still does
+    const qeP = await openFrame(375, 667);
+    const qePW = qeP.contentWindow, qePE = fid(qeP, 'editor');
+    setText(qeP, QE_TEXT);
+    qePW.setView('preview');
+    qePW.render();
+    const qeHoldAt = Array.from(qeP.contentDocument.querySelectorAll('#page [data-line]')).find((el) => el.textContent.indexOf('lights go out') !== -1);
+    const qePtr = (type, el) => el.dispatchEvent(new qePW.PointerEvent(type, { pointerType: 'touch', bubbles: true, cancelable: true, clientX: 50, clientY: 50 }));
+    qePtr('pointerdown', qeHoldAt);
+    await sleep(650);
+    qePtr('pointerup', qeHoldAt);
+    qeHoldAt.click();
+    check('quick edit: on a phone, press and hold opens the paragraph, and letting go does not leave the preview',
+      !!fq(qeP, '.quick-edit') && fq(qeP, '.quick-edit-field').value === 'The lights go out.' && qeP.contentDocument.body.dataset.view === 'preview');
+    const qePF = fq(qeP, '.quick-edit-field');
+    qePF.value = 'The lights die.';
+    qePF.dispatchEvent(new qePW.KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+    check('quick edit: on a phone, kept, still in the preview', qePE.value.indexOf('The lights die.') !== -1 && qeP.contentDocument.body.dataset.view === 'preview');
+    qePW.render();
+    const qeTapAt = Array.from(qeP.contentDocument.querySelectorAll('#page [data-line]')).find((el) => el.textContent.indexOf('She waits') !== -1);
+    qePtr('pointerdown', qeTapAt);
+    await sleep(100);
+    qePtr('pointerup', qeTapAt);
+    qeTapAt.click();
+    await sleep(600);
+    check('quick edit: a quick tap still goes to the line in Write, and opens nothing', qeP.contentDocument.body.dataset.view === 'write' && !fq(qeP, '.quick-edit'));
+    qePW.saveScript = () => {};
+    qeP.remove();
+    check('help: quick edits are explained', /Quick edits in the preview/.test(fid(m, 'help-modal').textContent));
     W().localStorage.removeItem('plainchant_settings');
 
     // Phone: the Library fits a 375px screen and every action is reachable

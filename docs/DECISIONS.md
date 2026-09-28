@@ -998,6 +998,27 @@ already show one pane at a time (D-009).
 and switching back is instant). P2-24 (quick edits in the preview) is the owner's follow-up idea, sketched on the
 roadmap, not agreed yet.
 
+## D-057 Quick edits in the preview: a paragraph's own lines, in place  (2026-09-28, status: accepted; P2-24)
+**Context:** The owner wanted to fix things straight in the formatted preview, and agreed the sketch on the roadmap.
+**Decision:**
+1. **Double-click a line** of the preview or of the page view (on a touch screen, **press and hold** it, 500 ms, a
+   finger moving under 10 px) and its paragraph opens in a box over it: the run of non-blank lines that line is in
+   (`Editing.paragraphAt`, by the source line every preview line carries), as plain Fountain text. A line of a speech
+   opens the whole speech. A short tap keeps its old meaning on a phone (go to the line in Write, D-033); the release
+   of a hold is swallowed so it does not.
+2. **Enter or clicking away keeps it; Shift+Enter is a new line; Esc leaves it.** Kept, it goes into the script
+   through `applyEdit` as one edit (the minimal difference, `Editing.diffEdit`), so Ctrl/Cmd+Z in the editor undoes it
+   and saving, versions, synced files and the preview follow as for typing. If the paragraph changed meanwhile, the
+   edit is not kept and a notice says so.
+3. **The text stays the one source of truth.** The box is an overlay in `#render-target`, never part of `#page` or
+   `#sheets`; the preview is redrawn from the edited text as always. With the editor hidden (the preview alone, or
+   Preview on a phone), the editor is shown off-screen for the moment of the edit (`body.quick-applying`) so the edit
+   still enters its undo history.
+4. Paper colours (literal), in every theme: a pale yellow box, a dark border, Courier.
+5. Not on a blank script: the preview is then showing the example, which is not the writer's text.
+**Consequences:** keyboard users edit in the editor as before (the box is for the pointer). Formatting marks show as
+typed (`*italic*`, `^`, `>`): what opens is the text, not the formatted page.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom
