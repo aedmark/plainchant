@@ -1073,6 +1073,15 @@ ins.compare-line { color: var(--sh-section); text-decoration: underline; text-un
     #print-root { display: block; }
 }
 
+/* --- Page view (P3-12): the preview as the printed sheets, scaled to the pane by src/app/pageview.js (zoom).
+   Paper on a grey desk; like the preview and print, literal colours, the same in every theme. --- */
+#sheets { display: none; }
+#render-target.pages { background-color: #d4d4d8; }
+#render-target.pages #page { display: none; }
+#render-target.pages #sheets { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+#sheets .print-page { flex: none; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.3); }
+.canvas-btn[aria-pressed="true"] { background: #1f2937; border-color: #1f2937; color: #ffffff; }
+
 /* --- Script stats (P4-04) --- */
 .stats-for { margin: 0 0 0.75rem; color: var(--text-strong); font-weight: 600; }
 /* Two rows: pages, screen time and read-aloud time; then scenes and words */

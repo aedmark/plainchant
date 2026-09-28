@@ -30,6 +30,7 @@ function printLine(l) {
     div.style.left = (PT.left + l.col * PT.col) + 'pt';
     div.style.width = (l.width * PT.col) + 'pt';
     div.style.textAlign = l.align;
+    if (l.at !== undefined) div.dataset.line = l.at; // the script line it came from: the page view finds lines by it (P3-12)
     l.runs.forEach((r) => { // the writer's text only ever becomes text nodes
         if (!r.bold && !r.italic && !r.underline) { div.appendChild(document.createTextNode(r.text)); return; }
         const span = document.createElement('span');
@@ -110,6 +111,7 @@ async function printScript() {
     const paper = chosenPaper();
     try { localStorage.setItem(PAPER_KEY, paper); } catch (e) { /* remembered for this print only */ }
     updateStatsBadge(); // the page count in the preview's header is for this paper now
+    if (settings.pageView) drawPages(); // and the page view (pageview.js)
     closeModal(printChoice);
     await fontsReady();
     buildPrintPages(paper);

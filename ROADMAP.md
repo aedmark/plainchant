@@ -128,7 +128,8 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
 - [-] P3-11 Direct `.pdf` download: a hand-written PDF writer (`src/pdf.js`) with PDF's built-in Courier fonts, fed by
   the same page layout (spec §8b). Only if the owner chooses it (spec §10.2) (dropped, D-050: printing through the
   browser to PDF is enough)
-- [ ] P3-12 Page view in the preview: the paginated sheets, page numbers and breaks while writing (spec §8c). Optional
+- [x] P3-12 Page view in the preview: the paginated sheets, page numbers and breaks while writing (spec §8c) (done,
+  D-054: a Page view switch in the preview's header; the sheets printing draws, scaled to the pane)
 - [x] P3-07 Library management: search, rename (rewrites the script's own `Title:` line), duplicate, delete with
   Undo and a 30-day Recently deleted, restore, delete forever (two clicks) (D-013)
 - [ ] P3-09 Library extras, if wanted: sort options (name, date created), multi-select, export a single script

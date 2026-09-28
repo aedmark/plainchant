@@ -3,7 +3,7 @@
 Roadmap items **P3-03, P3-04, P3-05, P3-06** (and new **P3-11, P3-12**). Decisions **D-021**, **D-022**. Status:
 **P3-03 to P3-06 implemented 2026-09-25** with the recommended answers to §10. Two changes from this plan, both in
 D-022: printing lives in the **Export** dialog rather than on a button of its own, and a page may break at **any
-sentence end** (the rest is re-wrapped), not only where a sentence ends a wrapped line. P3-11 and P3-12 are not built.
+sentence end** (the rest is re-wrapped), not only where a sentence ends a wrapped line. P3-11 is dropped (D-050). P3-12 is built (D-054), as §8c describes.
 
 ---
 
@@ -186,7 +186,7 @@ for printing. It helps with "how long is this?" (and page count also feeds P4-04
    this by default; many spec writers turn it off. *Recommend: off for now* (page-break `(CONT'D)` is always on).
 6. **Scene numbers:** print only those written in the script (`#12#`) *(recommended)*; auto-numbering is a production
    feature for later.
-7. **Page view in the preview (P3-12):** wanted now, later, or never?
+7. ~~**Page view in the preview (P3-12):** wanted now, later, or never?~~ Built on 2026-09-28 (D-054).
 
 ## 11. Order of work, once approved
 

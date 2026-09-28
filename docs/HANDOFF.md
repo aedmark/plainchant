@@ -9,20 +9,24 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-28, session 24: a public dev diary (`docs/devlog/`, D-053): seven entries written
-retroactively, an index, and links between them. **From now on the diary tracks the work** (CLAUDE.md, session
-protocol step 5): each feature or milestone gets an entry; smaller changes wait under "For the dev diary" in Next
-steps. Before it: Export's buttons renamed (D-052), print following Final Draft's screenplay template (D-051), Final
-Draft export (P3-08), and earlier work. Everything up to the diary's index is in `master`. Tests: `npm test` 334,
-`bash test/run-headless.sh` 322 unit + 673 e2e, about 55 s.__
+_Last updated: 2026-09-28, session 25: page view while writing (P3-12, D-054), with its dev-diary entry, "Seeing the
+Pages". Before it: the dev diary (D-053, which now tracks the work), Export's buttons renamed (D-052), print following
+Final Draft's screenplay template (D-051), Final Draft export (P3-08), and earlier work. Everything before session 25
+is in `master`; P3-12 is on the working branch, `claude/compassionate-clarke-mxwpzz`, until the owner merges it.
+Tests: `npm test` 337, `bash test/run-headless.sh` 325 unit + 692 e2e, about 60 s.___
 
 **Where things stand, in one paragraph:** Phases 1 and 2 are done apart from real-device work (P2-09, P2-13) and two
 optional ideas (P2-20 hints, P2-22 desktop click-to-jump). Phase 3's output is done (Fountain export, print / save as
-PDF); what is left there is optional (P3-08 to P3-12). Phase 4 is done: the owner checked the app with a screen reader (P4-17) and the thank-you to Space Quest Historian is in Help (P4-22, with their permission, D-045). Phase 5 has real files on disk (P5-01, Chromium only); sync and sharing are not planned. Phase 6
+PDF, Final Draft export, and the page view while writing); what is left there is optional (P3-09, P3-10, P3-14). Phase 4 is done: the owner checked the app with a screen reader (P4-17) and the thank-you to Space Quest Historian is in Help (P4-22, with their permission, D-045). Phase 5 has real files on disk (P5-01, Chromium only); sync and sharing are not planned. Phase 6
 (brand) is the owner's. The biggest gap is not code: almost everything from sessions 13 and 14 has only run in headless
 Chromium. The owner's hands-on pass (Next steps 1) matters more than the next feature.
 
 **What works**
+- **Page view** (P3-12, D-054; `src/app/pageview.js`). A **Page view** switch in the preview's header shows the
+  script as the sheets it prints on (the same drawing as printing, on the paper last printed on), scaled to the pane:
+  page numbers, breaks, (MORE) / (CONT'D), the title page. It follows typing after a short pause, redrawing only the
+  sheets that changed. Scrolling, going to the caret, the Outline's jump and tapping a line on a phone work on the
+  sheets (every printed line carries its source line, `at` in `Paginate.layout`). Remembered with the settings.
 - **Final Draft export** (P3-08, D-049; `src/fdx.js`). Export > Files > **Download a copy (.fdx)**, named after
   the title: every element as a Final Draft paragraph of its type, scene numbers, dual dialogue, page breaks, bold /
   italic / underline, centred text, lyrics in italics, and the title page. Notes, sections, synopses and the boneyard
@@ -399,7 +403,7 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
   browser and device checks and assume print works until a bug report says otherwise. Not seen: Firefox's and
   Safari's print windows (their headers and footers, `@page` size support), the iPad (Share → Print → PDF), a real
   printer, and a feature-length script against another program's page count. If a report comes in, start there;
-  P3-11 (direct PDF download) is the fix if print windows prove awkward. P3-12 (page view) is a later feature.
+  P3-11 (direct PDF download) was dropped (D-050). The page view (P3-12) draws the same sheets on screen.
 - **IndexedDB storage (P4-10) is confirmed by the owner (2026-09-25)** on their Arch Linux machine: the tests pass
   there (`npm run test:browser`), and the app works in their desktop browser, **Firefox and Safari** (a `plainchant`
   database appears; the example script saves and loads). Still unobserved: a real tab closed mid-write, and the
@@ -551,7 +555,7 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 
 0. **Merge the branch** (the owner does this, see the git gotcha).
    **For the dev diary** (smaller changes a writer would notice, for the next entry; clear the list when it is
-   written): nothing yet. The latest entry, "Real Files and Final Draft", covers everything up to session 23.
+   written): nothing yet. The latest entry, "Seeing the Pages", covers everything up to session 25.
    If anyone you send scripts to has Final Draft, a real .fdx opened there is still the one check the tests cannot make.
 1. **A hands-on pass by the owner of what sessions 13 and 14 built.** Firefox is done: the owner reports it works well
    (session 14). Desktop Safari is not a target (D-039). Left, each a few minutes:
@@ -564,9 +568,10 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
    - **Firefox's "keep your data" prompt** (persistent storage): does it appear, and what does the Library say after?
    - **Narration and chapters** (session 14): read a page of a real script aloud against a clock and set that speed
      in Settings; paste the chapters into a YouTube description (unlisted upload) and see whether YouTube accepts them.
+   - **Page view** (session 25): switch it on in Firefox (does it scale?) and on a phone; type on a long script
+     with it on (does the short pause feel right?).
    - Whatever feels wrong is the next session's first job; Settings can switch most new behaviour off meanwhile.
-2. **Then the next feature, the owner's pick.** Candidates: **P3-14** importing `.fdx`; **P3-12** a page view while
-   writing; **P3-09 / P3-10** Library and export extras; **P5-04** real-file extras; **P2-20** first-use hints.
+2. **Then the next feature, the owner's pick.** Candidates: **P3-14** importing `.fdx`; **P3-09 / P3-10** Library and export extras; **P5-04** real-file extras; **P2-20** first-use hints.
 3. **Owner's non-code items:** a domain, a trademark search and a real icon (P6-01 to P6-03; the icons in `icons/` are
    placeholders).
 
@@ -590,6 +595,22 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 ## Session log
 
 Newest first. Copy the template for each new session.
+
+### Session 25: 2026-09-28: Page view (P3-12)
+
+**Goal:** The owner picked P3-12.
+**Done:** P3-12: a Page view switch in the preview's header draws the printed sheets while writing; the dev-diary
+entry "Seeing the Pages".
+**Changed:** `src/paginate.js` (every body line has `at`, its source line; 3 unit tests); new `src/app/pageview.js`
+(after print.js; in `index.html` and `sw.js`); print.js writes `data-line` and redraws the page view when the paper
+changes; layout.js looks for lines in `previewShown()`; core.js's `render()` calls `schedulePages`; settings.js has
+`pageView`; the switch and `#sheets` in `index.html`; CSS; Help; e2e section 16w and a "page view" state in the
+accessibility sweep (desktop and phone).
+**Decisions:** D-054.
+**Problems / surprises:** an earlier e2e section leaves A4 as the paper, so the page-view checks took A4's
+proportions for Letter's; the section now starts on Letter and puts the choice back after.
+**Left undone:** not seen in Firefox (CSS `zoom` there) or on a real phone.
+**Next session should start with:** merge; then the owner's pick.
 
 ### Session 24: 2026-09-28: A dev diary (D-053)
 

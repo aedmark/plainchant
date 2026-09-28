@@ -101,4 +101,5 @@ function render(typed) {
     }
     drawShade(tokens);  // the editor's colours, from the same parse (src/app/shade.js)
     scheduleStats();    // the page count in the preview's header follows, a moment later (src/app/stats-ui.js)
+    schedulePages(tokens, typed); // and the page view, if it is showing (src/app/pageview.js)
 }

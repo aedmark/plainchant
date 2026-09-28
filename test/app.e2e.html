@@ -2168,11 +2168,12 @@ setTimeout(() => {
       ['tour 2', (w) => w.showTourStep(1)], ['tour 3', (w) => w.showTourStep(2)], ['tour 4', (w) => w.showTourStep(3)],
       ['focus mode', (w) => { w.closeModal(w.document.getElementById('tour-modal')); w.setFocusMode(true); }],
       ['suggestions', (w) => { w.setFocusMode(false); const e = w.document.getElementById('editor'); e.value += '\n\nMA'; e.focus();
-        e.setSelectionRange(e.value.length, e.value.length); e.dispatchEvent(new w.Event('input')); w.syncElementState(); }]
+        e.setSelectionRange(e.value.length, e.value.length); e.dispatchEvent(new w.Event('input')); w.syncElementState(); }],
+      ['page view', (w) => w.setPageView(true)]
     ];
     const phoneStates = [
       ['main', () => {}], ['menu', (w) => w.document.getElementById('menuBtn').click()],
-      ['preview', (w) => w.setView('preview')], ['library', (w) => { w.setView('write'); w.document.getElementById('libraryBtn').click(); }],
+      ['preview', (w) => w.setView('preview')], ['page view', (w) => w.setPageView(true)], ['library', (w) => { w.setView('write'); w.document.getElementById('libraryBtn').click(); }],
       ['settings', (w) => { w.closeModal(w.document.getElementById('library-modal')); w.openSettings(); }]
     ];
     for (const theme of ['dark', 'light', 'retro']) {
@@ -2702,6 +2703,132 @@ setTimeout(() => {
     fvF.remove();
     await fvDir.removeEntry('sun.fountain');
     await setDb({}, {});
+
+    // 16w. Page view (P3-12): the preview as the printed sheets, the same as printing draws them, scaled to the pane;
+    // it follows typing once it pauses, keeps the sheets that did not change, and the preview's jumps work on it
+    W().localStorage.removeItem('plainchant_settings');
+    const pvPaper = W().localStorage.getItem('plainchant_paper'); // an earlier section printed on A4: Letter here, put back after
+    W().localStorage.removeItem('plainchant_paper');
+    const pvF = await openFrame(1200, 800);
+    const pvW = pvF.contentWindow, pvE = fid(pvF, 'editor'), pvSheets = fid(pvF, 'sheets'), pvRT = fid(pvF, 'render-target');
+    const pvBtn = fid(pvF, 'pageViewBtn');
+    const pvScene = (n) => 'INT. ROOM ' + n + ' - DAY\n\n' + Array.from({ length: 6 }, (_, i) => 'Scene ' + n + ' line ' + i + ' goes on for a while.').join('\n') +
+      '\n\nMARA\n(beat)\nScene ' + n + ' speech.\n\n';
+    const PV_TEXT = 'Title: Pages\nAuthor: Me\n\n' + Array.from({ length: 12 }, (_, i) => pvScene(i + 1)).join('');
+    const pvPrinted = () => { pvW.buildPrintPages(); return fid(pvF, 'print-root').innerHTML; };
+    setText(pvF, PV_TEXT);
+    check('page view: off at first; the switch says so, and the preview is the flowing screenplay',
+      pvBtn.getAttribute('aria-pressed') === 'false' && shown(fid(pvF, 'page')) && !shown(pvSheets) && pvW.previewShown() === fid(pvF, 'page'));
+    pvBtn.click();
+    const pvCount = pvW.Paginate.layout(pvW.Fountain.parse(PV_TEXT), { paper: 'letter' }).pages.length;
+    check('page view: the switch shows the sheets (a title page, then every page) in place of the screenplay, and says it is on',
+      pvBtn.getAttribute('aria-pressed') === 'true' && shown(pvSheets) && !shown(fid(pvF, 'page')) && pvSheets.children.length === pvCount + 1 && pvCount > 2,
+      [pvSheets.children.length, pvCount]);
+    check('page view: the sheets are exactly what printing draws (page numbers, breaks, (MORE), every line)', pvSheets.innerHTML === pvPrinted());
+    const pvBody = Array.from(pvSheets.querySelectorAll('.print-page:not(:first-child) .print-line:not(.print-num):not(.print-margin)')).filter((el) => el.textContent !== '(MORE)');
+    check('page view: every printed line of the script says which line it came from (not the title page, not (MORE))',
+      pvBody.length > 100 && pvBody.every((el) => el.hasAttribute('data-line')) && !pvSheets.children[0].querySelector('[data-line]'), pvBody.length);
+    const pvRoom = pvRT.clientWidth - parseFloat(cs(pvF, pvRT).paddingLeft) - parseFloat(cs(pvF, pvRT).paddingRight);
+    const pvWidth = pvSheets.children[1].getBoundingClientRect().width;
+    check('page view: a sheet is scaled to fit the pane, in proportion', pvWidth <= pvRoom + 1 && pvWidth > pvRoom - 2 &&
+      Math.abs(pvSheets.children[1].getBoundingClientRect().height / pvWidth - 11 / 8.5) < 0.01, [pvWidth, pvRoom]);
+    check('page view: remembered with the settings', JSON.parse(W().localStorage.getItem('plainchant_settings') || '{}').pageView === true);
+    // Typing: the pages wait for a pause, then match printing again; the sheets before the change are kept as they were
+    const pvKeep = Array.from(pvSheets.children);
+    const pvAt = pvE.value.indexOf('Scene 9 line 2');
+    pvE.focus();
+    pvE.setSelectionRange(pvAt, pvAt);
+    const pvBefore = pvSheets.innerHTML;
+    pvF.contentDocument.execCommand('insertText', false, 'A whole new sentence that runs on long enough to take a second line of the page. ');
+    await sleep(30);
+    check('page view: typing does not redraw the pages at once', pvSheets.innerHTML === pvBefore);
+    await sleep(400);
+    const pvChanged = Array.from(pvSheets.children).findIndex((el, i) => el !== pvKeep[i]);
+    check('page view: after a pause the pages match printing again', pvSheets.innerHTML === pvPrinted());
+    check('page view: the sheets before the change are the same elements (only the changed ones are redrawn)',
+      pvChanged > 1 && pvSheets.children[pvChanged].textContent.indexOf('whole') !== -1, pvChanged);
+    // A blank line added near the top moves every source line on, and changes no page: nothing is redrawn, only renumbered
+    const pvKeep2 = Array.from(pvSheets.children);
+    const pvGap = pvE.value.indexOf('\n\nINT. ROOM 1 ');
+    pvE.setSelectionRange(pvGap, pvGap);
+    pvF.contentDocument.execCommand('insertText', false, '\n');
+    await sleep(400);
+    check('page view: a line added that changes no page redraws nothing, and the lines are renumbered in place',
+      Array.from(pvSheets.children).every((el, i) => el === pvKeep2[i]) && pvSheets.innerHTML === pvPrinted(),
+      Array.from(pvSheets.children).filter((el, i) => el !== pvKeep2[i]).length);
+    // The preview's jumps: to the caret (as Preview opens on a phone, or the Outline jumps) on the right sheet
+    const pvLine = pvE.value.split('\n').findIndex((l) => l.indexOf('Scene 11 speech.') === 0);
+    pvE.setSelectionRange(pvE.value.indexOf('Scene 11 speech.'), pvE.value.indexOf('Scene 11 speech.'));
+    pvRT.scrollTop = 0;
+    pvW.scrollPreviewToCaret();
+    const pvTarget = fq(pvF, '#sheets [data-line="' + pvLine + '"]');
+    const pvY = pvTarget.getBoundingClientRect().top - pvRT.getBoundingClientRect().top;
+    check('page view: going to the caret finds its line on the sheets', pvRT.scrollTop > 0 && pvY > 0 && pvY < pvRT.clientHeight, [pvY, pvRT.scrollTop]);
+    // Switching keeps the writer's place: the caret's line is in view in the other view too
+    pvRT.scrollTop = 0;
+    pvW.setPageView(false);
+    const pvFlowY = fq(pvF, '#page [data-line="' + pvLine + '"]').getBoundingClientRect().top - pvRT.getBoundingClientRect().top;
+    pvRT.scrollTop = 0;
+    pvW.setPageView(true);
+    const pvBackY = fq(pvF, '#sheets [data-line="' + pvLine + '"]').getBoundingClientRect().top - pvRT.getBoundingClientRect().top;
+    check('page view: switching either way keeps the caret\'s line in view', pvFlowY > 0 && pvFlowY < pvRT.clientHeight && pvBackY > 0 && pvBackY < pvRT.clientHeight, [pvFlowY, pvBackY]);
+    // Fewer pages: the sheets past the end go
+    const pvLong = pvE.value;
+    setText(pvF, pvLong.slice(0, pvLong.indexOf('INT. ROOM 4 ')));
+    pvW.drawPages();
+    check('page view: a shorter script leaves no sheets past its end', pvSheets.innerHTML === pvPrinted() && pvSheets.children.length < pvCount, pvSheets.children.length);
+    setText(pvF, pvLong);
+    pvW.drawPages();
+    // Paper: A4 sheets once A4 is chosen for printing
+    pvW.openExport();
+    fq(pvF, 'input[name="paper"][value="a4"]').checked = true;
+    const pvPrint = pvW.print;
+    pvW.print = () => {};
+    await pvW.printScript();
+    pvW.print = pvPrint;
+    check('page view: choosing A4 to print redraws the sheets on A4', pvSheets.children[1].classList.contains('a4') && pvSheets.innerHTML === fid(pvF, 'print-root').innerHTML);
+    W().localStorage.removeItem('plainchant_paper');
+    // Off again: the screenplay, as it was, up to date
+    pvW.setPageView(false);
+    check('page view: off again shows the flowing screenplay, up to date', shown(fid(pvF, 'page')) && !shown(pvSheets) &&
+      pvBtn.getAttribute('aria-pressed') === 'false' && fid(pvF, 'page').textContent.indexOf('A whole new sentence') !== -1 && !W().localStorage.getItem('plainchant_settings'));
+    const pvStale = Array.from(pvSheets.children);
+    appendText(pvF, '\n\nMore after the pages were put away.');
+    await sleep(400);
+    check('page view: while it is off, typing draws no pages', Array.from(pvSheets.children).every((el, i) => el === pvStale[i]));
+    pvW.setPageView(true);
+    check('page view: on again, the pages have caught up', pvSheets.innerHTML === pvPrinted());
+    pvF.remove();
+    // Kept after a reload: the pages are drawn for the script that opens
+    const pvR = await openRealFrame(1200, 800);
+    setText(pvR, PV_TEXT);
+    pvR.contentWindow.flushSave(); await pvR.contentWindow.whenSaved();
+    await reloadFrame(pvR);
+    check('page view: still on after a reload, with the script that opened drawn as pages',
+      fid(pvR, 'pageViewBtn').getAttribute('aria-pressed') === 'true' && fid(pvR, 'sheets').children.length === pvCount + 1 &&
+      shown(fid(pvR, 'sheets')), [fid(pvR, 'sheets').children.length]);
+    pvR.contentWindow.saveScript = () => {};
+    pvR.remove();
+    await setDb({}, {});
+    // Phone: tapping a line on a sheet goes to that line, as on the screenplay
+    const pvP = await openFrame(375, 667);
+    const pvPE = fid(pvP, 'editor');
+    setText(pvP, PV_TEXT);
+    pvP.contentWindow.setView('preview');
+    pvP.contentWindow.drawPages();
+    const pvTap = pvPE.value.split('\n').findIndex((l) => l.indexOf('Scene 4 line 3') === 0);
+    fq(pvP, '#sheets [data-line="' + pvTap + '"]').click();
+    check('page view: on a phone, tapping a line on a sheet goes to Write with the caret on that line',
+      pvP.contentDocument.body.dataset.view === 'write' && pvPE.selectionStart === pvPE.value.indexOf('Scene 4 line 3'), [pvPE.selectionStart]);
+    const pvHead = fq(pvP, '.pane-canvas .header');
+    pvP.contentWindow.setView('preview');
+    check('page view: on a phone the preview header still fits, switch included', shown(fid(pvP, 'pageViewBtn')) &&
+      fid(pvP, 'pageViewBtn').getBoundingClientRect().left >= 0 && fid(pvP, 'statsBtn').getBoundingClientRect().right <= 375 && pvHead.scrollWidth <= pvHead.clientWidth + 1,
+      [fid(pvP, 'statsBtn').getBoundingClientRect().right, pvHead.scrollWidth, pvHead.clientWidth]);
+    check('help: the page view is explained', /Page view/.test(fid(pvP, 'help-modal').textContent));
+    pvP.remove();
+    W().localStorage.removeItem('plainchant_settings');
+    if (pvPaper) W().localStorage.setItem('plainchant_paper', pvPaper);
 
     // Phone: the Library fits a 375px screen and every action is reachable
     await seedLibrary();

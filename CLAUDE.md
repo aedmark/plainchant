@@ -44,7 +44,7 @@ Sessions are short-lived and context resets between them, so the repo carries th
 | `src/library.js` | Library data rules (search, soft delete, restore, purge, duplicate, rename): scripts object in, new object out. Pure, UMD (D-013) |
 | `src/importing.js` | Import rules: which files to accept, decoding (UTF-8/16, Windows-1252), line endings. Pure, UMD (D-016) |
 | `src/suggest.js` | Autocomplete rules: names, locations and times of day from the script, what to offer for the word being typed (and names on an empty cue line). Pure, UMD, uses `Fountain` and `Editing` (D-017, D-037) |
-| `src/paginate.js` | Print pagination: tokens in, pages of positioned lines out, on the Courier grid (60 columns, 54 rows Letter / 58 A4) with the page-break rules. Pure, UMD, uses `Fountain` (D-021, docs/SPEC-PRINT.md) |
+| `src/paginate.js` | Print pagination: tokens in, pages of positioned lines out (each with the script line it came from, `at`), on the Courier grid (60 columns, 54 rows Letter / 58 A4) with the page-break rules. Pure, UMD, uses `Fountain` (D-021, docs/SPEC-PRINT.md) |
 | `src/stats.js` | Script stats: pages (as printed), screen time, scenes, words, per-character speeches and words, per scene its page, length in eighths and speakers, the INT / EXT and time-of-day mix, and the locations (`Stats.heading`). Pure, UMD, uses `Fountain` and `Paginate` (D-023, D-028, D-029) |
 | `src/outline.js` | The outline: sections, scenes (with the page each starts on) and synopses, and which one a line is in. Pure, UMD, uses `Fountain` and `Paginate` (D-024) |
 | `src/narration.js` | Narration: the time to read a script aloud (dialogue, or dialogue and action, at a reading speed) and YouTube chapters from its top-level sections, with YouTube's rules checked. Pure, UMD, uses `Fountain` (D-038) |
@@ -76,7 +76,7 @@ use what an earlier file already defined. Code inside functions runs later and c
 | `versions-ui.js` | The Versions window, from a script's row in the Library: name, go back, copy, delete (`replaceScriptText`: a new text for a script, the old one kept as a version first). Reads and writes the `versions` store through `Store` directly (D-034) |
 | `compare-ui.js` | A version compared with the text now, scene by scene, in the Versions window, and one scene taken back (D-044) |
 | `example.js`, `help.js`, `tour.js` | The example scripts (the screenplay, and the narration example for the read-aloud time and chapters; `loadExampleScript(text)`), the Help window, the welcome tour |
-| `settings.js` | The Settings window and `settings` (theme: dark, light, retro or the system's; text size, colours, blank lines on Enter, capitals as you type, guessing names, what is read aloud and the reading speed; `setSetting`), stored in `plainchant_settings`; applies the theme and size as it loads (D-032, D-035, D-038) |
+| `settings.js` | The Settings window and `settings` (theme: dark, light, retro or the system's; text size, colours, blank lines on Enter, capitals as you type, guessing names, what is read aloud and the reading speed, and the page view, switched in the preview's header; `setSetting`), stored in `plainchant_settings`; applies the theme and size as it loads (D-032, D-035, D-038) |
 | `typing.js` | Tab, smart Enter, auto-uppercase, the element bar, autocomplete chips (rules are in `src/editing.js` and `src/suggest.js`) |
 | `adventure-ui.js` | In the retro theme, Enter on a parser command alone in its paragraph shows an answer in the notice; it only reads, never changes the text (capture listener on the document, before typing.js) (D-042) |
 | `shade.js` | The editor's colour hints: a coloured copy of the text behind the textarea (whose own text is transparent), redrawn line by line from `render()`'s parse, with a wrap check that switches it off if it ever misaligns (D-031) |
@@ -84,7 +84,8 @@ use what an earlier file already defined. Code inside functions runs later and c
 | `export.js` | The Export dialog (the `.fountain` and `.fdx` downloads), and Copy (`copyText`, which the chapters use too) |
 | `import.js` | Import: the Library's picker and drag-and-drop onto the page; `showNotice` messages (defined in `core.js`) |
 | `files-ui.js` | Scripts linked to real files (Chromium only, `fileSupport`): Library > Open a file, Export > Sync with a file / Stop syncing, writing after saves (`syncLinkedFiles`), reading when opened or back in view, the bar above the editor (Allow; Load the file / Keep the script here) (D-046) |
-| `print.js` | Print / save as PDF: draws the `src/paginate.js` pages as paper-sized sheets in `#print-root`, the paper choice, `beforeprint` (D-021, D-022) |
+| `print.js` | Print / save as PDF: draws the `src/paginate.js` pages as paper-sized sheets in `#print-root` (`printSheet`), the paper choice, `beforeprint` (D-021, D-022) |
+| `pageview.js` | Page view: the preview as those same sheets while writing, in `#sheets` (`drawPages`, only the changed sheets; `schedulePages`, called by `render()`), scaled to the pane; `previewShown()`, the preview element showing now (D-054) |
 | `chapters-ui.js` | Video chapters in the Export dialog (`prepareChapters`, Copy chapters), and `narrationOf` / `narrationHow`, which the stats use for the read-aloud time (D-038) |
 | `stats-ui.js` | The live page count in the preview's header (`scheduleStats`, called by `render()`) and the Script stats window, with the read-aloud time, the scene mix, locations and scene list (D-023, D-028, D-029, D-038) |
 | `outline-ui.js` | The Outline window and `jumpToLine` (caret to a line, the line near the top of the editor, the preview following) (D-024) |
@@ -113,7 +114,8 @@ Keep each file's own listeners in that file. Functions the e2e tests call (`save
   an option (as `Editing.enter` / `autoCase` do), so the rule stays testable in Node.
 - Nothing writes to the preview (`#page`) but `drawPreview` (core.js): it keeps its own record of the blocks drawn, and
   starts again from scratch if the element count stops matching. Read the preview only after a `render()` that is not
-  `render(true)`, or after the next frame (D-043).
+  `render(true)`, or after the next frame (D-043). Likewise nothing but `drawPages` (pageview.js) writes the page view
+  (`#sheets`); code that looks for a line in the preview uses `previewShown()` (D-054).
 - The editor's line height must stay a length (`1.6em`), never unitless, and anything copying the editor's text must use
   `copyEditorType` (layout.js): the colour hints only line up if the copies lay out exactly like the textarea (D-031).
 - Scripts live in IndexedDB (database `plainchant`, version 3: stores `scripts`, `meta`, `versions` (D-034) and `files`, the

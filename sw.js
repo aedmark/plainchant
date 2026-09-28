@@ -49,6 +49,7 @@ const APP_FILES = [
     'src/app/import.js',
     'src/app/files-ui.js',
     'src/app/print.js',
+    'src/app/pageview.js',
     'src/app/chapters-ui.js',
     'src/app/stats-ui.js',
     'src/app/outline-ui.js',

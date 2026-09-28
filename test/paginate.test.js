@@ -337,3 +337,41 @@ test('spacing: two headings in a row near the foot of a page go over together (t
     assert.equal(endOfFirst.kind, 'action', 'page 1 ends on the action, not on a heading');
     assert.deepEqual(pages[1].lines.slice(0, 2).map((l) => l.row + ':' + l.kind), ['0:scene', '3:scene']);
 });
+
+// ---------- where each printed line came from (P3-12: the page view's anchors) ----------
+
+test('source lines: every printed line knows the script line it came from; (MORE) and the title page do not', () => {
+    const l = pgLayout('Title: T\n\nINT. A - DAY\n\nLine one.\nLine two.\n\nBOB\n(beat)\nHi there.\n\n> CUT TO:');
+    assert.deepEqual(l.pages[0].lines.map((x) => [x.kind, x.at]),
+        [['scene', 2], ['action', 4], ['action', 5], ['character', 7], ['parenthetical', 8], ['dialogue', 9], ['transition', 11]]);
+    assert.ok(l.titlePage.every((x) => x.at === undefined));
+    const wrapped = pgLayout('INT. A - DAY\n\n' + 'Word '.repeat(40)).pages[0].lines.filter((x) => x.kind === 'action');
+    assert.ok(wrapped.length > 1 && wrapped.every((x) => x.at === 2), 'a wrapped line keeps its source line on every row');
+    const dual = pgLayout('INT. A - DAY\n\nBOB\nYes.\n\nJO ^\nNo.').pages[0].lines.filter((x) => x.side);
+    assert.deepEqual(dual.map((x) => x.side + ' ' + x.kind + ' ' + x.at), ['left character 2', 'left dialogue 3', 'right character 5', 'right dialogue 6']);
+});
+
+test('source lines: a speech carried over a page keeps them, the repeated cue pointing at the cue', () => {
+    const src = 'INT. A - DAY\n\n' + pgFill(PG_ROWS - 7) + '\n\nBOB\nOne sentence here. Two sentences here. Three here. Four here. Five here. Six.\nSeven. Eight. Nine. Ten.';
+    const l = pgLayout(src);
+    const cueAt = src.split('\n').indexOf('BOB');
+    const more = l.pages[0].lines.find((x) => x.kind === 'more');
+    const again = l.pages[1].lines[0];
+    assert.ok(more && more.at === undefined, 'the (MORE) line has none');
+    assert.equal(pgText(again), "BOB (CONT'D)");
+    assert.equal(again.at, cueAt);
+    assert.ok(l.pages[1].lines.slice(1).every((x) => x.at > cueAt));
+});
+
+test('source lines: in whole generated scripts every body line has one, and its words are on that line', () => {
+    for (let seed = 1; seed <= 25; seed++) {
+        const src = pgScript(pgRandom(seed));
+        const lines = src.split('\n').map((s) => s.toUpperCase());
+        pgLayout(src).pages.forEach((p) => p.lines.forEach((x) => {
+            if (x.kind === 'more') return;
+            assert.ok(Number.isInteger(x.at), 'seed ' + seed + ': ' + x.kind + ' has no source line');
+            const word = pgWords(pgText(x).replace(/\(CONT'D\)/, ''))[0];
+            if (word) assert.includes(lines[x.at], word, 'seed ' + seed + ' line ' + x.at);
+        }));
+    }
+});

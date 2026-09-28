@@ -36,7 +36,7 @@ function setView(view) {
 function scrollPreviewToCaret() {
     const line = caretLine();
     let target = null;
-    for (const el of renderTarget.querySelectorAll('[data-line]')) {
+    for (const el of previewShown().querySelectorAll('[data-line]')) { // the pages, in page view (pageview.js)
         if (Number(el.dataset.line) > line) break;
         target = el;
     }

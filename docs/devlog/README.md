@@ -17,6 +17,7 @@ published together under the same names.
 | 2026-09-26 | [Sixteen Small Things](2026-09-26-sixteen-small-things.html) | Stats, outline, focus, colour hints, versions, offline, settings, themes, accessibility (session 13) |
 | 2026-09-27 | [For the Narrators](2026-09-27-for-the-narrators.html) | Read-aloud time, video chapters, the retro theme, adventure commands, browsers (sessions 14 to 16) |
 | 2026-09-27 | [Real Files and Final Draft](2026-09-27-real-files-and-final-draft.html) | Fast typing, comparing versions, screen reader and thank-you, real files, Final Draft export and layout (sessions 17 to 23) |
+| 2026-09-28 | [Seeing the Pages](2026-09-28-seeing-the-pages.html) | Page view while writing (session 25) |
 
 ## Writing an entry
 

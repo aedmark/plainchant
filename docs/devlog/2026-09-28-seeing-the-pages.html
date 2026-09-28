@@ -1,0 +1,110 @@
+<article class="dev-diary">
+  <header>
+    <h1>Plainchant Dev Diary: Seeing the Pages</h1>
+    <p class="date">September 28, 2026</p>
+    <p><strong><a href="https://github.com/aedmark/plainchant">Github Repo</a></strong></p>
+  </header>
+
+  <p>
+    Screenwriters think in pages. A page is roughly a minute of screen time, a
+    scene "runs two and an eighth", and every writer knows the particular
+    dread of a speech that spills onto the next page by a single line.
+  </p>
+
+  <p>
+    Until now, Plainchant only showed pages at the very end, when printing.
+    While writing, the preview was one long, flowing column. That changes
+    today.
+  </p>
+
+  <h2>Page View</h2>
+
+  <p>
+    Above the preview there is now a <strong>Page view</strong> switch. Turn
+    it on, and the preview becomes a stack of real sheets of paper: page
+    numbers in the corner, breaks exactly where they fall, <em>(MORE)</em> and
+    <em>(CONT'D)</em> where a speech runs over, and the title page on its own
+    sheet at the front.
+  </p>
+
+  <p>
+    The sheets shrink to fit whatever space the preview has: a little under
+    three-quarters of their real size beside the editor on a laptop, and
+    small enough to see a whole page at once on a phone. Turn the switch off
+    and the flowing preview comes straight back. The app remembers which you
+    prefer.
+  </p>
+
+  <h2>Exactly What Prints</h2>
+
+  <p>
+    It would have been easy to make something that looks like pages. The
+    trouble with "looks like" is that it drifts: a page view that breaks a
+    few lines differently from the printed script is worse than none,
+    because it teaches you the wrong page count.
+  </p>
+
+  <p>
+    So Page view does not have a layout of its own. It uses the very same
+    page layout as printing, drawn by the very same code, on the same paper
+    size you last printed on. The tests check that the two are identical,
+    character for character.
+  </p>
+
+  <h2>Keeping Up With Typing</h2>
+
+  <p>
+    Laying out a feature-length script takes a moment, and redrawing a
+    hundred sheets of paper on every keystroke would make typing heavy
+    again, after all the work that went into making it light.
+  </p>
+
+  <p>
+    So the pages wait until you pause, for about a third of a second, and
+    then only the sheets that actually changed are redrawn. Typing a word on
+    page forty leaves pages one to thirty-nine exactly as they were. Adding a
+    blank line near the top, which moves nothing on the page, redraws nothing
+    at all.
+  </p>
+
+  <h2>Finding Your Place</h2>
+
+  <p>
+    Every line on every sheet knows which line of your script it came from.
+    That sounds like a small detail, but it is what makes the pages feel
+    like part of the app rather than a picture of it:
+  </p>
+
+  <ul>
+    <li>Switching between the flowing preview and the pages keeps your place</li>
+    <li>Jumping to a scene from the <strong>Outline</strong> lands on the right
+      sheet</li>
+    <li>On a phone, tapping a line on a sheet takes you straight to that line
+      in the script, just as it does in the flowing preview</li>
+  </ul>
+
+  <h2>Where the Project Stands</h2>
+
+  <p>
+    With Page view, everything the print plan set out to do is built, apart
+    from a direct PDF download, which printing to PDF made unnecessary. The
+    tests now stand at 337 unit tests under Node, and 325 unit tests plus
+    692 checks of the app in a real browser.
+  </p>
+
+  <h2>Next: Final Draft, Both Ways</h2>
+
+  <p>
+    Plainchant can save a script for Final Draft, but it cannot yet open one.
+    Most writers who might switch already have scripts in Final Draft, so
+    opening them is the likeliest next step. The same hands-on advice as ever
+    applies too: the best test of Page view is a real script, in a real
+    browser, on a real screen.
+  </p>
+
+  <nav class="dev-diary-nav" aria-label="Dev diary">
+    <a href="2026-09-27-real-files-and-final-draft.html" rel="prev">&larr; Real Files and Final Draft</a>
+    &middot;
+    <a href="index.html">All entries</a>
+  </nav>
+</article>

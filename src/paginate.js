@@ -10,7 +10,9 @@
  *   Paginate.wrap(runs, width)          -> [{ runs, start, end }]  word-wrapped lines, with where each sits in the text
  *
  *   line = { row, col, width, align: 'left' | 'center' | 'right', runs: [{ text, bold, italic, underline }], kind,
- *            side?: 'left' | 'right' (dual dialogue), number?: scene number, source?: a scene heading's source line }
+ *            side?: 'left' | 'right' (dual dialogue), number?: scene number, source?: a scene heading's source line,
+ *            at?: the script line it was printed from (every line of the script's body has one; not (MORE), not the
+ *            title page) }
  *
  * Lines come in reading order (dual dialogue: the whole left speech, then the right). Rows count from 0 at the top
  * margin; columns from 0 at the left margin. Loads as window.Paginate (after fountain.js) and via require() in Node.
@@ -134,28 +136,29 @@
         return out;
     }
 
-    function parasOf(kind, runs, geo, extra) {
-        return paragraphsOf(runs).map((r) => para(kind, r, geo, extra));
+    // `at`: the source line of the first paragraph; each paragraph after it is a line further on (P3-12)
+    function parasOf(kind, runs, geo, extra, at) {
+        return paragraphsOf(runs).map((r, i) => para(kind, r, geo, at === undefined ? extra : Object.assign({}, extra, { at: at + i })));
     }
 
     function speechParas(entries, geoFor, extra) {
         const out = [];
         entries.forEach((e) => {
             const runs = Fountain.runs(e.text);
-            if (visible(runs)) out.push.apply(out, parasOf(e.type, runs, geoFor(e.type), extra));
+            if (visible(runs)) out.push.apply(out, parasOf(e.type, runs, geoFor(e.type), extra, e.line));
         });
         return out;
     }
 
-    function dialogueBlock(character, speech, printedCue) {
-        const head = linesOf(parasOf('character', Fountain.runs(printedCue || character), GEO.character));
-        return { type: 'dialogue', character: character, head: head, paras: speech, lines: head.concat(linesOf(speech)) };
+    function dialogueBlock(character, speech, printedCue, at) {
+        const head = linesOf(parasOf('character', Fountain.runs(printedCue || character), GEO.character, null, at));
+        return { type: 'dialogue', character: character, at: at, head: head, paras: speech, lines: head.concat(linesOf(speech)) };
     }
 
     function dualBlock(left, right) {
         const side = (t, name) => {
             const shift = (g) => ({ col: g.col + DUAL[name], width: g.width });
-            return linesOf(parasOf('character', Fountain.runs(t.character), shift(DUAL.character), { side: name }))
+            return linesOf(parasOf('character', Fountain.runs(t.character), shift(DUAL.character), { side: name }, t.line))
                 .concat(linesOf(speechParas(t.lines, (k) => shift(DUAL[k]), { side: name })));
         };
         const l = side(left, 'left'), r = side(right, 'right');
@@ -168,7 +171,7 @@
             const t = tokens[i];
             switch (t.type) {
                 case 'scene': {
-                    const ls = linesOf(parasOf('scene', upper(Fountain.runs(t.text)), GEO.scene));
+                    const ls = linesOf(parasOf('scene', upper(Fountain.runs(t.text)), GEO.scene, null, t.line));
                     if (t.number) ls[0].number = t.number;
                     ls[0].source = t.line; // so the outline can say which page a scene starts on
                     blocks.push({ type: 'scene', lines: ls });
@@ -178,14 +181,14 @@
                     if (t.dual === 'left' && tokens[i + 1] && tokens[i + 1].type === 'dialogue' && tokens[i + 1].dual === 'right') {
                         blocks.push(dualBlock(t, tokens[i + 1]));
                         i++;
-                    } else blocks.push(dialogueBlock(t.character, speechParas(t.lines, (k) => GEO[k])));
+                    } else blocks.push(dialogueBlock(t.character, speechParas(t.lines, (k) => GEO[k]), undefined, t.line));
                     break;
                 case 'action': case 'transition': case 'centered': case 'lyrics': {
                     let runs = Fountain.runs(t.text);
                     if (!visible(runs)) break; // a note on its own prints nothing, and leaves no gap
                     if (t.type === 'transition') runs = upper(runs);
                     if (t.type === 'lyrics') runs = italic(runs);
-                    const paras = parasOf(t.type, runs, GEO[t.type]);
+                    const paras = parasOf(t.type, runs, GEO[t.type], null, t.line);
                     blocks.push({ type: t.type, paras: paras, lines: linesOf(paras) });
                     break;
                 }
@@ -289,6 +292,7 @@
             if (tpl.side) line.side = tpl.side;
             if (tpl.number) line.number = tpl.number;
             if (tpl.source !== undefined) line.source = tpl.source;
+            if (tpl.at !== undefined) line.at = tpl.at;
             page.push(line);
         };
         let lead = 1; // blank lines before the block being placed (leadOf)
@@ -344,7 +348,7 @@
                 if (isDialogue) emit(Object.assign({ runs: [{ text: '(MORE)', bold: false, italic: false, underline: false }], kind: 'more', align: 'left' }, GEO.more), row);
                 newPage();
                 b = isDialogue
-                    ? dialogueBlock(b.character, option.rest, contd(b.character))
+                    ? dialogueBlock(b.character, option.rest, contd(b.character), b.at)
                     : { type: b.type, paras: option.rest, lines: linesOf(option.rest) };
             }
         }

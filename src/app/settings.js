@@ -14,7 +14,7 @@
 const SETTINGS_KEY = 'plainchant_settings';
 const SETTING_DEFAULTS = {
     theme: 'dark', size: 'normal', colours: true, paragraphs: true, capitals: true, cues: true,
-    pace: Narration.PACE, aloud: 'dialogue'
+    pace: Narration.PACE, aloud: 'dialogue', pageView: false
 };
 const SETTING_CHOICES = { theme: ['dark', 'light', 'retro', 'system'], size: ['small', 'normal', 'large', 'larger'], aloud: ['dialogue', 'all'] };
 const SETTING_RANGES = { pace: [80, 300] }; // whole numbers, words a minute

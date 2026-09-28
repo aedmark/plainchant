@@ -945,6 +945,29 @@ feature or milestone a writer would notice writes an entry; smaller changes wait
 HANDOFF's Next steps until the next entry (CLAUDE.md, session protocol step 5). The owner still decides what is
 published.
 
+## D-054 Page view: the printed sheets in the preview, while writing  (2026-09-28, status: accepted; P3-12, spec §8c)
+**Context:** The owner picked P3-12: see the script as the pages it prints on while writing, with page numbers and
+breaks.
+**Decision:**
+1. **A "Page view" switch in the preview's header** (beside Outline and the page count), `aria-pressed`. Remembered
+   as the setting `pageView` in `plainchant_settings` (no new localStorage key). It has no box in the Settings window:
+   it is a way of looking, switched where you look, like focus mode.
+2. **The same sheets as printing:** `Paginate.layout`, drawn by print.js's `printSheet`, on the paper last chosen to
+   print (Letter / A4). The e2e suite checks the page view's HTML is exactly what printing draws.
+3. **Scaled to the pane** with CSS `zoom` (Chromium, and Firefox since 126), never above 100%: about 70% beside the
+   editor on a laptop, about 42% on a phone. Paper on a grey desk (a literal colour, like the preview's paper).
+4. **Every printed line knows its source line:** `Paginate.layout` gives each body line `at` (the script line it came
+   from; a paragraph's wrapped rows share it, a carried-over cue points at the cue; not (MORE), not the title page),
+   and printSheet writes it as `data-line`. So the scroll sync, going to the caret (Preview on a phone, the Outline's
+   jump), tapping a line on a phone (D-033) and switching views all find the same place on the sheets.
+5. **It follows typing after a 300 ms pause**, and at once for anything else (opening a script, the examples). Only
+   sheets whose lines changed are redrawn; a sheet whose lines only moved to other source lines (a blank line added
+   above) keeps its elements and is renumbered in place.
+6. The flowing preview (`#page`) goes on being drawn underneath, only hidden, so switching back is instant and D-043
+   is untouched.
+**Consequences:** with page view on, the script is paginated twice after a pause (the page count too, stats-ui.js):
+a few milliseconds on a feature-length script. Not seen in Firefox yet (its `zoom`).
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

@@ -86,6 +86,8 @@
             <p>Live structural rendering.</p>
         </div>
         <div class="canvas-tools">
+            <!-- The script as the printed pages, while writing (P3-12) -->
+            <button type="button" id="pageViewBtn" class="canvas-btn" aria-pressed="false" title="Show the script as the pages it prints on">Page view</button>
             <!-- The outline: sections and scenes, to jump to (P4-03) -->
             <button type="button" id="outlineBtn" class="canvas-btn" aria-haspopup="dialog" title="Outline: jump to a scene or section">Outline</button>
             <!-- Live page count and screen time; opens the Stats window (P4-04) -->
@@ -99,6 +101,8 @@
         <div id="page" class="screenplay-font">
             <!-- Rendered script appears here -->
         </div>
+        <!-- Page view (P3-12): the same script as printed sheets, drawn by src/app/pageview.js -->
+        <div id="sheets"></div>
     </div>
 </div>
 
@@ -193,6 +197,7 @@
                     <li><strong>Colours in the editor</strong> show what each line is: scene headings warm, character names blue, dialogue a little brighter than action, notes muted. They are only hints; the formatted script is what prints.</li>
                     <li><strong>Settings</strong> (the gear; <strong>Settings</strong> in the phone menu) chooses a dark or light look (or your system's), the size of the editor's text, and can turn off the colours, the blank line Enter adds after action, and capitals as you type.</li>
                     <li><strong>No connection needed.</strong> Plainchant works offline. Opened from a web address, your browser can also install it as an app: look for <strong>Install</strong> or <strong>Add to Home Screen</strong>.</li>
+                    <li><strong>Page view</strong> (above the formatted script) shows your script as the pages it prints on: page numbers, where each page breaks, <em>(MORE)</em> and <em>(CONT&rsquo;D)</em>, on US Letter or A4 (whichever you last printed on). It follows your typing when you pause. Choose it again to go back to the flowing script.</li>
                     <li><strong>Outline</strong> (above the formatted script) lists your sections (<code class="inline"># Act One</code>), scenes and synopses (<code class="inline">= ...</code>), with the page each scene starts on. Choose one to jump there; type to find one.</li>
                     <li>The page count above the formatted script (<strong>3 pages &middot; ~3 min</strong>) opens <strong>Script stats</strong>: pages, screen time (about a minute a page), scenes, words, how much each character speaks, the mix of interior and exterior, day and night scenes, each location, and every scene with its page, its length in eighths of a page and who speaks in it (choose one to go there). It also gives the time to read the script aloud.</li>
                 </ul>
@@ -603,6 +608,7 @@ Is anyone here?</pre></div>
 <script src="src/app/import.js"></script>
 <script src="src/app/files-ui.js"></script>
 <script src="src/app/print.js"></script>
+<script src="src/app/pageview.js"></script>
 <script src="src/app/chapters-ui.js"></script>
 <script src="src/app/stats-ui.js"></script>
 <script src="src/app/outline-ui.js"></script>
