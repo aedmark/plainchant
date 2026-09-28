@@ -13,7 +13,7 @@ _Last updated: 2026-09-28, session 25: page view while writing (P3-12, D-054), w
 Pages". Before it: the dev diary (D-053, which now tracks the work), Export's buttons renamed (D-052), print following
 Final Draft's screenplay template (D-051), Final Draft export (P3-08), and earlier work. Everything before session 25
 is in `master`; P3-12 is on the working branch, `claude/compassionate-clarke-mxwpzz`, until the owner merges it.
-Tests: `npm test` 337, `bash test/run-headless.sh` 325 unit + 692 e2e, about 60 s.___
+Tests: `npm test` 337, `bash test/run-headless.sh` 325 unit + 694 e2e, about 60 s.___
 
 **Where things stand, in one paragraph:** Phases 1 and 2 are done apart from real-device work (P2-09, P2-13) and two
 optional ideas (P2-20 hints, P2-22 desktop click-to-jump). Phase 3's output is done (Fountain export, print / save as
@@ -609,6 +609,10 @@ accessibility sweep (desktop and phone).
 **Decisions:** D-054.
 **Problems / surprises:** an earlier e2e section leaves A4 as the paper, so the page-view checks took A4's
 proportions for Letter's; the section now starts on Letter and puts the choice back after.
+**Verified:** mutation runs: 15 app mutations (pageview.js, print.js, layout.js, core.js) and 6 in `src/paginate.js`,
+all caught. The first run let four through (a check read the pages after they were already redrawn, two jumps were
+already in view by chance, nothing checked that pages stay undrawn while the view is off); those checks were
+tightened and all four are caught now.
 **Left undone:** not seen in Firefox (CSS `zoom` there) or on a real phone.
 **Next session should start with:** merge; then the owner's pick.
 
