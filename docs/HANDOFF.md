@@ -551,8 +551,8 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 
 0. **Merge the branch** (the owner does this, see the git gotcha).
    **For the dev diary** (smaller changes a writer would notice, for the next entry; clear the list when it is
-   written): nothing yet. The latest entry, "Real Files and Final Draft", covers everything up to session 23. If anyone you send
-   scripts to has Final Draft, a real .fdx opened there is still the one check the tests cannot make.
+   written): nothing yet. The latest entry, "Real Files and Final Draft", covers everything up to session 23.
+   If anyone you send scripts to has Final Draft, a real .fdx opened there is still the one check the tests cannot make.
 1. **A hands-on pass by the owner of what sessions 13 and 14 built.** Firefox is done: the owner reports it works well
    (session 14). Desktop Safari is not a target (D-039). Left, each a few minutes:
    - **After a day of writing: Library > Versions** on a real script (the database upgraded to version 2 on first
