@@ -619,8 +619,15 @@ Up the Page".
 **Decisions:** D-057.
 **Problems / surprises:** with the editor hidden, an edit could not go through the editor's undo; the editor is
 shown off-screen for that moment instead of falling back to setting its value (which would lose undo).
-**Left undone:** not tried on a real touch screen (Android's own long-press menu may compete) or in Firefox.
-**Next session should start with:** merge; then the owner's pick.
+**Verified:** a mutation run on `src/app/quick-edit.js` (9 of its lines): 3 caught, 6 not. Worth tests next session: a
+finger that moves while holding cancels the hold (scrolling never opens the box), and a mouse held down never opens it
+(selecting text). Not worth much: the double-click's word selection cleared, the editor blurred after an edit made
+while hidden, an unchanged box skipping the edit (a no-op edit anyway), the `previewShown()` guard in `quickLine`.
+An interrupted mutation run once left a mutated line in the working copy; the scratch script now restores on
+SIGTERM / SIGINT. Check `git diff` after any interrupted run before committing.
+**Left undone:** the two tests above; not tried on a real touch screen (Android's own long-press menu may compete)
+or in Firefox.
+**Next session should start with:** merge; then the two quick-edit tests; then the owner's pick.
 
 ### Session 27: 2026-09-28: The editor alone, the preview alone, or both (P2-23)
 
