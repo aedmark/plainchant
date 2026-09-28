@@ -2871,6 +2871,10 @@ setTimeout(() => {
     check('panes: Ctrl/Cmd+Shift+1 the editor alone', pnPressed() === 'write' && !shown(fq(pnF, '.pane-canvas')));
     pnKey(pnF, 'Digit3');
     check('panes: Ctrl/Cmd+Shift+3 the preview alone', pnPressed() === 'preview' && !shown(pnE));
+    for (const mods of [{}, { shiftKey: true }, { ctrlKey: true }, { ctrlKey: true, shiftKey: true, altKey: true }]) {
+      pnF.contentDocument.dispatchEvent(new pnW.KeyboardEvent('keydown', Object.assign({ code: 'Digit2', key: '2', bubbles: true, cancelable: true }, mods)));
+    }
+    check('panes: a 2 typed, Shift+2, Ctrl+2 or Ctrl+Shift+Alt+2 changes nothing', pnPressed() === 'preview');
     // Page view is not drawn while the preview is hidden, and catches up when it shows
     pnW.setPanes('both');
     pnW.setPageView(true);

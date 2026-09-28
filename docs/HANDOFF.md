@@ -14,7 +14,7 @@ with its dev-diary entry, "Room to Write"; P2-24 (quick edits in the preview) sk
 Before it: page view (P3-12) and its ad-blocker rename (D-055), the dev diary (D-053), Final Draft export and layout,
 and earlier work. Everything up to D-055 is in `master`; P2-23 is on the working branch,
 `claude/compassionate-clarke-mxwpzz`, until the owner merges it. Tests: `npm test` 338, `bash test/run-headless.sh`
-325 unit + 711 e2e, about 60 s._____
+325 unit + 712 e2e, about 60 s._____
 
 **Where things stand, in one paragraph:** Phases 1 and 2 are done apart from real-device work (P2-09, P2-13) and two
 optional ideas (P2-20 hints, P2-22 desktop click-to-jump). Phase 3's output is done (Fountain export, print / save as
@@ -615,6 +615,8 @@ owner. Dev-diary entry "Room to Write" (with the ad-blocker fix from session 26)
 **Decisions:** D-056.
 **Problems / surprises:** a check of mine compared the colour layer's width with the editor's outer width; the layer
 leaves out the scrollbar by design (copyEditorType). The app was right.
+**Verified:** mutation runs: 11 mutations of panes.js, sheets-ui.js and the stylesheet, all caught after one check
+was added (dropping the Ctrl/Cmd+Shift requirement went unnoticed: a plain 2 now provably changes nothing).
 **Left undone:** P2-24 until the owner agrees the sketch; not seen in Firefox.
 **Next session should start with:** merge; then the owner's pick.
 
