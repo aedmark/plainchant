@@ -20,8 +20,10 @@ published together under the same names.
 
 ## Writing an entry
 
-- Only when the owner asks, usually after a milestone. Source: the session log in `docs/HANDOFF.md` since the last
-  entry, DECISIONS, and the git log. Check every claim against the code.
+- The diary tracks the project's work from 2026-09-28 on (CLAUDE.md, session protocol step 5): an entry when a session
+  finishes a feature or milestone a writer would notice; smaller changes wait in HANDOFF's "For the dev diary" list
+  and go into the next entry. Source: the session log in `docs/HANDOFF.md` since the last entry, DECISIONS, and the
+  git log. Check every claim against the code.
 - One file per entry, `YYYY-MM-DD-slug.html`, dated when the work happened. Add it at the top of `index.html` (date,
   title, one line), add a row to the table above, give it the same `<nav class="dev-diary-nav">` as the others, and
   add the "next" link to the entry before it.

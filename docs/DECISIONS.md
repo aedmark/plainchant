@@ -940,6 +940,10 @@ rewriting it. Nothing in the app or the tests reads it.
 **Update, same session:** at the owner's request the entries are linked: `docs/devlog/index.html` lists them newest
 first, and each entry ends with a `dev-diary-nav` (previous, all entries, next). Relative links, so the files are
 published together.
+**Update, same session:** the owner asked for the diary to track the work from now on. A session that finishes a
+feature or milestone a writer would notice writes an entry; smaller changes wait in a "For the dev diary" list in
+HANDOFF's Next steps until the next entry (CLAUDE.md, session protocol step 5). The owner still decides what is
+published.
 
 ## Open questions
 

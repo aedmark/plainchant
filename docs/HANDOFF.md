@@ -9,11 +9,12 @@ Protocol: see [CLAUDE.md](../CLAUDE.md). Plan: [ROADMAP.md](../ROADMAP.md). Deci
 
 ## Current state
 
-_Last updated: 2026-09-28, session 24: a public dev diary, seven entries written retroactively (`docs/devlog/`,
-D-053). Before it: Export's buttons renamed (D-052), print following Final Draft's screenplay template (D-051), Final
-Draft export (P3-08), and earlier work. Everything up to D-052 is in `master`; the diary is on the working branch,
-`claude/compassionate-clarke-mxwpzz`, until the owner merges it. Tests: `npm test` 334, `bash test/run-headless.sh`
-322 unit + 673 e2e, about 55 s._
+_Last updated: 2026-09-28, session 24: a public dev diary (`docs/devlog/`, D-053): seven entries written
+retroactively, an index, and links between them. **From now on the diary tracks the work** (CLAUDE.md, session
+protocol step 5): each feature or milestone gets an entry; smaller changes wait under "For the dev diary" in Next
+steps. Before it: Export's buttons renamed (D-052), print following Final Draft's screenplay template (D-051), Final
+Draft export (P3-08), and earlier work. Everything up to the diary's index is in `master`. Tests: `npm test` 334,
+`bash test/run-headless.sh` 322 unit + 673 e2e, about 55 s.__
 
 **Where things stand, in one paragraph:** Phases 1 and 2 are done apart from real-device work (P2-09, P2-13) and two
 optional ideas (P2-20 hints, P2-22 desktop click-to-jump). Phase 3's output is done (Fountain export, print / save as
@@ -548,8 +549,9 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 
 ## Next steps (in order)
 
-0. **Merge the branch** for the dev diary (D-053; the owner does this, see the git gotcha); read the entries before
-   publishing them. If anyone you send
+0. **Merge the branch** (the owner does this, see the git gotcha).
+   **For the dev diary** (smaller changes a writer would notice, for the next entry; clear the list when it is
+   written): nothing yet. The latest entry, "Real Files and Final Draft", covers everything up to session 23. If anyone you send
    scripts to has Final Draft, a real .fdx opened there is still the one check the tests cannot make.
 1. **A hands-on pass by the owner of what sessions 13 and 14 built.** Firefox is done: the owner reports it works well
    (session 14). Desktop Safari is not a target (D-039). Left, each a few minutes:
@@ -602,6 +604,9 @@ the end-of-session protocol (only when the owner asks).
 The first entries mention that the code is written with an AI coding assistant (it explains the roadmap / handoff /
 decisions scheme); that is the owner's call to keep or cut.
 **Left undone:** publishing, which is the owner's.
+**Later the same session:** the owner asked for an index (`index.html`, and previous / index / next links on every
+entry), then for the diary to track the work from now on: CLAUDE.md's session protocol has a step for it, and Next
+steps a "For the dev diary" list.
 **Next session should start with:** merge; then the owner's pick.
 
 ### Session 23: 2026-09-27: Export's buttons say what they do (D-052)
