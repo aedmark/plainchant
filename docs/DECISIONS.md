@@ -1019,6 +1019,23 @@ roadmap, not agreed yet.
 **Consequences:** keyboard users edit in the editor as before (the box is for the pointer). Formatting marks show as
 typed (`*italic*`, `^`, `>`): what opens is the text, not the formatted page.
 
+## D-058 HANDOFF holds the present; the history moves to SESSION-LOG.md  (2026-09-29, status: accepted)
+**Context:** HANDOFF.md had grown to about 1,260 lines. Under "Current state" sat a 200-line feature inventory and a
+170-line verification record, both written session by session; below them, the session log of every session. Parts of
+the inventory had gone stale (it still said database version 2), and the owner asked for the handoff to deal only with
+current work and future plans.
+**Decision:**
+1. `docs/SESSION-LOG.md` is the append-only history: every session-log entry, newest first, with the template at its
+   top. A new entry goes there at the end of each session (CLAUDE.md, session protocol step 3).
+2. HANDOFF.md keeps only what is true now and what comes next: current state (a short summary of what the app does,
+   with decision numbers, and what has not been checked yet), gotchas, next steps (with the dev-diary list), open
+   questions. It carries no "done in session N" and no test counts from earlier sessions.
+3. The old "What works" and "Verified" lists were moved unchanged into a frozen snapshot at the end of
+   SESSION-LOG.md, not rewritten: they are the record of what was tested and how, but are no longer maintained.
+   Resolved open questions were dropped (their answers are in DECISIONS).
+**Consequences:** a session reads HANDOFF plus the latest SESSION-LOG entry. The dev diary is written from
+SESSION-LOG.md. `docs/agent-template/` still shows the single-file layout until the owner says otherwise.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom
