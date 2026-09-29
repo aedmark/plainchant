@@ -47,6 +47,11 @@ roadmap, and moved the two specs into `docs/devlog/`; CLAUDE.md and ROADMAP stil
 **Left undone:** the red tests; the stale spec paths; `docs/agent-template/` still shows the single-file handoff.
 **Next session should start with:** merge; then HANDOFF's Next steps 1 (get the tests green, asking the owner about
 the header comments).
+**Later the same session:** the owner answered. The header-comment test is retired, the wrapped phrases in
+`index.html` are back on one line, and three e2e checks follow the new Help wording or went with the Help entry they
+checked (D-059): `npm test` 339, headless 327 unit + 730 e2e, all passing. The spec paths in ROADMAP and CLAUDE.md
+point at `docs/devlog/`. `docs/agent-template/` follows D-058 (its own HANDOFF and SESSION-LOG); the owner is moving it
+to their hypervisor repo. Next: merge, then HANDOFF's Next steps.
 
 ### Session 29: 2026-09-29: A reusable template of these docs
 

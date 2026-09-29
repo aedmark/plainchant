@@ -13,8 +13,8 @@ and the one after. The links are relative, so the files are published together u
 ## Writing an entry
 
 - When a session finishes a feature or milestone a user would notice (CLAUDE.md, session protocol step 5); smaller
-  changes wait in HANDOFF's "For the dev diary" list. Source: the session log since the last entry, DECISIONS and the
-  git log. Check every claim against the code.
+  changes wait in HANDOFF's "For the dev diary" list. Source: `docs/SESSION-LOG.md` since the last entry, DECISIONS
+  and the git log. Check every claim against the code.
 - One file per entry, `YYYY-MM-DD-slug.html`, dated when the work happened (copy `_entry-template.html`). Add it at the
   top of `index.html`, add a row above, and add the "next" link to the entry before it.
 - Written for users, not developers: what changed for someone using it, and why; technical detail only where it tells

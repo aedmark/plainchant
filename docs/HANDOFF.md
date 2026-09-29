@@ -10,20 +10,18 @@ Plan: [ROADMAP.md](../ROADMAP.md). Decisions: [DECISIONS.md](DECISIONS.md). The 
 
 ## Current state
 
-_Last updated: 2026-09-29, session 30 (docs only: this file trimmed to the present; its history moved to
-SESSION-LOG.md, D-058). Everything through session 29 is in `master`, along with the owner's own commits after it.
-This session's work is on `claude/amazing-goodall-7jd9f2` until the owner merges it._
-
-**Tests are red on `master`** since the owner's clean-up commits after session 29 ("copy", "Sw", "Sanitization":
-most code comments stripped from `src/` and `index.html` reformatted). `npm test`: 339 of 340; `bash
-test/run-headless.sh`: 327 unit pass, e2e 722 passed, 9 failed. None of it is a behaviour change; see Next steps 1.
+_Last updated: 2026-09-29, session 30: this file trimmed to the present, its history moved to SESSION-LOG.md
+(D-058); the tests green again after the owner's copy edit and comment clean-up (D-059). Everything through session 29
+is in `master`, with the owner's own commits after it. This session's work is on `claude/amazing-goodall-7jd9f2`
+until the owner merges it. Tests: `npm test` 339, `bash test/run-headless.sh` 327 unit + 730 e2e, about 60 s._
 
 **Where things stand:** Phases 1 to 4 are done apart from P2-06 (desktop scroll sync still goes by percentage) and
 an optional idea (P2-20 first-use hints). Phase 3's output is done (Fountain and Final Draft export, print / save as
-PDF, the page view while writing); what is left there is optional (P3-09, P3-10, P3-14). Phase 5 has real files on disk (P5-01, Chromium only); cloud sync and sharing (P5-02,
-P5-03) are not planned. The owner dropped the brand and Apple-platform phases and the device-pass items from the
-roadmap on 2026-09-29. The biggest gap is not code: most features have only run in headless Chromium and the owner's
-Firefox, so the owner's hands-on checks (Next steps 2) matter more than the next feature.
+PDF, the page view while writing); what is left there is optional (P3-09, P3-10, P3-14). Phase 5 has real files on
+disk (P5-01, Chromium only); cloud sync and sharing (P5-02, P5-03) are not planned. The owner dropped the brand and
+Apple-platform phases and the device-pass items from the roadmap on 2026-09-29. The biggest gap is not code: most
+features have only run in headless Chromium and the owner's Firefox, so the owner's hands-on checks (Next steps 1)
+matter more than the next feature.
 
 **What the app does** (ROADMAP has every ticked item; the detailed notes as of session 29 are frozen at the end of
 SESSION-LOG.md)
@@ -74,8 +72,10 @@ SESSION-LOG.md)
   before declaring anything done. Never add `--virtual-time-budget` back: IndexedDB never answers under it (D-019).
   "The page never finished" means a script error or a hung `await`; open the page in a browser, or in Playwright with
   `waitUntil: 'commit'` (the e2e page holds its own load event open until it is done, for up to 10 real minutes).
-- **The e2e checks match visible text exactly** (`textContent`, Help's wording). Reflowing `index.html` so a sentence
-  wraps across lines breaks them (that is most of the current red). Keep user-visible strings on one line.
+- **The e2e checks match visible text exactly** (`textContent`, Help's wording, button labels). An editor's
+  "reformat" that wraps a sentence across lines in `index.html` breaks them, and so does a copy edit ("capitalised"
+  to "capitalized"). Keep each phrase a check looks for on one line, and after changing Help's wording run the e2e
+  and update the check's pattern to the new words (D-059).
 - **The e2e page is one shared script scope** (~2,000 lines): a name declared twice (`typeInto`, `cs2`, `tf`, `kw`,
   `chips`, `said` all have) breaks the whole page. Prefix a new section's names (`verF`, `acChips`) and syntax-check by
   compiling each `<script>` block of `test/app.e2e.html` with `new Function` under `node -e`.
@@ -101,8 +101,7 @@ SESSION-LOG.md)
 **App code**
 - The app is classic scripts in `src/app/` sharing one global scope (CLAUDE.md "App scripts", D-014). Functions the e2e
   calls stay top-level declarations: `fitToViewport`, `setView`, `setMenu`, `syncElementState`, `buildPrintPages`,
-  `printScript` and the others listed in CLAUDE.md. `test/structure.test.js` also requires each file to start with its
-  `/*\n * Plainchant app script: ` header comment.
+  `printScript` and the others listed in CLAUDE.md. Header comments are optional; no test looks for them (D-059).
 - **Offline:** add any new file the page loads to `APP_FILES` in `sw.js` (the structure test fails until you do), and
   bump `CACHE` when a file is removed or renamed. Service workers never run on `file://`; to see the offline copy,
   serve the folder (`python3 -m http.server`) and use Playwright with `context.setOffline(true)`.
@@ -157,16 +156,8 @@ SESSION-LOG.md)
 
 ## Next steps (in order)
 
-0. **Merge this branch** (docs only).
-1. **Get the tests green again.** The owner's clean-up broke checks that match text or comments, not behaviour:
-   - `test/structure.test.js` "every app script starts with the explanatory header": the "Sanitization" commits removed
-     the `/*\n * Plainchant app script: ...` header from every file in `src/app/`. Either put the headers back or drop
-     the test; that is the owner's call (ask).
-   - e2e (9): eight "help: ... is explained" checks and "stats: the page count waits for a pause in typing". The
-     "copy" commit reflowed `index.html`, so strings the checks match exactly now wrap across lines ("No pages yet"
-     reads "No pages\n yet"; Help phrases such as "Save as PDF"). Put those strings back on one line, or make the checks
-     collapse whitespace, then re-run `bash test/run-headless.sh`.
-2. **The owner's hands-on checks,** each a few minutes (whatever feels wrong is the next session's first job):
+0. **Merge this branch** (docs, one test retired, e2e checks and `index.html` line breaks; no behaviour change).
+1. **The owner's hands-on checks,** each a few minutes (whatever feels wrong is the next session's first job):
    - After a day of writing, **Library > Versions** on a real script: Go back, then Ctrl+Z.
    - **On an Android phone or tablet:** type at the bottom of a long script (three lines of room above the keyboard?);
      tap a line in Preview (does the keyboard come up?); press and hold a line for a quick edit; Focus mode; the times
@@ -179,18 +170,15 @@ SESSION-LOG.md)
    - **Narration:** read a page aloud against a clock and set that speed in Settings; paste the chapters into an
      unlisted YouTube upload and see whether YouTube accepts them.
    - If anyone you send scripts to has Final Draft, a real `.fdx` opened there.
-3. **Small loose ends:**
-   - The two quick-edit tests listed under "Not checked yet".
-   - The specs moved to `docs/devlog/`, but CLAUDE.md (the `src/paginate.js` row) and ROADMAP (P3-03, P4-10) still
-     point at `docs/SPEC-PRINT.md` / `docs/SPEC-INDEXEDDB.md` (DECISIONS is append-only; leave its mentions).
-   - `docs/agent-template/` still describes the old single-file HANDOFF with the session log at its foot; bring it in
-     line with D-058 if the owner wants the template to match.
-4. **Then the next feature, the owner's pick.** Candidates: **P3-14** importing `.fdx`; **P3-09 / P3-10** Library and
+2. **Small loose end:** the two quick-edit tests listed under "Not checked yet".
+3. **Then the next feature, the owner's pick.** Candidates: **P3-14** importing `.fdx`; **P3-09 / P3-10** Library and
    export extras; **P5-04** real-file extras; **P2-20** first-use hints.
 
 **For the dev diary** (smaller changes a writer would notice, for the next entry; clear the list when it is written):
-nothing yet. The latest entry, "Touching Up the Page", covers everything up to session 28; sessions 29 and 30 changed
-only docs.
+- Help's wording revised by the owner (American spelling, title-case headings, "the Void" for the writing pane), and
+  its "Will the browser keep my scripts?" entry removed (the Library's own line about it is unchanged).
+
+The latest entry, "Touching Up the Page", covers everything up to session 28.
 
 ## Open questions for the owner
 
@@ -202,4 +190,7 @@ only docs.
 - Should the preview follow the theme (a dark page), or stay paper as now (D-035)?
 - Narration (D-038): is 150 words a minute the right default; should chapters also be offered from scenes (for scripts
   with no sections); should the header's page count show the read-aloud time for narrated scripts?
-- The stripped header comments (Next steps 1): restore them, or retire the structure test that requires them?
+- Help's "Will the browser keep my scripts?" entry went in the copy edit of 2026-09-29: meant, or should it come back?
+  (Its e2e check was removed with it; D-059.)
+- Help says a tap on the preview "takes you back to the Void", but on phones the switch is labelled **Write |
+  Preview**: should Help say "Write" there, or the switch say "Void"?

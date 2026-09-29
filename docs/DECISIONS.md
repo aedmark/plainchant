@@ -1035,6 +1035,23 @@ current work and future plans.
    Resolved open questions were dropped (their answers are in DECISIONS).
 **Consequences:** a session reads HANDOFF plus the latest SESSION-LOG entry. The dev diary is written from
 SESSION-LOG.md. `docs/agent-template/` still shows the single-file layout until the owner says otherwise.
+**Update, same session:** at the owner's request the agent template follows this too (its own HANDOFF.md and
+SESSION-LOG.md). The owner is moving the template into their hypervisor repo; this copy is kept until then.
+
+## D-059 Tests check what the app does and says, not comments  (2026-09-29, status: accepted)
+**Context:** The owner stripped most code comments and reworded Help after session 29. One Node test required a
+header comment at the top of every file in `src/app/`; nine e2e checks matched Help or label text that a reformat of
+`index.html` had wrapped across lines, or whose words had changed.
+**Decision:**
+1. The structure test "every app script starts with the explanatory header" is retired: it checked comments only.
+   Comments are optional.
+2. The wrapped phrases the checks look for are back on one line in `index.html` (a line break inside text is
+   invisible on the page but part of `textContent`). The checks follow the owner's new words ("capitalized", "takes
+   you back to the Void").
+3. The check that Help explains the browser keeping the scripts is removed with the Help entry it checked. The
+   Library's own line about it, and its e2e checks, stay.
+**Consequences:** changing Help's wording means running the e2e and updating a check's pattern; a formatter that
+rewraps `index.html` will break the same checks again (HANDOFF gotcha).
 
 ## Open questions
 

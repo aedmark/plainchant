@@ -44,7 +44,7 @@ Sessions are short-lived and context resets between them, so the repo carries th
 | `src/library.js` | Library data rules (search, soft delete, restore, purge, duplicate, rename): scripts object in, new object out. Pure, UMD (D-013) |
 | `src/importing.js` | Import rules: which files to accept, decoding (UTF-8/16, Windows-1252), line endings. Pure, UMD (D-016) |
 | `src/suggest.js` | Autocomplete rules: names, locations and times of day from the script, what to offer for the word being typed (and names on an empty cue line). Pure, UMD, uses `Fountain` and `Editing` (D-017, D-037) |
-| `src/paginate.js` | Print pagination: tokens in, pages of positioned lines out (each with the script line it came from, `at`), on the Courier grid (60 columns, 54 rows Letter / 58 A4) with the page-break rules. Pure, UMD, uses `Fountain` (D-021, docs/SPEC-PRINT.md) |
+| `src/paginate.js` | Print pagination: tokens in, pages of positioned lines out (each with the script line it came from, `at`), on the Courier grid (60 columns, 54 rows Letter / 58 A4) with the page-break rules. Pure, UMD, uses `Fountain` (D-021, docs/devlog/SPEC-PRINT.md) |
 | `src/stats.js` | Script stats: pages (as printed), screen time, scenes, words, per-character speeches and words, per scene its page, length in eighths and speakers, the INT / EXT and time-of-day mix, and the locations (`Stats.heading`). Pure, UMD, uses `Fountain` and `Paginate` (D-023, D-028, D-029) |
 | `src/outline.js` | The outline: sections, scenes (with the page each starts on) and synopses, and which one a line is in. Pure, UMD, uses `Fountain` and `Paginate` (D-024) |
 | `src/narration.js` | Narration: the time to read a script aloud (dialogue, or dialogue and action, at a reading speed) and YouTube chapters from its top-level sections, with YouTube's rules checked. Pure, UMD, uses `Fountain` (D-038) |
@@ -59,7 +59,7 @@ Sessions are short-lived and context resets between them, so the repo carries th
 | `docs/HANDOFF.md` | Current state, what is not checked yet, gotchas, next steps, open questions: the present only |
 | `docs/SESSION-LOG.md` | Append-only history, one entry per session, newest first (D-058) |
 | `docs/DECISIONS.md` | Append-only decision record |
-| `docs/agent-template/` | A reusable starter kit of these docs (CLAUDE.md, roadmap, handoff, decisions, devlog) for other projects, with placeholders; not part of the app |
+| `docs/agent-template/` | A reusable starter kit of these docs (CLAUDE.md, roadmap, handoff, session log, decisions, devlog) for other projects, with placeholders; not part of the app. Moving to the owner's hypervisor repo (D-058) |
 | `docs/devlog/` | The public dev diary: one HTML fragment per entry and `index.html` listing them, kept up as work lands (session protocol step 5); how to write one is in its README (D-053) |
 
 ## App scripts (`src/app/`)
