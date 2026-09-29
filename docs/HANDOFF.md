@@ -721,7 +721,7 @@ already offline (D-052).
 **Done:** two blank lines before a scene heading (print, and the preview's spacing to match); parentheticals 3.0 to
 5.5 inches (print and preview). The spec's wrong claim about Final Draft's default is corrected.
 **Changed:** `src/paginate.js` (`leadOf`, used when placing a block and when keeping a heading off a page's foot;
-the parenthetical's geometry), `src/styles.css` (preview), `docs/SPEC-PRINT.md`; tests in `test/paginate.test.js`
+the parenthetical's geometry), `src/styles.css` (preview), `devlog/SPEC-PRINT.md`; tests in `test/paginate.test.js`
 (spacing, and two headings in a row at a page's foot), `test/stats.test.js` (one fewer line of action so the scene
 still rounds differently on Letter and A4) and the e2e preview check.
 **Decisions:** D-051.
@@ -935,26 +935,26 @@ the fallback keeps the old behaviour exactly.
   in real time (387/387, 32 s) before any app change.
 - The storage section's `typeInto` helper clashed with one already declared in the typing section (one shared script
   scope); renamed `appendText`.
-**Left undone:** Running anything on Windows, Edge, Safari or Firefox; the owner's real library upgrade. P4-11 (remove
-the legacy copy) and P4-12 (persistent storage) are new roadmap items. P3-03 (print/PDF spec) is still the next feature.
-**Later the same session:** the owner confirmed it on Arch Linux (tests pass; Firefox and Safari work), moved off
-Windows (`npm run test:browser` now runs the Linux runner), and asked to drop legacy support: D-020 removed the
-migration, the localStorage fallback and the `frictionless_` prefix, closing P4-11. Tests after that: 191 Node,
-183 unit + 409 e2e in the browser.
-Then, at the owner's request, the **print / PDF plan** (`docs/SPEC-PRINT.md`, D-021), accepted with the recommended
-answers; the page view (P3-12) deferred. Built: **P3-04** `src/paginate.js` + `Fountain.runs` (tests first), then
-**P3-03** the print path with **P3-05** (title page) and **P3-06** (dual dialogue). D-022 records the two departures:
+  **Left undone:** Running anything on Windows, Edge, Safari or Firefox; the owner's real library upgrade. P4-11 (remove
+  the legacy copy) and P4-12 (persistent storage) are new roadmap items. P3-03 (print/PDF spec) is still the next feature.
+  **Later the same session:** the owner confirmed it on Arch Linux (tests pass; Firefox and Safari work), moved off
+  Windows (`npm run test:browser` now runs the Linux runner), and asked to drop legacy support: D-020 removed the
+  migration, the localStorage fallback and the `frictionless_` prefix, closing P4-11. Tests after that: 191 Node,
+  183 unit + 409 e2e in the browser.
+  Then, at the owner's request, the **print / PDF plan** (`devlog/SPEC-PRINT.md`, D-021), accepted with the recommended
+  answers; the page view (P3-12) deferred. Built: **P3-04** `src/paginate.js` + `Fountain.runs` (tests first), then
+  **P3-03** the print path with **P3-05** (title page) and **P3-06** (dual dialogue). D-022 records the two departures:
 Print lives in the Export dialog (a seventh button broke the six-action bar at 1024px and on tablets), and pages break
-at any sentence end with the rest re-wrapped (the first real PDF showed six empty lines at a page foot otherwise).
-The owner then chose to skip browser and device checks of printing until a bug report.
-**Next session should start with:** "Next steps" above.
+  at any sentence end with the rest re-wrapped (the first real PDF showed six empty lines at a page foot otherwise).
+  The owner then chose to skip browser and device checks of printing until a bug report.
+  **Next session should start with:** "Next steps" above.
 
 ### Session 11: 2026-09-21: IndexedDB migration spec (P4-10)
 
 **Goal:** At the user's request, spec out moving storage from localStorage to IndexedDB (P4-10).
-**Done:** P4-10 added to the roadmap (Phase 4); D-018 decision; `docs/SPEC-INDEXEDDB.md` written; a "Next steps"
+**Done:** P4-10 added to the roadmap (Phase 4); D-018 decision; `devlog/SPEC-INDEXEDDB.md` written; a "Next steps"
 pointer added to this file. No code, no tests — spec only.
-**Changed:** `ROADMAP.md` (P4-10), `docs/DECISIONS.md` (D-018), `docs/SPEC-INDEXEDDB.md` (new), `docs/HANDOFF.md`
+**Changed:** `ROADMAP.md` (P4-10), `docs/DECISIONS.md` (D-018), `devlog/SPEC-INDEXEDDB.md` (new), `docs/HANDOFF.md`
 (next-steps item 6).
 **Decisions:** D-018. The two problems are separable (the ~5 MB cap vs. the whole-library rewrite per save); the
 migration is async and interacts with the pagehide flush, so it is specced, not scheduled, and comes after P3-03.

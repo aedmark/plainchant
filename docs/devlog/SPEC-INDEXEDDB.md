@@ -78,12 +78,12 @@ The working model stays **in memory**: on startup the whole library is read into
 as `getScripts()` returns today. All reads (Library list, search, autocomplete's parse) come from that object. Writes
 mutate the object and then persist **deltas** to IDB.
 
-This is the key payoff of the existing separation: `src/library.js` is a pure module over that object (D-013) and is
+This is the key payoff of the existing separation: `../../src/library.js` is a pure module over that object (D-013) and is
 fully unit-tested with deeply-frozen input. It is untouched. The refactor lands in the persistence layer:
 
-- `src/app/persistence.js` — the load/save/migrate/reconcile logic (async now).
-- `src/app/import.js` — import writes new records.
-- `src/app/library-ui.js` — Library actions (rename/duplicate/delete) persist their deltas.
+- `../../src/app/persistence.js` — the load/save/migrate/reconcile logic (async now).
+- `../../src/app/import.js` — import writes new records.
+- `../../src/app/library-ui.js` — Library actions (rename/duplicate/delete) persist their deltas.
 
 A new pure module, `src/storage.js` (UMD, D-003 style), holds the IDB plumbing and the pure transforms so they can be
 unit-tested under Node with a fake IDB or an in-memory shim. It exposes:

@@ -17,7 +17,7 @@ The hard part is not the stylesheet. It is **pagination**: deciding where each p
 action at those points the way the industry expects. Browsers cannot do that for us. CSS page breaks know nothing
 about `(MORE)`, and page-number support in print CSS differs from browser to browser. So the plan is:
 
-1. **A pure pagination module** (`src/paginate.js`) that turns parser tokens into pages of fixed-pitch lines. It is
+1. **A pure pagination module** (`../../src/paginate.js`) that turns parser tokens into pages of fixed-pitch lines. It is
    the core, and it is unit-tested under Node like the other modules.
 2. **The print path**: draw those pages as real 8.5 × 11 in (or A4) sheets and hand them to the browser's print
    dialog, where "Save as PDF" makes the file.
@@ -190,7 +190,7 @@ for printing. It helps with "how long is this?" (and page count also feeds P4-04
 
 ## 11. Order of work, once approved
 
-1. **P3-04 pagination:** `Fountain.runs` and `src/paginate.js`, tests first. It includes **P3-05** (title page) and
+1. **P3-04 pagination:** `Fountain.runs` and `../../src/paginate.js`, tests first. It includes **P3-05** (title page) and
    **P3-06** (dual dialogue), which are layout rules inside it. No UI yet.
 2. **P3-03 print path:** the button, `beforeprint`, the print stylesheet, the paper setting, Help, e2e.
 3. **P3-11 direct PDF**, if chosen in §10.2.
