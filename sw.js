@@ -1,14 +1,3 @@
-/*
- * Plainchant service worker (P4-02, D-026): keeps a copy of the whole app in the browser so it opens and works with
- * no connection, and so it can be installed. Browsers run service workers only for pages served over http(s) (and
- * localhost), never for index.html opened from disk; opened from disk the app is already on the device, and with
- * the fonts in fonts/ it needs no network at all.
- *
- * Every request for one of the app's files is answered from the copy at once, and the copy is refreshed from the
- * network in the background (stale-while-revalidate): offline it just works, online a change shows on the next load.
- * Scripts live in IndexedDB, not here. test/structure.test.js checks that APP_FILES lists exactly what the page loads.
- * Change CACHE when files are removed or renamed, so the old copies are cleared out.
- */
 const CACHE = 'plainchant-v3';
 const APP_FILES = [
     './',

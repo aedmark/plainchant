@@ -1,12 +1,3 @@
-/*
- * Plainchant app script: example: the example scripts (a screenplay, and a narrated video), which teach by example
- *
- * One of the classic scripts loaded by index.html, in order (see CLAUDE.md, "App scripts"). They share the
- * page's global scope, so top-level functions and consts here are visible to the files after it, and anything
- * that runs at load time may only use what an earlier file (or a src/*.js module) already defined.
- */
-
-// --- Example script: teaches by example, and every element in it is real ---
 const EXAMPLE_SCRIPT = [
     'Title: The Last Coffee',
     'Credit: Written by',
@@ -43,8 +34,6 @@ const EXAMPLE_SCRIPT = [
     ''
 ].join('\n');
 
-// --- The narration example (P4-21): a narrated video, for the read-aloud time and the video chapters (D-038). Its
-// notes explain what counts; its chapters keep YouTube's rules, read either way ("Dialogue only" or "and action").
 const NARRATION_EXAMPLE = [
     'Title: Inside the Broom Closet: How the Odyssey Still Works',
     'Credit: A video essay by',
@@ -97,7 +86,6 @@ const NARRATION_EXAMPLE = [
     ''
 ].join('\n');
 
-// Opens an example as a new script, saved at once. Global on purpose: the e2e tests call it.
 function loadExampleScript(text = EXAMPLE_SCRIPT) {
     flushSave();
     currentScriptId = newId();
@@ -105,7 +93,7 @@ function loadExampleScript(text = EXAMPLE_SCRIPT) {
     elementMode = null;
     rememberCurrent();
     render();
-    saveScript(true); // straight into the Library, so it is a real script from now on
+    saveScript(true);
     editor.setSelectionRange(0, 0);
     editor.scrollTop = 0;
     renderTarget.scrollTop = 0;

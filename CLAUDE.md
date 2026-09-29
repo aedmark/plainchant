@@ -2,8 +2,7 @@
 
 Lightweight, responsive screenwriting app: the writer types Fountain-style plain text, the app handles formatting.
 Built for writers who would rather write than fuss over format. Static HTML/CSS/JS, no build step, no runtime
-dependencies (see docs/DECISIONS.md). The repo (`aedmark/plainchant`) and this folder share the name; the former
-working name, NeuroFountain, survives only as history in the docs.
+dependencies (see docs/DECISIONS.md). The repo (`aedmark/plainchant`) and this folder share the name.
 
 ## Session protocol
 

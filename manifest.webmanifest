@@ -1,7 +1,7 @@
 {
   "name": "Plainchant",
   "short_name": "Plainchant",
-  "description": "Screenwriting without the formatting: type plain text, get a screenplay.",
+  "description": "Screenwriting, plain and simple: type raw text, get a fully formatted screenplay.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
