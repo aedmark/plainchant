@@ -610,6 +610,14 @@ Chromium. The owner's hands-on pass (Next steps 1) matters more than the next fe
 
 Newest first. Copy the template for each new session.
 
+### Session 29: 2026-09-29: A reusable template of these docs
+
+**Goal:** The owner asked for a generalised template of the project's documentation and agent workflow.
+**Done:** `docs/agent-template/`: CLAUDE.md, ROADMAP.md, docs/HANDOFF.md, docs/DECISIONS.md and docs/devlog/ (README,
+index, entry template) with `{{placeholders}}`, and a README on using it and the rules that made it work. No app change.
+**Left undone:** nothing.
+**Next session should start with:** merge; then the two quick-edit tests (session 28); then the owner's pick.
+
 ### Session 28: 2026-09-28: Quick edits in the preview (P2-24)
 
 **Goal:** The owner agreed the sketch for P2-24 ("write it up!").
