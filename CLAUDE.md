@@ -58,6 +58,7 @@ Sessions are short-lived and context resets between them, so the repo carries th
 | `ROADMAP.md` | The plan, with stable item IDs |
 | `docs/HANDOFF.md` | Current state, next steps, session log |
 | `docs/DECISIONS.md` | Append-only decision record |
+| `docs/agent-template/` | A reusable starter kit of these docs (CLAUDE.md, roadmap, handoff, decisions, devlog) for other projects, with placeholders; not part of the app |
 | `docs/devlog/` | The public dev diary: one HTML fragment per entry and `index.html` listing them, kept up as work lands (session protocol step 5); how to write one is in its README (D-053) |
 
 ## App scripts (`src/app/`)
