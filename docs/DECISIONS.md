@@ -1053,6 +1053,16 @@ header comment at the top of every file in `src/app/`; nine e2e checks matched H
 **Consequences:** changing Help's wording means running the e2e and updating a check's pattern; a formatter that
 rewraps `index.html` will break the same checks again (HANDOFF gotcha).
 
+## D-060 The Void and the Canvas on every screen  (2026-09-29, status: accepted)
+**Context:** The desktop names its panes the Void (the text) and the Canvas (the formatted script), but the phone and
+tablet switch said Write | Preview, the desktop's pane buttons said Editor / Preview, and Help mixed the two. The owner
+never asked for the difference: a phone or tablet should use the desktop's words.
+**Decision:** everything a writer reads says Void and Canvas: the one-pane switch (**Void | Canvas**), the pane
+buttons' names and tooltips (Void only, Void and Canvas, Canvas only), Help and the tour. The owner's "Will the
+browser keep my scripts?" Help entry stays removed (confirmed).
+**Consequences:** only the words changed. Element ids, `data-view="write"` / `"preview"`, `setView` and the test
+names keep write / preview; the landmarks keep their accessible names ("Editor", "Preview").
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

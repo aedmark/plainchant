@@ -52,6 +52,8 @@ the header comments).
 checked (D-059): `npm test` 339, headless 327 unit + 730 e2e, all passing. The spec paths in ROADMAP and CLAUDE.md
 point at `docs/devlog/`. `docs/agent-template/` follows D-058 (its own HANDOFF and SESSION-LOG); the owner is moving it
 to their hypervisor repo. Next: merge, then HANDOFF's Next steps.
+Then, at the owner's word, the phone and tablet switch and the desktop pane buttons use the Void and the Canvas, as does
+Help (D-060); the removed Help entry stays removed. Tests: 339 Node, 327 unit + 730 e2e.
 
 ### Session 29: 2026-09-29: A reusable template of these docs
 

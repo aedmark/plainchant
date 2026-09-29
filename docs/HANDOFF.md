@@ -27,7 +27,7 @@ matter more than the next feature.
 SESSION-LOG.md)
 - **Writing:** Fountain text in a textarea with colour hints behind it (D-031); a live preview patched block by block
   (D-043) or shown as printed sheets (page view, D-054); on a desktop the editor, the preview or both (D-056); quick
-  edits in the preview by double-click or press-and-hold (D-057). Under 1024px, one pane at a time (Write | Preview).
+  edits in the preview by double-click or press-and-hold (D-057). Under 1024px, one pane at a time (Void | Canvas, D-060).
 - **Typing helpers:** Tab cycles elements, smart Enter, capitals as you type, character names guessed on Enter, the
   element bar, autocomplete chips for names, places and times of day (D-010, D-017, D-036, D-037); focus mode (D-025);
   the caret kept clear of the on-screen keyboard (D-030); tapping the one-pane preview goes to that line (D-033).
@@ -72,6 +72,8 @@ SESSION-LOG.md)
   before declaring anything done. Never add `--virtual-time-budget` back: IndexedDB never answers under it (D-019).
   "The page never finished" means a script error or a hung `await`; open the page in a browser, or in Playwright with
   `waitUntil: 'commit'` (the e2e page holds its own load event open until it is done, for up to 10 real minutes).
+- **The panes are the Void (the text) and the Canvas (the formatted script)** in everything a writer sees, on every
+  screen size (D-060). Code and tests still say write / preview (`data-view`, `setView('preview')`, `#tabPreview`).
 - **The e2e checks match visible text exactly** (`textContent`, Help's wording, button labels). An editor's
   "reformat" that wraps a sentence across lines in `index.html` breaks them, and so does a copy edit ("capitalised"
   to "capitalized"). Keep each phrase a check looks for on one line, and after changing Help's wording run the e2e
@@ -177,6 +179,8 @@ SESSION-LOG.md)
 **For the dev diary** (smaller changes a writer would notice, for the next entry; clear the list when it is written):
 - Help's wording revised by the owner (American spelling, title-case headings, "the Void" for the writing pane), and
   its "Will the browser keep my scripts?" entry removed (the Library's own line about it is unchanged).
+- The Void and the Canvas everywhere: the phone and tablet switch reads **Void | Canvas** (it said Write | Preview),
+  and the desktop's three pane buttons are Void only, Void and Canvas, Canvas only.
 
 The latest entry, "Touching Up the Page", covers everything up to session 28.
 
@@ -190,7 +194,3 @@ The latest entry, "Touching Up the Page", covers everything up to session 28.
 - Should the preview follow the theme (a dark page), or stay paper as now (D-035)?
 - Narration (D-038): is 150 words a minute the right default; should chapters also be offered from scenes (for scripts
   with no sections); should the header's page count show the read-aloud time for narrated scripts?
-- Help's "Will the browser keep my scripts?" entry went in the copy edit of 2026-09-29: meant, or should it come back?
-  (Its e2e check was removed with it; D-059.)
-- Help says a tap on the preview "takes you back to the Void", but on phones the switch is labelled **Write |
-  Preview**: should Help say "Write" there, or the switch say "Void"?
