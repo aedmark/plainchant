@@ -1,14 +1,5 @@
-/*
- * Plainchant app script: tour: the welcome tour, shown once on first launch
- *
- * One of the classic scripts loaded by index.html, in order (see CLAUDE.md, "App scripts"). They share the
- * page's global scope, so top-level functions and consts here are visible to the files after it, and anything
- * that runs at load time may only use what an earlier file (or a src/*.js module) already defined.
- */
-
-// --- Welcome tour: once, on first launch; replayable from Help ---
-const TOUR_KEY = 'plainchant_onboarded';  // holds the tour version the writer has seen
-const TOUR_VERSION = '1';                   // bump to show an updated tour to everyone again
+const TOUR_KEY = 'plainchant_onboarded';
+const TOUR_VERSION = '1';
 const tourModal = document.getElementById('tour-modal');
 const tourSteps = Array.from(tourModal.querySelectorAll('.tour-step'));
 const tourDots = Array.from(tourModal.querySelectorAll('.tour-dots span'));
@@ -17,7 +8,6 @@ const tourNext = document.getElementById('tourNext');
 const tourSkip = document.getElementById('tourSkip');
 let tourIndex = 0;
 
-// The tour's sample is rendered by the real parser, so what it shows is what the app does
 document.getElementById('tourRendered').innerHTML =
     Fountain.toHTML(Fountain.parse(document.getElementById('tourSample').textContent));
 
@@ -34,7 +24,8 @@ function showTourStep(n) {
 }
 
 function markTourSeen() {
-    try { localStorage.setItem(TOUR_KEY, TOUR_VERSION); } catch (e) { /* storage unavailable */ }
+    try { localStorage.setItem(TOUR_KEY, TOUR_VERSION); } catch (e) {
+    }
 }
 
 function openTour() {
@@ -44,7 +35,7 @@ function openTour() {
 
 function maybeShowTour() {
     let seen;
-    try { seen = localStorage.getItem(TOUR_KEY); } catch (e) { return; } // cannot remember it: don't nag every load
+    try { seen = localStorage.getItem(TOUR_KEY); } catch (e) { return; }
     if (seen !== TOUR_VERSION) openTour();
 }
 

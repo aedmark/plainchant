@@ -1,19 +1,3 @@
-/*
- * Versions of a script (P4-05): when to keep one, and which to let go. Pure: no DOM, no window, no IndexedDB.
- *
- *   Versions.due(stored, latest, now, next) -> true if `stored` (the script as storage holds it, about to be
- *                                              overwritten by the save of `next`) should be kept first. `latest` is
- *                                              its newest kept version, or null. A save that changes nothing keeps
- *                                              nothing.
- *   Versions.make(script, id, now, extra)   -> { id, scriptId, title, content, updatedAt, takenAt, name?, note? }
- *   Versions.prune(list, now)               -> ids of versions to let go
- *
- * A version is the script as it was *before* a save changed it, so "how it was before I started" is always there:
- * the first save of a visit to a script keeps the old text, then at most one every AUTO_EVERY while it keeps
- * changing. Kept versions thin out with age (D-034): all of the last hour, then the newest of each clock hour for a
- * day, of each day for thirty days, then of each thirty days for good. A version the writer named is never thinned.
- * Loads as window.Versions in the browser and via require() in Node.
- */
 (function (root, factory) {
     if (typeof module === 'object' && module.exports) module.exports = factory();
     else root.Versions = factory();
@@ -39,10 +23,9 @@
         return v;
     }
 
-    // Which age band a version is in, and so which "slot" it competes for (the newest in each slot stays)
     function slot(v, now) {
         const age = now - v.takenAt;
-        if (age < HOUR) return 'v' + v.id;                               // the last hour: every one
+        if (age < HOUR) return 'v' + v.id;
         if (age < DAY) return 'h' + Math.floor(v.takenAt / HOUR);
         if (age < 30 * DAY) return 'd' + Math.floor(v.takenAt / DAY);
         return 'm' + Math.floor(v.takenAt / (30 * DAY));

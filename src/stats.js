@@ -1,30 +1,3 @@
-/*
- * Script stats (P4-04): pages, screen time, scenes, words, and who speaks how much. Pure: no DOM, no window.
- *
- *   Stats.of(text, { paper })  -> { pages, minutes, scenes, words, dialogueWords,
- *                                   characters: [{ name, speeches, words, share }],
- *                                   sceneList: [{ text, number?, line, page, eighths, characters: [name],
- *                                                 setting, location, time }],
- *                                   settings: { int, ext, both, other }, times: [{ name, scenes }], untimed,
- *                                   locations: [{ name, scenes, eighths }] }
- *   Stats.duration(minutes)    -> "about 1 h 52 min"
- *   Stats.eighths(n)           -> "1 3/8"  (a length in eighths of a page, the way schedules write it)
- *   Stats.heading(text)        -> { setting: 'int' | 'ext' | 'both' | 'other', location, time }  (time: null if none)
- *
- * Pages are the printed pages (src/paginate.js, so they always agree with what prints; the title page is not
- * counted). A page is about a minute of screen time; the last page counts for how full it is. Words are counted the
- * way the Library counts them, so the two numbers always agree. A character's words are their spoken words only
- * (no parentheticals, no notes), and every cue for the same name counts as the same character, whatever its extension.
- * A scene's length runs from its heading to the next heading (or the end of the script) on the printed pages, in
- * eighths of a page, rounded, and never less than 1/8: the production convention (D-028). Its characters are the ones
- * who speak in it, in the order they first do.
- * A heading reads as setting, location and time of day (D-029): INT. / EXT. / INT./EXT. or I/E (EST. is exterior;
- * a forced heading such as .MONTAGE is "other"), then the location, then the last " - " part that names a time of day
- * (DAY, NIGHT, DUSK, LATER, CONTINUOUS, ...); anything after the time is dropped, and a part that is not a time stays
- * in the location ("HOUSE - KITCHEN"). A heading that is only a time (.LATER) has no location. A forced heading only
- * counts as a location if it gives a time of day.
- * Loads as window.Stats (after fountain.js and paginate.js) and via require() in Node.
- */
 (function (root, factory) {
     if (typeof module === 'object' && module.exports) module.exports = factory(require('./fountain.js'), require('./paginate.js'));
     else root.Stats = factory(root.Fountain, root.Paginate);
@@ -36,7 +9,7 @@
         'NOON|MIDDAY|MIDNIGHT|TWILIGHT|DAYBREAK|NIGHTFALL|MAGIC HOUR|GOLDEN HOUR)|DAYTIME|NIGHTTIME|' +
         '(?:(?:MOMENTS|SECONDS|MINUTES|HOURS|DAYS|WEEKS|YEARS|A (?:FEW )?MOMENTS?|A LITTLE|MUCH|SOON)\\s+)?LATER|' +
         'CONTINUOUS|SAME(?: TIME)?|SIMULTANEOUS)$');
-    const SETTING = /^(INT\.?\/EXT|EXT\.?\/INT|I\/E|INT|EXT|EST)(?:\.|\s)\s*/; // as the parser reads a heading
+    const SETTING = /^(INT\.?\/EXT|EXT\.?\/INT|I\/E|INT|EXT|EST)(?:\.|\s)\s*/;
 
     function heading(text) {
         const up = plain(text).toUpperCase();
@@ -54,7 +27,6 @@
 
     const countWords = (text) => (String(text || '').match(/\S+/g) || []).length;
 
-    // "JOHN (V.O.) (CONT'D)" -> "JOHN": extensions say how a line is heard, not who says it
     const baseName = (cue) => String(cue).replace(/\s*\([^)]*\)/g, '').replace(/\s*\^\s*$/, '').trim();
 
     function of(text, options) {
@@ -62,14 +34,14 @@
         const layout = Paginate.layout(tokens, options);
         const pages = layout.pages.length;
         const L = layout.linesPerPage;
-        let minutes = 0, end = 0; // end: the row just past the last printed line, counting every page's rows
+        let minutes = 0, end = 0;
         if (pages) {
             const last = layout.pages[pages - 1].lines;
             const used = last.reduce((m, l) => Math.max(m, l.row + 1), 0);
             minutes = Math.max(1, Math.round(pages - 1 + used / L));
             end = (pages - 1) * L + used;
         }
-        const startOf = {}; // a scene heading's source line -> its first printed row, counted the same way
+        const startOf = {};
         layout.pages.forEach((p, i) => p.lines.forEach((l) => {
             if (l.source !== undefined && startOf[l.source] === undefined) startOf[l.source] = i * L + l.row;
         }));
@@ -109,18 +81,17 @@
             const next = i + 1 < sceneList.length ? sceneList[i + 1].start : end;
             sc.page = Math.floor(sc.start / L) + 1;
             sc.eighths = Math.max(1, Math.round((next - sc.start) / L * 8));
-            sc.characters = sc.characters.map((k) => byKey[k].name); // the first spelling seen, as in the table
+            sc.characters = sc.characters.map((k) => byKey[k].name);
             delete sc.start;
         });
 
-        // The scene mix (P4-14) and the locations (P4-15)
         const settings = { int: 0, ext: 0, both: 0, other: 0 };
         const timeBy = {}, placeBy = {};
         let untimed = 0;
         sceneList.forEach((sc) => {
             settings[sc.setting]++;
             if (sc.time) timeBy[sc.time] = (timeBy[sc.time] || 0) + 1; else untimed++;
-            if (!sc.location || (sc.setting === 'other' && !sc.time)) return; // .MONTAGE, BACK TO SCENE: not places
+            if (!sc.location || (sc.setting === 'other' && !sc.time)) return;
             const place = placeBy[sc.location] || (placeBy[sc.location] = { name: sc.location, scenes: 0, eighths: 0 });
             place.scenes++;
             place.eighths += sc.eighths;

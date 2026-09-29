@@ -1,24 +1,9 @@
-/*
- * Final Draft export (P3-08): a script as a Final Draft .fdx file (XML). Pure: no DOM, no window.
- *
- *   Fdx.of(text) -> the .fdx document, as a string
- *
- * Each element becomes a Final Draft paragraph of its type: Scene Heading (its scene number in `Number`), Action,
- * Character, Parenthetical, Dialogue, Transition, and Shot never (Fountain has none). Centred text is Action centred;
- * a lyric is italic (in a speech, Dialogue; on its own, Action); a page break (===) makes the next paragraph start a
- * new page; dual dialogue is Final Draft's DualDialogue block. Bold, italic and underline become styled text runs.
- * What does not print does not go either (as in print, D-021): notes, the boneyard, sections and synopses. The title
- * page becomes Final Draft's title page: title, credit and author centred, the rest (draft date, contact) at the
- * foot on the left. All text is XML-escaped, and characters XML cannot hold are dropped (D-049).
- * Loads as window.Fdx (after fountain.js) and via require() in Node.
- */
 (function (root, factory) {
     if (typeof module === 'object' && module.exports) module.exports = factory(require('./fountain.js'));
     else root.Fdx = factory(root.Fountain);
 })(typeof self !== 'undefined' ? self : this, function (Fountain) {
     'use strict';
 
-    // XML 1.0 cannot hold most control characters, even escaped
     const xml = (s) => String(s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g, '')
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -30,10 +15,9 @@
         return s.join('+');
     }
 
-    // The text's runs as <Text> elements; line breaks inside a paragraph stay as line breaks
     function texts(text, italic) {
         const runs = Fountain.runs(String(text || '')).filter((r) => r.text);
-        if (runs.length) { // no spaces at either end (a note taken out can leave one)
+        if (runs.length) {
             runs[0] = Object.assign({}, runs[0], { text: runs[0].text.replace(/^[ \t]+/, '') });
             const last = runs.length - 1;
             runs[last] = Object.assign({}, runs[last], { text: runs[last].text.replace(/[ \t]+$/, '') });
@@ -44,7 +28,6 @@
         }).join('');
     }
 
-    // A paragraph with no text left (only a note) is not written: it would be an empty line in Final Draft
     function paragraph(type, text, extra) {
         const x = extra || {};
         const inner = texts(text, x.italic);
@@ -84,7 +67,7 @@
         const tokens = Fountain.parse(String(text || ''));
         let body = '';
         let title = '';
-        let newPage = false; // a page break waits for the next paragraph
+        let newPage = false;
         const take = () => { const n = newPage; newPage = false; return n; };
         for (let i = 0; i < tokens.length; i++) {
             const t = tokens[i];
@@ -108,7 +91,7 @@
                     }
                     break;
                 }
-                default: break; // section, synopsis: not part of the script as it prints
+                default: break;
             }
         }
         return '<?xml version="1.0" encoding="UTF-8" standalone="no" ?>\n' +

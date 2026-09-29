@@ -1,41 +1,27 @@
-/*
- * Plainchant app script: chapters-ui: video chapters in the Export dialog (P3-13), timed by narration (P4-18)
- *
- * One of the classic scripts loaded by index.html, in order (see CLAUDE.md, "App scripts"). They share the
- * page's global scope, so top-level functions and consts here are visible to the files after it, and anything
- * that runs at load time may only use what an earlier file (or a src/*.js module) already defined.
- */
-
-// The rules are in src/narration.js: one chapter per top-level section, each starting at the words read aloud before
-// it, at the reading speed and with what is read aloud as chosen in Settings (D-038). YouTube only shows chapters
-// that follow its rules, so the dialog says which ones a list breaks; it never changes the list to fit them.
 const chaptersList = document.getElementById('chaptersList');
 const chaptersWarn = document.getElementById('chaptersWarn');
 const chaptersCopy = document.getElementById('chaptersCopy');
-let chaptersText = ''; // what Copy chapters copies
+let chaptersText = '';
 
-// Global on purpose: stats-ui.js uses these two for the read-aloud time
 function narrationOf(text) {
     return Narration.of(text, { pace: settings.pace, aloud: settings.aloud });
 }
 
-// "the dialogue at 150 words a minute": how the read-aloud time is worked out, as the stats and Export say it
 function narrationHow() {
     return (settings.aloud === 'all' ? 'the dialogue and action' : 'the dialogue') + ' at ' + settings.pace + ' words a minute';
 }
 
 function chaptersWarning(text) {
-    chaptersWarn.appendChild(document.createElement('li')).textContent = text; // titles are the writer's text
+    chaptersWarn.appendChild(document.createElement('li')).textContent = text;
 }
 
-// Called by openExport (export.js) every time the dialog opens
 function prepareChapters() {
     const n = narrationOf(editor.value);
     chaptersText = Narration.chapterList(n.chapters);
     chaptersList.textContent = chaptersText;
     chaptersList.hidden = !n.chapters.length;
     chaptersCopy.hidden = !n.chapters.length;
-    document.getElementById('chaptersExample').hidden = !!n.chapters.length; // with no chapters, an example instead
+    document.getElementById('chaptersExample').hidden = !!n.chapters.length;
     document.getElementById('chaptersPace').textContent = 'Read aloud: ' + Narration.clock(n.seconds) +
         ', counting ' + narrationHow() + ' (change it in Settings).';
 
@@ -54,7 +40,6 @@ function prepareChapters() {
     chaptersWarn.hidden = !chaptersWarn.children.length;
 }
 
-// --- Wiring ---
 chaptersCopy.addEventListener('click', async () => {
     const ok = await copyText(chaptersText);
     flashButton(chaptersCopy, ok ? 'Copied!' : 'Copy failed', ok);

@@ -1,31 +1,18 @@
-/*
- * Plainchant app script: library: search, open, rename, duplicate, delete with Recently deleted (the rules are in src/library.js)
- *
- * One of the classic scripts loaded by index.html, in order (see CLAUDE.md, "App scripts"). They share the
- * page's global scope, so top-level functions and consts here are visible to the files after it, and anything
- * that runs at load time may only use what an earlier file (or a src/*.js module) already defined.
- */
-
 const libraryBtn = document.getElementById('libraryBtn');
 const libraryModal = document.getElementById('library-modal');
 const libraryList = document.getElementById('library-list');
 
-// --- Library (P3-07): search, open, rename, duplicate, delete with Recently deleted ---
-// The data rules live in src/library.js (pure, unit-tested); this draws the list and applies the results.
-// Deleting is soft: a deleted script waits in "Recently deleted" for 30 days and can be restored.
-// Renaming rewrites the script's own Title: line, so the name travels with the text.
 const librarySearch = document.getElementById('librarySearch');
 const libViewScripts = document.getElementById('libViewScripts');
 const libViewTrash = document.getElementById('libViewTrash');
 const libraryStatus = document.getElementById('library-status');
-let libraryView = 'scripts';   // 'scripts' | 'trash'
+let libraryView = 'scripts';
 let libraryQuery = '';
-let renamingId = null;         // the script whose title is being edited in place
-let armedId = null;            // "Delete forever" waiting for its confirming second click ('*' = all of them)
+let renamingId = null;
+let armedId = null;
 let armedTimer = null;
 let toastTimer = null;
 
-// Build elements without innerHTML: script titles and text are the writer's, so they only ever become text
 function h(tag, props, kids) {
     const node = document.createElement(tag);
     Object.keys(props || {}).forEach((k) => {
@@ -37,7 +24,6 @@ function h(tag, props, kids) {
     return node;
 }
 
-// The first lines of the script's body, skipping the title page (which the title already shows)
 function previewOf(content) {
     const head = String(content || '').slice(0, 2000);
     const kinds = Fountain.classifyLines(head);
@@ -94,7 +80,7 @@ function scriptRow(script, now) {
             h('div', { class: 'script-meta', text: 'Edited ' + Library.relativeTime(script.updatedAt, now) + ' · ' + words + (words === 1 ? ' word' : ' words') })
         ]));
     }
-    if (renamingId === script.id) return item; // while renaming, the form is the only thing on the row
+    if (renamingId === script.id) return item;
     const label = (verb) => verb + ' “' + title + '”';
     item.appendChild(h('div', { class: 'script-actions' }, [
         h('button', { type: 'button', class: 'mini', 'data-action': 'rename', 'aria-label': label('Rename'), text: 'Rename' }),
@@ -172,8 +158,6 @@ function cancelRename(id) {
     focusIn('[data-id="' + id + '"] [data-action="rename"]');
 }
 
-// The open script is edited through applyEdit (so its undo history and the cursor survive); the others are
-// rewritten in storage. Either way it is the script's own Title: line that changes.
 function commitRename(id, value, input) {
     const title = value.replace(/\s+/g, ' ').trim();
     if (!title) { input.setAttribute('aria-invalid', 'true'); input.focus(); return; }
@@ -195,7 +179,7 @@ function commitRename(id, value, input) {
 }
 
 function duplicateScript(id) {
-    flushSave(); // the copy should include the latest words
+    flushSave();
     const result = Library.duplicate(getScripts(), id, newId(), Date.now());
     if (!result) return;
     putScripts(result.scripts);
@@ -206,13 +190,13 @@ function duplicateScript(id) {
 
 function deleteScript(id) {
     const wasOpen = id === currentScriptId;
-    if (wasOpen) flushSave(); // whatever was typed in the last moments goes into the copy that can be restored
+    if (wasOpen) flushSave();
     const scripts = getScripts();
     const script = scripts[id];
     if (!script) return;
     const title = libraryTitleOf(script);
     putScripts(Library.softDelete(scripts, id, Date.now()));
-    if (wasOpen) { // leave the writer on a blank page; nothing will autosave into the deleted script
+    if (wasOpen) {
         clearTimeout(autoSaveTimer);
         currentScriptId = newId();
         editor.value = '';
@@ -224,7 +208,7 @@ function deleteScript(id) {
     renderLibrary();
     showToast('Deleted “' + title + '”', () => {
         putScripts(Library.restore(getScripts(), id));
-        if (wasOpen && !editor.value.trim()) { // put it back on the page if nothing else has been started
+        if (wasOpen && !editor.value.trim()) {
             currentScriptId = id;
             editor.value = getScripts()[id].content;
             rememberCurrent();
@@ -246,7 +230,6 @@ function restoreScript(id) {
 
 function disarm() { armedId = null; clearTimeout(armedTimer); }
 
-// Deleting for good needs two deliberate clicks: the first turns the button red and asks "Really delete?"
 function purgeScript(id) {
     if (armedId !== id) {
         disarm();
@@ -275,7 +258,7 @@ function setLibraryView(view) {
 }
 
 function openLibrary() {
-    flushSave(); // so the list shows the latest words of the script that is open
+    flushSave();
     libraryQuery = '';
     librarySearch.value = '';
     libraryView = 'scripts';
@@ -300,7 +283,7 @@ libraryList.addEventListener('click', (e) => {
             break;
         case 'cancel-rename': cancelRename(id); break;
         case 'duplicate': duplicateScript(id); break;
-        case 'versions': openVersions(id); break; // versions-ui.js
+        case 'versions': openVersions(id); break;
         case 'delete': deleteScript(id); break;
         case 'restore': restoreScript(id); break;
         case 'purge': purgeScript(id); break;
@@ -311,5 +294,4 @@ librarySearch.addEventListener('input', () => { libraryQuery = librarySearch.val
 libViewScripts.addEventListener('click', () => setLibraryView('scripts'));
 libViewTrash.addEventListener('click', () => setLibraryView('trash'));
 
-// --- Wiring ---
 libraryBtn.addEventListener('click', openLibrary);

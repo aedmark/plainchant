@@ -1,35 +1,3 @@
-/*
- * Fountain parser and HTML renderer (D-003).
- *
- * Pure: no DOM, no window, no Node-only APIs. Loads as window.Fountain in the browser and via require() in Node.
- *
- *   Fountain.parse(text)      -> tokens
- *   Fountain.toHTML(tokens)   -> HTML string (all user text escaped)
- *   Fountain.blocks(tokens)   -> [{ html, line }]: the same HTML, one top-level element per block, and its source line
- *   Fountain.extractTitle(t)  -> best-effort script title, capped for list labels (Fountain.fullTitle: uncapped)
- *   Fountain.setTitle(t, s)   -> the text with its Title: line set to s (creates the title page if there is none)
- *   Fountain.fileName(t, ext) -> a safe file name for exporting t, e.g. "big-fish.fountain"
- *   Fountain.classifyLines(t) -> one type per source line, for the editor (see src/editing.js)
- *   Fountain.shade(t)         -> per source line { kind, runs: [{ text, mark: null | 'note' | 'boneyard' }] }: the
- *                                editor's colour hints (P2-08)
- *   Fountain.runs(text)       -> [{ text, bold, italic, underline }]: inline emphasis as data, notes removed (print)
- *
- * Follows Fountain 1.1 (https://fountain.io/syntax). Deliberately strict about case: lowercase cues are action (D-004).
- * Known limitation: multi-line [[notes]] are not recognised.
- *
- * Tokens (every token has `line`, the 0-based source line where it starts):
- *   { type: 'title_page',   fields: [{ key, value }] }
- *   { type: 'scene',        text, number }
- *   { type: 'action',       text }                       text may contain '\n'; leading spaces preserved
- *   { type: 'dialogue',     character, lines: [{ type: 'parenthetical' | 'dialogue', text, line }], dual }
- *                           dual is false | 'left' | 'right'
- *   { type: 'transition',   text }
- *   { type: 'centered',     text }
- *   { type: 'lyrics',       text }
- *   { type: 'section',      text, depth }
- *   { type: 'synopsis',     text }
- *   { type: 'page_break' }
- */
 (function (root, factory) {
     if (typeof module === 'object' && module.exports) module.exports = factory();
     else root.Fountain = factory();
@@ -41,10 +9,7 @@
 
     const SCENE_RE = /^(?:INT|EXT|EST|INT\.?\/EXT|EXT\.?\/INT|I\/E)(?:\.|\s)/i;
     const SCENE_NUMBER_RE = /\s#([\w.\-]+)#\s*$/;
-    // Common transitions writers expect to work without a `>` prefix, on top of the spec's "ends in TO:" rule.
     const KNOWN_TRANSITION_RE = /^(?:FADE OUT|FADE TO BLACK|CUT TO BLACK|SMASH CUT|MATCH CUT|FADE TO WHITE)[.:]?$/;
-
-    // ---------- helpers ----------
 
     function escapeHTML(str) {
         return String(str).replace(/[&<>'"]/g, function (c) {
@@ -56,17 +21,13 @@
         return line === undefined || line.trim() === '';
     }
 
-    /** True if the string has at least one letter and no lowercase letters. */
     function isUpper(s) {
         return /\p{L}/u.test(s) && s === s.toUpperCase();
     }
 
-    /** Removes closed boneyard comments but keeps their newlines so source line numbers stay valid. */
     function stripBoneyard(text) {
         return text.replace(/\/\*[\s\S]*?\*\//g, function (m) { return m.replace(/[^\n]/g, ''); });
     }
-
-    // ---------- parser ----------
 
     function parseTitlePage(lines) {
         if (!lines.length) return null;
@@ -80,7 +41,6 @@
             if (kv && /^\S/.test(lines[i])) {
                 fields.push({ key: kv[1], value: kv[2] });
             } else if (fields.length) {
-                // Indented continuation of a multi-line value
                 const f = fields[fields.length - 1];
                 f.value = f.value ? f.value + '\n' + lines[i].trim() : lines[i].trim();
             }
@@ -91,8 +51,8 @@
     function parse(text) {
         const lines = stripBoneyard(String(text || '').replace(/\r\n?/g, '\n').replace(/\t/g, '    ')).split('\n');
         const tokens = [];
-        let action = null;      // open action paragraph
-        let dialogue = null;    // open dialogue block
+        let action = null;
+        let dialogue = null;
 
         function flushAction() {
             if (action) { tokens.push(action); action = null; }
@@ -115,10 +75,8 @@
             const prevBlank = i === 0 || isBlank(lines[i - 1]);
             const nextBlank = i + 1 >= lines.length || isBlank(lines[i + 1]);
 
-            // --- inside a dialogue block: everything up to the next blank line belongs to it ---
             if (dialogue) {
                 if (isBlank(raw)) {
-                    // Two or more spaces on an otherwise empty line keep the block open (Fountain 1.1)
                     if (/^ {2,}$/.test(raw)) continue;
                     flushDialogue();
                     continue;
@@ -127,13 +85,10 @@
                 continue;
             }
 
-            // --- blank line ends the current action paragraph ---
             if (isBlank(raw)) { flushAction(); continue; }
 
-            // --- page break ---
             if (/^={3,}$/.test(line)) { push({ type: 'page_break', line: i }); continue; }
 
-            // --- forced elements ---
             if (line[0] === '!') { startAction(raw.replace(/^(\s*)!/, '$1'), i); continue; }
             if (line[0] === '.' && line[1] !== '.' && line.length > 1) { push(sceneToken(line.slice(1).trim(), i)); continue; }
             if (line[0] === '~') { push({ type: 'lyrics', text: line.replace(/^~\s*/, ''), line: i }); continue; }
@@ -149,12 +104,10 @@
                 startDialogue(line.slice(1).trim(), i); continue;
             }
 
-            // --- sections and synopses ---
             const section = line.match(/^(#+)\s*(.*)$/);
             if (section) { push({ type: 'section', text: section[2], depth: section[1].length, line: i }); continue; }
             if (line[0] === '=') { push({ type: 'synopsis', text: line.replace(/^=\s*/, ''), line: i }); continue; }
 
-            // --- elements that must follow a blank line (or the start of the script) ---
             if (prevBlank) {
                 if (SCENE_RE.test(line)) { push(sceneToken(line, i)); continue; }
 
@@ -165,7 +118,6 @@
                 if (!nextBlank && isCharacterCue(line)) { startDialogue(line, i); continue; }
             }
 
-            // --- everything else is action ---
             startAction(raw, i);
         }
         flushAction();
@@ -173,8 +125,6 @@
 
         pairDualDialogue(tokens);
         return tokens;
-
-        // ----- local builders (closures over the flush helpers above) -----
 
         function startAction(rawLine, at) {
             const text = rawLine.replace(/\s+$/, '');
@@ -197,33 +147,26 @@
         }
     }
 
-    /** A character cue is upper case, ignoring any trailing (extension) such as (V.O.) or (cont'd). */
     function isCharacterCue(line) {
         const cue = line.replace(/\s*\^\s*$/, '');
         if (cue[0] === '(') return false;
         const name = cue.replace(/\s*\([^)]*\)\s*$/, '');
-        // "CUT TO:" typed without the required blank line after it is a botched transition, not a speaker
         return name.length > 0 && isUpper(name) && !/TO:$/.test(name);
     }
 
-    /** A `^` cue makes its block the right half, and the dialogue block just before it the left half. */
     function pairDualDialogue(tokens) {
         for (let i = 0; i < tokens.length; i++) {
             if (tokens[i].type === 'dialogue' && tokens[i].dual === 'right') {
                 const prev = tokens[i - 1];
                 if (prev && prev.type === 'dialogue' && !prev.dual) prev.dual = 'left';
-                else tokens[i].dual = false; // nothing to pair with: render as a normal block
+                else tokens[i].dual = false;
             }
         }
     }
 
-    // ---------- inline formatting ----------
-
-    /** Escapes text, then applies notes, escapes and *bold* / *italic* / _underline_ emphasis. */
     function inline(text) {
         let s = escapeHTML(text);
 
-        // Backslash-escaped emphasis characters become placeholders so they survive the passes below
         const literals = { '*': '', '_': '', '\\': '' };
         s = s.replace(/\\([*_\\])/g, function (_, c) { return literals[c]; });
 
@@ -231,16 +174,11 @@
         s = s.replace(/\*\*\*([^\s*](?:[^*]*?[^\s*])?)\*\*\*/g, '<strong><em>$1</em></strong>');
         s = s.replace(/\*\*([^\s*](?:[^*]*?[^\s*])?)\*\*/g, '<strong>$1</strong>');
         s = s.replace(/\*([^\s*](?:[^*]*?[^\s*])?)\*/g, '<em>$1</em>');
-        // Underline must sit on word boundaries so snake_case_names are left alone
         s = s.replace(/(^|\W)_([^\s_](?:[^_]*?[^\s_])?)_(?!\w)/g, '$1<u>$2</u>');
 
         return s.replace(//g, '*').replace(//g, '_').replace(//g, '\\');
     }
 
-    /**
-     * The same emphasis rules as inline(), as data for print (P3-04): [{ text, bold, italic, underline }], plain text
-     * (nothing escaped), notes removed. Adjacent runs with the same style are merged; empty text gives [].
-     */
     function runs(text) {
         const LIT = { '*': '\u0011', '_': '\u0012', '\\': '\u0013' };
         const MARK = { b: '\u0001', B: '\u0002', i: '\u0003', I: '\u0004', u: '\u0005', U: '\u0006' };
@@ -275,8 +213,6 @@
         return out;
     }
 
-    // ---------- renderer ----------
-
     function attrs(token, cls) {
         return 'class="' + cls + '" data-line="' + token.line + '"';
     }
@@ -307,8 +243,6 @@
         return html + '</div>';
     }
 
-    // The preview, one block per top-level element (a dual-dialogue pair is one block), each with the source line it
-    // starts on: the app redraws only the blocks that changed (P4-01). toHTML is all of them.
     function blocks(tokens) {
         const out = [];
         for (let i = 0; i < tokens.length; i++) {
@@ -347,11 +281,6 @@
         return blocks(tokens).map(function (b) { return b.html; }).join('');
     }
 
-    /**
-     * What each source line is, for the editor: one entry per line of `text`, 'blank' for empty lines, otherwise the
-     * token type. A dialogue block's cue line is 'character' and its other lines are 'parenthetical' / 'dialogue'.
-     * Lines that are part of an action paragraph are 'action'; title-page lines are 'title_page'.
-     */
     function classifyLines(text, tokens) {
         const count = String(text || '').replace(/\r\n?/g, '\n').split('\n').length;
         const kinds = new Array(count).fill('blank');
@@ -372,15 +301,10 @@
         return kinds;
     }
 
-    /**
-     * The editor's colour hints (P2-08, D-031): for each source line its kind (classifyLines) and its text cut into
-     * runs, [[notes]] and closed boneyard marked. The runs of a line join back to exactly that line. `tokens`, if
-     * given, are parse(text), so a caller that has just parsed the text does not parse it again.
-     */
     function shade(text, tokens) {
         const src = String(text || '').replace(/\r\n?/g, '\n');
         const kinds = classifyLines(src, tokens);
-        const bone = []; // [start, end) of each closed /* ... */
+        const bone = [];
         src.replace(/\/\*[\s\S]*?\*\//g, function (m, at) { bone.push([at, at + m.length]); return m; });
         let pos = 0, b = 0;
         return src.split('\n').map(function (line, i) {
@@ -404,7 +328,6 @@
         });
     }
 
-    /** Title-page Title if present, otherwise the first non-empty line; '' for an empty script. Not truncated. */
     function fullTitle(text) {
         const tokens = parse(text);
         const tp = tokens.find(function (t) { return t.type === 'title_page'; });
@@ -421,17 +344,11 @@
         return title.replace(/[*_]/g, '').trim();
     }
 
-    /** The label used in lists: fullTitle, capped at 40 characters, or "Untitled Script". */
     function extractTitle(text) {
         const title = fullTitle(text);
         return title ? title.substring(0, 40) : 'Untitled Script';
     }
 
-    /**
-     * Returns `text` with its title set to `title`, by editing the `Title:` line of the title page (creating the line,
-     * or the whole title page, if needed). The title lives in the script's own text, so it exports and travels with
-     * it. Everything else is left exactly as it was. Newlines in `title` become spaces.
-     */
     function setTitle(text, title) {
         const value = String(title == null ? '' : title).replace(/\s*\n\s*/g, ' ').trim();
         const line = 'Title: ' + value;
@@ -441,7 +358,7 @@
 
         if (!page) return line + '\n\n' + src.replace(/^\n+/, '');
 
-        const end = page.next; // first blank line after the title page, or the end
+        const end = page.next;
         const isKeyLine = function (l) { return /^\S/.test(l) && /^([A-Za-z][A-Za-z ]*?):/.test(l); };
         let at = -1;
         for (let i = 0; i < end; i++) {
@@ -449,24 +366,18 @@
         }
         if (at === -1) { lines.unshift(line); return lines.join('\n'); }
 
-        let stop = at + 1; // drop any indented continuation lines of the old value
+        let stop = at + 1;
         while (stop < end && !isKeyLine(lines[stop])) stop++;
         lines.splice(at, stop - at, line);
         return lines.join('\n');
     }
 
-    /**
-     * A safe, readable file name for exporting `text`: its title in lowercase words joined by hyphens, plus the
-     * extension (default "fountain"). Letters from any language are kept; everything else, including path
-     * separators, becomes a hyphen. Long titles are cut at a word boundary. Names Windows reserves (CON, NUL,
-     * COM1...) get a "script-" prefix, and an empty result becomes "untitled".
-     */
     function fileName(text, ext) {
         const extension = String(ext || 'fountain').replace(/^\./, '');
         let slug = fullTitle(text).replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').toLowerCase();
         if (slug.length > 60) {
             let cut = slug.slice(0, 60);
-            if (slug[60] !== '-' && cut.indexOf('-') !== -1) cut = cut.replace(/-[^-]*$/, ''); // don't end mid-word
+            if (slug[60] !== '-' && cut.indexOf('-') !== -1) cut = cut.replace(/-[^-]*$/, '');
             slug = cut.replace(/-+$/, '');
         }
         if (!slug) slug = 'untitled';

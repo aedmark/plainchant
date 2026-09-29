@@ -1,47 +1,19 @@
-/*
- * Typing helpers (P2-01 to P2-03, P2-11): pure functions that decide what the editor should do.
- *
- * Nothing here touches the DOM. Every function takes the editor's text and caret and returns an *edit*:
- *
- *   { from, to, insert, selStart, selEnd }   replace text[from..to] with `insert`, then select selStart..selEnd
- *
- * The page applies it in a way that keeps the browser's undo history (see applyEdit in index.html). Loads as
- * window.Editing (after fountain.js) in the browser and via require() in Node.
- *
- *   Editing.blockAt(text, caret)              { start, end } of the run of non-blank lines the caret is in (focus mode)
- *   Editing.kindAt(text, lineIndex)            what element a line is: 'scene' | 'action' | 'character' |
- *                                              'parenthetical' | 'dialogue' | 'transition' | 'blank' | others
- *   Editing.enter(text, start, end, mode, opts) smart Enter, or null to let the browser insert a plain newline
- *   Editing.looksLikeCue(line, names)          whether a line on its own reads as a character's name (P2-14)
- *   Editing.tab(text, caret, dir, mode)        { target, edit, mode } for Tab / Shift+Tab, skipping impossible steps
- *   Editing.cycleTarget(text, caret, dir, mode)  the element Tab would pick, ignoring whether it is possible
- *   Editing.setType(text, caret, target, mode)   { edit, mode } converting the current line to `target`, or null
- *   Editing.autoCase(text, caret, mode, opts)  uppercase-as-you-type edit, or null
- *   Editing.diffEdit(old, new, selStart, selEnd)  the smallest edit turning old into new, selection carried across
- *
- * "mode" is the element the writer chose for a line that has no text yet (a blank line cannot say what it is).
- * It is one of 'character' | 'scene' | 'transition' | null and is held by the page, not in the text.
- */
 (function (root, factory) {
     if (typeof module === 'object' && module.exports) module.exports = factory(require('./fountain.js'));
     else root.Editing = factory(root.Fountain);
 })(typeof self !== 'undefined' ? self : this, function (Fountain) {
     'use strict';
 
-    // Order Tab walks through outside a dialogue block, and inside one (Shift+Tab walks it backwards)
     const CYCLE = ['action', 'character', 'scene', 'transition'];
     const BLOCK_CYCLE = ['dialogue', 'parenthetical'];
-    const MODES = ['character', 'scene', 'transition'];          // element types a blank line can be "set to"
+    const MODES = ['character', 'scene', 'transition'];
     const STRONG = ['scene', 'transition', 'section', 'synopsis', 'centered', 'lyrics', 'page_break', 'title_page'];
     const NEEDS_BLANK_BEFORE = { character: true, scene: true, transition: true };
     const FORCE = { action: '!', character: '@', scene: '.', transition: '> ' };
     const SCENE_PREFIX_RE = /^(?:INT|EXT|EST|INT\.?\/EXT|EXT\.?\/INT|I\/E)(?:\.|\s)\s*/i;
-    // Typed prefixes that are clearly a scene heading, so the line can be uppercased without being told to
     const AUTO_SCENE_RE = /^(?:(?:int|ext|est)\.|(?:int|ext)\.?\/(?:ext|int)\.|i\/e\.?)\s/i;
     const AUTO_TRANSITION_RE = /^[a-z][a-z' ]* to:$/i;
-    const WINDOW = 80; // lines of context above the caret that are worth parsing
-
-    // ---------- text helpers ----------
+    const WINDOW = 80;
 
     function lineInfo(text, caret) {
         const before = text.slice(0, caret);
@@ -54,7 +26,6 @@
 
     const isBlank = function (s) { return s === undefined || s.trim() === ''; };
 
-    /** The words of a line with any element markers removed: scene prefix and number, forced markers, parentheses. */
     function plain(line) {
         let s = line.trim();
         s = s.replace(/\s#[\w.\-]+#$/, '');
@@ -67,17 +38,11 @@
         return s.trim();
     }
 
-    /**
-     * Classify one line the way the parser will once the writer moves on. The parser needs to see the *next* line to
-     * call something a character cue or a transition, and while typing there isn't one yet, so ask twice: once with
-     * an empty line after it, once with a line of text.
-     */
     function kindAt(text, idx) {
         const lines = text.split('\n');
         const line = lines[idx];
         if (isBlank(line)) return 'blank';
 
-        // Parse only a window of context so a long script stays cheap; start it at a block boundary
         let s = Math.max(0, idx - WINDOW);
         if (s > 0) {
             while (s < idx && !isBlank(lines[s])) s++;
@@ -85,13 +50,11 @@
         }
         const upto = lines.slice(s, idx + 1).join('\n');
         const at = idx - s;
-        const A = Fountain.classifyLines(upto + '\n')[at];   // followed by a blank line
-        const B = Fountain.classifyLines(upto + '\nx')[at];  // followed by more text
+        const A = Fountain.classifyLines(upto + '\n')[at];
+        const B = Fountain.classifyLines(upto + '\nx')[at];
 
         if (STRONG.indexOf(A) !== -1) return A;
         if (A === 'dialogue' || A === 'parenthetical') return A;
-        // Sentence punctuation means action ("BANG!", "SILENCE."), even though the spec would allow it as a cue.
-        // An explicit @ is the writer saying otherwise.
         if (B === 'character' && (line.trim()[0] === '@' || !/[.!?]$/.test(line.trim()))) return 'character';
         return 'action';
     }
@@ -104,27 +67,13 @@
         return k === 'character' || k === 'dialogue' || k === 'parenthetical';
     }
 
-    // ---------- Enter ----------
-
-    /**
-     * Smart Enter. Only acts when the writer is at the end of a block at the end of the script (or before a blank
-     * line): the situation where "what comes next" is a guess worth making. Anywhere else, and for selections, it
-     * returns null so the browser does its normal thing.
-     *   character cue or parenthetical -> new line (the speech comes next)
-     *   anything else                  -> blank line (a new element)
-     * With `mode` set, the line is also finished off first (uppercased, scene prefix / transition marker added).
-     * `options.paragraphs === false` (the writer's setting, P2-15): no blank lines are added; Enter is the browser's
-     * plain line break, except that a chosen element is still finished off, followed by one line break.
-     * `options.cues = { names }` (P2-14, D-036): a line after a blank line that looksLikeCue() becomes a cue as if the
-     * writer had chosen Character: capitals, then straight into the speech.
-     */
     function enter(text, start, end, mode, options) {
         const paragraphs = !options || options.paragraphs !== false;
         const cues = options && options.cues;
         if (start !== end) return null;
         const info = lineInfo(text, start);
-        if (start !== info.end) return null;                          // not at the end of the line
-        if (!isBlank(info.lines[info.idx + 1])) return null;          // more text right below: mid-block edit
+        if (start !== info.end) return null;
+        if (!isBlank(info.lines[info.idx + 1])) return null;
         const line = info.lines[info.idx];
         if (isBlank(line)) return null;
 
@@ -140,20 +89,13 @@
         return { from: start, to: start, insert: sep, selStart: start + sep.length, selEnd: start + sep.length };
     }
 
-    // ---------- guessing a cue (P2-14) ----------
+    const CUE_WORD = /^\p{Lu}[\p{L}'’.\-]*$/u;
 
-    const CUE_WORD = /^\p{Lu}[\p{L}'’.\-]*$/u; // a capitalised word: Mara, O'Neil, Mary-Jane, Dr.
-
-    /**
-     * Whether a line on its own looks like a character's name: one the script already uses as a cue (any case, with
-     * or without an extension), or a new one written with capitals, one to three words, not ending like a sentence.
-     * "Mara enters." and "Night falls" do not; "Detective Ruiz" and "mara (v.o.)" (if MARA speaks) do.
-     */
     function looksLikeCue(line, names) {
         let name = String(line || '').trim();
         while (/\([^)]*\)\s*$/.test(name)) name = name.replace(/\s*\([^)]*\)\s*$/, '');
         name = name.trim();
-        if (!name) return false; // (a line starting with a mark, ! . > # =, fails the word test below)
+        if (!name) return false;
         const up = name.toUpperCase();
         if ((names || []).some((n) => String(n).toUpperCase() === up)) return true;
         if (name.length > 30 || SCENE_PREFIX_RE.test(name) || /[.!?,;:]$/.test(name)) return false;
@@ -163,7 +105,7 @@
 
     function finishLine(text, info, mode, paragraphs) {
         const words = plain(info.lines[info.idx]);
-        if (words === '') return null;                                // nothing typed yet: plain newline
+        if (words === '') return null;
         let line, sep;
         if (mode === 'character') {
             line = words.toUpperCase();
@@ -172,7 +114,7 @@
             line = info.lines[info.idx].trim().toUpperCase();
             if (!SCENE_PREFIX_RE.test(line)) line = FORCE.scene + words.toUpperCase();
             sep = '\n\n';
-        } else { // transition
+        } else {
             line = words.toUpperCase();
             if (!isTransition(line)) line = FORCE.transition + line;
             sep = '\n\n';
@@ -186,9 +128,6 @@
         return Fountain.classifyLines('a\n\n' + candidate + '\n')[2] === 'transition';
     }
 
-    // ---------- Tab / element buttons ----------
-
-    /** The elements Tab can walk through for the current line, and where in that list the line is now. */
     function cycleList(text, caret, mode) {
         const info = lineInfo(text, caret);
         const words = plain(info.lines[info.idx]);
@@ -199,17 +138,11 @@
         return { list: list, i: i === -1 ? 0 : i };
     }
 
-    /** The element Tab (dir = 1) or Shift+Tab (dir = -1) should turn the current line into. */
     function cycleTarget(text, caret, dir, mode) {
         const c = cycleList(text, caret, mode);
         return c.list[(c.i + (dir < 0 ? -1 : 1) + c.list.length) % c.list.length];
     }
 
-    /**
-     * Tab / Shift+Tab: the next element that the current line can actually become. Some conversions are impossible
-     * for particular text (a line ending in "TO:" cannot be a cue), and skipping them means the cycle never sticks.
-     * Returns { target, edit, mode } or null when nothing applies.
-     */
     function tab(text, caret, dir, mode) {
         const c = cycleList(text, caret, mode);
         const step = dir < 0 ? -1 : 1;
@@ -221,14 +154,6 @@
         return null;
     }
 
-    /**
-     * Turn the current line into `target`. Keeps the words, changes what marks them: uppercases cues, adds "INT. ",
-     * wraps parentheses, adds a forced-element marker if the plain form would parse as something else, and adds the
-     * blank line above that cues, scene headings and transitions need. Returns { edit, mode } where `edit` may be
-     * null (a blank line has no text to change) and `mode` is what the page should remember for a line with no text
-     * yet. Returns null if the conversion is not possible here (dialogue and parentheticals only exist inside a
-     * character's block).
-     */
     function setType(text, caret, target, mode) {
         const info = lineInfo(text, caret);
         const line = info.lines[info.idx];
@@ -248,12 +173,10 @@
             case 'scene': candidate = blank ? 'INT. ' : (SCENE_PREFIX_RE.test(line.trim()) ? line.trim() : 'INT. ' + words).toUpperCase(); break;
             case 'transition': candidate = words.toUpperCase(); break;
             case 'parenthetical': candidate = '(' + words + ')'; caretInside = blank; break;
-            default: candidate = words; // 'action' and 'dialogue'
+            default: candidate = words;
         }
         if (target === 'transition' && candidate && !isTransition(candidate)) candidate = FORCE.transition + candidate;
 
-        // Does the parser agree it is now the requested element? If not, force it with the element's marker.
-        // (Blank lines have no text to classify, so they are trusted; the page remembers `mode` for them.)
         if (candidate.trim() !== '' && candidate !== 'INT. ' && !caretInside) {
             const trial = function (c) {
                 const t = text.slice(0, info.start) + lead + c + text.slice(info.end);
@@ -273,13 +196,6 @@
         return { edit: { from: info.start, to: info.end, insert: insert, selStart: pos, selEnd: pos }, mode: newMode };
     }
 
-    // ---------- auto-uppercase ----------
-
-    /**
-     * Uppercase the current line as it is typed, when it is clearly a scene heading ("int. kitchen"), a transition
-     * ("cut to:"), or the writer has said it is one (mode). Only at the end of a line, and never inside dialogue.
-     * `options.guess === false` (the writer's setting, P2-15): only a chosen mode uppercases; nothing is guessed.
-     */
     function autoCase(text, caret, mode, options) {
         const info = lineInfo(text, caret);
         if (caret !== info.end) return null;
@@ -295,13 +211,6 @@
         return { from: info.start, to: info.end, insert: upper, selStart: caret, selEnd: caret };
     }
 
-    // ---------- whole-text changes ----------
-
-    /**
-     * The smallest edit that turns oldText into newText, with the selection carried across it. Used to change a
-     * script's title from outside the editor (the Library) while leaving the rest of the text, the writer's
-     * position and the undo history alone. If the texts are equal the edit is empty (from === to, insert '').
-     */
     function diffEdit(oldText, newText, selStart, selEnd) {
         const max = Math.min(oldText.length, newText.length);
         let a = 0;
@@ -316,10 +225,6 @@
         return { from: from, to: to, insert: insert, selStart: carry(selStart), selEnd: carry(selEnd) };
     }
 
-    /**
-     * The block the caret is in, for focus mode (P2-07): the run of non-blank lines around it, as character offsets
-     * { start, end } (end is the end of its last line, before any newline). On a blank line, just that line.
-     */
     function blockAt(text, caret) {
         const lines = String(text).split('\n');
         const starts = [];
@@ -335,11 +240,6 @@
         return { start: starts[first], end: starts[last] + lines[last].length };
     }
 
-    /**
-     * The paragraph source line `line` is in, for a quick edit in the preview (P2-24): the same run of non-blank lines as
-     * blockAt, found by line number instead of offset. Returns { start, end } as character offsets and the paragraph's
-     * first and last line numbers. A line past the end counts as the last line; a blank line is a paragraph of its own.
-     */
     function paragraphAt(text, line) {
         const s = String(text);
         const lines = s.split('\n');

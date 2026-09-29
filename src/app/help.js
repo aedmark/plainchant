@@ -1,12 +1,3 @@
-/*
- * Plainchant app script: help: the Help window and its shortcuts
- *
- * One of the classic scripts loaded by index.html, in order (see CLAUDE.md, "App scripts"). They share the
- * page's global scope, so top-level functions and consts here are visible to the files after it, and anything
- * that runs at load time may only use what an earlier file (or a src/*.js module) already defined.
- */
-
-// --- Help ---
 const helpModal = document.getElementById('help-modal');
 const helpBody = helpModal.querySelector('.modal-body');
 const helpSections = Array.from(helpModal.querySelectorAll('.help-section'));
@@ -28,7 +19,7 @@ document.getElementById('helpBtn').addEventListener('click', () => openHelp('sta
 document.querySelector('.el-help').addEventListener('click', () => openHelp('elements'));
 document.addEventListener('keydown', (e) => {
     if (e.key === 'F1' || ((e.ctrlKey || e.metaKey) && e.key === '/')) {
-        e.preventDefault(); // F1 would otherwise open the browser's own help
+        e.preventDefault();
         if (!openModals.length) openHelp('start');
     }
 });

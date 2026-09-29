@@ -1,27 +1,14 @@
-/*
- * Plainchant app script: versions-ui: a script's kept versions (P4-05): go back to one, copy one, name one, delete one (comparing one is compare-ui.js)
- *
- * One of the classic scripts loaded by index.html, in order (see CLAUDE.md, "App scripts"). They share the
- * page's global scope, so top-level functions and consts here are visible to the files after it, and anything
- * that runs at load time may only use what an earlier file (or a src/*.js module) already defined.
- */
-
-// Versions are kept by the saves themselves (persistence.js hands Store.saveScript the rules in src/versions.js);
-// this window lists them, from the script's row in the Library (D-034). Versions live in their own IndexedDB store
-// and are read only here, so they go to Store directly; the scripts themselves still change only through
-// putScripts / saveScript. Going back first keeps the text there now as a version, so it can be undone.
 const versionsModal = document.getElementById('versions-modal');
 const versionsList = document.getElementById('versions-list');
 const versionsStatus = document.getElementById('versions-status');
 const versionForm = document.getElementById('versionForm');
 const versionName = document.getElementById('versionName');
 
-let versionsOf = null;   // the id of the script whose versions are showing
-let versionsShown = [];  // its versions, newest first
-let armedVersion = null; // a version whose Delete has been pressed once
+let versionsOf = null;
+let versionsShown = [];
+let armedVersion = null;
 let armedVersionTimer = null;
 
-// "Today 14:32", "Yesterday 09:10", "12 Sep 17:05", "3 Mar 2025 11:00"
 function versionWhen(ts, now) {
     const d = new Date(ts), today = new Date(now), yesterday = new Date(now - 24 * 60 * 60 * 1000);
     const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -61,7 +48,6 @@ function versionRow(v, script, now) {
     ].filter(Boolean));
 }
 
-// Global on purpose: the e2e tests read what it drew
 function renderVersions() {
     const script = getScripts()[versionsOf];
     if (!script) return;
@@ -72,7 +58,6 @@ function renderVersions() {
     }
     const now = Date.now();
     versionsShown.forEach((v) => versionsList.appendChild(versionRow(v, script, now)));
-    // Below the list, so on a phone it scrolls away rather than taking half the window
     versionsList.appendChild(h('p', { class: 'library-note versions-note', text: 'Plainchant keeps versions by itself while you write: ' +
         'all of the last hour, one an hour for a day, one a day for a month, then one a month. Named versions stay until you ' +
         'delete them. Going back keeps the text you had as a version too.' }));
@@ -83,9 +68,8 @@ async function reloadVersions() {
     renderVersions();
 }
 
-// Global on purpose: the Library's row button calls it, and so do the e2e tests
 async function openVersions(id) {
-    if (id === currentScriptId) flushSave(); // the list compares with the latest words
+    if (id === currentScriptId) flushSave();
     await whenSaved();
     const script = getScripts()[id];
     if (!script || script.deletedAt || !scriptDb) return;
@@ -98,9 +82,6 @@ async function openVersions(id) {
     openModal(versionsModal, { focus: '#versionName' });
 }
 
-// The script's text becomes `text`; the text there now is kept as a version first (unless one already has it), with
-// `note`. The open script changes through applyEdit, so Ctrl/Cmd+Z undoes it too. False if there was nothing to do.
-// Global on purpose: compare-ui.js takes a scene back with it.
 async function replaceScriptText(id, text, note) {
     const isOpen = id === currentScriptId;
     if (isOpen) flushSave();
@@ -136,7 +117,6 @@ async function goBackTo(v) {
     versionsSay('Back to the version of ' + when + '. The text you had is kept as a version too.');
 }
 
-// A new script holding the version's text, titled after it, so a scene can be taken from it
 function copyVersion(v) {
     const now = Date.now();
     const base = Fountain.fullTitle(v.content) || 'Untitled Script';
@@ -147,7 +127,6 @@ function copyVersion(v) {
     versionsSay('Copied as “' + Fountain.extractTitle(content) + '”, in the Library.');
 }
 
-// Two deliberate clicks, like deleting a script for good
 async function deleteVersion(v) {
     if (armedVersion !== v.id) {
         disarmVersion();
@@ -180,14 +159,13 @@ async function keepNamedVersion() {
     versionsSay('Kept the script as it is now, as “' + name + '”.');
 }
 
-// --- Wiring ---
 versionForm.addEventListener('submit', (e) => { e.preventDefault(); keepNamedVersion(); });
 versionsList.addEventListener('click', (e) => {
     const button = e.target.closest('[data-action]');
     const row = button && button.closest('.version-item');
     const v = row && versionsShown.find((x) => x.id === row.dataset.id);
     if (!v) return;
-    if (button.dataset.action === 'compare') openCompare(v); // compare-ui.js
+    if (button.dataset.action === 'compare') openCompare(v);
     else if (button.dataset.action === 'go-back') goBackTo(v);
     else if (button.dataset.action === 'copy-version') copyVersion(v);
     else if (button.dataset.action === 'delete-version') deleteVersion(v);

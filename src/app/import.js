@@ -1,18 +1,7 @@
-/*
- * Plainchant app script: import: bring a .fountain / .txt file in as a new script (P3-02)
- *
- * One of the classic scripts loaded by index.html, in order (see CLAUDE.md, "App scripts"). They share the
- * page's global scope, so top-level functions and consts here are visible to the files after it, and anything
- * that runs at load time may only use what an earlier file (or a src/*.js module) already defined.
- */
-
 const importInput = document.getElementById('importInput');
 const dropHint = document.getElementById('dropHint');
 let importBusy = false;
 
-// Reads each file, adds every readable one to the Library as a NEW script (nothing is ever overwritten; what was
-// being written is saved first), then opens the first. Files that cannot be imported are named with the reason.
-// Global on purpose: the e2e tests call it with File objects.
 async function importFiles(fileList) {
     const files = Array.from(fileList || []);
     if (!files.length || importBusy) return;
@@ -36,7 +25,7 @@ async function importFiles(fileList) {
             let scripts = getScripts();
             const ids = [];
             const now = Date.now();
-            readable.forEach((text, i) => { // the first file gets the newest time, so it stays on top of the list
+            readable.forEach((text, i) => {
                 const added = Library.add(scripts, newId(), text, now - i);
                 scripts = added.scripts;
                 ids.push(added.id);
@@ -66,15 +55,12 @@ async function importFiles(fileList) {
     }
 }
 
-// --- Wiring ---
 document.getElementById('libImport').addEventListener('click', () => importInput.click());
 importInput.addEventListener('change', () => {
     importFiles(importInput.files);
-    importInput.value = ''; // so choosing the same file again still fires "change"
+    importInput.value = '';
 });
 
-// Drag a file anywhere onto the page. Without this the browser would open the dropped file in place of the app.
-// Only file drags are handled, so dragging selected text around inside the editor is untouched.
 const carriesFiles = (e) => !!e.dataTransfer && Array.from(e.dataTransfer.types || []).indexOf('Files') !== -1;
 let dragDepth = 0;
 window.addEventListener('dragenter', (e) => {

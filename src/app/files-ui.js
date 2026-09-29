@@ -1,26 +1,10 @@
-/*
- * Plainchant app script: files-ui: scripts linked to real files on disk (P5-01): open a file, save to a file, and keep them in step
- *
- * One of the classic scripts loaded by index.html, in order (see CLAUDE.md, "App scripts"). They share the
- * page's global scope, so top-level functions and consts here are visible to the files after it, and anything
- * that runs at load time may only use what an earlier file (or a src/*.js module) already defined.
- */
-
-// Where the browser has the File System Access API (Chrome, Edge and other Chromium browsers; not Firefox), a script
-// can be linked to a real .fountain file (D-046). The Library's "Open a file..." opens one and stays linked to it;
-// Export's "Sync with a file..." links the open script to a new one. From then on every save also writes the file,
-// and the file is read again when the script is opened and when the window comes back into view. The rule for
-// who wins is src/filesync.js: never write over changes made to the file elsewhere. The script itself still lives in
-// the Library (IndexedDB) as always; the link (the file's handle, and the text and time they last agreed on) is in
-// the `files` store. The browser asks the writer again for permission after a reload: a bar above the editor asks.
 const fileSupport = typeof window.showOpenFilePicker === 'function' && typeof window.showSaveFilePicker === 'function';
 const fileBar = document.getElementById('file-bar');
 const fileBarText = document.getElementById('fileBarText');
-let fileLinks = {};             // { [scriptId]: { scriptId, handle, name, synced, modified } }
-let fileWork = Promise.resolve(); // file reads and writes, one at a time, in order
-let fileBarState = null;        // null | { kind: 'allow' | 'conflict', id, disk }
+let fileLinks = {};
+let fileWork = Promise.resolve();
+let fileBarState = null;
 
-// Global on purpose: the e2e tests wait for it
 function whenFilesSynced() {
     return fileWork.then(() => undefined);
 }
@@ -59,7 +43,6 @@ async function readLinkedFile(link) {
     return { text: read.text, modified: file.lastModified };
 }
 
-// The file changed outside Plainchant: the script takes its text, and what it had is kept as a version (versions-ui.js)
 async function loadLinkedFile(id, link, disk) {
     await replaceScriptText(id, disk.text, 'Before loading changes to ' + link.name + ' made outside Plainchant');
     await keepLink(Object.assign({}, link, { synced: FileSync.canon(disk.text), modified: disk.modified }));
@@ -77,7 +60,6 @@ function showFileBar(state) {
         : name + ' was changed outside Plainchant, and so was the script here. Which should both become?';
 }
 
-// Brings the script `id` and its file into step, when both can be read. Global on purpose: the e2e tests call it.
 function syncFile(id) {
     return queueFileWork(async () => {
         const link = fileLinks[id];
@@ -102,8 +84,6 @@ function syncFile(id) {
     });
 }
 
-// After any save: the linked scripts whose text is no longer what their file last agreed on. Called by
-// persistence.js; reads nothing from disk for a script that has not changed.
 function syncLinkedFiles() {
     if (!fileSupport) return;
     const scripts = getScripts();
@@ -121,18 +101,17 @@ async function forgetFile(id) {
     await Store.removeLink(scriptDb, id);
 }
 
-// A file already linked to one of the scripts, if `handle` is it
 async function scriptOfFile(handle) {
     for (const id of Object.keys(fileLinks)) {
-        try { if (await fileLinks[id].handle.isSameEntry(handle)) return id; } catch (e) { /* a handle gone stale */ }
+        try { if (await fileLinks[id].handle.isSameEntry(handle)) return id; } catch (e) {
+        }
     }
     return null;
 }
 
-// Library: "Open a file..." Global on purpose: the e2e tests call it.
 async function openFromDisk() {
     let handle;
-    try { [handle] = await window.showOpenFilePicker({ types: FileSync.TYPES, multiple: false }); } catch (e) { return; } // cancelled
+    try { [handle] = await window.showOpenFilePicker({ types: FileSync.TYPES, multiple: false }); } catch (e) { return; }
     const known = await scriptOfFile(handle);
     if (known && getScripts()[known] && !getScripts()[known].deletedAt) {
         openScriptById(known);
@@ -140,7 +119,7 @@ async function openFromDisk() {
         showNotice('Opened ' + fileLinks[known].name + ', which is already in the Library.');
         return;
     }
-    if (known) await forgetFile(known); // linked to a deleted script: link it to a new one instead
+    if (known) await forgetFile(known);
     const file = await handle.getFile();
     const verdict = Importing.checkFile(file.name, file.size);
     let read = verdict.ok ? Importing.readText(new Uint8Array(await file.arrayBuffer())) : verdict;
@@ -156,7 +135,6 @@ async function openFromDisk() {
     showNotice('Opened ' + handle.name + '. It stays in sync: every save writes it.');
 }
 
-// Export: "Sync with a file..." Global on purpose: the e2e tests call it.
 async function saveToDisk() {
     flushSave();
     await whenSaved();
@@ -165,7 +143,7 @@ async function saveToDisk() {
     if (!script) return;
     let handle;
     try { handle = await window.showSaveFilePicker({ suggestedName: Fountain.fileName(script.content), types: FileSync.TYPES }); } catch (e) { return; }
-    const other = await scriptOfFile(handle); // one file, one script: an older link to it goes
+    const other = await scriptOfFile(handle);
     if (other && other !== id) await forgetFile(other);
     await queueFileWork(() => writeLinkedFile({ scriptId: id, handle: handle, name: handle.name, synced: null, modified: null }, script.content));
     prepareFileChoice();
@@ -180,7 +158,6 @@ async function stopSavingToFile() {
     showNotice('No longer syncing with ' + link.name + '. The script stays in the Library, and the file stays as it is.');
 }
 
-// The Export dialog's "Sync with a file" section, as it is for the open script. Called by openExport (export.js).
 function prepareFileChoice() {
     const section = document.getElementById('fileChoice');
     section.hidden = !fileSupport;
@@ -193,13 +170,11 @@ function prepareFileChoice() {
     document.getElementById('unlinkFileBtn').hidden = !link;
 }
 
-// Another script is open now (persistence.js, rememberCurrent): the bar was about the last one; read this one's file
 function fileScriptOpened() {
     if (fileBarState && fileBarState.id !== currentScriptId) showFileBar(null);
     if (fileLinks[currentScriptId]) syncFile(currentScriptId);
 }
 
-// At start-up, after the Library has loaded (main.js)
 async function startFiles() {
     document.getElementById('libOpenFile').hidden = !fileSupport;
     if (!fileSupport || !scriptDb) return;
@@ -209,7 +184,6 @@ async function startFiles() {
     if (fileLinks[currentScriptId]) syncFile(currentScriptId);
 }
 
-// --- Wiring ---
 document.getElementById('libOpenFile').addEventListener('click', openFromDisk);
 document.getElementById('saveFileBtn').addEventListener('click', saveToDisk);
 document.getElementById('unlinkFileBtn').addEventListener('click', stopSavingToFile);
@@ -228,7 +202,7 @@ document.getElementById('fileKeepBtn').addEventListener('click', () => {
     const state = fileBarState, link = state && fileLinks[state.id];
     if (!link || !state.disk) return;
     showFileBar(null);
-    queueFileWork(async () => { // the file's words are kept as a version before they are written over
+    queueFileWork(async () => {
         const now = Date.now();
         const script = getScripts()[state.id];
         await Store.addVersion(scriptDb, Versions.make(Object.assign({}, script, { content: state.disk.text, updatedAt: state.disk.modified }),
@@ -237,7 +211,6 @@ document.getElementById('fileKeepBtn').addEventListener('click', () => {
         showNotice('Saved the script here to ' + link.name + '. What the file said is kept in Versions.');
     });
 });
-// A script opened, or the window back in view: the file may have changed in another program meanwhile
 window.addEventListener('focus', () => { if (fileLinks[currentScriptId]) syncFile(currentScriptId); });
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && fileLinks[currentScriptId]) syncFile(currentScriptId);

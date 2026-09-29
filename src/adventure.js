@@ -1,23 +1,9 @@
-/*
- * Adventure-game replies (P4-20): the retro theme answers a few old text-parser commands. Pure: no DOM, no window.
- *
- *   Adventure.command(line)      -> 'look' | 'inventory' | 'score' | ... | null  (the whole line, any case)
- *   Adventure.reply(key, facts)  -> the answer, one line of plain text
- *
- * `facts` are what the app knows when the command is typed: { scene: the heading of the scene the caret is in, or
- * null; characters: the names who speak in it; words: this script's words; scripts: how many are in the Library;
- * pages: this script's printed pages }. Only a whole line counts ("look", "LOOK AROUND"), never a word inside real
- * text, and nothing here changes the script: the app only shows the answer (D-042).
- * Loads as window.Adventure and via require() in Node.
- */
 (function (root, factory) {
     if (typeof module === 'object' && module.exports) module.exports = factory();
     else root.Adventure = factory();
 })(typeof self !== 'undefined' ? self : this, function () {
     'use strict';
 
-    // Words a parser game understood that a screenplay line almost never is, on its own. Single common words
-    // ("wait", "help", "save", "quit") are left out: they could be a line of dialogue or action.
     const COMMANDS = {
         'look': 'look', 'look around': 'look',
         'inventory': 'inventory', 'inv': 'inventory', 'take inventory': 'inventory',

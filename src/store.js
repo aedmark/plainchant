@@ -1,19 +1,3 @@
-/*
- * Script storage in IndexedDB (P4-10, D-018): the pure rules plus a thin layer over the browser's IndexedDB.
- *
- * One record per script in the `scripts` store, keyed by id: { id, title, content, updatedAt, deletedAt? }, the same
- * shape the library has always had (D-013), a `meta` store for the open-script pointer, and a `versions` store of
- * kept copies of scripts (P4-05, D-034; src/versions.js decides when), found by script through the `byScript` index,
- * and a `files` store: for a script linked to a real file (P5-01, D-046), the file's handle and when they last agreed.
- * The page keeps the whole library in memory as { [id]: script } and writes only what changed.
- *
- * The pure half (diff, guardSave, reconcile) never touches a browser API and is
- * unit-tested under Node. The IndexedDB half takes the database (or the IDBFactory) as an argument and never reads
- * window, so the page decides which one to use. Every write creates its transaction synchronously, before
- * returning: IndexedDB runs read-write transactions in the order they were created, so writes land in the order they
- * were made, and one made while the page is being hidden is already queued before the page can go away.
- * Loads as window.Store in the browser and via require() in Node. (Not "Storage": that name is the browser's own.)
- */
 (function (root, factory) {
     if (typeof module === 'object' && module.exports) module.exports = factory();
     else root.Store = factory();
@@ -21,19 +5,16 @@
     'use strict';
 
     const DB_NAME = 'plainchant';
-    const DB_VERSION = 3; // 2: the versions store; 3: the files store
+    const DB_VERSION = 3;
     const SCRIPTS = 'scripts';
     const META = 'meta';
     const VERSIONS = 'versions';
     const FILES = 'files';
-    const BY_SCRIPT = 'byScript'; // [scriptId, takenAt]: a script's versions, oldest first
+    const BY_SCRIPT = 'byScript';
     const ofScript = (id) => IDBKeyRange.bound([id, -Infinity], [id, Infinity]);
 
     const isRecord = (s) => !!s && typeof s === 'object' && typeof s.id === 'string' && s.id !== '' && typeof s.content === 'string';
 
-    // --- Pure rules ---
-
-    /** What to write to turn `before` into `after`: records that are new or replaced, and ids that are gone. */
     function diff(before, after) {
         const put = [];
         const remove = [];
@@ -42,10 +23,6 @@
         return { put: put, remove: remove };
     }
 
-    /**
-     * The record a save should really write, given what storage holds under that id now. Words are never written
-     * into a deleted script (that would quietly bring it back): they go to a new script under freshId instead.
-     */
     function guardSave(existing, record, freshId) {
         if (!existing || !existing.deletedAt) return record;
         const moved = Object.assign({}, record, { id: freshId });
@@ -53,12 +30,6 @@
         return moved;
     }
 
-    /**
-     * Put back words from the emergency buffer (entries { id, title, content, updatedAt } written synchronously as
-     * the page was hidden) when storage did not get them. An entry is used only when it is newer than the stored
-     * script and says something different; one for a deleted script becomes a new script (makeId()), like any save.
-     * Returns { scripts, restored: [records written], currentId: where the newest restored entry went, or null }.
-     */
     function reconcile(scripts, entries, makeId) {
         const next = Object.assign({}, scripts);
         const restored = [];
@@ -79,8 +50,6 @@
         return { scripts: next, restored: restored, currentId: currentId };
     }
 
-    // --- IndexedDB ---
-
     const promised = (request) => new Promise((resolve, reject) => {
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error);
@@ -92,7 +61,6 @@
         tx.onabort = () => reject(tx.error || new Error('The write was abandoned.'));
     });
 
-    /** Opens (creating on first use) the database. Rejects when the browser will not give us one. */
     function open(factory) {
         return new Promise((resolve, reject) => {
             if (!factory || typeof factory.open !== 'function') { reject(new Error('IndexedDB is not available.')); return; }
@@ -109,7 +77,7 @@
             };
             request.onsuccess = () => {
                 const db = request.result;
-                db.onversionchange = () => db.close(); // a newer version of the app, in another tab, needs to upgrade
+                db.onversionchange = () => db.close();
                 resolve(db);
             };
             request.onerror = () => reject(request.error);
@@ -117,7 +85,6 @@
         });
     }
 
-    /** Everything stored: { scripts: { [id]: script }, meta: { [key]: value } }. */
     function loadAll(db) {
         const tx = db.transaction([SCRIPTS, META], 'readonly');
         const scripts = promised(tx.objectStore(SCRIPTS).getAll());
@@ -137,23 +104,17 @@
         });
     }
 
-    // Deletes every version of the script `id`, inside the transaction `versions` belongs to
     function dropVersionsOf(versions, id) {
         const keys = versions.index(BY_SCRIPT).getAllKeys(ofScript(id));
         keys.onsuccess = () => keys.result.forEach((key) => versions.delete(key));
     }
 
-    // Keeps `version` and lets go of whatever `rules.prune` says, among that script's versions
     function keepVersion(versions, version, rules, now) {
         if (version) versions.put(version);
         const all = versions.index(BY_SCRIPT).getAll(ofScript(version.scriptId));
         all.onsuccess = () => rules.prune(all.result, now).forEach((id) => versions.delete(id));
     }
 
-    /**
-     * One transaction: remove ids, put records, set meta keys (null removes one). All of it lands, or none. A script
-     * removed for good takes its versions and its link to a file with it.
-     */
     function write(db, change) {
         const removing = (change.remove || []).length > 0;
         const tx = db.transaction(removing ? [SCRIPTS, META, VERSIONS, FILES] : [SCRIPTS, META], 'readwrite');
@@ -168,15 +129,6 @@
         return finished(tx);
     }
 
-    /**
-     * Saves one script and points `currentScriptId` at it, in one transaction that first re-reads what is stored:
-     * another tab may have deleted the script since this one loaded it (guardSave). Resolves { record, deleted }:
-     * the record written, whose id differs from the one asked for when the words had to go to a new script, and in
-     * that case the deleted script as it is stored (untouched).
-     * With `versions` ({ rules: Versions, now, makeId }), the script as it was stored is first kept as a version when
-     * the rules say it is due (P4-05), in the same transaction: nothing is lost between the read and the write, and
-     * two tabs cannot both keep the same text.
-     */
     function saveScript(db, record, freshId, versions) {
         const tx = db.transaction(versions ? [SCRIPTS, META, VERSIONS] : [SCRIPTS, META], 'readwrite');
         const scripts = tx.objectStore(SCRIPTS);
@@ -189,7 +141,7 @@
             if (written !== record) deleted = stored;
             scripts.put(written);
             putMeta(tx.objectStore(META), { currentScriptId: written.id });
-            if (!versions || !stored) return; // (a deleted script, whose words went elsewhere, is never due)
+            if (!versions || !stored) return;
             const store = tx.objectStore(VERSIONS);
             const last = store.index(BY_SCRIPT).openCursor(ofScript(stored.id), 'prev');
             last.onsuccess = () => {
@@ -202,14 +154,12 @@
         return finished(tx).then(() => ({ record: written, deleted: deleted }));
     }
 
-    /** Keeps one version (a named one, or the text before going back to another) and prunes that script's versions. */
     function addVersion(db, version, rules, now) {
         const tx = db.transaction([VERSIONS], 'readwrite');
         keepVersion(tx.objectStore(VERSIONS), version, rules, now);
         return finished(tx);
     }
 
-    /** A script's versions, newest first. */
     function loadVersions(db, scriptId) {
         const tx = db.transaction([VERSIONS], 'readonly');
         return promised(tx.objectStore(VERSIONS).index(BY_SCRIPT).getAll(ofScript(scriptId))).then((list) => list.reverse());
@@ -221,14 +171,12 @@
         return finished(tx);
     }
 
-    /** Links to real files (P5-01): { scriptId, handle, name, synced, modified }, one per script. */
     function putLink(db, link) {
         const tx = db.transaction([FILES], 'readwrite');
         tx.objectStore(FILES).put(link);
         return finished(tx);
     }
 
-    /** Every link, as { [scriptId]: link }. */
     function loadLinks(db) {
         const tx = db.transaction([FILES], 'readonly');
         return promised(tx.objectStore(FILES).getAll()).then((list) => {

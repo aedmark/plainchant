@@ -1,22 +1,11 @@
-/*
- * Plainchant app script: print: screenplay pages for printing and Save as PDF (P3-03, D-021)
- *
- * One of the classic scripts loaded by index.html, in order (see CLAUDE.md, "App scripts"). They share the
- * page's global scope, so top-level functions and consts here are visible to the files after it, and anything
- * that runs at load time may only use what an earlier file (or a src/*.js module) already defined.
- */
-
-// The pages come from src/paginate.js (a grid of lines). Here each one becomes a sheet exactly the size of the paper,
-// every line placed where the grid says, and the print stylesheet shows only those sheets. The browser's print
-// window then prints them or saves a PDF. Ctrl/Cmd+P works too: the pages are rebuilt just before any print.
-const PAPER_KEY = 'plainchant_paper';     // 'letter' (default) or 'a4', remembered per browser
+const PAPER_KEY = 'plainchant_paper';
 const SHEETS = { letter: 'letter', a4: 'A4' };
-const PT = { top: 72, left: 108, col: 7.2, row: 12 }; // 1 in top margin, 1.5 in left; 10 characters and 6 lines an inch
+const PT = { top: 72, left: 108, col: 7.2, row: 12 };
 
-const printChoice = document.getElementById('export-modal'); // the "PDF or paper" half of the Export dialog
+const printChoice = document.getElementById('export-modal');
 const printRoot = document.getElementById('print-root');
 const printSummary = document.getElementById('printSummary');
-const pageRule = document.createElement('style'); // @page size follows the chosen paper
+const pageRule = document.createElement('style');
 document.head.appendChild(pageRule);
 
 function paperChoice() {
@@ -30,8 +19,8 @@ function printLine(l) {
     div.style.left = (PT.left + l.col * PT.col) + 'pt';
     div.style.width = (l.width * PT.col) + 'pt';
     div.style.textAlign = l.align;
-    if (l.at !== undefined) div.dataset.line = l.at; // the script line it came from: the page view finds lines by it (P3-12)
-    l.runs.forEach((r) => { // the writer's text only ever becomes text nodes
+    if (l.at !== undefined) div.dataset.line = l.at;
+    l.runs.forEach((r) => {
         if (!r.bold && !r.italic && !r.underline) { div.appendChild(document.createTextNode(r.text)); return; }
         const span = document.createElement('span');
         span.className = (r.bold ? ' pr-b' : '') + (r.italic ? ' pr-i' : '') + (r.underline ? ' pr-u' : '');
@@ -55,10 +44,10 @@ function marginText(text, row, left, width, align, cls) {
 function printSheet(lines, number, paper) {
     const sheet = document.createElement('div');
     sheet.className = 'print-page ' + paper;
-    if (number) sheet.appendChild(marginText(number + '.', -3, PT.left, 60 * PT.col, 'right', 'print-num')); // half an inch from the top
+    if (number) sheet.appendChild(marginText(number + '.', -3, PT.left, 60 * PT.col, 'right', 'print-num'));
     lines.forEach((l) => {
         sheet.appendChild(printLine(l));
-        if (l.number) { // scene numbers sit in both margins
+        if (l.number) {
             sheet.appendChild(marginText(l.number, l.row, PT.left - 7 * PT.col, 5 * PT.col, 'right', 'print-margin'));
             sheet.appendChild(marginText(l.number, l.row, PT.left + 62 * PT.col, 5 * PT.col, 'left', 'print-margin'));
         }
@@ -66,7 +55,6 @@ function printSheet(lines, number, paper) {
     return sheet;
 }
 
-// Draws the pages for what is in the editor now. Global on purpose: the e2e tests call it.
 function buildPrintPages(paper = paperChoice()) {
     const layout = Paginate.layout(Fountain.parse(editor.value), { paper: paper });
     printRoot.textContent = '';
@@ -89,14 +77,12 @@ function chosenPaper() {
     return picked && picked.value === 'a4' ? 'a4' : 'letter';
 }
 
-// Called as the Export dialog opens: the remembered paper, and how many pages that makes
 function preparePrintChoice() {
     const paper = paperChoice();
     printChoice.querySelectorAll('input[name="paper"]').forEach((r) => { r.checked = r.value === paper; });
     printSummary.textContent = describePages(paper);
 }
 
-// The font the pages are measured in (Courier Prime; plain Courier has the same widths) should be ready first
 function fontsReady() {
     if (!document.fonts || !document.fonts.load) return Promise.resolve();
     const faces = ['12pt "Courier Prime"', 'bold 12pt "Courier Prime"', 'italic 12pt "Courier Prime"'];
@@ -106,19 +92,18 @@ function fontsReady() {
     ]);
 }
 
-// Global on purpose: the e2e tests replace window.print in the page under test and call this
 async function printScript() {
     const paper = chosenPaper();
-    try { localStorage.setItem(PAPER_KEY, paper); } catch (e) { /* remembered for this print only */ }
-    updateStatsBadge(); // the page count in the preview's header is for this paper now
-    if (settings.pageView) drawPages(); // and the page view (sheets-ui.js)
+    try { localStorage.setItem(PAPER_KEY, paper); } catch (e) {
+    }
+    updateStatsBadge();
+    if (settings.pageView) drawPages();
     closeModal(printChoice);
     await fontsReady();
     buildPrintPages(paper);
     window.print();
 }
 
-// --- Wiring ---
 document.getElementById('printGo').addEventListener('click', printScript);
 printChoice.addEventListener('change', (e) => {
     if (e.target.name === 'paper') printSummary.textContent = describePages(chosenPaper());
