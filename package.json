@@ -8,5 +8,6 @@
     "test:browser": "bash test/run-headless.sh",
     "test:browser:windows": "powershell -NoProfile -ExecutionPolicy Bypass -File test/run-headless.ps1"
   },
+  "license": "SEE LICENSE IN LICENSE",
   "private": true
 }
