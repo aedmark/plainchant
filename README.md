@@ -49,4 +49,7 @@ npm run test:browser    # unit suite and app e2e in headless Chromium/Chrome (ab
 - [docs/devlog/](docs/devlog/): the dev diary
 - [CLAUDE.md](CLAUDE.md): code layout, conventions and the session protocol
 
-Fonts (Courier Prime and Inter) are under the SIL Open Font License; licences are in `fonts/`.
+## License
+
+Plainchant is released under an MIT-style license with an acknowledgment of its AI-assisted authorship: see
+[LICENSE](LICENSE). Fonts (Courier Prime and Inter) are under the SIL Open Font License; licences are in `fonts/`.
