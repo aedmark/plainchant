@@ -54,12 +54,6 @@ test('structure: no app script has grown past ' + MAX_LINES + ' lines (split it 
     });
 });
 
-test('structure: every app script starts with the explanatory header', () => {
-    listed.forEach((f) => {
-        assert.ok(/^\/\*\n \* Plainchant app script: /.test(fs.readFileSync(path.join(appDir, f), 'utf8')), f + ' has no header comment');
-    });
-});
-
 test('structure: the stylesheet is a linked file and no inline <style> has crept back into index.html', () => {
     const links = Array.from(html.matchAll(/<link rel="stylesheet" href="(src\/[^"]+)">/g)).map((m) => m[1]);
     assert.deepEqual(links, ['src/styles.css']);

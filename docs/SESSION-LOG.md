@@ -1,0 +1,1069 @@
+# Session Log
+
+The history of the work, session by session, newest first. Append-only: a later entry corrects an earlier one rather
+than rewriting it. What is true *now* is in [HANDOFF.md](HANDOFF.md); why things are the way they are is in
+[DECISIONS.md](DECISIONS.md). The writer-facing story is the dev diary in [devlog/](devlog/).
+
+Until session 30 this log lived at the foot of HANDOFF.md, which also carried a long feature inventory and
+verification record. Both were moved here unchanged (D-058); the snapshot is at the end of this file.
+
+At the end of a session, add an entry at the top of "Sessions" using this template:
+
+```
+### Session N: YYYY-MM-DD: short title
+
+**Goal:**
+**Done:** roadmap IDs
+**Changed:** files / behaviour
+**Decisions:** D-numbers added
+**Problems / surprises:**
+**Left undone:**
+**Next session should start with:**
+```
+
+---
+
+## Sessions
+
+<!-- NEW ENTRIES GO HERE -->
+
+### Session 30: 2026-09-29: HANDOFF trimmed to the present; this log split out (D-058)
+
+**Goal:** The owner asked to clean up the handoff and move its history to an archive, so HANDOFF covers only current
+work and future plans.
+**Done:** `docs/SESSION-LOG.md` (this file): every session entry from HANDOFF, moved unchanged apart from a stray
+indent in session 12's entry, plus a frozen snapshot of HANDOFF's "What works" and "Verified" lists. HANDOFF rewritten:
+a short summary of what the app does, what has not been checked yet, the gotchas (regrouped; Windows-only notes
+condensed), next steps, open questions (resolved ones dropped). CLAUDE.md's protocol and layout table and the devlog
+README point at the new file.
+**Changed:** `docs/HANDOFF.md`, `docs/SESSION-LOG.md` (new), `docs/DECISIONS.md`, `CLAUDE.md`,
+`docs/devlog/README.md`. No app change.
+**Decisions:** D-058.
+**Problems / surprises:** the tests are red on `master` after the owner's clean-up commits since session 29: `npm
+test` 339 of 340 (the app scripts' header comments were stripped, which `test/structure.test.js` requires) and e2e 722
+passed, 9 failed (the reflowed `index.html` wraps strings that checks match exactly: eight Help checks and "No pages
+yet"). Not fixed here: recorded as Next steps 1. The owner also removed P2-09, P2-13 and Phases 6 and 7 from the
+roadmap, and moved the two specs into `docs/devlog/`; CLAUDE.md and ROADMAP still point at the old spec paths.
+**Left undone:** the red tests; the stale spec paths; `docs/agent-template/` still shows the single-file handoff.
+**Next session should start with:** merge; then HANDOFF's Next steps 1 (get the tests green, asking the owner about
+the header comments).
+**Later the same session:** the owner answered. The header-comment test is retired, the wrapped phrases in
+`index.html` are back on one line, and three e2e checks follow the new Help wording or went with the Help entry they
+checked (D-059): `npm test` 339, headless 327 unit + 730 e2e, all passing. The spec paths in ROADMAP and CLAUDE.md
+point at `docs/devlog/`. `docs/agent-template/` follows D-058 (its own HANDOFF and SESSION-LOG); the owner is moving it
+to their hypervisor repo. Next: merge, then HANDOFF's Next steps.
+Then, at the owner's word, the phone and tablet switch and the desktop pane buttons use the Void and the Canvas, as does
+Help (D-060); the removed Help entry stays removed. Tests: 339 Node, 327 unit + 730 e2e.
+
+### Session 29: 2026-09-29: A reusable template of these docs
+
+**Goal:** The owner asked for a generalised template of the project's documentation and agent workflow.
+**Done:** `docs/agent-template/`: CLAUDE.md, ROADMAP.md, docs/HANDOFF.md, docs/DECISIONS.md and docs/devlog/ (README,
+index, entry template) with `{{placeholders}}`, and a README on using it and the rules that made it work. No app change.
+**Left undone:** nothing.
+**Next session should start with:** merge; then the two quick-edit tests (session 28); then the owner's pick.
+
+### Session 28: 2026-09-28: Quick edits in the preview (P2-24)
+
+**Goal:** The owner agreed the sketch for P2-24 ("write it up!").
+**Done:** P2-24: `Editing.paragraphAt` (2 unit tests); new `src/app/quick-edit.js` (after panes.js; `index.html`,
+`sw.js`); CSS; Help; e2e section 16y and a "quick edit" state in the accessibility sweep. Dev-diary entry "Touching
+Up the Page".
+**Decisions:** D-057.
+**Problems / surprises:** with the editor hidden, an edit could not go through the editor's undo; the editor is
+shown off-screen for that moment instead of falling back to setting its value (which would lose undo).
+**Verified:** a mutation run on `src/app/quick-edit.js` (9 of its lines): 3 caught, 6 not. Worth tests next session: a
+finger that moves while holding cancels the hold (scrolling never opens the box), and a mouse held down never opens it
+(selecting text). Not worth much: the double-click's word selection cleared, the editor blurred after an edit made
+while hidden, an unchanged box skipping the edit (a no-op edit anyway), the `previewShown()` guard in `quickLine`.
+An interrupted mutation run once left a mutated line in the working copy; the scratch script now restores on
+SIGTERM / SIGINT. Check `git diff` after any interrupted run before committing.
+**Left undone:** the two tests above; not tried on a real touch screen (Android's own long-press menu may compete)
+or in Firefox.
+**Next session should start with:** merge; then the two quick-edit tests; then the owner's pick.
+
+### Session 27: 2026-09-28: The editor alone, the preview alone, or both (P2-23)
+
+**Goal:** The owner asked for a way to hide either pane on a desktop, and floated editing in the preview.
+**Done:** P2-23 (new `src/app/panes.js`, after sheets-ui.js; the switch in `index.html`; the `panes` setting; CSS;
+Help; e2e section 16x and two states in the accessibility sweep). P2-24 added to the roadmap as a sketch for the
+owner. Dev-diary entry "Room to Write" (with the ad-blocker fix from session 26).
+**Decisions:** D-056.
+**Problems / surprises:** a check of mine compared the colour layer's width with the editor's outer width; the layer
+leaves out the scrollbar by design (copyEditorType). The app was right.
+**Verified:** mutation runs: 11 mutations of panes.js, sheets-ui.js and the stylesheet, all caught after one check
+was added (dropping the Ctrl/Cmd+Shift requirement went unnoticed: a plain 2 now provably changes nothing).
+**Left undone:** P2-24 until the owner agrees the sketch; not seen in Firefox.
+**Next session should start with:** merge; then the owner's pick.
+
+### Session 26: 2026-09-28: Page view blocked by an ad blocker (D-055)
+
+**Goal:** The owner reported the app not drawing: `pageview.js` "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT",
+then "schedulePages is not defined" from `render()`.
+**Done:** renamed `src/app/pageview.js` to `src/app/sheets-ui.js` (every reference, `sw.js`'s list, its cache name to
+`plainchant-v3`); a structure test that no file the app loads is named like a tracker.
+**Decisions:** D-055.
+**Problems / surprises:** "pageview" is web-analytics vocabulary, so blocker lists refuse any file called that. The
+headless runs have no extensions, so every test passed.
+**Left undone:** the owner reloading with the blocker on to confirm.
+**Next session should start with:** merge; then the owner's pick.
+
+### Session 25: 2026-09-28: Page view (P3-12)
+
+**Goal:** The owner picked P3-12.
+**Done:** P3-12: a Page view switch in the preview's header draws the printed sheets while writing; the dev-diary
+entry "Seeing the Pages".
+**Changed:** `src/paginate.js` (every body line has `at`, its source line; 3 unit tests); new `src/app/pageview.js`
+(after print.js; in `index.html` and `sw.js`); print.js writes `data-line` and redraws the page view when the paper
+changes; layout.js looks for lines in `previewShown()`; core.js's `render()` calls `schedulePages`; settings.js has
+`pageView`; the switch and `#sheets` in `index.html`; CSS; Help; e2e section 16w and a "page view" state in the
+accessibility sweep (desktop and phone).
+**Decisions:** D-054.
+**Problems / surprises:** an earlier e2e section leaves A4 as the paper, so the page-view checks took A4's
+proportions for Letter's; the section now starts on Letter and puts the choice back after.
+**Verified:** mutation runs: 15 app mutations (pageview.js, print.js, layout.js, core.js) and 6 in `src/paginate.js`,
+all caught. The first run let four through (a check read the pages after they were already redrawn, two jumps were
+already in view by chance, nothing checked that pages stay undrawn while the view is off); those checks were
+tightened and all four are caught now.
+**Left undone:** not seen in Firefox (CSS `zoom` there) or on a real phone.
+**Next session should start with:** merge; then the owner's pick.
+
+### Session 24: 2026-09-28: A dev diary (D-053)
+
+**Goal:** The owner asked to establish a devlog, built retroactively, using their other project's dev diary as the
+template.
+**Done:** `docs/devlog/`: seven entries (2026-09-20 to 2026-09-27), `index.html` listing them, previous / index / next
+links at the foot of each, and a README with how to write one.
+Every claim was checked against the code, the session log or DECISIONS. CLAUDE.md lists the folder and adds a step to
+the end-of-session protocol (only when the owner asks).
+**Decisions:** D-053.
+**Problems / surprises:** the session log has no entry for session 9 (import); the git log and D-016 filled the gap.
+The first entries mention that the code is written with an AI coding assistant (it explains the roadmap / handoff /
+decisions scheme); that is the owner's call to keep or cut.
+**Left undone:** publishing, which is the owner's.
+**Later the same session:** the owner asked for an index (`index.html`, and previous / index / next links on every
+entry), then for the diary to track the work from now on: CLAUDE.md's session protocol has a step for it, and Next
+steps a "For the dev diary" list.
+**Next session should start with:** merge; then the owner's pick.
+
+### Session 23: 2026-09-27: Export's buttons say what they do (D-052)
+
+**Goal:** The owner asked why Export had two ways to save a .fountain file.
+**Done:** they differ (a one-off copy in any browser; a file kept in sync, Chromium only), so both stay, renamed:
+**Download a copy (.fountain)** / **(.fdx)**, and **Sync with a file...** / **Stop syncing** under a
+"Sync with a file" heading. The notices, the permission bar, Help and the e2e check names follow.
+**Changed:** `index.html`, `src/app/files-ui.js`, `test/app.e2e.html`, CLAUDE.md, ROADMAP, this file (Next steps
+had gone stale: P4-17, P5-01 and P3-08 done, P3-11 and P2-22 dropped).
+**Decisions:** D-052.
+**Problems / surprises:** the owner suggested "Make script available offline"; not used, because every script is
+already offline (D-052).
+**Left undone:** nothing.
+**Next session should start with:** merge; then the owner's pick.
+
+### Session 22: 2026-09-27: Print spacing from Final Draft's templates (D-051)
+
+**Goal:** The owner shared Scrivener's Final Draft format files and asked for the two changes they showed.
+**Done:** two blank lines before a scene heading (print, and the preview's spacing to match); parentheticals 3.0 to
+5.5 inches (print and preview). The spec's wrong claim about Final Draft's default is corrected.
+**Changed:** `src/paginate.js` (`leadOf`, used when placing a block and when keeping a heading off a page's foot;
+the parenthetical's geometry), `src/styles.css` (preview), `devlog/SPEC-PRINT.md`; tests in `test/paginate.test.js`
+(spacing, and two headings in a row at a page's foot), `test/stats.test.js` (one fewer line of action so the scene
+still rounds differently on Letter and A4) and the e2e preview check.
+**Decisions:** D-051.
+**Problems / surprises:** the files were Scrivener format settings, not .fdx: they confirm the export's element
+names but cannot test it. A mutation showed the first spacing tests missed the case the page-foot rule is for (a
+heading straight after a heading); a test for it was added.
+**Left undone:** nothing.
+**Next session should start with:** merge; then the owner's pick.
+
+### Session 21: 2026-09-27: Final Draft export (P3-08)
+
+**Goal:** The owner reported real files and Android import / export working, dropped P3-11 and P2-22, and picked P3-08.
+**Done:** P3-08; P3-11 and P2-22 marked dropped; P3-14 (.fdx import) added.
+**Changed:** new `src/fdx.js` (pure) in `index.html`, `sw.js` and the test runners; Export's first section is "Files"
+with Download .fountain and Download .fdx; `exportFdx` in export.js; Help explains it.
+**Decisions:** D-049, D-050.
+**Problems / surprises:**
+- The file-writing tool turned `\uFFFE\uFFFF` in a regular expression into the raw characters; put back as escapes.
+- A mutation that left a syntax error crashed the suite without a FAIL line, and my script counted it as surviving;
+  the mutation scripts now also treat a missing "passed" line as caught.
+- Mutations found a real flaw: a paragraph that was only a note became an empty Final Draft paragraph (a stray blank
+  line); now it is left out.
+**Left undone:** a real Final Draft opening the file; .fdx import (P3-14).
+**Next session should start with:** merge; then the owner's pick.
+
+### Session 20: 2026-09-27: The retro theme becomes CGA (D-047)
+
+**Goal:** The owner asked for the CGA look ("Cyan, Purple, Yellow") in place of the retro theme's EGA blue.
+**Done:** the `retro` token set rewritten: black, light cyan, light magenta, white, and yellow (which is from CGA's
+other palette; the owner asked for it). Label "Retro (CGA)"; the dialogs' hard shadow is now a token (magenta).
+**Changed:** `src/styles.css` (the retro block), the Settings label, the e2e retro check (black, `#000000`).
+**Decisions:** D-047 (D-041's colours superseded); then, after the owner merged it, D-048: yellow swapped for white,
+so the theme is pure palette 1.
+**Problems / surprises:** none: every colour passes the sweep with room to spare (the lowest, the notes, 6.1:1).
+**Left undone:** nothing.
+**Next session should start with:** merge; then the owner's pick.
+
+### Session 19: 2026-09-27: Thank-you, screen reader, real files on disk (P4-22, P4-17, P5-01)
+
+**Goal:** The owner reported the screen-reader pass done and the creator's permission given, and picked P5-01.
+**Done:** P4-17 (ticked on the owner's word), P4-22 (a line in Help > Start here), P5-01.
+**Changed:** new `src/filesync.js` (pure) and `src/app/files-ui.js`; `Store` has the `files` store (database version 3,
+`putLink` / `loadLinks` / `removeLink`, and `write` drops a removed script's link); persistence.js calls
+`syncLinkedFiles` after saves and `fileScriptOpened` when a script is opened; main.js calls `startFiles`; Export and
+the Library have the new buttons, and a bar above the editor; Help explains it; the e2e page keeps the writer's links
+across a run.
+**Decisions:** D-045, D-046 (answers Q-002: local files first).
+**Problems / surprises:**
+- The browser's private file system works on `file://` pages in Chromium, with handles IndexedDB can keep, so the
+  e2e suite could use real files with only the pickers stood in for.
+- A mutation that stopped saves writing the file was first caught by the wrong check: closing the Export dialog
+  focused the frame, and the "window back in view" path wrote the file instead. The check now proves the write came
+  from the save.
+**Left undone:** P5-04 (other tabs learn of a new link only on reload; the Library does not mark linked scripts); not
+tried with a real picker or a real text editor on the owner's machine.
+**Next session should start with:** merge, then the owner trying it in Chrome or Edge with a real file.
+
+### Session 18: 2026-09-27: Comparing versions scene by scene (P4-16)
+
+**Goal:** The owner merged P4-01 and picked P4-16.
+**Done:** P4-16.
+**Changed:** new `src/compare.js` (pure) and `src/app/compare-ui.js` (after `versions-ui.js`), in `index.html`, `sw.js`
+and the test runners; `versions-ui.js` gained a Compare button and `replaceScriptText` (shared with `goBackTo`); Help
+explains Compare; e2e section 16u and a "compare" state in the accessibility sweep.
+**Decisions:** D-044.
+**Problems / surprises:**
+- The parser takes lowercase `int.` headings as scenes (Fountain allows it; D-004 is about cues), so a test assumption
+  was wrong; matching ignores case anyway.
+- The first screenshots showed whole scenes for a one-line change; the view now folds unchanged lines two away from a
+  change (`Compare.around`).
+- Mutations on `src/compare.js` found an untested edge (putting a scene back into an empty script), an untested rule
+  (past the size limit only the matching ends are compared) and one redundant check, removed. In the app, one
+  redundant line went, and a test now changes the script while Compare is open (another tab) to prove a scene is
+  taken from the latest text.
+**Left undone:** not seen outside headless Chromium; moving a scene shows as removed and added (by design, D-044).
+**Next session should start with:** merge; then the owner's pick (P5-01 real files, P4-17 a screen-reader pass...).
+
+### Session 17: 2026-09-27: Fast typing on long scripts (P4-01)
+
+**Goal:** The owner merged P4-20 and asked for P4-01 ("so I stop hearing about it").
+**Done:** P4-01.
+**Changed:** `Fountain.blocks` (and `toHTML` built from it); `drawPreview` and `render(typed)` in core.js; typing.js
+calls `render(true)`; e2e section 16t; CLAUDE.md says only `drawPreview` writes to the preview.
+**Decisions:** D-043.
+**Problems / surprises:**
+- Measuring first changed the plan: parsing (2-9 ms) was never the problem; laying out a rebuilt 162-page preview
+  (about 90 ms) was, triggered when the colour layer read the editor's geometry. So no incremental parser.
+- The preview in `index.html` starts with a comment and whitespace; a full rebuild used to remove them, patching
+  did not, so the first draw now empties it.
+- `innerHTML` read back is re-serialised, so the e2e compares against a full redraw serialised the same way.
+- The "redraw stays quick" timing check failed once more under load (39 ms); measured on its own it went from 13-24
+  ms before this change to 11-12 after.
+**Left undone:** not measured on a real phone or in Firefox; the stats (half a second after typing stops) still
+paginate the whole script, which is fine as long as it stays off the keystroke.
+**Next session should start with:** merge; then the owner's pick (P5-01, P4-16...).
+
+### Session 16: 2026-09-27: Adventure-game replies (P4-20)
+
+**Goal:** The owner merged P4-19 and picked P4-20.
+**Done:** P4-20 (the replies). Its second half, a thank-you in Help naming the creator, needs their permission and is
+now P4-22.
+**Changed:** new `src/adventure.js` (pure) and `src/app/adventure-ui.js` (after `typing.js`), in `index.html`, `sw.js`
+and both test runners; e2e section 16s.
+**Decisions:** D-042.
+**Problems / surprises:** the e2e tests cannot set `elementMode` as `window.elementMode` (a top-level `let` is not a
+window property): `eval('elementMode = ...')` does it. The browser timing check tripped again once under mutation load, and the Node pagination speed test (150 ms) failed
+most runs in this container; the session 13 code was just as slow here, so the container was slower, not the code.
+**Left undone:** P4-22 (waiting on permission); the replies have not been seen outside headless Chromium.
+**Next session should start with:** merge; then the owner's pick (P5-01, P4-16, P4-01...).
+
+### Session 15: 2026-09-27: A retro theme (P4-19)
+
+**Goal:** The owner merged session 14 and picked P4-19 next.
+**Done:** P4-19.
+**Changed:** a third token set, `:root[data-theme="retro"]`, and three rules under it (square corners, dialog border
+and shadow, dialog titles) in `src/styles.css`; `retro` among the theme choices in `settings.js` and the Settings
+window; the accessibility sweep loops over three themes; CLAUDE.md's colour rule now names three sets.
+**Decisions:** D-041.
+**Problems / surprises:** `--btn-text` and `--btn-bg` double as general text and pressed-state colours, so grey
+Sierra-style buttons with black text would have failed contrast in half the places they are used: the buttons stay
+navy with yellow text, and only the primary button (Done, Print) is grey with black.
+**Left undone:** P4-20 (the small touches); no one has seen the theme outside headless Chromium.
+**Next session should start with:** merge; the owner's look at the theme in Firefox; then the owner's pick.
+
+### Session 14: 2026-09-27: Narration time and video chapters (P4-18, P3-13, P4-21)
+
+**Goal:** The owner wanted to honour a video creator who uses Plainchant with a feature for their kind of work
+(narrated videos about games), leaving the creator's name out of it. Of the ideas offered, the owner chose narration
+timing and YouTube chapters, and asked for the retro theme and smaller touches to go on the roadmap.
+**Done:** P4-18, P3-13; P4-19 and P4-20 added to the roadmap. After the owner merged those and drafted a Discord
+tutorial for the creator, P4-21: a narration example script, from Help and from Export's chapters when there are none
+(Copy chapters is now hidden, not disabled, when there is nothing to copy: the app has no disabled button style).
+**Changed:** new `src/narration.js` (pure, UMD) and `src/app/chapters-ui.js`, both in `index.html` and `sw.js`;
+Settings gained `aloud` and `pace` (a number range, `SETTING_RANGES`, new in `validSetting`); Script stats has a fifth
+tile (the tiles are now two rows); Export has a Video chapters section; `copyText`'s fallback uses a hidden textarea
+instead of selecting the editor; Help explains both.
+**Decisions:** D-038.
+**Problems / surprises:**
+- Five stats tiles in one row wrapped "~2 min" on a desktop; grouped as pages / screen time / read aloud over scenes
+  / words.
+- The mutation run on `src/narration.js` found one untested guard (a negative speed); a test was added. App-side
+  mutations (9) all failed a test, listed under "Verified".
+**Later:** the owner confirmed the example button works, reported Firefox works well, and dropped desktop Safari
+(D-039), then iPhone, iPad and Safari as a distant future milestone (D-040, roadmap Phase 7). The e2e checks on the narration example no longer pin its words (the owner reworded it).
+**Left undone:** a real device; a real YouTube upload with the chapters. One unrelated timing
+check tripped once under load (see the gotcha).
+**Next session should start with:** "Next steps" above: merge, then the owner's hands-on pass.
+
+### Session 13: 2026-09-26: Stats, outline, focus, offline, versions, settings, themes and more (sixteen items)
+
+**Goal:** The owner picked one roadmap item at a time and merged each into `master` before asking for the next:
+P4-04, P4-03, P2-07, P4-02, P4-12, P4-13 to P4-15, P2-16, P2-08, P2-15, P2-10, P4-05, P4-06, P2-14, P2-21. The
+owner had confirmed print works (to a printer and to PDF) and chose to skip device checks until a bug report.
+**Done:**
+- **P4-04 script stats** (D-023): `src/stats.js`, `src/app/stats-ui.js`; the live page count replaced the font badge.
+- **P4-03 outline** (D-024): `src/outline.js`, `src/app/outline-ui.js` and `jumpToLine`; scene headings in the print
+  layout carry their source line.
+- **P2-07 focus mode** (D-025): `Editing.blockAt`, `src/app/focus.js`; the text measurer moved to `layout.js`.
+- **P4-02 offline** (D-026): local fonts (Fontsource), `sw.js`, `manifest.webmanifest`, placeholder icons.
+- **P4-12 persistent storage** (D-027): `src/app/safekeeping.js`, a line at the foot of the Library.
+- **P4-13 to P4-15 scene stats** (D-028, D-029): scene lengths in eighths, speakers, the INT/EXT and time-of-day mix,
+  locations (`Stats.heading`), all in the Script stats window.
+- **P2-16** (D-030): `keepCaretClear`, three lines of room above the keyboard.
+- **P2-08 colour hints** (D-031): `Fountain.shade`, `src/app/shade.js`, a coloured copy behind a transparent
+  textarea with a wrap check. Answered Q-001.
+- **P2-15 settings** (D-032): `src/app/settings.js`, a gear beside Help; options on `Editing.enter` / `autoCase`.
+- **P2-10** (D-033): a tap on the one-pane preview goes to that line.
+- **P4-05 versions** (D-034): `src/versions.js`, a `versions` store written inside the save's transaction,
+  `src/app/versions-ui.js` from each Library row.
+- **P4-06** (D-035): colour tokens and a light theme, Theme and Text size in Settings, an accessibility sweep in the
+  e2e suite over every window in both themes.
+- **P2-14** (D-036): names guessed on Enter (`Editing.looksLikeCue`), with a switch.
+- **P2-21** (D-037): times of day and empty-cue names in `Suggest.at`, announced to screen readers.
+- Tests went from 228 (Node) / 220 unit + 428 e2e to **290 / 278 + 597**. Almost every item was mutation-tested
+  (a scratch script breaking one line at a time); the counts are under "Verified".
+**Changed:** the preview matches paper; the editor's line height is `1.6em`; the database is version 2; new
+localStorage keys `plainchant_focus`, `plainchant_keep_asked`, `plainchant_settings`; the "Courier Prime" badge and
+the Google Fonts links are gone. New roadmap items: P2-22, P4-13 to P4-17.
+**Decisions:** D-023 to D-037.
+**Problems / surprises:**
+- Measuring text in the editor was wrong three ways, each found by a test: a span's `offsetTop` is its text's top,
+  not its line's; `offsetTop` rounds (25.6px lines counted as 26); and a unitless line height lays out 1/64px a line
+  differently from its copies (77px adrift after 4,900 lines). All fixed; see the gotchas.
+- Mutation runs found weak tests (clamped scrolling that hid missing guards, fixtures that could not tell two sort
+  orders apart) and several redundant guards, which were removed.
+- The accessibility sweep found two real problems (an unnamed editor, a 3.0:1 tagline).
+- One restore with `git checkout` threw away uncommitted work during a mutation run; it was redone at once.
+- The e2e page's shared scope caused four name clashes; each broke the whole page until renamed.
+**Left undone:** Every device and non-Chromium check (see "Not verified"); a real screen reader; the Windows runner;
+the 16px text floor on landscape iPads (no touch pointer in headless Chromium).
+**Next session should start with:** "Next steps" above: the owner's hands-on pass first.
+
+### Session 12: 2026-09-25: IndexedDB storage (P4-10)
+
+**Goal:** At the owner's request ("pick up the baton"), implement the IndexedDB migration specced in session 11. This
+was a cloud session (Linux container, Chromium, Node 22), not the owner's Windows machine.
+**Done:** P4-10. New `src/store.js` (global `Store`: pure rules + thin IndexedDB calls) with 16 unit tests;
+`persistence.js` rewritten around an in-memory library, per-script writes, the emergency buffer, BroadcastChannel and
+the localStorage fallback; asynchronous start-up (`whenReady`) in `main.js`; `import.js` awaits its write. Every
+storage check in `test/app.e2e.html` now reads IndexedDB, and a new section 16c adds 22 checks. Both headless runners
+now run in real time; `test/run-headless.sh` is new. Docs: D-019, roadmap (P4-10 ticked, P4-11 and P4-12 added, P3-09
+reworded), CLAUDE.md, the spec's status line.
+**Changed from the spec (all in D-019):** the module is `Store` (not `Storage`), the buffer is written on every save
+and keyed by script id, writes create their transaction at once instead of queueing, BroadcastChannel is in now, and
+the fallback keeps the old behaviour exactly.
+**Decisions:** D-019.
+**Problems / surprises**
+- **IndexedDB never completes under headless Chrome's `--virtual-time-budget`**: virtual time runs past its replies.
+  A probe page never saw even one transaction finish. So the runners dropped virtual time. The e2e page now holds its
+  own load event open (an iframe whose document stays open) so `--dump-dom` waits for it. The unchanged suite passed
+  in real time (387/387, 32 s) before any app change.
+- The storage section's `typeInto` helper clashed with one already declared in the typing section (one shared script
+  scope); renamed `appendText`.
+**Left undone:** Running anything on Windows, Edge, Safari or Firefox; the owner's real library upgrade. P4-11 (remove
+the legacy copy) and P4-12 (persistent storage) are new roadmap items. P3-03 (print/PDF spec) is still the next feature.
+**Later the same session:** the owner confirmed it on Arch Linux (tests pass; Firefox and Safari work), moved off
+Windows (`npm run test:browser` now runs the Linux runner), and asked to drop legacy support: D-020 removed the
+migration, the localStorage fallback and the `frictionless_` prefix, closing P4-11. Tests after that: 191 Node,
+183 unit + 409 e2e in the browser.
+Then, at the owner's request, the **print / PDF plan** (`devlog/SPEC-PRINT.md`, D-021), accepted with the recommended
+answers; the page view (P3-12) deferred. Built: **P3-04** `src/paginate.js` + `Fountain.runs` (tests first), then
+**P3-03** the print path with **P3-05** (title page) and **P3-06** (dual dialogue). D-022 records the two departures:
+Print lives in the Export dialog (a seventh button broke the six-action bar at 1024px and on tablets), and pages break
+at any sentence end with the rest re-wrapped (the first real PDF showed six empty lines at a page foot otherwise).
+The owner then chose to skip browser and device checks of printing until a bug report.
+**Next session should start with:** "Next steps" above.
+
+### Session 11: 2026-09-21: IndexedDB migration spec (P4-10)
+
+**Goal:** At the user's request, spec out moving storage from localStorage to IndexedDB (P4-10).
+**Done:** P4-10 added to the roadmap (Phase 4); D-018 decision; `devlog/SPEC-INDEXEDDB.md` written; a "Next steps"
+pointer added to this file. No code, no tests — spec only.
+**Changed:** `ROADMAP.md` (P4-10), `docs/DECISIONS.md` (D-018), `devlog/SPEC-INDEXEDDB.md` (new), `docs/HANDOFF.md`
+(next-steps item 6).
+**Decisions:** D-018. The two problems are separable (the ~5 MB cap vs. the whole-library rewrite per save); the
+migration is async and interacts with the pagehide flush, so it is specced, not scheduled, and comes after P3-03.
+**Problems / surprises:** None — the main finding is that this is a bigger change than a storage swap (async reads/writes
+ripple through persistence, and "never lose words" needs a synchronous emergency buffer to survive the unload race).
+**Left undone:** Implementation; settling the spec's §11 open questions; it is a Phase 4 item, after P3-03.
+**Next session should start with:** "Next steps" above.
+
+### Session 10: 2026-09-21: Autocomplete (P2-04)
+
+**Goal:** Build the autocomplete designed at the end of session 9.
+**Done:** P2-04 (D-017). New `src/suggest.js` (pure; `names`, `locations`, `at`, `edit`) with 23 unit tests written first
+and seen failing; chips in the element bar wired in `src/app/typing.js`; 29 new e2e checks (a desktop frame for showing,
+tap, Tab, Enter, Esc, undo, focus, XSS; a 375px frame for fit); Help (Keyboard and Touch); D-017; roadmap P2-04 ticked and
+P2-21 added. `test/run.js`, `test/index.html`, `index.html` and the structure test know the new module.
+**Changed:** the design sketch was followed except: a bare `INT. ` offers nothing (a suggestion there would steal the
+Tab that cycles to Transition), and the time of day is left out (the user had not decided). Esc dismisses only while the
+caret stays on that word; it does not free Tab (a second Esc does).
+**Decisions:** D-017.
+**Problems / surprises**
+- The headless runner reported "0 passed, the page never finished" on a clean checkout: the suite had outgrown the 60 s
+  virtual-time budget (session 9's import tests, probably). Raised to 240 s; the baseline then passed 358/358 three times.
+- Adding frames to the e2e page then made an old, unsilenced autosave timer leak a script into storage and break a Library
+  check. Traced by comparing with a clean worktree of HEAD (deterministic 358/0), fixed by silencing older frames first.
+- Two of my own e2e checks were wrong (a text search that matched text already in the fixture; a Shift key left "down"
+  after a synthetic Shift+Tab). One real flaw was found by the tests: Esc's dismissal outlived the caret leaving the word.
+**Left undone:** Real devices, iOS / Android soft keyboards and screen readers. Time-of-day suggestions (P2-21). Session 9
+has no log entry of its own; its work (import, P3-02, D-016) is in the git log and the "What works" list above.
+**Next session should start with:** "Next steps" above.
+
+---
+
+### Session 8: 2026-09-20: Help copy proofed; stylesheet extracted (P4-09)
+
+**Done:** The user rewrote three passages of the Help "Start here" copy (intro, the "Your work" callout). Their editor
+had stripped the comments from `index.html` (55 of them) and reformatted it, so I restored the committed file and
+re-applied only the wording edits (found by diffing with comments and whitespace normalised). Small fixes on the way: "The Void
+(Write on a phone) / The Canvas (Preview)" so the copy matches the phone tab labels, and "never sent to a server"
+instead of "no Cloud server" (the page still loads fonts from Google until P4-02). Pushed. Then P4-09: the ~680-line
+inline stylesheet is now `src/styles.css` (rules unchanged, de-indented; `index.html` 1,019 to 321 lines) with a
+structure test guarding it. Tests: 144 under Node, 136 unit and 330 e2e in the browser.
+
+**Left undone:** the tour copy is still mine and unreviewed by the user; nothing verified on a real device.
+
+### Session 7: 2026-09-20: Split the app script; `.fountain` export (P4-08, P3-01)
+
+**Goal:** Take the growing inline script out of `index.html`, and add the quick `.fountain` export win.
+
+**Done (part 1, the split):** P4-08. The ~925-line inline script is now eleven files in `src/app/` (D-014). The
+split was mechanical: line ranges cut by script and de-indented, then a multiset comparison proved every original
+code line exists exactly once (826 in; 827 out = two section-comment lines replaced by file headers, plus three
+"Wiring" markers). All 319 e2e checks and 129 unit tests passed unchanged. `index.html` went from 1,931 to 1,019
+lines. New `test/structure.test.js` (7 tests, Node only) guards the load list, duplicate declarations, inline
+scripts, syntax, file size and headers; each guard was mutation-checked.
+
+**Done (part 2, export):** P3-01 (D-015). Export now downloads `<title>.fountain` (was `.txt` named after the first
+line). New `Fountain.fileName` (7 tests, written first and seen failing): readable slug, any-language letters kept,
+path characters neutralised, 60-char word-boundary cap, Windows reserved names prefixed, `untitled` fallback.
+`downloadText` / `exportScript` / `flashButton` in `src/app/export.js`; 11 new e2e checks exercise the real download
+path (blob type and contents, the temporary link, naming from a title and from a first line, accents, the empty
+case, labels reverting). Help updated. Fixed a real Copy bug found on the way: two quick clicks could leave the
+button stuck on "Copied!" (reproduced by mutation, now tested).
+
+**Problems / surprises**
+- `.txt` is gone as an export format. If that matters to the user, P3-10 is the place to add a choice.
+
+**Left undone:** Export is untested on real iOS / Android downloads (the delayed `revokeObjectURL` is the
+precaution, not an observation). PDF / print (P3-03). The user is proofing the Tour / Help copy next.
+
+**Also this session:** pushed the Library commit (`cdafa4d`).
+
+
+### Session 6: 2026-09-20: Library management (P3-07)
+
+**Goal:** Rename, delete (with undo), duplicate and search for scripts in the Library.
+
+**Done:** P3-07 (D-013). New `src/library.js` (pure) with 23 unit tests; `Fountain.setTitle` / `fullTitle` and
+`Editing.diffEdit` with tests; the Library dialog rebuilt in `index.html`; Help updated (rename, Recently deleted);
+52 new e2e checks (267 to 319). Also improved `test/run-headless.ps1` to say plainly when the e2e page never finishes.
+
+**Changed**
+- `index.html`: Library dialog (search box, Scripts / Recently deleted tabs, live-region messages), `renderLibrary`
+  and its actions, `applyEdit(edit, {keepFocus})` (keeps focus in the dialog and suppresses the on-screen keyboard
+  with `inputmode="none"` while it briefly focuses the editor), and safer persistence: `saveScript` merges into the
+  stored record and never writes into a deleted script, `restoreLastScript` ignores a pointer to a deleted script,
+  `purgeTrash` runs at startup. Library rows are now real buttons (the whole row used to be a `div role=button`).
+- Tests: `test/library.test.js`; additions to `fountain.test.js` and `editing.test.js`; a Library section in
+  `app.e2e.html` covering search, rename (open and not open, undo/redo), duplicate, delete/undo, trash, delete forever
+  (two clicks and timeout), deleting the open script, stale pointer, two tabs, XSS, empty state, phone fit.
+
+**Decisions:** D-013.
+
+**Problems / surprises**
+- The first run of the e2e page reported "0 passed, 0 failed": a duplicate `const` was a syntax error, and the
+  runner didn't say so. Checked with `node --check`, fixed, and the runner now reports "the page never finished".
+- Older test frames still had autosaves pending and were writing scripts into the shared storage while the Library
+  was under test. Fixed by silencing saving in every earlier frame before that section.
+- One assertion assumed the renamed script would sort first; a pending autosave of another script legitimately
+  sorted newer. The app was right; the test now asserts the stable facts.
+- Screenshot review showed the Rename / Duplicate / Delete buttons still visible under the rename field; hidden now.
+
+**Left undone:** Not seen on a real device (the `inputmode="none"` focus trick in particular is unobserved on iOS /
+Android). Sort options, multi-select, per-script export and a storage indicator (P3-09). Tour / Help copy still needs
+the user's read.
+
+**Next session should start with:** "Next steps" above.
+
+---
+
+### Session 5: 2026-09-20: Naming (P6-00)
+
+**Goal:** Brainstorm and choose a name, then apply it.
+
+**Done:** Chose **Plainchant** and applied it (D-012). Roadmap Phase 6 added for the owner's brand follow-ups.
+
+**How it went**
+- The user set the brief: an app for neurodivergent writers and anyone who gets hung up on formatting; calm and
+  whimsical; liked Ebb, Lucid and Vellum. I brainstormed in the water / quiet / paper register and checked each
+  shortlisted name with web search and DNS lookups instead of guessing.
+- Dropped for real collisions: Vellum (a Mac book-formatting app), Deckle, Foolscap, Dormouse, Inkling, Rill, Paper
+  Boat (a beverage brand), and Plainsong (two apps already). The user then chose Plainchant, the same music under
+  its other name, precisely because Plainsong was taken. It came back clear in searches.
+- Renamed: `index.html` title and copy, `package.json`, doc and test-page headings. Two e2e checks added for the
+  name (page title and no leftover old names; welcome dialog title).
+
+**Problems / surprises**
+- The user wrote "Plainchant" while I had been discussing "Plainsong". I checked instead of assuming; they meant it.
+- An early domain check included `.write`, which is not a real TLD, so those rows meant nothing (noted at the time).
+- DNS "no answer" is a hint, not availability. No trademark clearance was done (D-012).
+
+**After the rename:** the user renamed the GitHub repo to `plainchant`, committed the doc corrections (`4d9fe13`),
+pushed, and re-cloned into a fresh `plainchant` folder, which is now the working directory. The fresh clone was
+verified from scratch: `npm test` 94/94, browser suites 94 unit + 267 e2e, clean tree. The user also said to be
+less protective about git (commit finished work without asking); recorded above under "Git working agreement".
+
+**Left undone:** Domain, trademark search, logo (Phase 6). Tour / Help copy still needs the user's read.
+
+**Next session should start with:** "Next steps" above.
+
+---
+
+### Session 4: 2026-09-20: Onboarding tour and Help (P2-17, P2-18, P2-19)
+
+**Goal:** Give new users an onboarding process and modal help windows.
+
+**Done:** P2-17 tour, P2-18 Help window, P2-19 shared dialog helper. P2-09 recorded as user-verified in spirit.
+
+**Changed**
+- `index.html`: three dialogs (Library retrofitted, Help, Tour) on `openModal` / `closeModal`; Help button in the
+  action group (`?` inline, "Help" in the phone menu) and a `?` on the element bar; F1 / Ctrl+/ shortcut; example
+  script; tour state in `frictionless_onboarded`; CSS for dialogs, help tables (stack on phones), kbd, callouts.
+- `test/app.e2e.html`: 85 new checks (265 total): tour lifecycle, dialog a11y and focus, Help topics and shortcuts,
+  15 cheat-sheet examples verified against the parser, the example script, Library on the shared helper, phone fit,
+  and a 700px tablet frame plus six-button header checks at 1024-1366px. Existing frames now pre-set the tour key.
+- Docs: D-011, roadmap P2-17..P2-20 and P4-08, this file.
+
+**Decisions:** D-011. Not a spotlight tour (fragile across three layouts). Tour wording avoids the product name.
+
+**Problems / surprises**
+- One test failure was my test: a programmatic `.click()` does not move focus like a real tap, so the "focus returns
+  to the menu button" case needed the opener focused first.
+- Mutation checks of the new tests caught a wrong help example, a broken focus trap and a forgetful tour.
+- The Help topic chips scrolled sideways on a phone and hid two topics; found in a screenshot, fixed by wrapping
+  them, now tested.
+
+**Left undone:** The copy has had no review beyond mine. Not seen on a real device. Library still cannot delete
+(the example script accumulates, P3-07). No contextual first-use hints (P2-20).
+
+**Next session should start with:** "Next steps" above.
+
+---
+
+### Session 3: 2026-09-20: Typing helpers (P2-01, P2-02, P2-03, P2-11)
+
+**Goal:** Start on the typing helpers while the user charged their tablet.
+
+**Done:** P2-01 Tab cycling, P2-02 smart Enter, P2-03 auto-uppercase, P2-11 on-screen element bar.
+
+**Changed**
+- New `src/editing.js` (pure): `kindAt`, `enter`, `tab` / `cycleTarget`, `setType`, `autoCase`.
+- `src/fountain.js`: dialogue lines now carry their source `line`; new `Fountain.classifyLines(text)` (one type per
+  source line) for the editor.
+- `index.html`: element bar markup + CSS (short labels under 480px), key/beforeinput/input handlers, `applyEdit`
+  (execCommand, keeps undo), `elementMode` state, `syncElementState`.
+- Tests: `test/editing.test.js` (49 tests incl. a property check that the parser agrees with every conversion, and
+  a never-stalls check on Tab), 43 new checks in `test/app.e2e.html`; phone-layout checks adjusted for the bar.
+- Docs: D-010, roadmap statuses and new items P2-14..P2-16, CLAUDE.md layout table.
+
+**Decisions:** D-010. The ones the user may want to reverse: Enter after action = new paragraph; cues are explicit
+(Tab / button), not guessed; Tab order is action -> character -> scene -> transition.
+
+**Problems / surprises**
+- The first Node run of the pure module failed 2 of 91 tests: one wrong expectation of mine (`SMASH CUT` is already a
+  known transition) and one real bug (converting `cut to:` to a character returned nothing, so Tab would have
+  stalled on such a line). Fixed by making Tab skip impossible steps.
+- All wiring tests passed on their first run, so I checked they could fail: probed `execCommand` / undo directly
+  (both work headless) and mutation-tested undo, paste and Shift+Enter (all caught).
+- The element bar overflowed at 375px (last button cut off); fixed with short labels.
+
+**Left undone:** Real devices and soft keyboards (P2-09). Cue suggestions (P2-14), settings (P2-15), keeping the
+caret above the keyboard in long scripts (P2-16). Autocomplete (P2-04).
+
+**Next session should start with:** "Next steps" above.
+
+---
+
+### Session 2: 2026-09-20: Mobile layout (P2-05) and tablets (P2-12)
+
+**Tablet follow-up (second half of session 2, commit after `2eccd97`):** the user pointed out tablets are the most
+likely device. Measured at iPad sizes and found the split layout clipped the preview by 85-341px anywhere below
+1109px wide (see D-009 for cause). Fixed and redesigned: one pane below 1024px, inline actions from 700px, editor
+line-length cap, container-query screenplay, viewport fitting on all touch devices, tagline hidden in narrow splits.
+The e2e desktop frame moved from 1000px to 1200px because 1000px is now (correctly) one-pane. 70 new checks.
+I had told the user tablets were "unchanged" earlier without testing them; that claim was wrong in spirit.
+
+**Goal:** Replace the fixed 50/50 split on phones with a layout that is actually usable for writing.
+
+**Done:** P2-05. Partly P2-06 (Preview jumps to the caret when opened on mobile; desktop scroll sync is still
+percentage-based). P4-07 (Clipboard API for Copy), pulled forward because Copy has to work while the textarea is
+hidden in Preview.
+
+**Changed**
+- `index.html` CSS: layout is now desktop-first (was mobile-first with a 768px override). A "mobile" media block
+  shows one pane at a time, adds the top bar and drop-down menu, sets the editor to 16px, re-proportions the
+  screenplay in percentages, stacks dual dialogue, and sizes `body` from `--app-height` / `--app-top`.
+- Screenplay indents are now CSS variables (`--ind-char`, `--w-dialogue`, ...) so the mobile block only overrides
+  variables.
+- `index.html` script: `setView`, `scrollPreviewToCaret`, `setMenu`, `fitToViewport`, `MOBILE_QUERY`; viewport meta
+  gained `viewport-fit=cover` and `interactive-widget=resizes-content`; `copyText()` uses the Clipboard API with the
+  old select+execCommand fallback and reports failure honestly.
+- `test/app.e2e.html`: 31 new checks (58 total), a phone-sized frame, and a fix so pending autosave timers can't
+  write to storage after it has been restored.
+
+**Decisions:** D-008 (mobile mode is a CSS media query mirrored in JS; `display: contents` for the menu).
+
+**Bug found by the user during this session:** the preview centred content whenever no line filled the full column
+width. Cause: the scroll area and the screenplay column were one element, a flex item with `margin: 0 auto`, so it
+shrank to its widest line and centred (scrollbar included). Reproduced with measurements (column at x=562/377px wide
+for a short script versus x=501/500px for one long line), fixed by splitting it into `#render-target` and `#page`,
+and guarded by e2e checks at desktop, phone and wide widths. Side effect: the column is now really 60ch of *content*
+wide on large screens (it was 60ch including the 4rem padding, so about 47ch of text).
+
+**Problems / surprises**
+- First design hid `.pane-void` in Preview, which also hid the menu that lives in its header. Caught while
+  designing, fixed with `display: contents`, and now covered by a test.
+- Ran the visual check and test runs in throwaway profiles again (D-007).
+
+**Left undone:** Real-device verification (P2-09). An on-screen way to do what Tab will do (P2-01) on a phone.
+Tapping the preview to jump to that line in the editor.
+
+**Next session should start with:** "Next steps" above.
+
+---
+
+### Session 1: 2026-09-20: Roadmap, handoff scheme, restore, Fountain parser
+
+**Goal:** Set up planning/handoff docs; deliver roadmap items 1 (restore last script, scroll-sync fix) and 2 (real
+Fountain parser with tests).
+
+**Done:** P1-01 to P1-10 (all of Phase 1). Node 24.19.0 and Python 3.13.15 installed via winget at the user's
+request, after which `npm test` was run for the first time and passed.
+
+**Changed**
+- Added `ROADMAP.md`, `CLAUDE.md`, `docs/HANDOFF.md`, `docs/DECISIONS.md` (D-001 to D-007), `.gitignore`.
+- New `src/fountain.js`; `index.html` now uses it (old inline `parseScript` and `escapeHTML` removed).
+- `index.html`: New button, restore-on-load (`frictionless_current` pointer), flush on `visibilitychange` /
+  `pagehide`, scroll-sync guard, `crypto.randomUUID` fallback for plain-http origins, CSS for the new elements.
+- Tests: `test/harness.js`, `test/fountain.test.js`, `test/index.html`, `test/app.e2e.html`, `test/run.js`,
+  `test/run-headless.ps1`; `package.json` scripts.
+
+**Decisions:** D-001 to D-007 in DECISIONS.md. Notably D-004 (spec-strict parser, editor adds leniency) and D-006
+(emptying the editor does not overwrite the saved script).
+
+**Behaviour changes a writer will notice**
+- Lowercase `cut to:` and lowercase character names are now action (they were guessed before).
+- Blank-line spacing is normalised; several blank lines no longer stack up.
+- Reloading now brings back your last script instead of an empty editor.
+
+**Problems / surprises**
+- A test failure that looked like a scroll-sync bug was a wrong test (scrolled to 10000px of a 12899px range).
+  Diagnosed with real numbers; app code was correct.
+- Headless-browser runs without `--user-data-dir` can share `file://` localStorage with a real profile. The e2e page
+  now snapshots and restores the app's keys, and the runner uses a throwaway profile (D-007). The real Edge
+  profile's Local Storage files showed no writes from this session.
+
+**Left undone:** Real-phone and non-Chromium testing.
+
+**Next session should start with:** "Next steps" above.
+
+---
+
+## Snapshot: HANDOFF's feature notes and verification record, as of session 29
+
+Frozen when HANDOFF.md was trimmed to current work (session 30, D-058). Not maintained: some details were already
+stale then (the database is version 3 since P5-01, not 2; the service worker's file count has changed). Kept for the
+per-feature behaviour notes, the test counts at each stage and the mutation-testing record.
+
+### What works (as of session 29)
+
+- **Quick edits in the preview** (P2-24, D-057; `src/app/quick-edit.js`, `Editing.paragraphAt`). Double-click a
+  line of the preview or of the page view (touch: press and hold) and its paragraph opens in a box over it as plain
+  text; Enter or clicking away keeps it (one edit, Ctrl/Cmd+Z undoes it, even when it was made with the editor
+  hidden), Shift+Enter is a new line, Esc leaves it. A short tap on a phone still goes to the line in Write.
+- **Editor only, both, preview only** (P2-23, D-056; `src/app/panes.js`). On a desktop, three small buttons above
+  the preview (moving to the editor's header while the preview is hidden) and Ctrl/Cmd+Shift+1 / 2 / 3: the editor
+  alone (text held to a readable width in the middle), both, or the preview alone (the action buttons above it).
+  Remembered with the settings. Phones and tablets keep Write | Preview; there 1 / 3 switch them.
+- **Page view** (P3-12, D-054; `src/app/sheets-ui.js`). A **Page view** switch in the preview's header shows the
+  script as the sheets it prints on (the same drawing as printing, on the paper last printed on), scaled to the pane:
+  page numbers, breaks, (MORE) / (CONT'D), the title page. It follows typing after a short pause, redrawing only the
+  sheets that changed. Scrolling, going to the caret, the Outline's jump and tapping a line on a phone work on the
+  sheets (every printed line carries its source line, `at` in `Paginate.layout`). Remembered with the settings.
+- **Final Draft export** (P3-08, D-049; `src/fdx.js`). Export > Files > **Download a copy (.fdx)**, named after
+  the title: every element as a Final Draft paragraph of its type, scene numbers, dual dialogue, page breaks, bold /
+  italic / underline, centred text, lyrics in italics, and the title page. Notes, sections, synopses and the boneyard
+  are left out, as in print. Not yet opened in Final Draft itself.
+- **Real files on disk** (P5-01, D-046; `src/filesync.js`, `src/app/files-ui.js`, the `files` store, database version
+  3). In Chromium browsers only (hidden in Firefox): Library > **Open a file...** opens a .fountain file as a script
+  and keeps it linked (the same file again opens the same script); Export > **Sync with a file** has **Sync with a file...**
+  and **Stop syncing** (named for what they do, D-052; the one-off downloads are **Download a copy**). Every save writes the linked file too. The file is read again when its script is opened
+  and when the window comes back into view: changed only there, the script takes it (what it had goes to Versions);
+  changed in both, a bar above the editor asks **Load the file** or **Keep the script here** (the loser goes to
+  Versions either way). A file changed elsewhere is never written over. After a browser restart a bar asks to
+  **Allow** again. A file that is gone is unlinked, and the writer is told.
+- **Comparing versions** (P4-16, D-044; `src/compare.js`, `src/app/compare-ui.js`). In Library > Versions, each version
+  has **Compare**: the Versions window then shows only the scenes that differ since that version (and the title page
+  or opening, if it changed), each with the lines that went (struck through, −) and came (underlined, +) and two
+  lines either side, the rest folded. A changed scene has **Use the version's scene**, a deleted one **Put back
+  scene** (it goes back where it was). Like Go back, the text there now is kept as a version first, and in the open
+  script Ctrl/Cmd+Z undoes it. **All versions** returns to the list.
+- **Fast typing on long scripts** (P4-01, D-043). The preview is patched block by block instead of rebuilt on every
+  keystroke (`Fountain.blocks`, `drawPreview` in core.js), and on a script of more than about 18 pages it follows
+  just after the typed text is painted. Typing a character in a 162-page script went from about 116 ms to about 30
+  (Enter: about 150 to 45) in headless Chromium here; most of what is left is the browser laying out the textarea.
+- **Adventure-game replies** (P4-20, D-042; `src/adventure.js`, `src/app/adventure-ui.js`). In the retro theme only,
+  pressing Enter on `look`, `inventory`, `score`, `xyzzy`, `plugh`, `get all`, `save game` or `restore game` typed
+  alone in its own paragraph answers in the notice at the foot of the screen: LOOK names the scene the caret is in
+  and who speaks there, INVENTORY counts words and scripts, SCORE counts pages out of 120, XYZZY: "Nothing happens."
+  The text and Enter are exactly as in any other theme; a character called LOOK, a line made a character, a line
+  inside a speech and Enter mid-line never answer. Not mentioned in Help (it is an Easter egg).
+- **Retro theme** (P4-19, D-041, D-047, D-048). Settings > Theme > **Retro (CGA)**: black, with CGA palette 1's light
+  cyan (action), light magenta (names, frames) and white (dialogue, scene headings, the caret), square corners,
+  double-bordered dialogs with a hard magenta shadow and titles in Courier capitals. Remembered like the other themes;
+  the preview stays paper. The accessibility sweep runs in all three themes. (It was EGA blue until D-047.)
+- **Narration time and video chapters** (P4-18, P3-13, D-038; `src/narration.js`, `src/app/chapters-ui.js`). For
+  narrated videos: write what is said as dialogue (under a cue such as NARRATOR) and what is shown as action. Script
+  stats has a **Read aloud** tile (~m:ss): the dialogue and lyrics at a reading speed, 150 words a minute unless set.
+  Settings has a **Reading aloud** group: *What is read aloud* (Dialogue only, or Dialogue and action) and *Reading
+  speed* (80 to 300). Export has a third section, **Video chapters**: a timestamp for each top-level section (`#`),
+  timed by the words read aloud before it, an "Intro" at 0:00 for words before the first, and **Copy chapters**. It
+  says, in words, when the list breaks YouTube's rules (fewer than three chapters; a chapter under ten seconds, named)
+  and how to make chapters when there are no sections; it never changes the list. Copy without the Clipboard API now
+  goes through a hidden copy, leaving the editor's selection alone.
+- **The narration example** (P4-21; `NARRATION_EXAMPLE` in `src/app/example.js`). "Inside the Broom Closet: How the
+  Odyssey Still Works" (the owner's retitle), a short video essay about a made-up game: NARRATOR speeches, a clip of
+  the game's own voice, action as what is shown, a `##` part inside a chapter, a sung sign-off, and notes saying what
+  counts. Four chapters (Intro, The setup, The puzzles, Final thoughts) that keep YouTube's rules whichever way it is
+  read aloud; under a minute at 150 words a minute. **Open the narration example** is in Help (Start here), and in
+  Export's Video chapters in place of Copy when the script has no chapters. It opens as a new script, like the
+  screenplay example. Its wording is free to change: the tests check its shape (four chapters, an Intro, no broken
+  YouTube rule either way, what the app shows matching `Narration.of`), not its words or times.
+- **Autocomplete follow-ups** (P2-21, D-037). After `INT. PLACE - ` the chips offer the script's times of day, then DAY
+  and NIGHT (Tab takes the first). With Character chosen on an empty line, the most used names show as chips to tap
+  (Tab still cycles the element there). A hidden live region tells a screen reader what is offered.
+- **Themes, text size, accessibility** (P4-06, D-035). Settings has Theme (Dark, the default; Light; Retro, P4-19; Match the system)
+  and Text size in the editor (four steps; never under 16px on a phone). Every colour is a token with a light value;
+  the preview stays paper. An accessibility sweep runs with the e2e tests over every window in both themes, desktop
+  and phone (contrast 4.5:1, names, references, ids, graphics). The editor is named "Script"; the panes are landmarks;
+  keyboard focus is one visible ring; "reduce motion" is honoured.
+- **Versions** (P4-05, D-034; `src/versions.js`, `src/app/versions-ui.js`, the `versions` store). Every save keeps the
+  text as it was before it, when due: the first save of a visit, then at most one every ten minutes of changes; they
+  thin out with age (all of the last hour, then hourly for a day, daily for a month, monthly for good). The Library's
+  **Versions** button on each script opens a window: name the text now ("Draft 2", kept for good), and for each
+  version Go back (the text there now is kept first; undo works in the open script), Copy (as a new script), Delete.
+  Deleting a script for good deletes its versions. The database is now version 2.
+- **Tap the preview to edit there** (P2-10, D-033). On phones and portrait tablets, a tap on a line in Preview goes back
+  to Write with the caret at the start of that line (a speech's lines each count), the keyboard up. Not for a tap that
+  ends a selection or lands on empty space, and not side by side on a desktop (P2-22 is the desktop idea).
+- **Settings** (P2-15, D-032; `src/app/settings.js`). The gear beside `?` (Settings in the phone menu) opens three
+  switches, all on by default: *Colours in the editor*, *Enter starts the next element*, *Capitals as you type*.
+  Changes apply at once and are remembered per browser (`plainchant_settings`). With the last two off, a line whose
+  element was chosen with Tab or the bar is still finished and capitalised. At 1024-1199px the "The Void" label steps
+  aside so the seven actions fit.
+- **Colour hints in the editor** (P2-08, D-031; `src/app/shade.js`, `Fountain.shade`). Scene headings warm, cues blue,
+  dialogue a little brighter than action, parentheticals and notes muted, transitions violet, sections and synopses
+  green, boneyard dim. Drawn on a copy of the text behind the textarea, whose own text is transparent: typing, undo,
+  selection and the keyboard are still the textarea's. The line being typed is coloured as the element bar shows it.
+  A wrap check switches the hints off for the visit (plain editor text again) if the copy ever misaligns.
+- **The caret kept clear of the keyboard** (P2-16, D-030; `keepCaretClear` in `src/app/layout.js`). On touch devices and
+  windows under 1024px, typing near the bottom of the editor keeps the line being written three lines above its
+  bottom edge (the element bar and keyboard), and so does the keyboard coming up. Desktop windows are unchanged; focus
+  mode still centres the line. Measuring in the editor is now to fractions of a pixel.
+- **Persistent storage** (P4-12, D-027; `src/app/safekeeping.js`). Once the library holds a script, the app asks the
+  browser to keep it even when the disk runs low (`navigator.storage.persist()`), once per page load; after a no it
+  does not ask again by itself (`plainchant_keep_asked`) unless running installed. Chrome / Edge / Safari answer
+  silently; Firefox asks the writer. A line at the foot of the **Library** says whether the browser agreed, and
+  otherwise points at Export and offers **Ask it to keep them**. Help (Troubleshooting) explains it.
+- **Offline and installable** (P4-02, D-026). The fonts are local (`fonts/`), so the app loads nothing from the network,
+  opened from disk or served. Served over http(s) it also registers `sw.js` (a copy of all 47 app files, answered from
+  at once and refreshed in the background) and links `manifest.webmanifest`, so it works with no connection and can be
+  installed; placeholder icons in `icons/`. Help says so.
+- **Focus mode** (P2-07, D-025; `src/app/focus.js`, `Editing.blockAt`). The **Focus** button at the end of the element
+  bar, or **Ctrl/Cmd+Shift+F**, dims everything but the block being written (translucent veils over the textarea;
+  the text itself is untouched) and keeps the caret's line in the middle as you type or move the caret. Scrolling by
+  hand is left alone. Remembered in `plainchant_focus`. Not on narrow phones (no room in the bar; the shortcut works).
+- **Outline navigator** (P4-03, D-024; `src/outline.js` + `src/app/outline-ui.js`). **Outline**, beside the page count
+  above the preview, opens a window listing sections (`#`), scenes (with scene numbers and the page each starts on)
+  and synopses (`=`), nested. The scene the caret is in is marked and focused; type to filter (Enter takes the
+  first match); Up / Down move. Choosing one puts the caret at the start of that line with the line a quarter of the
+  way down the editor, and the preview shows the scene. From the Preview on a phone it stays in the Preview.
+- **Script stats** (P4-04, D-023; `src/stats.js` + `src/app/stats-ui.js`). The preview's header shows a live
+  "3 pages · ~3 min" (it updates 600 ms after typing pauses; on phones and portrait tablets it sits in a slim row
+  at the top of Preview). Tapping it opens **Script stats**: pages as they print on the chosen paper, screen time
+  (a minute a page), scenes, words (the Library's count), and each character's speeches, spoken words and share of the
+  dialogue, with every cue extension folded into the one name. The "Courier Prime" badge it replaced is gone.
+  **Scenes** (P4-13, D-028): the window also lists every scene with the page it starts on, its length in eighths of a
+  printed page (heading to heading, at least 1/8) and who speaks in it; choosing one jumps there, as the Outline does.
+  Above it, the **Scene mix** (INT. / EXT. / both / other; each time of day) and **Locations** (each place with its
+  scenes and total length, INT. and EXT. of one place together), read from the headings (P4-14, P4-15, D-029).
+- **Print / save as PDF** (P3-03 to P3-06, D-021, D-022; `src/paginate.js` + `src/app/print.js`). **Export** opens a
+  dialog: *Download .fountain*, or *Print or save as PDF* with US Letter / A4 (remembered in `plainchant_paper`) and
+  the page count. The pages are laid out on the Courier grid (60 columns; 54 rows Letter, 58 A4; standard margins),
+  numbered top right from page 2, with a separate unnumbered title page, `(MORE)` / `(CONT'D)` when a speech runs over,
+  breaks only at sentence ends (mid-line, with the rest re-wrapped), no heading left at a page foot, transitions kept
+  off the top of a page, dual dialogue side by side and never split. Notes, sections and synopses are not printed.
+  The browser's print window does the rest (Save as PDF). **Ctrl/Cmd+P** prints the screenplay too, never the app.
+  The preview now matches paper: plain (not bold) scene headings, transitions flush right, 20-column parentheticals.
+- **Storage is IndexedDB** (P4-10, D-018, D-019, D-020; `src/store.js` + `src/app/persistence.js`). Database
+  `plainchant` (version 2), one record per script in `scripts`, the open-script pointer in `meta`, kept versions in
+  `versions` (P4-05). The whole library is held in
+  memory; an autosave writes **only the script being edited**. Every save first puts its words in a small synchronous
+  localStorage buffer (`plainchant_emergency`), cleared once IndexedDB has them, so a tab closed mid-write loses
+  nothing: the next load puts them back. Other open tabs are told of every change (BroadcastChannel); a save into a
+  script another tab deleted still goes to a new script, checked again inside the write. **No legacy support**
+  (D-020): old `frictionless_*` data is neither migrated nor read, and without IndexedDB the app shows an error notice
+  (pointing at Export) and stores nothing. Startup is asynchronous (`whenReady()`).
+- **Import** (D-016, `src/importing.js` + `src/app/import.js`). The Library's `Import a file...` button, or drop a file
+  anywhere on the page. `.fountain` / `.txt` / `.md` (any UTF-8 / UTF-16 / Windows-1252 text) become NEW scripts, the
+  first opens, nothing is overwritten; `.fdx` / PDF / Word are refused with a reason. Messages show in `#notice`.
+  Untested on a real file manager drag or on iOS / Android pickers.
+- **Library management** (D-013, `src/library.js` + the Library dialog). Search (titles and text), **rename** (rewrites
+  the script's own `Title:` line), **duplicate** ("<title> (copy)"), **delete** with an Undo message, and a
+  **Recently deleted** tab (30 days, then removed for good) with Restore and a two-click Delete forever / Delete all
+  forever. Rows show when a script was last edited and its word count, and a preview that skips the title page.
+  Deleting the open script leaves a blank page. Nothing can resurrect a deleted script (autosave, reload, or a second
+  browser tab).
+- **The app is called Plainchant** (D-012): page title, the welcome dialog ("Welcome to Plainchant"), the first line
+  of Help plus a one-line note on what the word means, `package.json` (`plainchant`), doc headings and test page
+  titles. An e2e check fails if "NeuroFountain" or "SLASH" reappears in `index.html`. The GitHub repo is
+  `aedmark/plainchant` and the project now lives in a folder called `plainchant` (re-cloned 2026-09-20; the old
+  `NeuroFountain` folder is retired).
+- **Onboarding and help** (D-011). **Welcome tour**: opens by itself on first launch (four skippable steps, wording
+  adapts to touch vs keyboard, live-rendered sample, ends with Start writing / Open the example script). Remembered
+  in `plainchant_onboarded` (was `frictionless_onboarded` until D-020); replay it from Help. **Help window**: Start here, Screenplay elements (cheat sheet),
+  Keys & touch, Troubleshooting. Opens from the `?` button (the word "Help" in the phone menu), F1, Ctrl/Cmd+/, or
+  the `?` at the end of the element bar (jumps to the elements topic). Library, Help and the tour share one
+  accessible dialog helper (focus trap, Esc, backdrop click, focus return).
+- **Typing helpers** (D-010, `src/editing.js`, wired in `index.html`). **These change how Enter and Tab behave, so
+  the user should try them:**
+  - **Tab / Shift+Tab** cycle the current line action -> character -> scene heading -> transition. Inside dialogue
+    they toggle dialogue <-> parenthetical. On a blank line Tab *chooses* the element for what is about to be typed
+    (Character: typed text is uppercased; Scene: `INT. ` is pre-filled). `Esc` then `Tab` moves focus out.
+  - **Enter** at the end of a block: after a character cue or parenthetical -> next line (speech follows); after
+    anything else -> blank line (new element). **After an action line it now starts a new paragraph; Shift+Enter is
+    the plain line break.** Mid-line, mid-block and selections use the normal Enter.
+  - **Auto-uppercase** while typing: `int. `/`ext. `/`est. `/`i/e` scene headings and `... to:` transitions, only
+    after a blank line and only at the end of the line.
+  - **Character names are guessed on Enter** (P2-14, D-036): a line after a blank line that is a name the script
+    already uses (any case, "mara (v.o.)") or a new name written with capitals (1-3 words, no sentence punctuation,
+    "Detective Ruiz") becomes a cue, capitalised, with the speech next. Ctrl/Cmd+Z undoes it; Settings has
+    **Guess character names** to switch it off. Tab / the Character button work as before.
+  - **Element bar** under the editor: shows what the current line is and converts it on tap, without closing the
+    on-screen keyboard. Short names on phones. Hidden while previewing. This is the touch replacement for Tab.
+  - All edits go in through `execCommand('insertText')`, so Ctrl/Cmd+Z undoes each one (tested).
+- **Autocomplete** (P2-04, D-017, `src/suggest.js` + the bar in `src/app/typing.js`). While a character name is typed
+  (an uppercase cue) or a location after `INT.` / `EXT.` / `.`, names already used in the script show as up to four chips
+  in the element bar's row, in place of the element buttons (same height, `?` stays). **Tab takes the first chip only
+  while chips are showing; otherwise Tab cycles as before. Enter never takes one. Esc hides them (a second Esc frees Tab
+  as before). Shift+Tab always cycles.** Tap a chip to complete the word. Needs one typed letter (a bare `INT. ` offers
+  nothing so Tab keeps cycling), and nothing once the text is a whole name (JOHN stays JOHN with JOHNNY in the script).
+  Order: use count, then recency. **This changes what Tab does while typing a name, so the user should try it.**
+- **1024px and wider** (desktop, iPad landscape): two panes side by side, raw Fountain text left, live preview right.
+- **Below 1024px** (phones, portrait tablets, narrow windows; also landscape coarse-pointer under 500px tall): one pane
+  at a time. A top bar has a **Write | Preview** toggle. Opening Preview scrolls to where the caret was.
+  - Phones (under 700px): New / Library / Save / Export / Copy / Settings / Help are in a ⋯ menu.
+  - Tablets (700px+): those actions sit inline in the bar; the editor text is held to ~44rem in the middle.
+- The screenplay adapts to the width of its *column* (container queries, D-009): a full 60-character page with true
+  indents when it fits (portrait iPad), percentage indents and stacked dual dialogue when narrower (phones, a
+  1024-1300px split), 14px type under 26rem. The layout tracks `visualViewport` on any touch device so the
+  on-screen keyboard shouldn't cover the text.
+- Parser/renderer in `src/fountain.js` (pure UMD): scene headings (forced, numbered), action (forced), characters
+  (forced `@`, extensions), dual dialogue `^`, parentheticals, dialogue, transitions (forced `>`), centered text,
+  lyrics, sections, synopses, page breaks, notes, boneyard, title page, emphasis.
+- The last-open script is restored on reload. **New** starts a blank script. The page saves on tab hide / unload as
+  well as 2 s after the last keystroke.
+- Scroll sync no longer divides by zero.
+
+### Verified (as of session 29)
+
+- **Final Draft export (P3-08), session 21:** `npm test` 331 (8 in `test/fdx.test.js`); e2e 673 (the button's
+  download, its name, the file well-formed by the browser's XML parser with every element, dual dialogue, the scene
+  number, the page break and the title page; an empty script exports nothing). Mutations: 23, all fail a test after
+  the fixes in the session log.
+- **Owner, 2026-09-27:** real files in Chrome, and import / export on Android, work.
+- **Real files (P5-01), session 19:** `npm test` 323 (7 new in `test/filesync.test.js`); e2e 670 (section 16v, with
+  real files in the browser's private file system standing in for picked ones: save to a file, every save writes it
+  (proved to come from the save), a change made elsewhere loaded, both changed (Keep the script here / Load the
+  file), permission again, open a file and open it again, stop saving, a file gone, a script deleted for good takes
+  its link). Mutations: 7 of 7 in `src/filesync.js`, 11 of 12 in the app (the twelfth is the e2e page's own restore
+  of a writer's links, which a throwaway profile cannot show).
+- **Comparing versions (P4-16), session 18:** `npm test` 316 (9 new in `test/compare.test.js`); e2e 654 (section 16u:
+  the summary and only the differing scenes, del / ins, headings as text, taking a changed scene and putting a removed
+  one back in the open script (stored, kept as a version first, undoable), in a script that is not open, the way
+  back, a version the same as now, a change from another tab kept; the comparison is in the accessibility sweep in
+  all three themes). Mutations: 14 in `src/compare.js` and 8 in the app: all fail a test, after the fixes in the
+  session log (one equivalent tie-break in the matching left alone).
+- **Incremental preview (P4-01), session 17:** `npm test` 307 (`Fountain.blocks`); e2e 642 (section 16t: 40 random
+  edits of every kind on a short and a long script, the preview checked identical to a full redraw every five;
+  untouched blocks are the same elements; on a long script the keystroke does not wait and the preview follows; a
+  render that is not typing draws at once and drops the waiting draw; a preview emptied by something else is redrawn
+  whole; the budget, under 60 ms on 120 pages). Mutations: 9 of 9 fail a test (one, redrawing a single extra block,
+  survived at first: the check now also requires the block just above the edit to be kept).
+- **Adventure replies (P4-20), session 16:** `npm test` 306 (5 new in `test/adventure.test.js`); e2e 633 (section 16s:
+  LOOK in retro, the text identical to the dark theme's, nothing in dark, INVENTORY, an ordinary line, inside a speech,
+  a character called LOOK, a line made a character, Enter mid-line, the facts for the caret's scene). Mutations: 7 of
+  7 in `src/adventure.js` and 7 of 7 in `adventure-ui.js` fail a test.
+- **Retro theme (P4-19), session 15:** e2e 623 (choosing it, remembered, the theme colour, square corners, the preview
+  still paper; the sweep over every state in retro on desktop and phone). Mutations: 3 of 3 fail a test (two colours
+  pushed below contrast, the choice removed from Settings).
+- **Narration example (P4-21), session 14:** e2e 620 (section 16r: offered in Export only with no chapters, opens as
+  a new script saved at once, its elements, its read-aloud time and chapters both ways, from Help; the screenplay
+  example unchanged). Mutations: 5 of 5 fail a test.
+- **Narration and chapters (P4-18, P3-13), session 14:** `npm test` 301 (11 new in `test/narration.test.js`);
+  `bash test/run-headless.sh` 289 unit + **613 e2e** (section 16r: the stats tile, the chapter list and Copy, the
+  speed clamped and remembered, "Dialogue and action", too few / too short / nothing read / no sections, the copy
+  fallback, a bad stored setting, Help; the accessibility sweep covers the new controls in both themes). Mutations:
+  21 of 22 in `src/narration.js` failed a test, and a test was added for the 22nd (a negative speed); the app-side
+  mutations (9: the speed's clamp and empty box, the stored range, Copy off and the list hidden with no chapters, the
+  one "nothing read" message, the copy fallback's focus and clean-up, the stats using the settings) all failed a test.
+- **Autocomplete follow-ups (P2-21), session 13:** `npm test` 290 (4 new in `test/suggest.test.js`, one changed:
+  "- " after a location now offers times); `bash test/run-headless.sh` 278 unit + **597 e2e** (section 16q: times
+  through the real Tab, narrowed, cleared; names on an empty cue line, not taken by Tab, tapped; what a screen reader
+  is told; Help). Mutations: 9 of 10 fail a test; the tenth showed a redundant step (the parser already strips a
+  scene number), since removed.
+- **Guessing names (P2-14), session 13:** `npm test` 286 (7 new in `test/editing.test.js`: known names in any case,
+  new capitalised names, 25 lines that must not be names, the Enter rule both ways); `bash test/run-headless.sh` 274
+  unit + **587 e2e** (section 16p: through the real Enter path, the bar showing Dialogue after, one-step undo, a
+  sentence and a lowercase new name left alone, the switch and its storage, Help; the sweep passes with the new
+  switch). Mutations: 8 of 8 fail a test after one more case (a name ending in a full stop); a redundant check found
+  by the ninth was removed.
+- **P4-06, session 13:** `npm test` 279; `bash test/run-headless.sh` 267 unit + **578 e2e** (section 16o: dark by
+  default, light at once and remembered, the paper stays white, "Match the system", text size with the colour layer
+  following at once, both kept on reload, 16px on phones, and the sweep: 2 themes x (18 desktop + 5 phone states), 0
+  problems after fixing the two it found). Mutations: 10 of 11 fail a test (the sweep caught each colour and
+  label broken on purpose). The eleventh, the 16px floor on touch screens wider than a phone (an iPad in landscape),
+  cannot be reached in headless Chromium, which has no touch pointer: untested.
+- **Versions (P4-05), session 13:** `npm test` 279 (10 new in `test/versions.test.js`); `bash test/run-headless.sh`
+  267 unit + **567 e2e** (section 16n: the first save's version, none straight after, one ten minutes on, thinning as
+  they are kept, the window from the row, naming (and needing a name), escaping, going back on the open script and on
+  another, undo, no doubled version, copy, two-click delete, deleting for good, Help, the phone). Mutations: 10 of 11
+  fail a test after one more (the hourly band); the eleventh showed a redundant guard, since removed.
+- **Tap the preview (P2-10), session 13:** `npm test` 269 (1 new: speech lines carry their line); `bash
+  test/run-headless.sh` 257 unit + **547 e2e** (section 16m: parenthetical, dialogue and heading taps, the line in
+  view far down, a selection and empty space ignored, a blank script, the desktop left alone even when a widened
+  window is still on Preview). Mutations: 5 of 5 fail a test (the last after that desktop case was added).
+- **Settings (P2-15), session 13:** `npm test` 268 (3 new: Enter and capitals with the switches off);
+  `bash test/run-headless.sh` 256 unit + **538 e2e** (section 16l: defaults, colours off at once and remembered, not
+  coming back on typing or resize, a reload, back on and the key gone, Enter and capitals both ways, a chosen cue still
+  capitalised, Esc and focus, Help, the phone menu, the actions fitting at 1024px; the 700px tablet check caught the
+  gear crowding the switch, now fixed). Mutations: 11 of 12 fail a test; the twelfth showed a CSS tweak
+  (tighter buttons at 1024px) was not needed, and it was removed.
+- **Colour hints (P2-08), session 13:** `npm test` 265 (4 new `shade` tests); `bash test/run-headless.sh` 253 unit +
+  **522 e2e** (section 16k: shaded and transparent, the layer's text and kinds, colours differ, notes / boneyard /
+  escaping, the layer exactly on the editor's box, the caret line, only changed lines redrawn, scrolling, focus
+  mode's padding, the placeholder, a 120-page redraw under 20 ms and no drift 4,900 lines down, the fallback when the
+  copy is skewed, the phone). Found and fixed on the way: a unitless line height drifting 1/64px a line.
+  Mutations: 10 of 10 fail a test.
+- **Keyboard room (P2-16), session 13:** `bash test/run-headless.sh` 249 unit + **506 e2e** (section 16j: the line
+  lifted exactly three line heights, a new last line too, nothing moved higher up or for a selection, the fake
+  keyboard shrinking the editor, focus mode left alone, desktop unchanged). The line height and the last line's bottom
+  in the checks come from the editor itself, not from the app's measuring. Mutations: 8 of 8 fail a test, after
+  three checks were sharpened (each had tested a spot where scrolling was clamped, so a missing guard changed nothing).
+- **Scene mix and locations (P4-14, P4-15), session 13:** `npm test` 261 (3 new: 21 headings read, the mix, the
+  locations); `bash test/run-headless.sh` 249 unit + **497 e2e** (the two lines, the table, "other" and untimed
+  scenes, escaping, the empty case). Mutations: 9 of 9 fail a test after two fixes (a guard that turned out wrong,
+  a fixture that could not tell the sort orders apart).
+- **Scene stats (P4-13), session 13:** `npm test` 258 (5 new stats tests: eighths, lengths on both papers, across a
+  page break and adding up to the script, the same pages as the Outline, headings as printed, speakers per scene);
+  `bash test/run-headless.sh` 246 unit + **493 e2e** (the table's rows, escaping, the jump, a scene number, the empty
+  case, the phone). Mutations: 8 of 8 fail a test. Looked right at 1200px and 375px.
+- **Persistent storage, session 13:** `npm test` 253; `bash test/run-headless.sh` 241 unit + **489 e2e** (section 16i:
+  nothing asked with an empty library, the first save asking, yes / no / already kept, once per load, no second ask
+  after a no, the installed exception, the Library line and its button (focus moving to the search box when it goes),
+  no line without storage, the Help entry). A stand-in storage manager plays the browser; headless Chromium itself
+  always says no. Mutations: 7 of 7 fail a test (the once-per-load guard only after the test counted the browser
+  queries: without it the outcome is the same, but every autosave would ask the browser again). The Library line looked
+  right at 1200px and 375px.
+- **Offline, session 13:** `npm test` 253 (4 new structure tests: nothing from another site, every font present and
+  used, `sw.js` listing exactly what the page loads, the manifest installable); `bash test/run-headless.sh` 241 unit +
+  **475 e2e** (section 16h). By hand in headless Chromium (Playwright): fonts from disk without flags; over http the
+  service worker registers, caches 47 files, Chrome reports no installability errors, and with the network off the app
+  reloads, renders in Courier Prime, saves and restores a script.
+- **Focus mode, session 13:** `npm test` 249 (3 new `blockAt` tests); `bash test/run-headless.sh` 241 unit +
+  **470 e2e** (section 16g: toggle, remembered, caret kept in the editor, the caret line centred after a caret move,
+  a typed edit and a click, veils exactly around the block, no clicks taken, hand scrolling left alone, nothing moving
+  while the mouse is down, the shortcut, reload, the phone). Positions are checked against a line height worked out
+  from the editor's own scroll height. That check found a real bug: measurements were off by the gap between a line's
+  top and its text's top (fixed in `textTopIn`). Mutations: 6 of 7 fail a test; the seventh showed a redundant guard
+  (the element bar already keeps focus), since removed.
+- **Outline, session 13:** `npm test` 246 (9 new in `test/outline.test.js`); `bash test/run-headless.sh` 238 unit +
+  **456 e2e** (section 16f: order, numbers, pages, nesting, synopsis, the current scene marked and focused, escaping,
+  arrow keys, the jump's caret and scroll position checked against an independent line-height estimate, the preview
+  landing on the scene, filter and Enter, the empty case, the phone Preview path and the slim row). Mutations: 8 of
+  10 fail a test at once; one needed a sharper fixture (150 blank lines, so proportional scrolling lands wrong); one
+  is equivalent (the phone-Preview branch: the hidden editor ignores focus and scrolling anyway).
+- **Stats, session 13:** `npm test` 237 (9 new in `test/stats.test.js`, including a speed guard for the live count on
+  a 100+ page script); `bash test/run-headless.sh` 229 unit + **439 e2e** (section 16e: the count waits for a pause
+  then matches, the window's tiles and character table, names only as text, A4 changing the count, the empty case,
+  the phone layout). Seven mutations (extensions or case splitting a character, parentheticals counted, whole-page
+  minutes, the header never updating, names as markup, the window ignoring the paper) each fail a test.
+- **Print, end of session 12:** `npm test` 228 (adds 5 `Fountain.runs` and 32 pagination tests, among them a
+  no-words-lost property test over 25 generated scripts, a "no page ends on a heading, lone cue or parenthetical"
+  test, and a speed guard); `bash test/run-headless.sh` 220 unit + **428 e2e** (section 16d: the Export dialog, page
+  count per paper, A4 remembered, sheets at real size, text at 1 in / 1.5 in, numbering, (MORE)/(CONT'D), scene
+  numbers, no markup, `beforeprint` rebuild, the print stylesheet, the preview matching paper). 15 mutations of the
+  pagination rules each fail a unit test. **Real PDFs** from headless Chromium (Playwright `page.pdf`, print media):
+  page count equals the sheets (no blank pages), MediaBox 612×792 (Letter) / 595×842 (A4); the sheets were looked at.
+- `npm test` passed at the IndexedDB stage (Node 22 in the session-12 cloud container): 196 tests (60 parser, 53 typing helpers, 23 library,
+  13 importing, 23 autocomplete, 16 storage rules, 8 app-script structure). The browser runner runs the 188 that need
+  no file access.
+- **Storage (P4-10) end to end**, `bash test/run-headless.sh` in headless Chromium on Linux: 183 unit + **409 e2e**.
+  Section 16c covers loading from IndexedDB, an autosave writing one record, the emergency buffer (written
+  synchronously on pagehide; a write that never lands is restored on reload; a stale entry is ignored; a refused save
+  shows Error and keeps the words), two live tabs (a rename and a delete reach the other tab at once), and no
+  IndexedDB at all (notice, Save says Error, nothing written). Every storage check reads IndexedDB.
+- **Storage mutation-tested (before D-020 removed the migration and fallback):** writing the buffer after the write
+  instead of synchronously, never clearing it, no delete guard inside the transaction, ignoring other tabs' messages,
+  never reconciling the buffer and keeping refused writes in memory each fail at least one e2e check. Mutations of the pure rules in `src/store.js` each fail a unit test (two
+  survived at first: an ordering test that could not tell "newest" from "last", and a guard with no input that
+  exercised it; both tests fixed).
+- **Autocomplete mutation-tested**: dropping the whole-name guard, the skip-own-line rule, the one-letter minimum, the
+  count ordering, the end-of-line rule and the option cap each fail unit tests; Shift+Tab accepting, an Esc that never
+  clears, an Esc that also frees Tab, no refresh before Tab, no hide on blur, `innerHTML` chips and an accept that
+  bypasses undo each fail an e2e check. Seen in the browser pane at desktop and 375px (four chips fit, long names
+  ellipsised). A lookup takes 8 ms on a 30,000-line script (unit-tested).
+- Library mutation-tested: removing the guard against autosave writing into a deleted script fails the two-tab
+  test; reusing a deleted script's id on reload fails; a 30-day boundary off by one fails a unit test; hard-deleting
+  instead of soft-deleting crashes the Library section (an exception), so it cannot pass. (The first attempt at the autosave-guard mutation failed *nothing*, which
+  exposed that the two-tab scenario was untested; it now is.)
+- `npm run test:browser` (Windows) last passed in session 10/11: 172 unit tests + 387 app end-to-end checks (headless
+  Edge, throwaway profile). **Session 12 changed it to real time and has not run it on Windows** (see "Not verified").
+  Frames: a 375px phone, the preview-column position at desktop/phone/1800px, tablets at 640-810px
+  (one pane) and 1024-1366px (split, no clipping), a 1200px desktop frame for the typing helpers (Tab, Enter,
+  Shift+Enter, auto-uppercase, buttons, undo, Esc+Tab, mode lifetime) and for the tour and Help (first launch,
+  step navigation, focus trap and return, Esc / backdrop / x / Done, F1 and Ctrl+/, replay, the example script,
+  Library on the shared dialog), and the phone frame for dialog fit.
+- The **Help cheat sheet is tested against the parser**: 15 examples, each carrying `data-expect` and each run
+  through `Fountain.classifyLines` in the e2e suite. Mutation-tested: a wrong example, a broken focus trap and a
+  tour that never remembers itself all fail tests.
+- Mutation-tested: a 14px editor font and an unreachable menu in Preview fail 4 checks; a shrink-to-fit column fails
+  6; disabling the container query fails 10; bypassing `execCommand` fails the 2 undo checks; auto-uppercasing
+  paste fails 1; intercepting Shift+Enter fails 1. Removing `min-width: 0` alone fails nothing, because the
+  container containment is a second guard against the same clipping.
+- The Node unit run found two real bugs in the typing helpers before the page was wired up (Tab stalling on a line
+  ending in `TO:`; `@`-forced cues rejected). Both fixed and covered.
+- Visually checked at 375x667 (phone), iPad 810px (Write and Preview), 1024x768, and the element bar on desktop
+  and phone in headless Edge.

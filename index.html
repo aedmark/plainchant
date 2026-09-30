@@ -17,8 +17,8 @@
 
 <div class="mobile-bar">
     <div class="seg" role="group" aria-label="View">
-        <button id="tabWrite" type="button" aria-pressed="true">Write</button>
-        <button id="tabPreview" type="button" aria-pressed="false">Preview</button>
+        <button id="tabWrite" type="button" aria-pressed="true">Void</button>
+        <button id="tabPreview" type="button" aria-pressed="false">Canvas</button>
     </div>
     <button id="menuBtn" type="button" class="btn menu-btn" aria-label="Menu" aria-haspopup="true"
             aria-expanded="false">
@@ -90,24 +90,24 @@
         </div>
         <div class="canvas-tools">
             <div id="panesSwitch" class="panes-switch" role="group" aria-label="Panes">
-                <button type="button" data-panes="write" aria-pressed="false" aria-label="Editor only"
-                        title="Editor only (Ctrl/Cmd+Shift+1)">
+                <button type="button" data-panes="write" aria-pressed="false" aria-label="Void only"
+                        title="Void only (Ctrl/Cmd+Shift+1)">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
                          stroke-linejoin="round" aria-hidden="true">
                         <path d="M10.5 2.5l3 3-7.5 7.5h-3v-3z"/>
                         <path d="M8.5 4.5l3 3"/>
                     </svg>
                 </button>
-                <button type="button" data-panes="both" aria-pressed="true" aria-label="Editor and preview"
-                        title="Editor and preview (Ctrl/Cmd+Shift+2)">
+                <button type="button" data-panes="both" aria-pressed="true" aria-label="Void and Canvas"
+                        title="Void and Canvas (Ctrl/Cmd+Shift+2)">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
                          aria-hidden="true">
                         <rect x="1.75" y="2.75" width="12.5" height="10.5" rx="1.5"/>
                         <path d="M8 2.75v10.5"/>
                     </svg>
                 </button>
-                <button type="button" data-panes="preview" aria-pressed="false" aria-label="Preview only"
-                        title="Preview only (Ctrl/Cmd+Shift+3)">
+                <button type="button" data-panes="preview" aria-pressed="false" aria-label="Canvas only"
+                        title="Canvas only (Ctrl/Cmd+Shift+3)">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
                          stroke-linejoin="round" aria-hidden="true">
                         <path d="M3.5 1.75h6l3 3v9.5h-9z"/>
@@ -121,9 +121,7 @@
             <button type="button" id="outlineBtn" class="canvas-btn" aria-haspopup="dialog"
                     title="Outline: jump to a scene or section">Outline
             </button>
-            <button type="button" id="statsBtn" class="canvas-btn" aria-haspopup="dialog" title="Script stats">No pages
-                yet
-            </button>
+            <button type="button" id="statsBtn" class="canvas-btn" aria-haspopup="dialog" title="Script stats">No pages yet</button>
         </div>
     </div>
     <div id="render-target">
@@ -198,7 +196,7 @@
                 <h3>Just Type</h3>
                 <p>Plainchant is for writing the scene and leaving the formatting to the software. Write your script as
                     plain text in <strong>The Void</strong> and
-                    <strong>The Canvas</strong> (<strong>Preview</strong>) shows it formatted as a screenplay, in real
+                    <strong>The Canvas</strong> shows it formatted as a screenplay, in real
                     time. The
                     formatting structure comes intuitively from what you type.</p>
                 <p>Tell the editor what you are writing with <kbd>Tab</kbd> or the bar under the text (Scene, Action,
@@ -254,12 +252,10 @@
                         script is what prints.
                     </li>
                     <li><strong>Settings</strong> chooses a dark or light look (or your system's), the size of the
-                        editor's text, and can turn off the colors, the blank line Enter adds after action, and capitals
-                        as you type.
+                        editor's text, and can turn off the colors, the blank line Enter adds after action, and capitals as you type.
                     </li>
                     <li><strong>No connection needed.</strong> Plainchant works offline. Opened from a web address, your
-                        browser can also install it as an app: look for <strong>Install</strong> or <strong>Add to Home
-                            Screen</strong>.
+                        browser can also install it as an app: look for <strong>Install</strong> or <strong>Add to Home Screen</strong>.
                     </li>
                     <li><strong>View Switching</strong> choose what you see: the text alone, held to a comfortable width
                         in the middle; both side by side; or the formatted script alone.
@@ -299,8 +295,7 @@
                 </div>
                 <p style="margin-top:1.25rem;font-size:.75rem;color:var(--text-void-muted)"><em>Plainchant</em> is music
                     with no ornament: a single line, sung unaccompanied. Plain text works the same way.</p>
-                <p class="help-thanks">With thanks to <strong>Space Quest Historian</strong>, whose videos about
-                    adventure games inspired the read-aloud time, the video chapters, the narration example and the
+                <p class="help-thanks">With thanks to <strong>Space Quest Historian</strong>, whose videos about adventure games inspired the read-aloud time, the video chapters, the narration example and the
                     retro theme. (Long Live the Pain Train).</p>
             </section>
 
@@ -443,8 +438,7 @@
                             names already used in your script appear in the bar under the text; after a location and a
                             dash (<code class="inline">INT. KITCHEN - </code>) the times of day you use appear, then DAY
                             and NIGHT. <kbd>Enter</kbd> never picks one, so what you typed stays what you typed. <kbd>Esc</kbd>
-                            hides them. With <strong>Character</strong> chosen on an empty line, the names you use most
-                            appear too: tap or click one (there <kbd>Tab</kbd> still moves on to the next element).
+                            hides them. With <strong>Character</strong> chosen on an empty line, the names you use most appear too: tap or click one (there <kbd>Tab</kbd> still moves on to the next element).
                         </td>
                     </tr>
                     <tr>
@@ -479,9 +473,7 @@
                     <tr>
                         <td><kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>1</kbd>, <kbd>2</kbd>, <kbd>3</kbd>
                         </td>
-                        <td>Editor only, editor and preview, preview only (the three small buttons above the preview do
-                            the same). On a phone or tablet, <kbd>1</kbd> and <kbd>3</kbd> switch between Write and
-                            Preview.
+                        <td>Void only, Void and Canvas, Canvas only (the three small buttons above the Canvas do the same). On a phone or tablet, <kbd>1</kbd> and <kbd>3</kbd> switch between the Void and the Canvas.
                         </td>
                     </tr>
                     <tr>
@@ -506,9 +498,8 @@
                             class="inline">INT.</code>), names you have already used take the place of those buttons.
                         Tap one to finish the word.
                     </li>
-                    <li>On phones and portrait tablets, <strong>Write | Preview</strong> at the top switches between the
-                        text and the formatted script. Preview opens where you were writing, and tapping a line there
-                        takes you back to the Void with the cursor on that line.
+                    <li>On phones and portrait tablets, <strong>Void | Canvas</strong> at the top switches between the
+                        text and the formatted script. The Canvas opens where you were writing, and tapping a line there takes you back to the Void with the cursor on that line.
                     </li>
                 </ul>
             </section>
@@ -544,8 +535,7 @@
                     version; <strong>Copy</strong> makes it a new script.</p>
                 <h3>My PDF has a date or a web address on it</h3>
                 <p>That is the browser&rsquo;s own header and footer. In its print window, open <strong>More
-                    settings</strong> (or <strong>Show details</strong>) and turn off <strong>Headers and
-                    footers</strong>.</p>
+                    settings</strong> (or <strong>Show details</strong>) and turn off <strong>Headers and footers</strong>.</p>
                 <h3>The page count is not the same as in another program</h3>
                 <p>Every screenwriting program breaks pages a little differently. A page or two either way on a feature
                     is normal.</p>
@@ -595,8 +585,7 @@
                 </fieldset>
                 <p class="print-tip">Your browser&rsquo;s print window opens next. To make a PDF, choose <strong>Save as
                     PDF</strong>
-                    as the printer. If the pages show a date or a web address, turn off <strong>Headers and
-                        footers</strong> there.</p>
+                    as the printer. If the pages show a date or a web address, turn off <strong>Headers and footers</strong> there.</p>
                 <button type="button" class="btn primary" id="printGo">Print or save as PDF&hellip;</button>
             </section>
             <section class="export-option">
@@ -781,8 +770,8 @@
             <section class="tour-step" data-step="1">
                 <h3>Just type. We handle the structure.</h3>
                 <p>Write your script as plain text. It appears beside your writing as a properly formatted screenplay, live: margins, capitals and spacing are taken care of.</p>
-                <p class="hint-keys">Your text is in the <strong>Void</strong> on the left; the <strong>Canvas</strong> on the right is the formatted script. If the window is narrow, use <strong>Write | Preview</strong> at the top to switch.</p>
-                <p class="hint-touch">Your text is in <strong>Write</strong>; tap <strong>Preview</strong> at the top to see it as a formatted script, and back to keep writing.</p>
+                <p class="hint-keys">Your text is in the <strong>Void</strong> on the left; the <strong>Canvas</strong> on the right is the formatted script. If the window is narrow, use <strong>Void | Canvas</strong> at the top to switch.</p>
+                <p class="hint-touch">Your text is in the <strong>Void</strong>; tap <strong>Canvas</strong> at the top to see it as a formatted script, and back to keep writing.</p>
             </section>
 
             <section class="tour-step" data-step="2" hidden>

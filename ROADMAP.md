@@ -111,7 +111,7 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
   Export dialog, D-022)
 - [x] P3-02 Import `.fountain` / `.txt` / `.md` (the Library's `Import a file...` picker, and drag-drop anywhere on the page). Each file
   becomes a new script and the first opens; nothing is overwritten (D-016). Final Draft `.fdx` import is P3-08.
-- [x] P3-03 Print stylesheet and print-to-PDF at standard screenplay margins (spec: docs/SPEC-PRINT.md, D-021, D-022):
+- [x] P3-03 Print stylesheet and print-to-PDF at standard screenplay margins (spec: docs/devlog/SPEC-PRINT.md, D-021, D-022):
   in the Export dialog (with the paper choice and page count), `beforeprint` so Ctrl/Cmd+P prints the screenplay,
   Letter / A4, Help on saving as PDF. The preview now matches paper (plain headings, transitions flush right)
 - [x] P3-04 Pagination (about 55 lines per page), page numbers, `(MORE)` / `(CONT'D)` handling: `src/paginate.js`, a
@@ -157,7 +157,7 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
   Byte-for-byte the same rules (de-indented); `test/structure.test.js` fails if an inline `<style>` returns.
 - [x] P4-07 Replace deprecated `document.execCommand('copy')` with the async Clipboard API (execCommand stays as the
   fallback for insecure origins)
-- [x] P4-10 Migrate storage from localStorage to IndexedDB (spec: docs/SPEC-INDEXEDDB.md, D-018, D-019). Per-script
+- [x] P4-10 Migrate storage from localStorage to IndexedDB (spec: docs/devlog/SPEC-INDEXEDDB.md, D-018, D-019). Per-script
   records in an object store (`src/store.js`), the in-memory library object kept as the working model, a synchronous
   localStorage "emergency buffer" for the pagehide race, and a one-time idempotent migration that keeps the
   localStorage copy as a fallback. Other tabs are told of changes (BroadcastChannel); no IndexedDB means the old

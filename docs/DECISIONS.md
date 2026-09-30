@@ -1019,6 +1019,50 @@ roadmap, not agreed yet.
 **Consequences:** keyboard users edit in the editor as before (the box is for the pointer). Formatting marks show as
 typed (`*italic*`, `^`, `>`): what opens is the text, not the formatted page.
 
+## D-058 HANDOFF holds the present; the history moves to SESSION-LOG.md  (2026-09-29, status: accepted)
+**Context:** HANDOFF.md had grown to about 1,260 lines. Under "Current state" sat a 200-line feature inventory and a
+170-line verification record, both written session by session; below them, the session log of every session. Parts of
+the inventory had gone stale (it still said database version 2), and the owner asked for the handoff to deal only with
+current work and future plans.
+**Decision:**
+1. `docs/SESSION-LOG.md` is the append-only history: every session-log entry, newest first, with the template at its
+   top. A new entry goes there at the end of each session (CLAUDE.md, session protocol step 3).
+2. HANDOFF.md keeps only what is true now and what comes next: current state (a short summary of what the app does,
+   with decision numbers, and what has not been checked yet), gotchas, next steps (with the dev-diary list), open
+   questions. It carries no "done in session N" and no test counts from earlier sessions.
+3. The old "What works" and "Verified" lists were moved unchanged into a frozen snapshot at the end of
+   SESSION-LOG.md, not rewritten: they are the record of what was tested and how, but are no longer maintained.
+   Resolved open questions were dropped (their answers are in DECISIONS).
+**Consequences:** a session reads HANDOFF plus the latest SESSION-LOG entry. The dev diary is written from
+SESSION-LOG.md. `docs/agent-template/` still shows the single-file layout until the owner says otherwise.
+**Update, same session:** at the owner's request the agent template follows this too (its own HANDOFF.md and
+SESSION-LOG.md). The owner is moving the template into their hypervisor repo; this copy is kept until then.
+
+## D-059 Tests check what the app does and says, not comments  (2026-09-29, status: accepted)
+**Context:** The owner stripped most code comments and reworded Help after session 29. One Node test required a
+header comment at the top of every file in `src/app/`; nine e2e checks matched Help or label text that a reformat of
+`index.html` had wrapped across lines, or whose words had changed.
+**Decision:**
+1. The structure test "every app script starts with the explanatory header" is retired: it checked comments only.
+   Comments are optional.
+2. The wrapped phrases the checks look for are back on one line in `index.html` (a line break inside text is
+   invisible on the page but part of `textContent`). The checks follow the owner's new words ("capitalized", "takes
+   you back to the Void").
+3. The check that Help explains the browser keeping the scripts is removed with the Help entry it checked. The
+   Library's own line about it, and its e2e checks, stay.
+**Consequences:** changing Help's wording means running the e2e and updating a check's pattern; a formatter that
+rewraps `index.html` will break the same checks again (HANDOFF gotcha).
+
+## D-060 The Void and the Canvas on every screen  (2026-09-29, status: accepted)
+**Context:** The desktop names its panes the Void (the text) and the Canvas (the formatted script), but the phone and
+tablet switch said Write | Preview, the desktop's pane buttons said Editor / Preview, and Help mixed the two. The owner
+never asked for the difference: a phone or tablet should use the desktop's words.
+**Decision:** everything a writer reads says Void and Canvas: the one-pane switch (**Void | Canvas**), the pane
+buttons' names and tooltips (Void only, Void and Canvas, Canvas only), Help and the tour. The owner's "Will the
+browser keep my scripts?" Help entry stays removed (confirmed).
+**Consequences:** only the words changed. Element ids, `data-view="write"` / `"preview"`, `setView` and the test
+names keep write / preview; the landmarks keep their accessible names ("Editor", "Preview").
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

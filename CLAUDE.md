@@ -9,7 +9,7 @@ dependencies (see docs/DECISIONS.md). The repo (`aedmark/plainchant`) and this f
 Sessions are short-lived and context resets between them, so the repo carries the memory.
 
 **Start of every session**
-1. Read `docs/HANDOFF.md`: "Current state" and the latest session-log entry.
+1. Read `docs/HANDOFF.md` (current state, gotchas, next steps) and the latest entry in `docs/SESSION-LOG.md`.
 2. Read `ROADMAP.md` for the item(s) you are about to work on. Skim `docs/DECISIONS.md` if you are about to make a
    design choice.
 3. Confirm the plan with the user in one or two lines, then work on roadmap items by ID.
@@ -23,7 +23,8 @@ Sessions are short-lived and context resets between them, so the repo carries th
 **End of every session (or when the user says to wrap up)**
 1. Tick / update items in `ROADMAP.md`.
 2. Rewrite the **Current state** and **Next steps** sections of `docs/HANDOFF.md` so they are true right now.
-3. Add a session-log entry at the top of the log using the template in HANDOFF.md.
+   HANDOFF holds only the present and the plan: no session history, no "done in session N" (D-058).
+3. Add an entry at the top of `docs/SESSION-LOG.md` using the template there.
 4. Never leave "Current state" describing something that is no longer true. Handoff docs that lie are worse than none.
 5. Track the work in the dev diary (`docs/devlog/`, see its README). A session that finishes a feature or a milestone a
    writer would notice gets an entry of its own. Smaller changes a writer would notice are listed under "For the dev
@@ -43,7 +44,7 @@ Sessions are short-lived and context resets between them, so the repo carries th
 | `src/library.js` | Library data rules (search, soft delete, restore, purge, duplicate, rename): scripts object in, new object out. Pure, UMD (D-013) |
 | `src/importing.js` | Import rules: which files to accept, decoding (UTF-8/16, Windows-1252), line endings. Pure, UMD (D-016) |
 | `src/suggest.js` | Autocomplete rules: names, locations and times of day from the script, what to offer for the word being typed (and names on an empty cue line). Pure, UMD, uses `Fountain` and `Editing` (D-017, D-037) |
-| `src/paginate.js` | Print pagination: tokens in, pages of positioned lines out (each with the script line it came from, `at`), on the Courier grid (60 columns, 54 rows Letter / 58 A4) with the page-break rules. Pure, UMD, uses `Fountain` (D-021, docs/SPEC-PRINT.md) |
+| `src/paginate.js` | Print pagination: tokens in, pages of positioned lines out (each with the script line it came from, `at`), on the Courier grid (60 columns, 54 rows Letter / 58 A4) with the page-break rules. Pure, UMD, uses `Fountain` (D-021, docs/devlog/SPEC-PRINT.md) |
 | `src/stats.js` | Script stats: pages (as printed), screen time, scenes, words, per-character speeches and words, per scene its page, length in eighths and speakers, the INT / EXT and time-of-day mix, and the locations (`Stats.heading`). Pure, UMD, uses `Fountain` and `Paginate` (D-023, D-028, D-029) |
 | `src/outline.js` | The outline: sections, scenes (with the page each starts on) and synopses, and which one a line is in. Pure, UMD, uses `Fountain` and `Paginate` (D-024) |
 | `src/narration.js` | Narration: the time to read a script aloud (dialogue, or dialogue and action, at a reading speed) and YouTube chapters from its top-level sections, with YouTube's rules checked. Pure, UMD, uses `Fountain` (D-038) |
@@ -55,9 +56,10 @@ Sessions are short-lived and context resets between them, so the repo carries th
 | `src/store.js` | Storage in IndexedDB, global `Store`: pure rules (diff, delete guard, emergency-buffer reconcile) plus thin IndexedDB calls that take the database as an argument. UMD (D-018, D-019, D-020) |
 | `test/` | `fountain.test.js` (parser), `editing.test.js` (typing helpers), `library.test.js` (library rules), `importing.test.js` (import rules), `suggest.test.js` (autocomplete rules), `store.test.js` (storage rules), `paginate.test.js` (print pagination), `stats.test.js` (script stats), `outline.test.js` (outline), `versions.test.js` (version rules), `narration.test.js` (narration time and chapters), `adventure.test.js` (adventure-game replies), `compare.test.js` (comparing versions), `filesync.test.js` (files on disk), `fdx.test.js` (Final Draft export), `structure.test.js` (app script structure, Node only), `app.e2e.html` (app behaviour), `harness.js`, runners: `index.html`, `run-headless.ps1` (Windows), `run-headless.sh` (Linux/macOS), `run.js` |
 | `ROADMAP.md` | The plan, with stable item IDs |
-| `docs/HANDOFF.md` | Current state, next steps, session log |
+| `docs/HANDOFF.md` | Current state, what is not checked yet, gotchas, next steps, open questions: the present only |
+| `docs/SESSION-LOG.md` | Append-only history, one entry per session, newest first (D-058) |
 | `docs/DECISIONS.md` | Append-only decision record |
-| `docs/agent-template/` | A reusable starter kit of these docs (CLAUDE.md, roadmap, handoff, decisions, devlog) for other projects, with placeholders; not part of the app |
+| `docs/agent-template/` | A reusable starter kit of these docs (CLAUDE.md, roadmap, handoff, session log, decisions, devlog) for other projects, with placeholders; not part of the app. Moving to the owner's hypervisor repo (D-058) |
 | `docs/devlog/` | The public dev diary: one HTML fragment per entry and `index.html` listing them, kept up as work lands (session protocol step 5); how to write one is in its README (D-053) |
 
 ## App scripts (`src/app/`)

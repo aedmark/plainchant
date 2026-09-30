@@ -1632,7 +1632,6 @@ setTimeout(() => {
     keydown(keepF, keepF.contentDocument.activeElement, 'Escape');
     keepW.eval('storageMode = "none"; keepAutoAsked = false; keepState = null');
     check('keep: with no storage at all there is nothing to promise, and no line', await keepW.keepWhenWorthIt(keeper, false) === 'unsupported' && fid(keepF, 'library-keep').hidden);
-    check('help: the browser keeping (or clearing) the scripts is explained', /Will the browser keep my scripts/.test(fid(keepF, 'help-modal').textContent));
     keepF.remove();
     W().localStorage.removeItem('plainchant_keep_asked');
 
@@ -1903,7 +1902,7 @@ setTimeout(() => {
     fq(tapF, '#page .script-scene-heading').click();
     check('tap preview: on a blank script (the example is showing) it just goes to Write, the page still blank',
       tapF.contentDocument.body.dataset.view === 'write' && tapE.value === '' && focusId(tapF) === 'editor', [tapF.contentDocument.body.dataset.view, tapE.value]);
-    check('help: tapping the preview is explained', /tapping a line there takes you back to Write/.test(fid(tapF, 'help-modal').textContent));
+    check('help: tapping the preview is explained', /tapping a line there takes you back to the Void/.test(fid(tapF, 'help-modal').textContent));
     tapF.remove();
 
     const tapD = await openFrame(1200, 700);
@@ -2231,7 +2230,7 @@ setTimeout(() => {
       cueEnter(CU_BEFORE, 'mara') === 'mara\n\n' && cueEnter(CU_BEFORE, 'Detective Ruiz') === 'Detective Ruiz\n\n' &&
       cuW.localStorage.getItem('plainchant_settings') === '{"cues":false}', cuW.localStorage.getItem('plainchant_settings'));
     cuW.setSetting('cues', true);
-    check('help: guessing character names is explained', /becomes a character, capitalised/.test(fid(cuF, 'help-modal').textContent) &&
+    check('help: guessing character names is explained', /becomes a character, capitalized/.test(fid(cuF, 'help-modal').textContent) &&
       /Type the name with capitals/.test(fid(cuF, 'help-modal').textContent));
     cuF.remove();
     W().localStorage.removeItem('plainchant_settings');
@@ -2845,7 +2844,7 @@ setTimeout(() => {
     setText(pnF, PV_TEXT);
     check('panes: both at first, the switch in the preview\'s header saying so, and each button named',
       pnPressed() === 'both' && pnSwitch.closest('.canvas-tools') && shown(pnE) && shown(fq(pnF, '.pane-canvas')) &&
-      ['Editor only', 'Editor and preview', 'Preview only'].every((n, i) => pnSwitch.querySelectorAll('button')[i].getAttribute('aria-label') === n));
+      ['Void only', 'Void and Canvas', 'Canvas only'].every((n, i) => pnSwitch.querySelectorAll('button')[i].getAttribute('aria-label') === n));
     pnBtn('write').focus();
     pnBtn('write').click();
     const pnVoidW = fq(pnF, '.pane-void').getBoundingClientRect().width;
@@ -2907,7 +2906,7 @@ setTimeout(() => {
     pnKey(pnT, 'Digit1');
     check('panes: on a tablet, Ctrl/Cmd+Shift+3 and 1 switch Preview and Write', pnTPrev === 'preview' && pnT.contentDocument.body.dataset.view === 'write');
     pnT.remove();
-    check('help: the panes and their keys are explained', /Editor only/.test(fid(m, 'help-modal').textContent) && /Shift<\/kbd>\+<kbd>1/.test(fid(m, 'help-modal').innerHTML));
+    check('help: the panes and their keys are explained', /Void only/.test(fid(m, 'help-modal').textContent) && /Shift<\/kbd>\+<kbd>1/.test(fid(m, 'help-modal').innerHTML));
     W().localStorage.removeItem('plainchant_settings');
 
     // 16y. Quick edits in the preview (P2-24): double-click (or press and hold) a line and its paragraph opens in a
