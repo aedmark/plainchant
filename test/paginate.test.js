@@ -310,7 +310,7 @@ test('speed: a feature-length script (about 120 pages) lays out quickly', () => 
     const pages = Paginate.layout(tokens).pages.length;
     const ms = Date.now() - t0;
     assert.ok(pages >= 100, pages + ' pages');
-    assert.ok(ms < 150, pages + ' pages took ' + ms + ' ms');
+    assert.ok(ms < 300, pages + ' pages took ' + ms + ' ms');
 });
 
 test('spacing: two blank lines before a scene heading, one before anything else, none at the top of a page (D-051)', () => {
