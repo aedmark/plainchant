@@ -1,8 +1,10 @@
-const CACHE = 'plainchant-v3';
+const CACHE = 'plainchant-v4';
 const APP_FILES = [
     './',
     'index.html',
+    'app.html',
     'manifest.webmanifest',
+    'src/home.css',
     'src/styles.css',
     'src/fountain.js',
     'src/editing.js',

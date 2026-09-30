@@ -10,10 +10,8 @@ Plan: [ROADMAP.md](../ROADMAP.md). Decisions: [DECISIONS.md](DECISIONS.md). The 
 
 ## Current state
 
-_Last updated: 2026-09-29, session 30: this file trimmed to the present, its history moved to SESSION-LOG.md
-(D-058); the tests green again after the owner's copy edit and comment clean-up (D-059). Everything through session 29
-is in `master`, with the owner's own commits after it. This session's work is on `claude/amazing-goodall-7jd9f2`
-until the owner merges it. Tests: `npm test` 339, `bash test/run-headless.sh` 327 unit + 730 e2e, about 60 s._
+_Last updated: 2026-09-30, session 31. Plainchant now has a public homepage at `index.html`; the writing app is
+`app.html` and installed copies open there (D-061). Tests: `npm test` 339, browser suite 327 unit + 730 e2e._
 
 **Where things stand:** Phases 1 to 4 are done apart from P2-06 (desktop scroll sync still goes by percentage) and
 an optional idea (P2-20 first-use hints). Phase 3's output is done (Fountain and Final Draft export, print / save as
@@ -22,6 +20,10 @@ disk (P5-01, Chromium only); cloud sync and sharing (P5-02, P5-03) are not plann
 Apple-platform phases and the device-pass items from the roadmap on 2026-09-29. The biggest gap is not code: most
 features have only run in headless Chromium and the owner's Firefox, so the owner's hands-on checks (Next steps 1)
 matter more than the next feature.
+
+**Front door:** `index.html` introduces Plainchant to new writers with a raw-text-to-page demonstration, the
+distraction-free and local-first promise, a four-step primer, the core workflow, and links into `app.html` (P6-01,
+D-061). The homepage needs no JavaScript and shares the app's bundled typefaces.
 
 **What the app does** (ROADMAP has every ticked item; the detailed notes as of session 29 are frozen at the end of
 SESSION-LOG.md)
@@ -75,7 +77,7 @@ SESSION-LOG.md)
 - **The panes are the Void (the text) and the Canvas (the formatted script)** in everything a writer sees, on every
   screen size (D-060). Code and tests still say write / preview (`data-view`, `setView('preview')`, `#tabPreview`).
 - **The e2e checks match visible text exactly** (`textContent`, Help's wording, button labels). An editor's
-  "reformat" that wraps a sentence across lines in `index.html` breaks them, and so does a copy edit ("capitalised"
+  "reformat" that wraps a sentence across lines in `app.html` breaks them, and so does a copy edit ("capitalised"
   to "capitalized"). Keep each phrase a check looks for on one line, and after changing Help's wording run the e2e
   and update the check's pattern to the new words (D-059).
 - **The e2e page is one shared script scope** (~2,000 lines): a name declared twice (`typeInto`, `cs2`, `tf`, `kw`,
@@ -91,7 +93,7 @@ SESSION-LOG.md)
   (e2e 16k, 20 ms) and "speed: a feature-length script lays out quickly" (`test/paginate.test.js`, 150 ms). If one
   fails alone, run again; if it fails twice, it is real.
 - **A line in capitals parses as a character cue** (`A.` alone after a blank line): use lowercase in action fixtures.
-- **The Help cheat sheet is tested against the parser:** each `<code data-expect="...">` in `index.html` runs through
+- **The Help cheat sheet is tested against the parser:** each `<code data-expect="...">` in `app.html` runs through
   `Fountain.classifyLines`. Change the parser and the failing example names the Help line to update. Add a line to Help
   for each user-visible feature; bump `TOUR_VERSION` to re-show a revised tour.
 - **Mutation testing** (a scratch script swaps one source line, runs the suites, restores it) is how features have been
@@ -158,7 +160,6 @@ SESSION-LOG.md)
 
 ## Next steps (in order)
 
-0. **Merge this branch** (docs, one test retired, e2e checks and `index.html` line breaks; no behaviour change).
 1. **The owner's hands-on checks,** each a few minutes (whatever feels wrong is the next session's first job):
    - After a day of writing, **Library > Versions** on a real script: Go back, then Ctrl+Z.
    - **On an Android phone or tablet:** type at the bottom of a long script (three lines of room above the keyboard?);
@@ -176,11 +177,7 @@ SESSION-LOG.md)
 3. **Then the next feature, the owner's pick.** Candidates: **P3-14** importing `.fdx`; **P3-09 / P3-10** Library and
    export extras; **P5-04** real-file extras; **P2-20** first-use hints.
 
-**For the dev diary** (smaller changes a writer would notice, for the next entry; clear the list when it is written):
-- Help's wording revised by the owner (American spelling, title-case headings, "the Void" for the writing pane), and
-  its "Will the browser keep my scripts?" entry removed (the Library's own line about it is unchanged).
-- The Void and the Canvas everywhere: the phone and tablet switch reads **Void | Canvas** (it said Write | Preview),
-  and the desktop's three pane buttons are Void only, Void and Canvas, Canvas only.
+**For the dev diary:** nothing waiting; the 2026-09-30 entry includes the homepage and the recent language clean-up.
 
 The latest entry, "Touching Up the Page", covers everything up to session 28.
 

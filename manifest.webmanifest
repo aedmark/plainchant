@@ -2,7 +2,7 @@
   "name": "Plainchant",
   "short_name": "Plainchant",
   "description": "Screenwriting, plain and simple: type raw text, get a fully formatted screenplay.",
-  "start_url": "./",
+  "start_url": "app.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#0f1115",

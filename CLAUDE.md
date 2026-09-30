@@ -34,11 +34,12 @@ Sessions are short-lived and context resets between them, so the repo carries th
 
 | Path | Purpose |
 | --- | --- |
-| `index.html` | The page: markup, and the links to the stylesheet and scripts (no inline style or script) |
+| `index.html`, `src/home.css` | The public homepage and its responsive, self-contained styling |
+| `app.html` | The writing app: markup, and the links to the app stylesheet and scripts (no inline style or script) |
 | `fonts/` | Courier Prime and Inter as `woff2` (OFL, licences alongside), declared at the top of `src/styles.css`. The app loads nothing from the network (D-026) |
 | `icons/`, `manifest.webmanifest`, `sw.js` | The placeholder icon (SVG + PNG sizes), the web app manifest and the service worker: offline and installable when served over http(s). `sw.js`'s file list must match what the page loads (`test/structure.test.js` checks) (D-026) |
 | `src/styles.css` | All the CSS. Desktop-first; the mobile block mirrors `MOBILE_QUERY` / `FIT_QUERY` in `src/app/layout.js` |
-| `src/app/*.js` | The app itself, one file per concern, loaded in order by `index.html` (see "App scripts" below, D-014) |
+| `src/app/*.js` | The app itself, one file per concern, loaded in order by `app.html` (see "App scripts" below, D-014) |
 | `src/fountain.js` | Fountain parser + HTML renderer (`toHTML`, and `blocks` for the preview's block-by-block redraw), and the editor's line kinds (`classifyLines`, `shade`). Pure, UMD, no DOM (D-003) |
 | `src/editing.js` | Typing helpers (Tab, smart Enter, auto-uppercase, guessing a name on Enter), and the paragraph a line is in (`blockAt`, `paragraphAt`): text + caret in, edit out. Pure, UMD (D-010, D-036) |
 | `src/library.js` | Library data rules (search, soft delete, restore, purge, duplicate, rename): scripts object in, new object out. Pure, UMD (D-013) |
@@ -63,7 +64,7 @@ Sessions are short-lived and context resets between them, so the repo carries th
 
 ## App scripts (`src/app/`)
 
-The app is a set of classic scripts that share **one global scope**, loaded by `index.html` in this order. That
+The app is a set of classic scripts that share **one global scope**, loaded by `app.html` in this order. That
 order matters for one reason: code that runs *while a file loads* (registering listeners, reading the DOM) may only
 use what an earlier file already defined. Code inside functions runs later and can call anything.
 
@@ -96,7 +97,7 @@ use what an earlier file already defined. Code inside functions runs later and c
 | `safekeeping.js` | Asking the browser to keep the library (`navigator.storage.persist()`) once there is work to keep, and the line at the foot of the Library saying whether it agreed (D-027) |
 | `main.js` | Start-up on `DOMContentLoaded` (asynchronous: the library loads first; `whenReady()`). Always last |
 
-Rules: add a new file to `index.html` in the right place (`test/structure.test.js` fails if the folder and the page
+Rules: add a new file to `app.html` in the right place (`test/structure.test.js` fails if the folder and the page
 disagree, if a name is declared twice across files, if an inline script or `<style>` comes back, or if a file passes 500 lines).
 Keep each file's own listeners in that file. Functions the e2e tests call (`saveScript`, `setView`, `openTour`,
 `syncElementState`, `flushSave`, `whenReady`, `whenSaved`, `restoreLastScript`, ...) must stay top-level function declarations, and `currentScriptId` a top-level
@@ -136,7 +137,7 @@ Keep each file's own listeners in that file. Functions the e2e tests call (`save
 
 ## Running and testing
 
-- App: open `index.html` directly in a browser, or serve the folder statically. Served over http(s) it also works
+- App: open `app.html` directly in a browser, or open `index.html` and follow the homepage's Start writing link. Served over http(s) it also works
   offline and can be installed (service worker + manifest); from disk it needs no network either (local fonts).
   **Add a new file the page loads to `APP_FILES` in `sw.js`** (the structure test fails until you do).
 - Tests: `npm run test:browser` (or `bash test/run-headless.sh`) on Linux/macOS, the owner's machine since

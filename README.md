@@ -24,7 +24,8 @@ Targets Firefox and Chromium-based browsers.
 
 ## Run it
 
-Open `index.html` in a browser, or serve the folder with any static server:
+Open `index.html` for the project homepage, then choose **Start writing**. The editor itself is `app.html`. Or serve
+the folder with any static server:
 
 ```sh
 python3 -m http.server

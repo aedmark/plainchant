@@ -1063,6 +1063,23 @@ browser keep my scripts?" Help entry stays removed (confirmed).
 **Consequences:** only the words changed. Element ids, `data-view="write"` / `"preview"`, `setView` and the test
 names keep write / preview; the landmarks keep their accessible names ("Editor", "Preview").
 
+## D-061 A homepage in front of the writing app  (2026-09-30, status: accepted; P6-01)
+**Context:** Plainchant opened directly into the editor. That is right after someone knows the product, but gave a
+new visitor no explanation of what Plainchant is, why plain text helps, or how little they need to learn before
+writing.
+**Decision:**
+1. `index.html` is a public, responsive homepage and `src/home.css` is its only stylesheet. Its visual language is
+   warm paper, Courier type and an in-page raw-text-to-screenplay demonstration: recognisably Plainchant without
+   reproducing the editor chrome.
+2. The homepage leads with distraction-free screenwriting, then a four-step primer (scene, character, dialogue,
+   export), the writing and safekeeping features, narration support, and repeated links into the app. It makes the
+   local-first promise explicit and does not require JavaScript.
+3. The unchanged writing app moves to `app.html`. Tests drive that page; the service worker keeps both pages and both
+   stylesheets offline. The web-app manifest starts at `app.html`, so an installed Plainchant still opens directly
+   into the editor rather than the marketing page.
+**Consequences:** links or documentation that mean the editor must name `app.html`; links that mean the project front
+door use `index.html`. Adding a homepage asset means adding it to the service-worker list.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

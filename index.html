@@ -2,885 +2,188 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-    <title>Plainchant: screenwriting without the formatting</title>
-    <meta name="description"
-          content="Screenwriting, plain and simple: type raw text, get a fully formatted screenplay.">
-    <meta name="theme-color" content="#0f1115">
-    <meta name="apple-mobile-web-app-title" content="Plainchant">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plainchant — Screenwriting without the formatting</title>
+    <meta name="description" content="Write screenplays, video essays and stories in plain text. Plainchant handles the formatting, saves as you type and works offline.">
+    <meta name="theme-color" content="#f1eadc">
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-    <link rel="stylesheet" href="src/styles.css">
+    <link rel="stylesheet" href="src/home.css">
 </head>
-<body data-view="write">
+<body>
+<a class="skip-link" href="#main">Skip to the story</a>
 
-<div class="mobile-bar">
-    <div class="seg" role="group" aria-label="View">
-        <button id="tabWrite" type="button" aria-pressed="true">Void</button>
-        <button id="tabPreview" type="button" aria-pressed="false">Canvas</button>
-    </div>
-    <button id="menuBtn" type="button" class="btn menu-btn" aria-label="Menu" aria-haspopup="true"
-            aria-expanded="false">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <circle cx="4" cy="10" r="1.75"/>
-            <circle cx="10" cy="10" r="1.75"/>
-            <circle cx="16" cy="10" r="1.75"/>
-        </svg>
-    </button>
-</div>
+<header class="site-header">
+    <a class="wordmark" href="index.html" aria-label="Plainchant home">
+        <span class="wordmark-mark" aria-hidden="true">P</span>
+        <span>PLAINCHANT</span>
+    </a>
+    <nav aria-label="Main navigation">
+        <a href="#primer">How it works</a>
+        <a href="#features">Why Plainchant</a>
+        <a href="docs/devlog/index.html">Dev diary</a>
+    </nav>
+    <a class="button button-small" href="app.html">Open the app <span aria-hidden="true">↗</span></a>
+</header>
 
-<div class="pane-void" role="main" aria-label="Editor">
-    <div class="header">
-        <div>
-            <h1>The Void</h1>
-        </div>
-        <div class="button-group">
-            <button id="newBtn" class="btn">New</button>
-            <button id="libraryBtn" class="btn">Library</button>
-            <button id="saveBtn" class="btn">Save</button>
-            <button id="exportBtn" class="btn">Export</button>
-            <button id="copyBtn" class="btn">Copy</button>
-            <button id="settingsBtn" class="btn help-btn" aria-label="Settings" title="Settings"><span class="txt-short"
-                                                                                                       aria-hidden="true"><svg
-                    class="gear" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path
-                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span
-                    class="txt-long">Settings</span></button>
-            <button id="helpBtn" class="btn help-btn" aria-label="Help" title="Help (F1)"><span class="txt-short"
-                                                                                                aria-hidden="true">?</span><span
-                    class="txt-long">Help</span></button>
-        </div>
-    </div>
-    <div id="file-bar" class="file-bar" role="region" aria-label="Synced file" hidden>
-        <span id="fileBarText" aria-live="polite"></span>
-        <span class="file-bar-actions">
-            <button type="button" class="mini" id="fileAllowBtn">Allow</button>
-            <button type="button" class="mini" id="fileLoadBtn">Load the file</button>
-            <button type="button" class="mini" id="fileKeepBtn">Keep the script here</button>
-        </span>
-    </div>
-    <textarea id="editor" aria-label="Script"
-              placeholder="FADE IN:&#10;&#10;INT. COFFEE SHOP - DAY&#10;&#10;The cafe is entirely empty.&#10;&#10;JOHN&#10;(nervous)&#10;I just wanted a program that let me type without thinking.&#10;&#10;THE ARTISAN&#10;It is done.&#10;&#10;CUT TO:&#10;&#10;EXT. THE VOID - CONTINUOUS"></textarea>
-    <div class="element-bar" role="toolbar" aria-label="Element type"
-         title="Tab / Shift+Tab cycles the element. Press Esc and then Tab to regain focus.">
-        <button type="button" class="el-btn" data-el="scene" aria-pressed="false">Scene</button>
-        <button type="button" class="el-btn" data-el="action" aria-pressed="true">Action</button>
-        <button type="button" class="el-btn" data-el="character" aria-pressed="false"><span
-                class="long">Character</span><span class="short">Char</span></button>
-        <button type="button" class="el-btn" data-el="parenthetical" aria-pressed="false">Paren</button>
-        <button type="button" class="el-btn" data-el="dialogue" aria-pressed="false"><span
-                class="long">Dialogue</span><span class="short">Dial</span></button>
-        <button type="button" class="el-btn" data-el="transition" aria-pressed="false"><span
-                class="long">Transition</span><span class="short">Trans</span></button>
-        <div class="suggestions" role="group" aria-label="Suggestions" hidden></div>
-        <p id="suggestSay" class="sr-only" role="status" aria-live="polite"></p>
-        <button type="button" id="focusBtn" class="el-focus" aria-pressed="false"
-                title="Focus mode: dim everything but what you are writing (Ctrl+Shift+F)">Focus
-        </button>
-        <button type="button" class="el-help" aria-label="Help with screenplay elements" title="Help with elements">?
-        </button>
-    </div>
-</div>
-
-<div class="pane-canvas" role="region" aria-label="Preview">
-    <div class="header">
-        <div>
-            <h2>The Canvas</h2>
-        </div>
-        <div class="canvas-tools">
-            <div id="panesSwitch" class="panes-switch" role="group" aria-label="Panes">
-                <button type="button" data-panes="write" aria-pressed="false" aria-label="Void only"
-                        title="Void only (Ctrl/Cmd+Shift+1)">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
-                         stroke-linejoin="round" aria-hidden="true">
-                        <path d="M10.5 2.5l3 3-7.5 7.5h-3v-3z"/>
-                        <path d="M8.5 4.5l3 3"/>
-                    </svg>
-                </button>
-                <button type="button" data-panes="both" aria-pressed="true" aria-label="Void and Canvas"
-                        title="Void and Canvas (Ctrl/Cmd+Shift+2)">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
-                         aria-hidden="true">
-                        <rect x="1.75" y="2.75" width="12.5" height="10.5" rx="1.5"/>
-                        <path d="M8 2.75v10.5"/>
-                    </svg>
-                </button>
-                <button type="button" data-panes="preview" aria-pressed="false" aria-label="Canvas only"
-                        title="Canvas only (Ctrl/Cmd+Shift+3)">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
-                         stroke-linejoin="round" aria-hidden="true">
-                        <path d="M3.5 1.75h6l3 3v9.5h-9z"/>
-                        <path d="M6 7.5h4.5M6 10h4.5"/>
-                    </svg>
-                </button>
+<main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+            <p class="eyebrow"><span>Free</span> · Private · Works offline</p>
+            <h1 id="hero-title">Your story.<br>Properly formatted.<br><em>Nothing in the way.</em></h1>
+            <p class="hero-lede">Plainchant is a screenwriting app that gets out of your way. Type simple text. Watch it become a screenplay. Keep every word yours.</p>
+            <div class="hero-actions">
+                <a class="button button-primary" href="app.html">Start writing <span aria-hidden="true">→</span></a>
+                <a class="text-link" href="#primer">See how it works <span aria-hidden="true">↓</span></a>
             </div>
-            <button type="button" id="pageViewBtn" class="canvas-btn" aria-pressed="false"
-                    title="Show the script as the pages it prints on">Page view
-            </button>
-            <button type="button" id="outlineBtn" class="canvas-btn" aria-haspopup="dialog"
-                    title="Outline: jump to a scene or section">Outline
-            </button>
-            <button type="button" id="statsBtn" class="canvas-btn" aria-haspopup="dialog" title="Script stats">No pages yet</button>
+            <p class="microcopy">No account. No install. Your first scene is one click away.</p>
         </div>
-    </div>
-    <div id="render-target">
-        <div id="page" class="screenplay-font">
-        </div>
-        <div id="sheets"></div>
-    </div>
-</div>
 
-<div id="library-modal" class="modal-overlay">
-    <div class="modal-content wide" role="dialog" aria-modal="true" aria-labelledby="library-title">
-        <div class="modal-header">
-            <h2 id="library-title">Your Scripts</h2>
-            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
-        </div>
-        <div class="library-tools">
-            <input id="librarySearch" class="library-search" type="search" placeholder="Search your scripts"
-                   aria-label="Search your scripts" autocomplete="off">
-            <div class="library-views" role="group" aria-label="Show">
-                <button type="button" class="chip" id="libViewScripts" aria-pressed="true">Scripts</button>
-                <button type="button" class="chip" id="libViewTrash" aria-pressed="false">Recently deleted</button>
+        <div class="hero-demo" aria-label="Plain text becoming a formatted screenplay">
+            <div class="demo-chrome">
+                <span>THE VOID</span>
+                <span class="demo-status"><i></i> SAVED</span>
+                <span>THE CANVAS</span>
             </div>
-            <button type="button" class="chip" id="libImport">Import a file&hellip;</button>
-            <button type="button" class="chip" id="libOpenFile" hidden>Open a file&hellip;</button>
-            <input type="file" id="importInput" multiple hidden>
-        </div>
-        <div id="library-list" class="modal-body">
-        </div>
-        <p id="library-keep" class="library-note" hidden><span id="keepText" aria-live="polite"></span>
-            <button type="button" class="mini" id="keepBtn">Ask it to keep them</button>
-        </p>
-        <div id="library-status" role="status" aria-live="polite"></div>
-    </div>
-</div>
-
-<div id="versions-modal" class="modal-overlay">
-    <div class="modal-content wide" role="dialog" aria-modal="true" aria-labelledby="versions-title">
-        <div class="modal-header">
-            <h2 id="versions-title">Versions</h2>
-            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
-        </div>
-        <div class="versions-top">
-            <p id="versionsFor" class="versions-for"></p>
-            <form id="versionForm" class="rename-form">
-                <input type="text" id="versionName" maxlength="80" autocomplete="off"
-                       placeholder="Name this version, e.g. Draft 2"
-                       aria-label="A working title">
-                <button type="submit" class="btn primary">Keep</button>
-            </form>
-        </div>
-        <div id="versions-list" class="modal-body">
-        </div>
-        <div id="versions-status" role="status" aria-live="polite"></div>
-    </div>
-</div>
-
-<div id="help-modal" class="modal-overlay">
-    <div class="modal-content wide" role="dialog" aria-modal="true" aria-labelledby="help-title">
-        <div class="modal-header">
-            <h2 id="help-title">Help</h2>
-            <button type="button" class="modal-close" data-close aria-label="Close help">&times;</button>
-        </div>
-        <div class="help-nav" role="group" aria-label="Help topics">
-            <button type="button" class="chip" data-section="start" aria-pressed="true">Start here</button>
-            <button type="button" class="chip" data-section="elements" aria-pressed="false">Screenplay elements</button>
-            <button type="button" class="chip" data-section="keys" aria-pressed="false">Keys &amp; touch</button>
-            <button type="button" class="chip" data-section="fixes" aria-pressed="false">Troubleshooting</button>
-        </div>
-        <div class="modal-body">
-
-            <section class="help-section" data-section="start">
-                <h3>Just Type</h3>
-                <p>Plainchant is for writing the scene and leaving the formatting to the software. Write your script as
-                    plain text in <strong>The Void</strong> and
-                    <strong>The Canvas</strong> shows it formatted as a screenplay, in real
-                    time. The
-                    formatting structure comes intuitively from what you type.</p>
-                <p>Tell the editor what you are writing with <kbd>Tab</kbd> or the bar under the text (Scene, Action,
-                    Character&hellip;), and <kbd>Enter</kbd> moves on to whatever normally comes next.</p>
-                <h3>Your Work</h3>
-                <ul>
-                    <li>Every change is <strong>saved automatically</strong>, and your last script reopens where you
-                        left it.
-                    </li>
-                    <li><strong>New</strong> starts a blank script. <strong>Library</strong> lists every script you
-                        have, and lets you search, <strong>rename</strong>, <strong>duplicate</strong>, and <strong>delete</strong>
-                        them.
-                    </li>
-                    <li>A deleted script waits in <strong>Recently Deleted</strong> for 30 days before it is truly gone,
-                        and you can restore it from there until then.
-                    </li>
-                    <li><strong>Export</strong> offers three things:
-                        <ul>
-                            <li><strong>Download a copy (.fountain)</strong> saves your script as a plaintext file named
-                                after its title. Screenwriting apps that understand Fountain can import it as a script
-                                seamlessly.
-                            </li>
-                            <li><strong>Download a copy (.fdx)</strong> saves it in Final Draft&rsquo;s format, for
-                                anyone who works in Final Draft (notes, sections and synopses do not transfer)
-                            </li>
-                            <li><strong>Print or save as PDF</strong> lays it out as standard screenplay pages and opens
-                                your browser's print window; choose <strong>Save as PDF</strong> there to make a
-                                shareable PDF.
-                            </li>
-                        </ul>
-                    </li>
-                    <li><strong>Video chapters</strong> lists a timestamp for each top-level section (<code
-                            class="inline"># Part one</code>), timed by the words read aloud before it, ready to paste
-                        into a YouTube description.
-                    </li>
-                    <li>For narrated videos and voice-over, write what is <em>said</em> as dialogue (under a cue such as
-                        <code class="inline">NARRATOR</code>) and what is <em>shown</em> as action.
-                    </li>
-                    <li><strong>Import</strong> adds a <code class="inline">.fountain</code>, <code
-                            class="inline">.md</code> or <code class="inline">.txt</code> file as a new script. Nothing
-                        you already have is replaced.
-                    </li>
-                    <li><strong>Real files</strong> (in Chrome, Edge and other Chromium browsers; not Firefox): <strong>Open
-                        a file&hellip;</strong> in the Library opens a <code class="inline">.fountain</code> file and
-                        keeps it linked, and <strong>Sync with a file&hellip;</strong> in Export keeps the open script
-                        in a <code class="inline">.fountain</code> file wherever you choose. Unlike a downloaded copy,
-                        the file stays in sync: every save writes it, and changes made to it in another program are
-                        loaded when you come back to Plainchant (what you had is kept in <strong>Versions</strong>). If
-                        both changed, a bar above the editor asks which should win the merge.
-                    </li>
-                    <li><strong>Copy</strong> puts the whole script on the clipboard.</li>
-                    <li><strong>Colors in the editor</strong> show what each line is. They are only hints; the formatted
-                        script is what prints.
-                    </li>
-                    <li><strong>Settings</strong> chooses a dark or light look (or your system's), the size of the
-                        editor's text, and can turn off the colors, the blank line Enter adds after action, and capitals as you type.
-                    </li>
-                    <li><strong>No connection needed.</strong> Plainchant works offline. Opened from a web address, your
-                        browser can also install it as an app: look for <strong>Install</strong> or <strong>Add to Home Screen</strong>.
-                    </li>
-                    <li><strong>View Switching</strong> choose what you see: the text alone, held to a comfortable width
-                        in the middle; both side by side; or the formatted script alone.
-                    </li>
-                    <li><strong>Quick edits in the preview:</strong> double-click a line of the formatted script (press
-                        and hold) and its paragraph opens in a small box, as plain text. Fix what you need;
-                        <kbd>Enter</kbd> keeps the change, <kbd>Shift</kbd>+<kbd>Enter</kbd> starts a new line,
-                        <kbd>Esc</kbd> leaves it as it was, and clicking away keeps it too.
-                    </li>
-                    <li><strong>Page view</strong> shows your script as the pages it prints on: page numbers, where each
-                        page breaks, <em>(MORE)</em> and <em>(CONT&rsquo;D)</em>, on US Letter or A4 (whichever you last
-                        printed on).
-                    </li>
-                    <li><strong>Outline</strong> lists your sections (<code class="inline"># Act One</code>), scenes and
-                        synopses (<code class="inline">= ...</code>), with the page each scene starts on. Choose one to
-                        jump there; type to find one.
-                    </li>
-                    <li>The page count above the formatted script (<strong>3 pages &middot; ~3 min</strong>) opens
-                        <strong>Script stats</strong>: pages, screen time (about a minute a page), scenes, words, how
-                        much each character speaks, the mix of interior and exterior, day and night scenes, each
-                        location, and every scene with its page, its length in eighths of a page and who speaks in it
-                        (choose one to go there). It also gives the time to read the script aloud.
-                    </li>
-                </ul>
-                <div class="callout"><p><strong>Scripts live in this browser, on this device</strong> (and in a file of
-                    your own, if you link one). Nothing
-                    saves to your filesystem without your consent, and your writing is never sent to a server. Clearing
-                    the browser&rsquo;s site data deletes your scripts. Before you do that, be sure to export anything
-                    you
-                    cannot afford to lose.</p></div>
-                <div class="help-actions">
-                    <button type="button" class="btn" id="helpTakeTour">Take the tour</button>
-                    <button type="button" class="btn" id="helpLoadExample">Open the screenplay example</button>
-                    <button type="button" class="btn" id="helpLoadNarration" data-narration-example>Open the narration
-                        example
-                    </button>
+            <div class="demo-body">
+                <div class="demo-source" aria-label="Plain text input example">
+                    <span class="line scene">INT. ARCADE - NIGHT</span>
+                    <span class="line action">The last cabinet hums in<br>the dark.</span>
+                    <span class="line character">MARA</span>
+                    <span class="line dialogue">One more life.</span>
+                    <span class="line caret" aria-hidden="true"></span>
                 </div>
-                <p style="margin-top:1.25rem;font-size:.75rem;color:var(--text-void-muted)"><em>Plainchant</em> is music
-                    with no ornament: a single line, sung unaccompanied. Plain text works the same way.</p>
-                <p class="help-thanks">With thanks to <strong>Space Quest Historian</strong>, whose videos about adventure games inspired the read-aloud time, the video chapters, the narration example and the
-                    retro theme. (Long Live the Pain Train).</p>
-            </section>
-
-            <section class="help-section" data-section="elements" hidden>
-                <p>A screenplay is a handful of element types. Type them like this:</p>
-                <table class="help-table">
-                    <thead>
-                    <tr>
-                        <th>Element</th>
-                        <th>You type</th>
-                        <th>Notes</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td>Scene heading</td>
-                        <td><code data-expect="scene">INT. KITCHEN - NIGHT</code></td>
-                        <td>Starts with <code class="inline">INT.</code>, <code class="inline">EXT.</code>, <code
-                                class="inline">EST.</code> or <code class="inline">I/E</code>, after a blank line. Typed
-                            in lowercase it is capitalised for you.
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Force a scene heading</td>
-                        <td><code data-expect="scene">.SNIPER SCOPE POV</code></td>
-                        <td>A leading <code class="inline">.</code> makes any line a scene heading.</td>
-                    </tr>
-                    <tr>
-                        <td>Action</td>
-                        <td><code data-expect="action,action,blank,action">Rain hits the window.
-                            He does not look up.
-
-                            Thunder.</code></td>
-                        <td>Any plain text. A blank line starts a new paragraph.</td>
-                    </tr>
-                    <tr>
-                        <td>Force action</td>
-                        <td><code data-expect="action,action">!SILENCE
-                            Nobody moves.</code></td>
-                        <td>A leading <code class="inline">!</code> stops an UPPERCASE line being read as a character.
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Character and dialogue</td>
-                        <td><code data-expect="character,parenthetical,dialogue">JOHN
-                            (quietly)
-                            I&rsquo;m home.</code></td>
-                        <td>An UPPERCASE name on its own line after a blank line, with the speech directly under it. A
-                            line in parentheses is a parenthetical. Extensions: <code class="inline">JOHN (V.O.)</code>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Mixed-case name</td>
-                        <td><code data-expect="character,dialogue">@McCLANE
-                            Yippee-ki-yay.</code></td>
-                        <td>A leading <code class="inline">@</code> makes any line a character.</td>
-                    </tr>
-                    <tr>
-                        <td>Dual dialogue</td>
-                        <td><code data-expect="character,dialogue,blank,character,dialogue">BRICK
-                            Screw you!
-
-                            STEEL ^
-                            Screw you!</code></td>
-                        <td><code class="inline">^</code> after the second name puts the two speeches side by side.</td>
-                    </tr>
-                    <tr>
-                        <td>Transition</td>
-                        <td><code data-expect="transition">CUT TO:</code></td>
-                        <td>An UPPERCASE line ending in <code class="inline">TO:</code>. For any other, start with <code
-                                class="inline">&gt;</code>: <code class="inline">&gt; FADE OUT.</code></td>
-                    </tr>
-                    <tr>
-                        <td>Centered</td>
-                        <td><code data-expect="centered">&gt; THE END &lt;</code></td>
-                        <td>Wrap the text in <code class="inline">&gt;</code> and <code class="inline">&lt;</code>.</td>
-                    </tr>
-                    <tr>
-                        <td>Title page</td>
-                        <td><code data-expect="title_page,title_page,title_page">Title: BIG FISH
-                            Credit: Written by
-                            Author: Jane Doe</code></td>
-                        <td>The first lines of the script. Also Source, Draft date and Contact.</td>
-                    </tr>
-                    <tr>
-                        <td>Notes</td>
-                        <td><code data-expect="action,blank">He waits. [[check the light]]
-                            /* cut this later */</code></td>
-                        <td><code class="inline">[[ ]]</code> shows as a highlighted note. <code class="inline">/*
-                            */</code> hides text completely.
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Emphasis</td>
-                        <td><code data-expect="action">*italic* **bold** _underline_</code></td>
-                        <td>Works inside any line.</td>
-                    </tr>
-                    <tr>
-                        <td>Outline</td>
-                        <td><code data-expect="section,blank,synopsis">## ACT TWO
-
-                            = Hero loses everything.</code></td>
-                        <td>Sections and synopses organize the script; they are not part of the screenplay itself.</td>
-                    </tr>
-                    <tr>
-                        <td>Page break</td>
-                        <td><code data-expect="page_break">===</code></td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td>Lyrics</td>
-                        <td><code data-expect="lyrics">~Willy Wonka! Willy Wonka!</code></td>
-                        <td></td>
-                    </tr>
-                    </tbody>
-                </table>
-            </section>
-
-            <section class="help-section" data-section="keys" hidden>
-                <h3>Keyboard</h3>
-                <table class="help-table">
-                    <thead>
-                    <tr>
-                        <th>Keys</th>
-                        <th>What they do</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td><kbd>Tab</kbd></td>
-                        <td>Cycles the current line through Action &rarr; Character &rarr; Scene heading &rarr;
-                            Transition. Inside dialogue, it switches between dialogue and parenthetical. On a blank line
-                            it chooses what you are about to type: a character (typed text is capitalized) or a scene
-                            heading (<code class="inline">INT.&nbsp;</code> is filled in).
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><kbd>Tab</kbd> <em>while suggestions show</em></td>
-                        <td>Completes the first suggestion instead. While you type a character name or a scene location,
-                            names already used in your script appear in the bar under the text; after a location and a
-                            dash (<code class="inline">INT. KITCHEN - </code>) the times of day you use appear, then DAY
-                            and NIGHT. <kbd>Enter</kbd> never picks one, so what you typed stays what you typed. <kbd>Esc</kbd>
-                            hides them. With <strong>Character</strong> chosen on an empty line, the names you use most appear too: tap or click one (there <kbd>Tab</kbd> still moves on to the next element).
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><kbd>Shift</kbd>+<kbd>Tab</kbd></td>
-                        <td>The same as <kbd>Tab</kbd> for cycling, but <em>backwards.</em></td>
-                    </tr>
-                    <tr>
-                        <td><kbd>Enter</kbd></td>
-                        <td>Moves on to what comes next. After a character or a parenthetical you go straight to the
-                            speech; after anything else you get a blank line, so an action line ends its paragraph. A
-                            name on its own line after a blank line (one your script already uses, or a new one with
-                            capitals, like <code class="inline">Detective Ruiz</code>) becomes a character, capitalized,
-                            with the speech next; <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Z</kbd> undoes it.
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><kbd>Shift</kbd>+<kbd>Enter</kbd></td>
-                        <td>A plain line break, to keep writing inside the same element.</td>
-                    </tr>
-                    <tr>
-                        <td><kbd>Esc</kbd>, then <kbd>Tab</kbd></td>
-                        <td>Moves focus out of the editor. (<kbd>Tab</kbd> alone is used for cycling.)</td>
-                    </tr>
-                    <tr>
-                        <td><kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Z</kbd></td>
-                        <td>Undo, including anything <kbd>Tab</kbd> or <kbd>Enter</kbd> just changed.</td>
-                    </tr>
-                    <tr>
-                        <td><kbd>F1</kbd> or <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>/</kbd></td>
-                        <td>Opens this help.</td>
-                    </tr>
-                    <tr>
-                        <td><kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>1</kbd>, <kbd>2</kbd>, <kbd>3</kbd>
-                        </td>
-                        <td>Void only, Void and Canvas, Canvas only (the three small buttons above the Canvas do the same). On a phone or tablet, <kbd>1</kbd> and <kbd>3</kbd> switch between the Void and the Canvas.
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd></td>
-                        <td>Focus mode on or off (the <strong>Focus</strong> button at the end of the bar under the text
-                            does the same): everything but the block you are writing is dimmed, and the line you are on
-                            stays in the middle of the screen. Scrolling still works.
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>P</kbd></td>
-                        <td>Prints the screenplay pages on the paper chosen last in Export.</td>
-                    </tr>
-                    </tbody>
-                </table>
-                <h3>Touch</h3>
-                <ul>
-                    <li>The <strong>status bar</strong> shows what the current line is. Tap Scene, Action,
-                        Character, Paren, Dialogue or Transition to change it, or to choose what a blank line will be.
-                    </li>
-                    <li>While you type a <strong>character name</strong> (or a location after <code
-                            class="inline">INT.</code>), names you have already used take the place of those buttons.
-                        Tap one to finish the word.
-                    </li>
-                    <li>On phones and portrait tablets, <strong>Void | Canvas</strong> at the top switches between the
-                        text and the formatted script. The Canvas opens where you were writing, and tapping a line there takes you back to the Void with the cursor on that line.
-                    </li>
-                </ul>
-            </section>
-
-            <section class="help-section" data-section="fixes" hidden>
-                <h3>A character name shows up as ordinary action</h3>
-                <p>A character needs three things upon introduction to be remembered:
-                    an UPPERCASE line, a blank line above it, and the speech directly
-                    below. Type the name with capitals (<code class="inline">MARA</code>) and press <kbd>Enter</kbd>, or
-                    press <kbd>Tab</kbd> on the blank line first. A name in lowercase is only taken for a character once the script has used it before.</p>
-                <h3>An action line in capitals turned into a character</h3>
-                <p>An UPPERCASE line with text right under it looks like a character to every screenplay program. Put
-                    <code class="inline">!</code> in front of it, or leave a blank line below it.</p>
-                <h3>My scene heading is not recognized</h3>
-                <p>A scene heading shows in capitals, and the bar under the text says <strong>Scene</strong> while the
-                    cursor is on it. It has to start with <code class="inline">INT.</code>, <code
-                            class="inline">EXT.</code>, <code class="inline">EST.</code> or <code
-                            class="inline">I/E</code> and have a blank line above it. Or start it with <code
-                            class="inline">.</code></p>
-                <h3>Text I pasted is in lowercase and is not formatted</h3>
-                <p>Capitals are added as you type, not to pasted text. Select the line and press <kbd>Tab</kbd> to
-                    convert it.</p>
-                <h3>Where did my script go?</h3>
-                <p>Open <strong>Library</strong>, and check <strong>Recently deleted</strong> if you removed it. Scripts
-                    are stored in this browser only, so a different browser, device or a private window shows a
-                    different (possibly empty) library. If not there... You may have accidentally deleted your browser cache and indexedDB. Be sure to make frequent backups of important work.</p>
-                <h3>I changed something and want the old text back</h3>
-                <p>Straight away, <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Z</kbd> undoes it. Later, open
-                    <strong>Library</strong> and choose <strong>Versions</strong> on the script: Plainchant keeps
-                    earlier versions by itself as you write. <strong>Compare</strong> shows what changed since a
-                    version, scene by scene, and can take one scene back (<strong>Use the version&rsquo;s scene</strong>,
-                    or <strong>Put back scene</strong> for one you deleted). <strong>Go back</strong> takes the whole
-                    version; <strong>Copy</strong> makes it a new script.</p>
-                <h3>My PDF has a date or a web address on it</h3>
-                <p>That is the browser&rsquo;s own header and footer. In its print window, open <strong>More
-                    settings</strong> (or <strong>Show details</strong>) and turn off <strong>Headers and footers</strong>.</p>
-                <h3>The page count is not the same as in another program</h3>
-                <p>Every screenwriting program breaks pages a little differently. A page or two either way on a feature
-                    is normal.</p>
-                <h3>Blank lines</h3>
-                <p>Extra blank lines are ignored in the formatted script. Use them freely to see your text more
-                    clearly.</p>
-            </section>
-        </div>
-        <div class="modal-footer">
-            <span class="hint-keys" style="font-size:.75rem;color:var(--text-void-muted)"><kbd>Esc</kbd> closes</span>
-            <button type="button" class="btn primary" data-close>Done</button>
-        </div>
-    </div>
-</div>
-
-<div id="export-modal" class="modal-overlay">
-    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="export-title">
-        <div class="modal-header">
-            <h2 id="export-title">Export</h2>
-            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
-        </div>
-        <div class="modal-body">
-            <section class="export-option">
-                <h3>Files</h3>
-                <p>A snapshot of the script, named after the title. <strong>.fountain</strong> is plain text:
-                    any text editor opens it, and so does any screenwriting app that reads Fountain.
-                    <strong>.fdx</strong> is Final Draft&rsquo;s own format, for sending to someone who uses Final Draft
-                    (most screenwriting apps open it too).</p>
-                <div class="export-buttons">
-                    <button type="button" class="btn" id="exportFountain">Download a copy (.fountain)</button>
-                    <button type="button" class="btn" id="exportFdx">Download a copy (.fdx)</button>
+                <div class="demo-page" aria-label="Formatted screenplay output example">
+                    <p class="page-scene">INT. ARCADE - NIGHT</p>
+                    <p>The last cabinet hums in the dark.</p>
+                    <p class="page-character">MARA</p>
+                    <p class="page-dialogue">One more life.</p>
+                    <span class="page-number">1.</span>
                 </div>
-            </section>
-            <section class="export-option" id="fileChoice" hidden>
-                <h3>Sync with a file</h3>
-                <p id="fileChoiceSays"></p>
-                <button type="button" class="btn" id="saveFileBtn">Sync with a file&hellip;</button>
-                <button type="button" class="btn" id="unlinkFileBtn" hidden>Stop syncing</button>
-            </section>
-            <section class="export-option">
-                <h3>PDF or paper</h3>
-                <p id="printSummary" class="print-summary"></p>
-                <fieldset class="paper-choice">
-                    <legend>Paper</legend>
-                    <label><input type="radio" name="paper" value="letter"> US Letter</label>
-                    <label><input type="radio" name="paper" value="a4"> A4</label>
-                </fieldset>
-                <p class="print-tip">Your browser&rsquo;s print window opens next. To make a PDF, choose <strong>Save as
-                    PDF</strong>
-                    as the printer. If the pages show a date or a web address, turn off <strong>Headers and footers</strong> there.</p>
-                <button type="button" class="btn primary" id="printGo">Print or save as PDF&hellip;</button>
-            </section>
-            <section class="export-option">
-                <h3>Video chapters</h3>
-                <p id="chaptersHow">Timestamps for a YouTube description, one for each top-level section (<code
-                        class="inline"># Part one</code>), timed by the words read aloud before it.</p>
-                <p id="chaptersPace" class="print-summary"></p>
-                <pre id="chaptersList" class="chapters-list" tabindex="0" aria-label="Chapters" hidden></pre>
-                <ul id="chaptersWarn" class="chapters-warn" hidden></ul>
-                <button type="button" class="btn" id="chaptersCopy">Copy chapters</button>
-                <button type="button" class="btn" id="chaptersExample" data-narration-example hidden>Open the narration
-                    example
-                </button>
-            </section>
-        </div>
-    </div>
-</div>
-
-<div id="outline-modal" class="modal-overlay">
-    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="outline-title">
-        <div class="modal-header">
-            <h2 id="outline-title">Outline</h2>
-            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
-        </div>
-        <div class="library-tools">
-            <input id="outlineFilter" class="library-search" type="search" placeholder="Find a scene or section"
-                   aria-label="Find a scene or section" autocomplete="off">
-        </div>
-        <div id="outline-list" class="modal-body outline-list">
-        </div>
-    </div>
-</div>
-
-<div id="stats-modal" class="modal-overlay">
-    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="stats-title">
-        <div class="modal-header">
-            <h2 id="stats-title">Script stats</h2>
-            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
-        </div>
-        <div class="modal-body">
-            <p id="statsFor" class="stats-for"></p>
-            <dl class="stats-tiles">
-                <div>
-                    <dt>Pages</dt>
-                    <dd id="statPages"></dd>
-                </div>
-                <div>
-                    <dt>Screen time</dt>
-                    <dd id="statTime"></dd>
-                </div>
-                <div>
-                    <dt>Read aloud</dt>
-                    <dd id="statAloud"></dd>
-                </div>
-                <div>
-                    <dt>Scenes</dt>
-                    <dd id="statScenes"></dd>
-                </div>
-                <div>
-                    <dt>Words</dt>
-                    <dd id="statWords"></dd>
-                </div>
-            </dl>
-            <h3 class="stats-heading">Characters</h3>
-            <table class="stats-table">
-                <thead>
-                <tr>
-                    <th scope="col">Character</th>
-                    <th scope="col">Speeches</th>
-                    <th scope="col">Words</th>
-                    <th scope="col">Share</th>
-                </tr>
-                </thead>
-                <tbody id="statsCharacters"></tbody>
-            </table>
-            <h3 class="stats-heading">Scene mix</h3>
-            <p class="stats-mix" id="statsSettings"></p>
-            <p class="stats-mix" id="statsTimes"></p>
-            <h3 class="stats-heading">Locations</h3>
-            <table class="stats-table">
-                <thead>
-                <tr>
-                    <th scope="col">Location</th>
-                    <th scope="col">Scenes</th>
-                    <th scope="col">Length</th>
-                </tr>
-                </thead>
-                <tbody id="statsLocations"></tbody>
-            </table>
-            <h3 class="stats-heading">Scenes</h3>
-            <table class="stats-table stats-scenes">
-                <thead>
-                <tr>
-                    <th scope="col">Scene</th>
-                    <th scope="col">Page</th>
-                    <th scope="col">Length</th>
-                </tr>
-                </thead>
-                <tbody id="statsScenes"></tbody>
-            </table>
-            <p class="stats-note">A page is about a minute of screen time; a scene&rsquo;s length is in eighths of a
-                page. Pages are counted as they print, on <span id="statsPaper">US Letter</span> (the paper chosen in
-                Export). Read aloud is <span id="statsAloudHow">the dialogue at 150 words a minute</span> (change it in
-                Settings).</p>
-        </div>
-        <div class="modal-footer">
-            <span class="hint-keys"><kbd>Esc</kbd> closes</span>
-            <button type="button" class="btn primary" data-close>Done</button>
-        </div>
-    </div>
-</div>
-
-<div id="settings-modal" class="modal-overlay">
-    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-        <div class="modal-header">
-            <h2 id="settings-title">Settings</h2>
-            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
-        </div>
-        <div class="modal-body">
-            <fieldset class="setting-choice">
-                <legend>Theme</legend>
-                <label><input type="radio" name="theme" value="dark" checked> Dark</label>
-                <label><input type="radio" name="theme" value="light"> Light</label>
-                <label><input type="radio" name="theme" value="retro"> Retro (CGA)</label>
-                <label><input type="radio" name="theme" value="system"> Match the system</label>
-            </fieldset>
-            <fieldset class="setting-choice">
-                <legend>Text size in the editor</legend>
-                <label><input type="radio" name="size" value="small"> Small</label>
-                <label><input type="radio" name="size" value="normal" checked> Normal</label>
-                <label><input type="radio" name="size" value="large"> Large</label>
-                <label><input type="radio" name="size" value="larger"> Larger</label>
-            </fieldset>
-            <label class="setting"><input type="checkbox" id="setColours" checked>
-                <span><strong>Colours in the editor</strong>
-                <span class="setting-note">Scene headings, character names, dialogue and notes each in their own color. Off: plain text, as in any text editor.</span></span></label>
-            <label class="setting"><input type="checkbox" id="setParagraphs" checked>
-                <span><strong>Enter starts the next element</strong>
-                <span class="setting-note">After action, a scene heading or a transition, Enter leaves the blank line the next element needs. Off: Enter is a plain line break, so press it twice between elements.</span></span></label>
-            <label class="setting"><input type="checkbox" id="setCapitals" checked>
-                <span><strong>Capitals as you type</strong>
-                <span class="setting-note">Scene headings (<code class="inline">int.</code>, <code
-                        class="inline">ext.</code>) and transitions (<code class="inline">cut to:</code>) turn to capitals by themselves. Off: only what you choose with <kbd>Tab</kbd> or the bar under the text.</span></span></label>
-            <label class="setting"><input type="checkbox" id="setCues" checked>
-                <span><strong>Guess character names</strong>
-                <span class="setting-note">A name on its own line after a blank line becomes a character when you press <kbd>Enter</kbd>: one your script already uses, in any case, or a new one written with capitals (<code
-                        class="inline">Detective Ruiz</code>). <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Z</kbd> undoes a wrong guess. Off: only <kbd>Tab</kbd> or the bar makes a character.</span></span></label>
-            <h3 class="setting-group">Reading aloud</h3>
-            <p class="setting-note setting-intro">For narrated videos and voice-over: the read-aloud time in <strong>Script
-                stats</strong>, and the video chapters in <strong>Export</strong>.</p>
-            <fieldset class="setting-choice">
-                <legend>What is read aloud</legend>
-                <label><input type="radio" name="aloud" value="dialogue" checked> Dialogue only</label>
-                <label><input type="radio" name="aloud" value="all"> Dialogue and action</label>
-            </fieldset>
-            <div class="setting setting-pace">
-                <label for="setPace"><strong>Reading speed</strong></label>
-                <span class="pace-field"><input type="number" id="setPace" class="pace-input" min="80" max="300"
-                                                step="5" inputmode="numeric" aria-describedby="setPaceNote"> words a minute</span>
-                <span class="setting-note" id="setPaceNote">About 150 is a steady narrator; 130 unhurried, 170 brisk. Time yourself reading a page and put your own number here.</span>
             </div>
-            <p class="setting-more">Focus mode is the <strong>Focus</strong> button (or
-                <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd>); the paper size is in
-                <strong>Export</strong>. Settings are kept in this browser. The preview is always white paper, like the
-                printed page.</p>
+            <p class="demo-caption">THE SAME WORDS, READY FOR THE PAGE</p>
         </div>
-        <div class="modal-footer">
-            <span class="hint-keys"><kbd>Esc</kbd> closes</span>
-            <button type="button" class="btn primary" data-close>Done</button>
-        </div>
-    </div>
-</div>
+    </section>
 
-<div id="tour-modal" class="modal-overlay">
-    <div class="modal-content wide" role="dialog" aria-modal="true" aria-labelledby="tour-title">
-        <div class="modal-header">
-            <h2 id="tour-title">Welcome to Plainchant</h2>
-            <button type="button" class="modal-close" data-close aria-label="Skip the tour">&times;</button>
-        </div>
-        <div class="modal-body tour-steps">
+    <aside class="promise" aria-label="Plainchant at a glance">
+        <p><strong>01</strong> Just type</p>
+        <p><strong>02</strong> Saved automatically</p>
+        <p><strong>03</strong> Export anywhere</p>
+        <p><strong>04</strong> Yours, always</p>
+    </aside>
 
-            <section class="tour-step" data-step="1">
-                <h3>Just type. We handle the structure.</h3>
-                <p>Write your script as plain text. It appears beside your writing as a properly formatted screenplay, live: margins, capitals and spacing are taken care of.</p>
-                <p class="hint-keys">Your text is in the <strong>Void</strong> on the left; the <strong>Canvas</strong> on the right is the formatted script. If the window is narrow, use <strong>Void | Canvas</strong> at the top to switch.</p>
-                <p class="hint-touch">Your text is in the <strong>Void</strong>; tap <strong>Canvas</strong> at the top to see it as a formatted script, and back to keep writing.</p>
-            </section>
-
-            <section class="tour-step" data-step="2" hidden>
-                <h3>Say what you are writing, then keep typing</h3>
-                <p class="hint-keys">Press <kbd>Tab</kbd> to cycle the current line: Action, Character, Scene heading,
-                    Transition. <kbd>Enter</kbd> then moves on to whatever normally comes next.</p>
-                <p class="hint-touch">Tap <strong>Scene</strong>, <strong>Action</strong>, <strong>Character</strong>&hellip;
-                    on the bar under your text. <strong>Enter</strong> then moves on to whatever normally comes next.
-                    (With a keyboard attached, <kbd>Tab</kbd> does the same.)</p>
-                <div class="sample-io">
-                    <div><h4>You type</h4>
-                        <pre class="sample" id="tourSample">INT. COFFEE SHOP - DAY
-
-The cafe is empty.
-
-JOHN
-(nervous)
-Is anyone here?</pre>
-                    </div>
-                    <div><h4>You get</h4>
-                        <div class="sample-sheet">
-                            <div class="screenplay-font" id="tourRendered"></div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="tour-step" data-step="3" hidden>
-                <h3>Your work stays put</h3>
-                <ul>
-                    <li>Everything is <strong>saved automatically</strong> as you type, and reopens where you left off.
-                    </li>
-                    <li><strong>Library</strong> keeps all your scripts. <strong>Export</strong> saves a file you can
-                        take anywhere.
-                    </li>
-                </ul>
-                <div class="callout"><p>Scripts are stored <strong>in this browser, on this device</strong>. Clearing
-                    site data deletes them, so Export anything you cannot lose.</p></div>
-            </section>
-
-            <section class="tour-step" data-step="4" hidden>
-                <h3>Ready when you are</h3>
-                <p>Start with a blank page, or open a short example script that shows every element at work. You can
-                    edit it freely.</p>
-                <p>The <strong>?</strong> button (or <kbd class="hint-keys">F1</kbd><span class="hint-touch">the Help item in the menu</span>)
-                    opens the cheat sheet of screenplay elements and shortcuts any time, and can replay this tour.</p>
-                <div class="help-actions">
-                    <button type="button" class="btn primary" id="tourStart">Start writing</button>
-                    <button type="button" class="btn" id="tourExample">Open the example script</button>
-                </div>
-            </section>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn ghost" id="tourSkip" data-close>Skip</button>
-            <div class="tour-dots" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-            <div class="help-actions" style="margin:0">
-                <button type="button" class="btn" id="tourBack" hidden>Back</button>
-                <button type="button" class="btn primary" id="tourNext">Next</button>
+    <section class="manifesto section-shell" aria-labelledby="manifesto-title">
+        <p class="section-kicker">The premise</p>
+        <div class="manifesto-grid">
+            <h2 id="manifesto-title">Writing software should help you write.</h2>
+            <div>
+                <p class="large-copy">Margins, indentation, page breaks, file formats—Plainchant handles the machinery while you stay with the scene.</p>
+                <p>It reads lightweight <a href="https://fountain.io" rel="noreferrer">Fountain</a> text and formats it live. There is nothing proprietary between you and your work, and nothing to configure before “FADE IN.”</p>
             </div>
         </div>
+    </section>
+
+    <section class="primer" id="primer" aria-labelledby="primer-title">
+        <div class="section-shell">
+            <p class="section-kicker light">Start writing</p>
+            <div class="primer-heading">
+                <h2 id="primer-title">Four steps.<br>That’s the whole primer.</h2>
+                <p>Plainchant understands the shape of a script from the shape of your text. Use <kbd>Tab</kbd> to cycle an element when you want a hand; smart <kbd>Enter</kbd> takes it from there.</p>
+            </div>
+
+            <ol class="steps">
+                <li>
+                    <span class="step-number">01</span>
+                    <div><h3>Set the scene</h3><code>INT. ARCADE - NIGHT</code><p>Start with <b>INT.</b> or <b>EXT.</b> and Plainchant recognises a scene heading.</p></div>
+                </li>
+                <li>
+                    <span class="step-number">02</span>
+                    <div><h3>Call your character</h3><code>MARA</code><p>Put a name in capitals. Names you have used before are suggested as you type.</p></div>
+                </li>
+                <li>
+                    <span class="step-number">03</span>
+                    <div><h3>Let them speak</h3><code>One more life.</code><p>Press Enter after a character and dialogue begins. Parentheticals work naturally too.</p></div>
+                </li>
+                <li>
+                    <span class="step-number">04</span>
+                    <div><h3>Take it with you</h3><code>EXPORT → .FOUNTAIN / .FDX / PDF</code><p>Print, save a PDF, or export for Fountain and Final Draft when the story is ready.</p></div>
+                </li>
+            </ol>
+
+            <div class="primer-note">
+                <span class="note-mark" aria-hidden="true">!</span>
+                <p><strong>Stuck?</strong> Tap the element bar—Scene, Action, Character, Dialogue—or press <kbd>Tab</kbd>. Plainchant never makes you memorise syntax.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="features section-shell" id="features" aria-labelledby="features-title">
+        <p class="section-kicker">Built for the whole draft</p>
+        <div class="features-heading">
+            <h2 id="features-title">From blank page<br>to final draft.</h2>
+            <p>Small enough to disappear. Capable enough to stay with a full-length script.</p>
+        </div>
+        <div class="feature-grid">
+            <article class="feature feature-wide">
+                <span class="feature-index">A</span>
+                <h3>Stay in the flow</h3>
+                <p>Live formatting, smart Enter, autocomplete, focus mode and quick edits keep your hands on the story—not the toolbar.</p>
+                <div class="focus-visual" aria-hidden="true"><span>Rain needles the empty street.</span><strong>MARA crosses beneath the last working light.</strong><span>Somewhere behind her, a coin drops.</span></div>
+            </article>
+            <article class="feature">
+                <span class="feature-index">B</span>
+                <h3>Never lose the thread</h3>
+                <p>Autosave, a script library, named versions and scene-by-scene comparisons give every draft a safe place to land.</p>
+                <p class="feature-callout">SAVED AS YOU TYPE <i></i></p>
+            </article>
+            <article class="feature">
+                <span class="feature-index">C</span>
+                <h3>See the whole story</h3>
+                <p>Outline, page view, scene and character stats, screen-time estimates, and video chapters reveal the shape of the work.</p>
+                <div class="stat-row" aria-hidden="true"><span><b>92</b> pages</span><span><b>41</b> scenes</span><span><b>1h 32m</b> runtime</span></div>
+            </article>
+            <article class="feature feature-dark">
+                <span class="feature-index">D</span>
+                <h3>Keep your work yours</h3>
+                <p>Plainchant runs in the browser, works offline, and stores scripts on your device. No account, cloud lock-in or tracking.</p>
+                <p class="terminal-line"><span>LOCAL FIRST</span><br>12,408 words · 3 scripts<br>No account · No trackers · No cloud required</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="retro-callout section-shell" aria-labelledby="retro-title">
+        <div class="retro-copy">
+            <p class="section-kicker">More than screenplays</p>
+            <h2 id="retro-title">Made for words<br>that will be heard.</h2>
+            <p>Plainchant also understands narrated videos and voice-over. Separate what is said from what is shown, estimate read-aloud time, and turn sections into ready-to-paste video chapters.</p>
+        </div>
+        <div class="retro-screen narration-screen" aria-label="Example of a narrated video script in Plainchant">
+            <p class="narration-label"># THE OPENING</p>
+            <p class="narration-action">Slow push across an empty cinema.</p>
+            <p class="narration-character">NARRATOR</p>
+            <p>Every story begins before anyone knows what it is.</p>
+            <div class="narration-stats"><span>READ ALOUD</span><strong>08:42</strong><span>CHAPTERS</span><strong>04</strong></div>
+        </div>
+    </section>
+
+    <section class="final-cta">
+        <div class="section-shell final-cta-inner">
+            <p class="section-kicker light">The cursor is blinking</p>
+            <h2>Ready when<br>you are.</h2>
+            <p>Open a blank script or explore the built-in example. No sign-up, no setup, nothing to configure.</p>
+            <a class="button button-paper" href="app.html">Enter the Void <span aria-hidden="true">→</span></a>
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <a class="wordmark" href="index.html"><span class="wordmark-mark" aria-hidden="true">P</span><span>PLAINCHANT</span></a>
+    <p>Screenwriting, plain and simple.</p>
+    <div>
+        <a href="docs/devlog/index.html">Dev diary</a>
+        <a href="https://github.com/aedmark/plainchant">Source</a>
+        <a href="LICENSE">License</a>
     </div>
-</div>
-
-<div id="dropHint" class="drop-hint" hidden>Drop a script here to import it</div>
-<div id="notice" class="notice" role="status" aria-live="polite"></div>
-<div id="print-root" aria-hidden="true"></div>
-
-<script src="src/fountain.js"></script>
-<script src="src/editing.js"></script>
-<script src="src/library.js"></script>
-<script src="src/store.js"></script>
-<script src="src/paginate.js"></script>
-<script src="src/stats.js"></script>
-<script src="src/narration.js"></script>
-<script src="src/adventure.js"></script>
-<script src="src/outline.js"></script>
-<script src="src/versions.js"></script>
-<script src="src/compare.js"></script>
-<script src="src/filesync.js"></script>
-<script src="src/fdx.js"></script>
-<script src="src/importing.js"></script>
-<script src="src/suggest.js"></script>
-<script src="src/app/core.js"></script>
-<script src="src/app/layout.js"></script>
-<script src="src/app/persistence.js"></script>
-<script src="src/app/dialogs.js"></script>
-<script src="src/app/library-ui.js"></script>
-<script src="src/app/versions-ui.js"></script>
-<script src="src/app/compare-ui.js"></script>
-<script src="src/app/example.js"></script>
-<script src="src/app/help.js"></script>
-<script src="src/app/tour.js"></script>
-<script src="src/app/settings.js"></script>
-<script src="src/app/typing.js"></script>
-<script src="src/app/adventure-ui.js"></script>
-<script src="src/app/shade.js"></script>
-<script src="src/app/focus.js"></script>
-<script src="src/app/export.js"></script>
-<script src="src/app/import.js"></script>
-<script src="src/app/files-ui.js"></script>
-<script src="src/app/print.js"></script>
-<script src="src/app/sheets-ui.js"></script>
-<script src="src/app/panes.js"></script>
-<script src="src/app/quick-edit.js"></script>
-<script src="src/app/chapters-ui.js"></script>
-<script src="src/app/stats-ui.js"></script>
-<script src="src/app/outline-ui.js"></script>
-<script src="src/app/offline.js"></script>
-<script src="src/app/safekeeping.js"></script>
-<script src="src/app/main.js"></script>
+</footer>
 </body>
 </html>

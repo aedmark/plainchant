@@ -10,6 +10,7 @@ published together under the same names.
 
 | Date | Entry | Covers |
 | --- | --- | --- |
+| 2026-09-30 | [A Front Door](2026-09-30-a-front-door.html) | The public homepage, a short primer, and the editor moving behind it (session 31) |
 | 2026-09-20 | [Writing Before Formatting](2026-09-20-writing-before-formatting.html) | The prototype, the repo's memory, the parser, never losing words, phones and tablets, typing helpers (sessions 1 to 3) |
 | 2026-09-20 | [A Name and a Front Door](2026-09-20-a-name-and-a-front-door.html) | Tour and Help, the name, the Library, export and import, the split into files (sessions 4 to 9) |
 | 2026-09-25 | [Somewhere Safer for the Words](2026-09-25-somewhere-safer-for-the-words.html) | Autocomplete, IndexedDB, the emergency buffer, no legacy support (sessions 10 to 12) |

@@ -27,6 +27,21 @@ At the end of a session, add an entry at the top of "Sessions" using this templa
 
 <!-- NEW ENTRIES GO HERE -->
 
+### Session 31: 2026-09-30: A front door for Plainchant
+
+**Goal:** Give new writers a homepage that introduces the app and acts as a short primer.
+**Done:** P6-01: a responsive homepage with the distraction-free promise, a raw-text-to-page product demonstration,
+four first steps, workflow and safekeeping features, narration support, and direct calls to start writing.
+**Changed:** `index.html` is the homepage with `src/home.css`; the editor moved unchanged to `app.html`; e2e and
+structure tests target it; the service worker caches both pages and stylesheets; installed copies start at the app.
+README, CLAUDE, roadmap, handoff, decisions and dev diary follow the new front door.
+**Decisions:** D-061.
+**Problems / surprises:** the first user prompt accidentally called Plainchant a game; the user corrected it before
+delivery, and the homepage language was refocused entirely on distraction-free screenwriting. Moving the app briefly
+tripped one title assertion; restoring its Plainchant-first title fixed it.
+**Left undone:** no social-preview image or hosted deployment was added; this repository has no Sites hosting setup.
+**Next session should start with:** the owner's hands-on checks in HANDOFF, or feedback on the new homepage.
+
 ### Session 30: 2026-09-29: HANDOFF trimmed to the present; this log split out (D-058)
 
 **Goal:** The owner asked to clean up the handoff and move its history to an archive, so HANDOFF covers only current

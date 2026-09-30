@@ -205,6 +205,13 @@ Not committed. Decide only after Phase 3 ships. See open questions in DECISIONS.
 - [ ] P5-02 Optional cloud sync
 - [ ] P5-03 Read-only share links / collaboration
 
+## Phase 6: A public front door
+
+- [x] P6-01 A responsive project homepage for new writers: the distraction-free promise, a plain-text-to-page
+  demonstration, a four-step primer, the main workflow and privacy features, narration support, and clear links into
+  the app (D-061). The writing app moves from `index.html` to `app.html`; the installable app still opens straight into
+  the editor.
+
 ## Known limitations (deliberate, revisit)
 
 - Notes (`[[...]]`) that span several lines are not recognised; single-line notes are.

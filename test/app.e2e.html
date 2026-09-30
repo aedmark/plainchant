@@ -2,7 +2,7 @@
 <!--
   End-to-end checks for the app shell: restore on reload, New, library, flush-on-hide, scroll sync, escaping.
 
-  Loads ../index.html in an iframe and drives it. Open in a browser served over http, or from disk with
+  Loads ../app.html in an iframe and drives it. Open in a browser served over http, or from disk with
   --allow-file-access-from-files. Results appear in the banner; the same text is in <pre id="out">.
 
   The app's storage (IndexedDB, and a few localStorage keys) is shared by every page on the same origin, so this page
@@ -14,7 +14,7 @@
 <pre id="out">RUNNING</pre>
 <script src="../src/store.js"></script>
 <script>
-const APP = '../index.html';
+const APP = '../app.html';
 const EMERGENCY_KEY = 'plainchant_emergency';
 const TOUR_KEY = 'plainchant_onboarded';
 const KEYS = [TOUR_KEY, EMERGENCY_KEY, 'plainchant_paper', 'plainchant_focus', 'plainchant_keep_asked', 'plainchant_settings'];
