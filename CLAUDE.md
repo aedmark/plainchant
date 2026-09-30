@@ -59,7 +59,6 @@ Sessions are short-lived and context resets between them, so the repo carries th
 | `docs/HANDOFF.md` | Current state, what is not checked yet, gotchas, next steps, open questions: the present only |
 | `docs/SESSION-LOG.md` | Append-only history, one entry per session, newest first (D-058) |
 | `docs/DECISIONS.md` | Append-only decision record |
-| `docs/agent-template/` | A reusable starter kit of these docs (CLAUDE.md, roadmap, handoff, session log, decisions, devlog) for other projects, with placeholders; not part of the app. Moving to the owner's hypervisor repo (D-058) |
 | `docs/devlog/` | The public dev diary: one HTML fragment per entry and `index.html` listing them, kept up as work lands (session protocol step 5); how to write one is in its README (D-053) |
 
 ## App scripts (`src/app/`)
