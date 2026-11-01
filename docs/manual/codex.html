@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Plainchant Codex: All Elements, Modules &amp; Operations</title>
+    <link rel="stylesheet" href="manual.css">
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h1>📜 Plainchant</h1>
+            <span class="version-tag">The Element &amp; Module Codex</span>
+            <p style="margin-top: 0.6rem; font-size: 0.85rem;"><a href="index.html" style="color: var(--accent-cyan); text-decoration: none;">&larr; Back to Architectural Manual</a></p>
+        </div>
+        <nav class="sidebar-nav">
+            <section>
+                <h3>🎬 Screenplay Elements (10)</h3>
+                <ul>
+                    <li><a href="#cat-fountain-elements"><em>Overview (10)</em></a></li>
+                    <li><a href="#el-scene-heading">Scene Headings</a></li>
+                    <li><a href="#el-action">Action Blocks</a></li>
+                    <li><a href="#el-character">Character Cues</a></li>
+                    <li><a href="#el-dialogue">Dialogue &amp; Lyrics</a></li>
+                    <li><a href="#el-parenthetical">Parentheticals</a></li>
+                    <li><a href="#el-transition">Transitions</a></li>
+                    <li><a href="#el-centered">Centered Text</a></li>
+                    <li><a href="#el-sections">Sections &amp; Synopses</a></li>
+                    <li><a href="#el-page-break">Page Breaks</a></li>
+                    <li><a href="#el-notes">Notes &amp; Boneyard</a></li>
+                </ul>
+            </section>
+
+            <section>
+                <h3>⌨️ Typing Engine &amp; Modifiers (7)</h3>
+                <ul>
+                    <li><a href="#cat-typing-engine"><em>Overview (7)</em></a></li>
+                    <li><a href="#fn-tab-cycle">Tab Element Cycle</a></li>
+                    <li><a href="#fn-smart-enter">Smart Enter State Machine</a></li>
+                    <li><a href="#fn-auto-uppercase">Auto-Uppercase Engine</a></li>
+                    <li><a href="#fn-autocomplete">Autocomplete Suggestion Chips</a></li>
+                    <li><a href="#fn-name-guessing">Character Name Guessing</a></li>
+                    <li><a href="#fn-focus-mode">Focus Mode &amp; Veils</a></li>
+                    <li><a href="#fn-syntax-shading">Sub-Pixel Syntax Shading</a></li>
+                </ul>
+            </section>
+
+            <section>
+                <h3>🖥️ Workspaces &amp; Viewports (6)</h3>
+                <ul>
+                    <li><a href="#cat-workspaces"><em>Overview (6)</em></a></li>
+                    <li><a href="#ws-the-void">The Void (Drafting Textarea)</a></li>
+                    <li><a href="#ws-the-canvas">The Canvas (Screenplay Preview)</a></li>
+                    <li><a href="#ws-sheets-view">Simulated Sheets View</a></li>
+                    <li><a href="#ws-panes-switcher">Desktop Panes Switcher</a></li>
+                    <li><a href="#ws-mobile-switcher">Mobile Single-Pane Switcher</a></li>
+                    <li><a href="#ws-quick-edit">Canvas In-Place Quick Edit</a></li>
+                </ul>
+            </section>
+
+            <section>
+                <h3>📊 Analytics &amp; Creator Tooling (5)</h3>
+                <ul>
+                    <li><a href="#cat-analytics"><em>Overview (5)</em></a></li>
+                    <li><a href="#an-script-stats">Script Stats &amp; Screen Time</a></li>
+                    <li><a href="#an-scene-eighths">Scene Eighths Measurement</a></li>
+                    <li><a href="#an-character-share">Dialogue &amp; Character Share</a></li>
+                    <li><a href="#an-outline-tree">Outline Hierarchy Navigator</a></li>
+                    <li><a href="#an-youtube-chapters">YouTube Video Chapters</a></li>
+                </ul>
+            </section>
+
+            <section>
+                <h3>💾 Storage, Durability &amp; Sync (6)</h3>
+                <ul>
+                    <li><a href="#cat-storage"><em>Overview (6)</em></a></li>
+                    <li><a href="#st-indexeddb">IndexedDB Scripts Store</a></li>
+                    <li><a href="#st-emergency-buffer">Emergency Unload Buffer</a></li>
+                    <li><a href="#st-broadcast-sync">Multi-Tab Broadcast Sync</a></li>
+                    <li><a href="#st-snapshot-versions">Snapshot Versions &amp; Pruning</a></li>
+                    <li><a href="#st-scene-compare">Scene Diff &amp; Rollback</a></li>
+                    <li><a href="#st-disk-sync">Chromium Live Disk Sync</a></li>
+                </ul>
+            </section>
+
+            <section>
+                <h3>📤 Output Formats &amp; Interop (5)</h3>
+                <ul>
+                    <li><a href="#cat-output"><em>Overview (5)</em></a></li>
+                    <li><a href="#io-fountain-export">Fountain Plain Text Export</a></li>
+                    <li><a href="#io-fdx-export">Final Draft XML (.fdx) Export</a></li>
+                    <li><a href="#io-print-engine">Courier Grid Print / PDF Engine</a></li>
+                    <li><a href="#io-title-page">Title Page Generation</a></li>
+                    <li><a href="#io-file-importer">Universal File Importer</a></li>
+                </ul>
+            </section>
+
+            <section>
+                <h3>🎨 Themes &amp; Nostalgia (4)</h3>
+                <ul>
+                    <li><a href="#cat-themes"><em>Overview (4)</em></a></li>
+                    <li><a href="#th-dark">Dark Theme Engine</a></li>
+                    <li><a href="#th-light">Light Theme Engine</a></li>
+                    <li><a href="#th-retro-cga">Retro CGA 4-Color Theme</a></li>
+                    <li><a href="#th-adventure-parser">Adventure Game Parser</a></li>
+                </ul>
+            </section>
+        </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="content">
+        <header>
+            <h1 class="doc-title">The Plainchant Codex</h1>
+            <p class="subtitle">The Hands that Shape the Text: Exhaustive Reference for All 43 Elements, Mechanics &amp; Subsystems</p>
+            <div class="badge-row">
+                <span class="badge emerald">43 Core Architectural Entities</span>
+                <span class="badge cyan">15 Pure UMD Modules</span>
+                <span class="badge purple">7 Functional Categories</span>
+                <span class="badge amber">Courier 60&times;54 Character Grid</span>
+            </div>
+            <div class="callout info">
+                <div class="callout-title">The Three Standard Questions</div>
+                <p>
+                    In fidelity to the system codex, every element, mechanic, module, and store in this reference answers three architectural questions:
+                    <strong>What It Does</strong> (syntax, interaction patterns, user-facing behavior),
+                    <strong>How It Works</strong> (internal execution trace through parser, pagination grid, storage, and DOM stage manager), and
+                    <strong>Why It Works</strong> (software engineering patterns, typographic standards, and durability guarantees).
+                </p>
+            </div>
+        </header>
+
+        <hr class="divider">
+
+        <!-- CATEGORY 1 -->
+        <section id="cat-fountain-elements">
+            <h2>🎬 Screenplay Elements (Fountain Syntax)</h2>
+            <p>The foundational semantic units of dramatic text parsed by <code>src/fountain.js</code> and formatted on the Courier character grid.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Element</th>
+                        <th>Syntax / Pattern</th>
+                        <th>Summary</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong><a href="#el-scene-heading" style="color: var(--accent-cyan); text-decoration: none;">Scene Heading</a></strong></td>
+                        <td><code>INT. LOCATION - DAY</code> or <code>.HEADING</code></td>
+                        <td>Establishes camera location, lighting condition, and scene numbering.</td>
+                    </tr>
+                    <tr>
+                        <td><strong><a href="#el-action" style="color: var(--accent-cyan); text-decoration: none;">Action Block</a></strong></td>
+                        <td>Standard prose or <code>!FORCED ACTION</code></td>
+                        <td>Narrative description of visual action, character movement, and sound.</td>
+                    </tr>
+                    <tr>
+                        <td><strong><a href="#el-character" style="color: var(--accent-cyan); text-decoration: none;">Character Cue</a></strong></td>
+                        <td><code>NAME</code>, <code>NAME (V.O.)</code>, <code>@NAME</code>, <code>NAME ^</code></td>
+                        <td>Speaker identification cue centered over subsequent dialogue.</td>
+                    </tr>
+                    <tr>
+                        <td><strong><a href="#el-dialogue" style="color: var(--accent-cyan); text-decoration: none;">Dialogue &amp; Lyrics</a></strong></td>
+                        <td>Spoken text or <code>~LYRICS LINE</code></td>
+                        <td>Spoken words rendered in a narrow 35-character centered column.</td>
+                    </tr>
+                    <tr>
+                        <td><strong><a href="#el-parenthetical" style="color: var(--accent-cyan); text-decoration: none;">Parenthetical</a></strong></td>
+                        <td><code>(wryly)</code> immediately under cue</td>
+                        <td>Actor direction or vocal instruction subordinate to a character cue.</td>
+                    </tr>
+                    <tr>
+                        <td><strong><a href="#el-transition" style="color: var(--accent-cyan); text-decoration: none;">Transition</a></strong></td>
+                        <td><code>CUT TO:</code> or <code>&gt; FADE OUT</code></td>
+                        <td>Visual editing instruction formatted flush right.</td>
+                    </tr>
+                    <tr>
+                        <td><strong><a href="#el-centered" style="color: var(--accent-cyan); text-decoration: none;">Centered Text</a></strong></td>
+                        <td><code>&gt; THE END &lt;</code></td>
+                        <td>Text centered horizontally across the full page width.</td>
+                    </tr>
+                    <tr>
+                        <td><strong><a href="#el-sections" style="color: var(--accent-cyan); text-decoration: none;">Sections &amp; Synopses</a></strong></td>
+                        <td><code># Act I</code> / <code>= Synopsis text</code></td>
+                        <td>Outlining structures that organize scenes without printing to paper.</td>
+                    </tr>
+                    <tr>
+                        <td><strong><a href="#el-page-break" style="color: var(--accent-cyan); text-decoration: none;">Page Break</a></strong></td>
+                        <td><code>===</code> on its own line</td>
+                        <td>Forces an immediate paper page advance on print and PDF output.</td>
+                    </tr>
+                    <tr>
+                        <td><strong><a href="#el-notes" style="color: var(--accent-cyan); text-decoration: none;">Notes &amp; Boneyard</a></strong></td>
+                        <td><code>[[Note]]</code> or <code>/* Omitted */</code></td>
+                        <td>Editorial comments and hidden text omitted from printed pages.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="triad-block" id="el-scene-heading">
+                <h3><code>Scene Heading</code> : Slugline Element</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">🎬 Screenplay Element</span>
+                    <span class="badge">Column 0</span>
+                    <span class="badge">Courier 60ch</span>
+                </div>
+                <pre><code>INT. ABANDONED OBSERVATORY - NIGHT #12#
+.OUTSIDE THE VAULT DOORS - CONTINUOUS</code></pre>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Establishes the setting, camera perspective, time of day, and optional scene number. Must be rendered in pure UPPERCASE preceded and followed by a blank line.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Parsing:</strong> <code>Fountain.classifyLines()</code> checks for standard prefixes (<code>INT.</code>, <code>EXT.</code>, <code>EST.</code>, <code>INT/EXT.</code>, <code>I/E.</code>) or leading forced period (<code>.</code>).</li>
+                        <li><strong>Scene Number Extraction:</strong> Trailing <code>#num#</code> tokens are parsed and isolated from the heading text.</li>
+                        <li><strong>Pagination:</strong> <code>paginate.js</code> reserves 1 blank line above and below. If fewer than 2 lines remain on the current page, the heading is automatically pushed to the top of the next page to prevent orphans.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Scene headings form the structural skeleton for scene breakdown reports, call sheets, and outline navigation. Preventing orphaned headings ensures scripts look professional during production table reads.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="el-action">
+                <h3><code>Action</code> : Narrative Prose Block</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">🎬 Screenplay Element</span>
+                    <span class="badge">Column 0</span>
+                    <span class="badge">Courier 60ch</span>
+                </div>
+                <pre><code>Marcus adjusts the brass lens. The gears hum softly.
+!HE TURNS TO FACE HER IN TOTAL SILENCE.</code></pre>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Describes visual action, character behavior, setting details, and sound effects. Spans the full standard 60-character column width (1.5" left margin, 1.0" right margin).</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Classification:</strong> Any paragraph not meeting the criteria for heading, cue, transition, or metadata is classified as Action.</li>
+                        <li><strong>Forced Action:</strong> An initial exclamation mark (<code>!</code>) overrides heuristics, allowing lines in pure uppercase to remain action rather than becoming character cues.</li>
+                        <li><strong>Wrapping:</strong> <code>paginate.js</code> breaks action text at word boundaries to fit strictly within 60 Courier monospace columns.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Preserves standard literary prose freedom while guaranteeing that margins never exceed the precise 60-character industry ceiling.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="el-character">
+                <h3><code>Character Cue</code> : Speaker Identification</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">🎬 Screenplay Element</span>
+                    <span class="badge">Column 20</span>
+                    <span class="badge">Courier 38ch</span>
+                </div>
+                <pre><code>MARCUS (V.O.)
+@DR. EVELYN CROSS
+ELENA ^</code></pre>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Names the character about to speak. Indented to column 20 (3.5" left margin). Supports vocal extensions (<code>(V.O.)</code>, <code>(O.S.)</code>), forced prefixes (<code>@</code>), and dual dialogue carets (<code>^</code>).</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Inference:</strong> An uppercase line preceded by a blank line and followed by non-blank text is identified as a Character Cue.</li>
+                        <li><strong>Extensions:</strong> Vocal modifiers enclosed in parentheses are preserved alongside the character name.</li>
+                        <li><strong>Dual Dialogue:</strong> Ending the cue with a caret (<code>^</code>) marks the speech as simultaneous with the preceding character's dialogue.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Anchors dialogue indexing, character speech metrics, and script breakdown reports without requiring manual indentation.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="el-dialogue">
+                <h3><code>Dialogue &amp; Lyrics</code> : Spoken Speech</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">🎬 Screenplay Element</span>
+                    <span class="badge">Column 10</span>
+                    <span class="badge">Courier 35ch</span>
+                </div>
+                <pre><code>We have less than three minutes before the seal breaks.
+~ Row, row, row your boat...</code></pre>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Represents spoken lines of text indented to column 10 (2.5" left margin) with a strict maximum line width of 35 characters. Lines starting with <code>~</code> designate lyrics and render in italics.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Context Dependency:</strong> Non-blank lines immediately following a Character Cue or Parenthetical are categorized as Dialogue.</li>
+                        <li><strong>Formatting:</strong> Wrapped at word boundaries within 35 characters. Inline emphasis (<code>*italic*</code>, <code>**bold**</code>, <code>_underline_</code>) is transformed into styled HTML spans.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Tight 35-character wrapping creates the distinctive centered column of dialogue that screenwriters and actors rely on for quick line reading.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="el-parenthetical">
+                <h3><code>Parenthetical</code> : Actor Direction</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">🎬 Screenplay Element</span>
+                    <span class="badge">Column 15</span>
+                    <span class="badge">Courier 25ch</span>
+                </div>
+                <pre><code>(whispering)
+(to Evelyn, laughing)</code></pre>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Provides brief instructional cues regarding tone, delivery, or action directly subordinate to a character speech, enclosed in parentheses.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Detection:</strong> A line enclosed in parentheses <code>(...)</code> occurring between a Character Cue and Dialogue or between dialogue lines is recognized as a Parenthetical.</li>
+                        <li><strong>Layout:</strong> Indented to column 15 (3.0" left margin) with a max width of 25 characters. Never allowed to stand as the final line of a page.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Provides actors and directors with delivery notes without cluttering dialogue text or distorting speech timing calculations.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="el-transition">
+                <h3><code>Transition</code> : Visual Cut &amp; Fade</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">🎬 Screenplay Element</span>
+                    <span class="badge">Column 45</span>
+                    <span class="badge">Courier 15ch</span>
+                </div>
+                <pre><code>CUT TO:
+SMASH CUT TO:
+&gt; FADE OUT.</code></pre>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Specifies camera transitions, editing cuts, or dissolves, rendered flush right at column 45 (6.0" left margin).</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Pattern Matching:</strong> Uppercase lines ending in <code>TO:</code>, standard keywords (<code>FADE OUT.</code>), or lines beginning with <code>&gt;</code> are classified as Transitions.</li>
+                        <li><strong>Alignment:</strong> Lays out flush right against the 60-character right margin.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Adheres strictly to traditional screenplay conventions, signaling pacing shifts cleanly to the reader.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="el-centered">
+                <h3><code>Centered Text</code> : Symmetrical Titles</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">🎬 Screenplay Element</span>
+                    <span class="badge">Centered</span>
+                    <span class="badge">Courier 60ch</span>
+                </div>
+                <pre><code>&gt; THE END &lt;
+&gt; INTERMISSION &lt;</code></pre>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Centers a line of text symmetrically across the full page width, commonly used for act titles or closing tags.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>Recognizes lines bracketed by <code>&gt;</code> and <code>&lt;</code>, stripping the brackets and calculating leading spaces to center the content mathematically across the 60-column page grid.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Provides an unambiguous notation for centered titles without requiring manual spacebar padding.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="el-sections">
+                <h3><code>Sections &amp; Synopses</code> : Outlining Elements</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">🎬 Screenplay Element</span>
+                    <span class="badge">Outline Layer</span>
+                    <span class="badge">Non-Printing</span>
+                </div>
+                <pre><code># ACT I: THE SUMMONING
+## SEQUENCE 1 - THE CRYPT
+= Elena discovers the unbroken brass seal.</code></pre>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Structural outlining markers that organize your screenplay into acts, sequences, and scene synopses. Never appear on printed pages or PDF exports.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Sections (<code>#</code>):</strong> Parsed hierarchically by <code>outline.js</code> to generate a navigation tree. Top-level sections automatically serve as chapter titles for YouTube video export.</li>
+                        <li><strong>Synopses (<code>=</code>):</strong> Lines beginning with <code>=</code> attach descriptive summary notes to the preceding scene or section.</li>
+                        <li><strong>Print Exclusion:</strong> <code>paginate.js</code> completely drops sections and synopses from paper layout.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Writers can embed detailed outlines, beats, and production notes directly into the manuscript without polluting final printed scripts.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="el-page-break">
+                <h3><code>Page Break</code> : Forced Sheet Advance</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">🎬 Screenplay Element</span>
+                    <span class="badge">Pagination Hook</span>
+                    <span class="badge">Three Equals</span>
+                </div>
+                <pre><code>===</code></pre>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Forces an immediate advance to a new paper page in Print, PDF, and Sheets View.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>A line containing three or more consecutive equal signs (<code>===</code>) signals <code>paginate.js</code> to pad the remaining lines on the current sheet with empty rows and begin a fresh page.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Gives the writer exact control over act breaks and dramatic transitions.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="el-notes">
+                <h3><code>Notes &amp; Boneyard</code> : Editorial Comments</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">🎬 Screenplay Element</span>
+                    <span class="badge">Editorial</span>
+                    <span class="badge">Non-Printing</span>
+                </div>
+                <pre><code>[[Check historical accuracy of brass gears]]
+/* OMITTED SCENE 14:
+Elena's monologue removed for pacing.
+*/</code></pre>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Allows inline editorial annotations (<code>[[...]]</code>) and large multi-line omitted text blocks (<code>/* ... */</code>) that remain visible in the editor but are excluded from output.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Inline Notes:</strong> Text bracketed by <code>[[...]]</code> is recognized by <code>fountain.js</code> and styled in muted yellow within the Void and Canvas, but omitted during pagination.</li>
+                        <li><strong>Boneyard:</strong> Text enclosed within <code>/* ... */</code> is stripped completely from the block generation pipeline.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Enables writers to leave notes for co-writers or archive discarded dialogue drafts directly within the file without creating messy separate scratch documents.</p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- CATEGORY 2 -->
+        <section id="cat-typing-engine">
+            <h2>⌨️ Typing Engine &amp; Kinetic Modifiers</h2>
+            <p>The keyboard-driven interaction layer that eliminates formatting menus and keeps your hands on the home row.</p>
+
+            <div class="triad-block" id="fn-tab-cycle">
+                <h3><code>Tab Element Cycling</code> : Modeless Keyboard Navigation</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">⌨️ Typing Mechanic</span>
+                    <span class="badge">src/editing.js</span>
+                    <span class="badge">Key: Tab</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Cycles the semantic element type of the current editing line with a single keypress.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><code>Editing.tab(text, caret)</code> analyzes the current line's element classification.</li>
+                        <li>If the line is Action, it advances to Character; Character advances to Scene Heading; Scene Heading advances to Transition; Transition cycles back to Action.</li>
+                        <li>Inside dialogue, Tab toggles between Dialogue and Parenthetical. If autocomplete chips are visible, Tab accepts the active suggestion chip.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Eliminates mouse clicks. A single muscle-memory keystroke cycles any line into the desired screenplay format instantly.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="fn-smart-enter">
+                <h3><code>Smart Enter State Machine</code> : Predictive Flow</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">⌨️ Typing Mechanic</span>
+                    <span class="badge">src/editing.js</span>
+                    <span class="badge">Key: Enter</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Anticipates the next logical element type when the writer presses Enter.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        Pressing Enter on a Character Cue or Parenthetical automatically positions the cursor on the next line formatted as Dialogue. Pressing Enter after Dialogue inserts a blank line and resets the next line to Action.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Matches natural writing rhythms. Speeches flow seamlessly without requiring manual formatting commands between cues, parentheticals, and spoken lines.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="fn-auto-uppercase">
+                <h3><code>Auto-Uppercase Engine</code> : Typing Normalization</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">⌨️ Typing Mechanic</span>
+                    <span class="badge">src/editing.js</span>
+                    <span class="badge">Undoable</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Automatically transforms scene heading prefixes and transition tags into uppercase as you type, without requiring the Caps Lock key.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        <code>Editing.autoCase()</code> inspects characters as they are entered. Typing <code>int.</code> automatically capitalizes the token to <code>INT.</code>. Typing <code>cut to:</code> automatically capitalizes the line to <code>CUT TO:</code>. The transformation is committed through <code>applyEdit</code>, ensuring it can be undone with standard <code>Ctrl/Cmd+Z</code>.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Relieves the writer of toggling Caps Lock, preserving flow during rapid drafting.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="fn-autocomplete">
+                <h3><code>Autocomplete Suggestion Chips</code> : Context Suggestions</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">⌨️ Typing Mechanic</span>
+                    <span class="badge">src/suggest.js</span>
+                    <span class="badge">Element Bar</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Presents clickable suggestion chips in the bottom element bar for character names, scene locations, and lighting conditions.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        <code>Suggest.at(text, caret)</code> scans the active document for known tokens. On a Character line, it displays matching character names. Following a scene hyphen, it suggests lighting terms (<code>DAY</code>, <code>NIGHT</code>). Pressing <code>Tab</code> accepts the first chip.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Ensures naming consistency across 120-page drafts without intrusive popup overlays that obscure nearby text.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="fn-name-guessing">
+                <h3><code>Character Name Guessing</code> : Cue Prediction</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">⌨️ Typing Mechanic</span>
+                    <span class="badge">src/editing.js</span>
+                    <span class="badge">Configurable</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Infers that a short, unpunctuated line following a blank line is intended as a character cue when Enter is pressed.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        Evaluates the line against known character names in the script. If matched, it automatically uppercases the line, marks it as a Character Cue, and advances the cursor directly into dialogue. Can be disabled in Settings if preferred.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Allows drafting dialogue exchanges rapidly without touching Tab or Caps Lock between speakers.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="fn-focus-mode">
+                <h3><code>Focus Mode &amp; Veils</code> : Typewriter Immersion</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">⌨️ Typing Mechanic</span>
+                    <span class="badge">src/app/focus.js</span>
+                    <span class="badge">Ctrl+Shift+F</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Centers the active cursor line vertically on the screen and dims all surrounding paragraphs behind gradient veils.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        Toggled via <code>Ctrl/Cmd+Shift+F</code>. <code>focus.js</code> centers the active editing line vertically in the viewport and renders subtle gradient veils over lines above and below the current block.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Reduces ergonomic neck strain during extended writing sessions and curbs the urge to constantly re-read and edit earlier scenes.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="fn-syntax-shading">
+                <h3><code>Sub-Pixel Syntax Shading</code> : Zero-Lag Color</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">⌨️ Typing Mechanic</span>
+                    <span class="badge">src/app/shade.js</span>
+                    <span class="badge">Wrap-Guarded</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Provides subtle syntax highlighting behind the cursor without using heavy contenteditable elements.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        The drafting textarea renders with transparent text over an identically sized background layer (<code>#shade</code>) styled with matching typographic dimensions (<code>line-height: 1.6em</code>). A wrap-drift check disables the layer automatically if text wrapping diverges by even a fraction of a pixel.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Combines the visual clarity of syntax highlighting with the unmatched speed and undo-stack reliability of native textareas.</p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- CATEGORY 3 -->
+        <section id="cat-workspaces">
+            <h2>🖥️ Workspaces &amp; Viewports</h2>
+            <p>The presentation spaces where text is drafted, previewed, and modified in real time.</p>
+
+            <div class="triad-block" id="ws-the-void">
+                <h3><code>The Void</code> : Drafting Workspace</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">🖥️ Workspace</span>
+                    <span class="badge">#editor</span>
+                    <span class="badge">Courier Prime</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>The primary text editing workspace in Plainchant. A clean, distraction-free drafting surface designed for speed.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        Operates as a high-performance native textarea. Captures keystrokes, handles automatic indentation, and updates the Canvas preview incrementally.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Keeps the writing process fast, responsive, and completely detached from complex rich-text document models.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="ws-the-canvas">
+                <h3><code>The Canvas</code> : Real-Time Screenplay Preview</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">🖥️ Workspace</span>
+                    <span class="badge">#render-target</span>
+                    <span class="badge">Block-Patched</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Displays an authentic, publication-standard preview of your formatted screenplay in real time.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        Renders blocks generated by <code>Fountain.blocks()</code>. Uses differential DOM patching to update modified blocks in under 30ms without rebuilding the entire document.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Provides continuous visual confirmation that your manuscript adheres to industry standards as you write.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="ws-sheets-view">
+                <h3><code>Simulated Sheets View</code> : Real-Time Paper Sheets</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">🖥️ Workspace</span>
+                    <span class="badge">src/app/sheets-ui.js</span>
+                    <span class="badge">Paper Scaled</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Simulates physical paper sheets with active page numbers directly inside the Canvas viewport while drafting.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        <code>sheets-ui.js</code> receives paginated line arrays from <code>paginate.js</code>, rendering individual paper sheets with standard margins scaled cleanly via CSS to fit your available screen space.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Allows screenwriters to see exactly where dramatic scene turns and act breaks land across page boundaries without generating a PDF.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="ws-panes-switcher">
+                <h3><code>Desktop Panes Switcher</code> : Multiplexer Controls</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">🖥️ Workspace</span>
+                    <span class="badge">src/app/panes.js</span>
+                    <span class="badge">Ctrl+Shift+1/2/3</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Toggles desktop workspace arrangements between Dual Pane, Void alone, or Canvas alone.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        Controls the <code>data-panes</code> attribute on the document body. Keyboard shortcuts (<code>Ctrl/Cmd+Shift+1/2/3</code>) or header buttons instantly toggle between split drafting and full-screen focus.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Gives writers complete control over their visual environment, whether drafting first thoughts or reviewing a finished polish.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="ws-mobile-switcher">
+                <h3><code>Mobile Single-Pane Switcher</code> : Stacked Ergonomics</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">🖥️ Workspace</span>
+                    <span class="badge">src/app/layout.js</span>
+                    <span class="badge">&lt; 1024px</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Manages the stacked single-pane interface optimized for mobile handsets and smaller tablets.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        On screens narrower than 1024px, Plainchant displays one pane at a time. The top header provides an instant <strong>Void | Canvas</strong> toggle, while tapping any paragraph in Canvas switches directly to the Void at that line.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Delivers full screenwriting power on mobile devices without tiny, unreadable split-screen columns.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="ws-quick-edit">
+                <h3><code>Canvas In-Place Quick Edit</code> : Direct Revision Bubble</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">🖥️ Workspace</span>
+                    <span class="badge">src/app/quick-edit.js</span>
+                    <span class="badge">Double-Click</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Opens a lightweight in-place editing bubble directly over any rendered paragraph in the Canvas.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        Double-clicking on desktop or pressing and holding on mobile opens the paragraph's Fountain text in an overlay bubble. Edits commit atomically into the document through <code>applyEdit</code> as a single undoable revision.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Makes proofreading and polishing smooth and effortless without breaking your reading flow.</p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- CATEGORY 4 -->
+        <section id="cat-analytics">
+            <h2>📊 Analytics &amp; Creator Tooling</h2>
+            <p>Production metrics, structural outline navigation, and narration pacing tools.</p>
+
+            <div class="triad-block" id="an-script-stats">
+                <h3><code>Script Stats &amp; Screen Time</code> : Production Metrics</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">📊 Analytics</span>
+                    <span class="badge">src/stats.js</span>
+                    <span class="badge">Live Counter</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Calculates total page count, estimated screen runtime (minutes + partial final page), word counts, and scene totals.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        <code>Stats.script()</code> analyzes lines on the Courier grid, calculating page length according to standard screenplay proportions. Updates the live header counter as you type.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Keeps writers constantly aware of script pacing without requiring separate export steps.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="an-scene-eighths">
+                <h3><code>Scene Eighths Measurement</code> : Schedule Breakdown</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">📊 Analytics</span>
+                    <span class="badge">src/stats.js</span>
+                    <span class="badge">1/8th Unit</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Measures every individual scene's length in eighths of a page, matching professional production scheduling standards.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        <code>Stats.scenes()</code> tallies lines between scene headings, dividing line totals by 54 (Letter) or 58 (A4) to format durations in standard production eighths (e.g. <code>1 3/8 pgs</code>).
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Enables accurate production budgeting and shooting schedule estimations directly from your script.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="an-character-share">
+                <h3><code>Dialogue &amp; Character Share</code> : Character Balance</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">📊 Analytics</span>
+                    <span class="badge">src/stats.js</span>
+                    <span class="badge">Share %</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Summarizes speeches, word counts, and percentage share of dialogue for every character in the screenplay.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        <code>Stats.characters()</code> tabulates all speech blocks, calculating individual word counts and overall percentages across both single and dual dialogue passages.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Helps writers assess character prominence and evaluate voice balance across scenes.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="an-outline-tree">
+                <h3><code>Outline Hierarchy Navigator</code> : Navigation Tree</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">📊 Analytics</span>
+                    <span class="badge">src/outline.js</span>
+                    <span class="badge">Interactive</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Displays an interactive outline showing acts, sequences, scenes, and synopses with starting page numbers.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        <code>Outline.tree()</code> structures section headings (<code>#</code>), scenes, and synopses (<code>=</code>) into a navigable hierarchy. Clicking any item instantly scrolls the editor directly to that point.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Enables fast, intuitive structural navigation across long 120-page screenplays.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="an-youtube-chapters">
+                <h3><code>YouTube Video Chapters</code> : Content Creator Tooling</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">📊 Analytics</span>
+                    <span class="badge">src/narration.js</span>
+                    <span class="badge">Export Dialog</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Estimates read-aloud duration and generates ready-to-copy YouTube chapter timestamp lists.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        <code>Narration.chapters()</code> calculates reading durations based on your chosen WPM setting (default: 150 WPM), mapping top-level section headings to formatted timestamps while verifying compliance with YouTube's 10-second rule and 3-chapter minimum.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Saves hours of manual timestamping for video essayists, podcasters, and YouTube creators.</p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- CATEGORY 5 -->
+        <section id="cat-storage">
+            <h2>💾 Storage, Durability &amp; File Bridge</h2>
+            <p>The multi-tier persistence systems ensuring zero data loss and seamless local disk integration.</p>
+
+            <div class="triad-block" id="st-indexeddb">
+                <h3><code>IndexedDB Scripts Store</code> : Primary Database</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">💾 Storage</span>
+                    <span class="badge">plainchant v3</span>
+                    <span class="badge">src/store.js</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Stores all screenplays, metadata, snapshot versions, and file handles in the browser's persistent database.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        Maintains dedicated object stores (<code>scripts</code>, <code>meta</code>, <code>versions</code>, <code>files</code>) within an IndexedDB database (version 3). Saves execute automatically in the background every 2 seconds.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Bypasses the restrictive 5 MB storage limits of <code>localStorage</code>, allowing writers to store hundreds of scripts safely.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="st-emergency-buffer">
+                <h3><code>Emergency Unload Buffer</code> : Zero-Loss Reconciler</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">💾 Storage</span>
+                    <span class="badge">localStorage</span>
+                    <span class="badge">pagehide Hook</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Protects text typed in the 2-second interval before an unexpected tab closure from being lost.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        On the browser <code>pagehide</code> event, Plainchant writes the active text into <code>localStorage.getItem('plainchant_emergency')</code> synchronously. Upon relaunch, <code>Store.reconcileEmergency()</code> automatically restores any content newer than the database record.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Guarantees that your latest keystrokes survive even if your laptop battery dies or a tab is killed unexpectedly.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="st-broadcast-sync">
+                <h3><code>Multi-Tab Broadcast Sync</code> : Peer Synchronization</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">💾 Storage</span>
+                    <span class="badge">BroadcastChannel</span>
+                    <span class="badge">Multi-Tab</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Keeps multiple open Plainchant browser tabs in continuous synchronization.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        Uses the browser's <code>BroadcastChannel</code> API to broadcast script modifications, creations, and deletions across all open tabs, updating in-memory libraries instantly.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Prevents stale browser tabs from overwriting newer drafts created in other windows.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="st-snapshot-versions">
+                <h3><code>Snapshot Versions &amp; Pruning</code> : Time-Travel Archive</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">💾 Storage</span>
+                    <span class="badge">src/versions.js</span>
+                    <span class="badge">Logarithmic</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Automatically preserves historical snapshots of your screenplay at regular intervals, pruning older versions intelligently.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        Snapshots are created on the first edit of a session and every 10 minutes thereafter. <code>Versions.prune()</code> retains all versions from the past hour, 1 per hour for 24h, 1 per day for 30d, and 1 every 30 days forever. Named versions are never pruned.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Provides complete time-travel version recovery without causing database storage bloat.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="st-scene-compare">
+                <h3><code>Scene Diff &amp; Rollback</code> : Granular Revision</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">💾 Storage</span>
+                    <span class="badge">src/compare.js</span>
+                    <span class="badge">Scene Diff</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Compares two versions of a script scene-by-scene, allowing you to restore an individual scene from an older draft without rolling back the entire script.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        <code>Compare.diff()</code> matches scenes by heading across drafts, highlighting modified lines. Clicking <em>Use version's scene</em> replaces only that specific scene in the active script.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Allows writers to safely recover earlier versions of specific scenes without discarding newer work done elsewhere in the draft.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="st-disk-sync">
+                <h3><code>Chromium Live Disk Sync</code> : Local File Bridge</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">💾 Storage</span>
+                    <span class="badge">src/filesync.js</span>
+                    <span class="badge">Chromium API</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Links scripts directly to real <code>.fountain</code> files on your physical hard drive in Chrome, Edge, and Brave.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        Uses the File System Access API to bind to local disk files. Every save updates the file on disk. If external tools modify the file, <code>FileSync.decide()</code> detects the change and prompts the writer to resolve any conflicts.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Connects browser-based drafting directly to desktop Git workflows and external backup folders.</p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- CATEGORY 6 -->
+        <section id="cat-output">
+            <h2>📤 Output Formats &amp; Interop</h2>
+            <p>Export pipelines generating industry-standard production files and print layouts.</p>
+
+            <div class="triad-block" id="io-fountain-export">
+                <h3><code>Fountain Plain Text Export</code> : Standard File Export</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">📤 Output</span>
+                    <span class="badge">.fountain</span>
+                    <span class="badge">Universal</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Downloads your screenplay as a standard <code>.fountain</code> plain text file, ready for any screenwriting application.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        Serializes the document with standard <code>\n</code> line endings and initiates a browser file download automatically named after your script's title.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Guarantees complete portability and zero vendor lock-in.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="io-fdx-export">
+                <h3><code>Final Draft XML (.fdx) Export</code> : Industry Standard XML</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">📤 Output</span>
+                    <span class="badge">.fdx</span>
+                    <span class="badge">src/fdx.js</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Exports your screenplay into the industry-standard Final Draft <code>.fdx</code> XML file format.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        <code>FDX.toXML()</code> maps parsed Fountain elements into Final Draft XML paragraph structures, preserving scene numbers, dual dialogue, page breaks, inline emphasis, and title page metadata.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Allows writers to collaborate smoothly with producers and directors who work exclusively in Final Draft.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="io-print-engine">
+                <h3><code>Courier Grid Print / PDF Engine</code> : Vector Print Output</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">📤 Output</span>
+                    <span class="badge">src/paginate.js</span>
+                    <span class="badge">CSS @page</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Renders your screenplay onto physical paper or produces clean vector PDFs directly through the browser's native print window.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        <code>print.js</code> renders sheets generated by <code>paginate.js</code> into <code>#print-root</code> with CSS <code>@page</code> declarations, supporting both US Letter and international A4 dimensions.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Produces publication-grade PDFs without relying on heavy third-party PDF generation libraries.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="io-title-page">
+                <h3><code>Title Page Generation</code> : Professional Title Sheets</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">📤 Output</span>
+                    <span class="badge">Unnumbered</span>
+                    <span class="badge">Standard Layout</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Formats an unnumbered, professional screenplay title page from script metadata.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        Metadata fields at the beginning of the file (<code>Title:</code>, <code>Credit:</code>, <code>Author:</code>, <code>Draft date:</code>, <code>Contact:</code>) are formatted onto an unnumbered sheet that precedes page 1 in print and PDF outputs.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Adheres to industry submission formatting rules without requiring complex manual layout configuration.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="io-file-importer">
+                <h3><code>Universal File Importer</code> : Multi-Format Ingestion</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">📤 Output</span>
+                    <span class="badge">src/importing.js</span>
+                    <span class="badge">Drag &amp; Drop</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Imports <code>.fountain</code>, <code>.txt</code>, and <code>.md</code> files through the file picker or by dragging and dropping them directly onto the page.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        <code>Importing.decode()</code> automatically detects and handles UTF-8, UTF-16, and Windows-1252 character encodings, normalizing line endings and importing each file as a new script without overwriting existing work.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Makes migrating existing scripts into Plainchant effortless and reliable.</p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- CATEGORY 7 -->
+        <section id="cat-themes">
+            <h2>🎨 Themes &amp; Nostalgia</h2>
+            <p>Color styling options and playful retro computing features.</p>
+
+            <div class="triad-block" id="th-dark">
+                <h3><code>Dark Theme Engine</code> : High-Contrast Night Drafting</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">🎨 Theme</span>
+                    <span class="badge">:root</span>
+                    <span class="badge">Default</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>The default Plainchant theme, designed for comfortable low-light writing sessions.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        Features dark void backgrounds (<code>#0f1115</code>) paired with crisp typography and subtle slate borders, tested to ensure a minimum 4.5:1 text contrast ratio across all controls.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Reduces eye strain during extended night writing sessions while keeping your text sharp and legible.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="th-light">
+                <h3><code>Light Theme Engine</code> : Daytime Readability</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">🎨 Theme</span>
+                    <span class="badge">[data-theme="light"]</span>
+                    <span class="badge">Daylight</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>A bright daytime theme optimized for drafting in well-lit rooms and outdoor spaces.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        Applies light slate and silver background tones with deep charcoal text, fully compliant with WCAG 2.1 AA accessibility guidelines.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Maintains clear screen legibility when working outdoors or under bright office lighting.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="th-retro-cga">
+                <h3><code>Retro CGA 4-Color Theme</code> : Vintage Computing Aesthetic</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">🎨 Theme</span>
+                    <span class="badge">[data-theme="retro"]</span>
+                    <span class="badge">CGA Palette 1</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Transforms the interface into an authentic 1980s Color Graphics Adapter (CGA) environment.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        Applies pure neon cyan, magenta, white, and black palette tokens with crisp square borders, double-line modal frames, and classic monospace styling.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Evokes the nostalgic atmosphere of early personal computing and vintage interactive fiction.</p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="th-adventure-parser">
+                <h3><code>Adventure Game Command Parser</code> : Interactive Easter Egg</h3>
+                <div class="badge-row" style="margin-bottom: 1rem;">
+                    <span class="badge emerald">🎨 Theme</span>
+                    <span class="badge">src/adventure.js</span>
+                    <span class="badge">Easter Egg</span>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>Responds to classic text adventure game commands typed on a line of their own in the Retro CGA theme.</p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        When typing commands like <code>LOOK</code>, <code>INVENTORY</code>, or <code>SCORE</code> on their own line in the Retro theme, <code>adventure-ui.js</code> intercepts the Enter key and displays a playful narrative reply in the notification banner without modifying the script text.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>Adds a delightful creative Easter egg honoring classic interactive fiction without interfering with standard screenplay writing.</p>
+                </div>
+            </div>
+        </section>
+
+        <footer class="doc-footer">
+            <p>The Plainchant Codex • All 43 Elements, Modules &amp; Subsystems Documented</p>
+            <p>Andrew Edmark &amp; The Plainchant Systems Team • Open-Source MIT License</p>
+        </footer>
+    </main>
+
+</body>
+</html>

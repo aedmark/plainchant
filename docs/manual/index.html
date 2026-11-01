@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Everything You Ever Wanted to Know About Plainchant • Architectural Codex & Manual</title>
+    <link rel="stylesheet" href="manual.css">
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h1>📜 Plainchant</h1>
+            <span class="version-tag">Architectural Codex • v1.0</span>
+            <p style="margin-top: 0.6rem; font-size: 0.85rem;"><a href="codex.html" style="color: var(--accent-cyan); text-decoration: none;">&rarr; Complete Codex (All Elements &amp; Modules)</a></p>
+        </div>
+        <nav class="sidebar-nav">
+            <section>
+                <h3>Book I: Philosophy &amp; Origins</h3>
+                <ul>
+                    <li><a href="#soul-of-plainchant" class="active">1. The Soul of Plainchant</a></li>
+                    <li><a href="#five-tenets">2. The Five Tenets</a></li>
+                    <li><a href="#collaborative-partnership">3. Collaborative Authorship</a></li>
+                    <li><a href="#zero-build-model">4. Zero-Build &amp; Local-First</a></li>
+                </ul>
+            </section>
+
+            <section>
+                <h3>Book II: Engine Room &amp; Core Architecture</h3>
+                <ul>
+                    <li><a href="#twin-layers">5. The Pure / Stage Architecture</a></li>
+                    <li><a href="#pure-domain-modules">6. The 15 Pure Domain Modules</a></li>
+                    <li><a href="#app-controller-scripts">7. Global Scope &amp; App Scripts</a></li>
+                    <li><a href="#fountain-pipeline">8. The Ingestion &amp; Classification Pipeline</a></li>
+                </ul>
+            </section>
+
+            <section>
+                <h3>Book III: The Typing Engine &amp; Ergonomics</h3>
+                <ul>
+                    <li><a href="#syntax-shading">9. Sub-Pixel Syntax Shading</a></li>
+                    <li><a href="#keystroke-heuristics">10. Tab Cycle &amp; Smart Enter</a></li>
+                    <li><a href="#autocomplete-engine">11. Autocomplete &amp; Suggestion Chips</a></li>
+                    <li><a href="#focus-mode">12. Focus Mode &amp; Typewriter Veils</a></li>
+                </ul>
+            </section>
+
+            <section>
+                <h3>Book IV: The Workspace (Void &amp; Canvas)</h3>
+                <ul>
+                    <li><a href="#dual-pane-concept">13. The Void &amp; The Canvas</a></li>
+                    <li><a href="#incremental-renderer">14. Block-by-Block DOM Patching</a></li>
+                    <li><a href="#responsive-panes">15. Desktop Multiplexing &amp; Mobile Stack</a></li>
+                    <li><a href="#canvas-quick-edit">16. Canvas In-Place Quick Edits</a></li>
+                </ul>
+            </section>
+
+            <section>
+                <h3>Book V: The Courier Pagination Engine</h3>
+                <ul>
+                    <li><a href="#courier-grid-spec">17. The 60&times;54/58 Character Grid</a></li>
+                    <li><a href="#pagination-rules">18. Line Breaks, (MORE) &amp; Orphan Suppression</a></li>
+                    <li><a href="#title-and-dual-dialogue">19. Title Page &amp; Dual Dialogue</a></li>
+                    <li><a href="#simulated-sheets">20. Live Sheets View &amp; CSS @page Print</a></li>
+                </ul>
+            </section>
+
+            <section>
+                <h3>Book VI: Storage, Durability &amp; File Bridge</h3>
+                <ul>
+                    <li><a href="#indexeddb-engine">21. Multi-Tier IndexedDB v3</a></li>
+                    <li><a href="#emergency-buffer">22. Emergency Unload Buffer</a></li>
+                    <li><a href="#time-travel-snapshots">23. Snapshot Versioning &amp; Scene Diffs</a></li>
+                    <li><a href="#file-system-access">24. Chromium Live Disk Sync</a></li>
+                    <li><a href="#storage-safekeeping">25. Persistent Storage Leases</a></li>
+                </ul>
+            </section>
+
+            <section>
+                <h3>Book VII: Analytics &amp; Creator Tooling</h3>
+                <ul>
+                    <li><a href="#script-metrics">26. Runtime, Eighths &amp; Word Counts</a></li>
+                    <li><a href="#character-metrics">27. Dialogue Share &amp; Scene Presence</a></li>
+                    <li><a href="#outline-navigator">28. The Outline Hierarchy</a></li>
+                    <li><a href="#narration-chapters">29. YouTube Chapters &amp; Narration Time</a></li>
+                </ul>
+            </section>
+
+            <section>
+                <h3>Book VIII: Theme Engine &amp; Nostalgia</h3>
+                <ul>
+                    <li><a href="#theme-token-matrix">30. The Three-Theme Token System</a></li>
+                    <li><a href="#contrast-verification">31. 4.5:1 Contrast Verification</a></li>
+                    <li><a href="#retro-cga-adventure">32. Retro CGA &amp; Adventure Parser</a></li>
+                </ul>
+            </section>
+
+            <section>
+                <h3>Book IX: The Proving Ground</h3>
+                <ul>
+                    <li><a href="#testing-philosophy">33. "Verified Means Observed"</a></li>
+                    <li><a href="#unit-test-suite">34. Fast Node.js Unit Suite</a></li>
+                    <li><a href="#browser-e2e-gauntlet">35. Headless Chromium E2E Gauntlet</a></li>
+                    <li><a href="#structural-audits">36. Structural &amp; Manifest Audits</a></li>
+                    <li><a href="#mutation-testing">37. Mutation Testing Protocol</a></li>
+                </ul>
+            </section>
+
+            <section>
+                <h3>Book X: Contributor Protocol &amp; Appendices</h3>
+                <ul>
+                    <li><a href="#session-protocol">38. The Session Protocol</a></li>
+                    <li><a href="#engineering-invariants">39. Architectural Invariants</a></li>
+                    <li><a href="#sw-pwa-architecture">40. Offline PWA &amp; Service Worker</a></li>
+                    <li><a href="#appendices">Appendices: Storage Keys &amp; Formats</a></li>
+                </ul>
+            </section>
+        </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="content">
+        <header>
+            <h1 class="doc-title">Everything You Ever Wanted to Know About Plainchant</h1>
+            <p class="subtitle">The Definitive Architectural Codex, System Internals, and Writer's Operating Manual</p>
+            <div class="badge-row">
+                <span class="badge emerald">Production Architecture v1.0</span>
+                <span class="badge cyan">Zero Dependencies • Pure HTML/CSS/JS</span>
+                <span class="badge purple">Courier Prime 60&times;54 Grid</span>
+                <span class="badge amber">IndexedDB v3 Durability</span>
+                <span class="badge">Local-First Screenwriting</span>
+            </div>
+            <div class="callout info">
+                <div class="callout-title">The Master Philosophy of Plainchant</div>
+                <p>
+                    <strong>Plainchant</strong> is a lightweight, responsive, local-first screenwriting environment built for writers who would rather write than fuss over format. The writer types plain, unadorned text following the <a href="https://fountain.io" target="_blank" style="color: var(--accent-cyan); text-decoration: underline;">Fountain specification</a>; Plainchant handles structure, typographic alignment, character cues, pagination, and production export automatically.
+                </p>
+            </div>
+        </header>
+
+        <hr class="divider">
+
+        <!-- BOOK I -->
+        <section id="book-1">
+            <h2>Book I: Systems Philosophy, Tenets &amp; Origins</h2>
+
+            <h3 id="soul-of-plainchant">1. The Soul of a Distraction-Free Terminal</h3>
+            <p>
+                Modern screenwriting suites have become bloated word processors encumbered by complex proprietary binary file formats, subscription paywalls, intrusive cloud synchronizers, and cluttered toolbars that force the dramatist to manually click dialogue buttons, scene heading rulers, and transition margins.
+            </p>
+            <p>
+                <strong>Plainchant</strong> returns screenwriting to its natural elemental state: <em>the rhythm of plain keystrokes</em>. Like Gregorian plainchant—unaccompanied monophonic vocal music stripped of ornamentation—Plainchant strips away all UI noise. You type. As you type, the engine continuously senses the semantic identity of your lines, applies invisible sub-pixel syntax shading behind your cursor, and lays out a live, publication-grade screenplay preview alongside your text.
+            </p>
+
+            <div class="callout success" id="five-tenets">
+                <div class="callout-title">The Five Core Tenets of Plainchant</div>
+                <ol>
+                    <li><strong>Text is the Source of Truth:</strong> Scripts are stored and handled as plain Fountain text. There are no proprietary databases, binary blobs, or vendor locks. Everything the application knows about a script—every scene number, dialogue count, speaking character, and estimated runtime—is deterministically derived directly from the text itself.</li>
+                    <li><strong>Never Make the Writer Think About Format:</strong> If an action requires the writer to stop drafting, reach for a mouse, and configure formatting, that feature is a design defect. Layout is governed by intelligent keyboard state machines (Tab, smart Enter, auto-casing) or sensible defaults.</li>
+                    <li><strong>Never Lose Words:</strong> Durability outranks every feature. A three-tier persistence model—continuous 2-second background autosaves, synchronous unload safety buffers in <code>localStorage</code>, and automatic content-addressed version snapshots—ensures not a single sentence is lost even if a laptop battery dies or a browser tab is killed mid-word.</li>
+                    <li><strong>Lightweight, Zero-Build &amp; Local-First:</strong> Plainchant requires zero npm build steps, zero Webpack/Vite bundlers, zero external CDNs, and zero runtime dependencies. It runs directly from disk or over any plain HTTP server, loading self-hosted WOFF2 typefaces and operating completely offline.</li>
+                    <li><strong>Responsive Means Usable:</strong> From a 375px mobile handset in an airport to an ultra-wide desktop monitor, the interface dynamically reconfigures its ergonomics: stacked touch viewports with dedicated element selectors on phones, and tiled side-by-side editing panes on desktop workstations.</li>
+                </ol>
+            </div>
+
+            <h3 id="collaborative-partnership">2. Collaborative Authorship &amp; Unique Permissive License</h3>
+            <p>
+                Plainchant was authored through an explicit, deliberate partnership between its human curator (<strong>Andrew Edmark</strong>) and AI assistants (<strong>Claude</strong> &amp; <strong>Gemini</strong>). The project is licensed under a permissive MIT-style license featuring a formal <em>Authorship and Contribution Acknowledgment</em>.
+            </p>
+            <p>
+                The human curator establishes architectural vision, technical constraints, design paradigms, and real-world screenwriting heuristics. The AI partners draft modular implementations, construct rigorous property-based and end-to-end test harnesses, and author comprehensive system documentation. All typefaces ([Courier Prime](file:///home/gordonk/PycharmProjects/plainchant/fonts/) and [Inter](file:///home/gordonk/PycharmProjects/plainchant/fonts/)) are bundled under the SIL Open Font License.
+            </p>
+
+            <h3 id="zero-build-model">3. The Zero-Build, Local-First Runtime Model</h3>
+            <p>
+                Software built on complex toolchains decays quickly as npm dependencies rotate and bundlers break. Plainchant is engineered for multi-decade durability. It consists entirely of standard HTML5, CSS3, and modern vanilla JavaScript running natively in evergreen browsers (Firefox and Chromium-based engines). You can clone the repository and launch the app in three seconds:
+            </p>
+            <pre><code># Serve locally using any static web server
+python3 -m http.server 8000
+
+# Open in your browser:
+# http://127.0.0.1:8000/app.html</code></pre>
+            <p>
+                When served over HTTP or HTTPS, an integrated Service Worker (<code>sw.js</code>) and Web App Manifest (<code>manifest.webmanifest</code>) automatically cache all assets, turning Plainchant into a standalone, installable Progressive Web App (PWA) that functions indefinitely without network connectivity.
+            </p>
+        </section>
+
+        <hr class="divider">
+
+        <!-- BOOK II -->
+        <section id="book-2">
+            <h2>Book II: The Engine Room &amp; Core Architecture</h2>
+
+            <p>
+                Plainchant is architected around a strict decoupled boundary: <strong>Pure Functional Domain Modules</strong> on the inside, and a <strong>Single-Scope DOM Stage Manager</strong> on the outside.
+            </p>
+
+            <pre><code>+---------------------------------------------------------------------------------------+
+|                               DOM STAGE CONTROLLER (src/app/*.js)                     |
+|                                                                                       |
+|   +-----------------------+  +------------------------+  +------------------------+   |
+|   |   The Void (#editor)  |  | The Canvas (#render-tgt|  | Dialogs & Modals       |   |
+|   |   Textarea + shade.js |  | core.js / sheets-ui.js |  | library-ui / stats-ui  |   |
+|   +-----------------------+  +------------------------+  +------------------------+   |
+|              |                           |                            |               |
+|              v                           v                            v               |
+|   +-------------------------------------------------------------------------------+   |
+|   |                       core.js (Incremental Render Loop)                       |   |
+|   |     render(keystroke) -> drawPreview(blocks) -> schedulePages(sheets)        |   |
+|   +-------------------------------------------------------------------------------+   |
+|              |                           |                            |               |
++--------------|---------------------------|----------------------------|---------------+
+               |                           |                            |
+               | (Plain Text)              | (Blocks / Tokens)          | (Script Ingestion)
+               v                           v                            v
++---------------------------------------------------------------------------------------+
+|                         PURE DOMAIN LOGIC MODULES (src/*.js - UMD)                    |
+|                                                                                       |
+|   +-------------------+  +--------------------+  +--------------------+  +--------+   |
+|   |   fountain.js     |  |   editing.js       |  |   paginate.js      |  |stats.js|   |
+|   |   Spec-strict AST |  |   Tab/Enter rules  |  |   Courier 60x54    |  |Metrics |   |
+|   +-------------------+  +--------------------+  +--------------------+  +--------+   |
+|             |                      |                      |                   |       |
+|             v                      v                      v                   v       |
+|   +-------------------+  +--------------------+  +--------------------+  +--------+   |
+|   |   store.js        |  |   filesync.js      |  |   fdx.js           |  |suggest |   |
+|   |   IndexedDB rules |  |   Disk diff engine |  |   Final Draft XML  |  |Chips   |   |
+|   +-------------------+  +--------------------+  +--------------------+  +--------+   |
++---------------------------------------------------------------------------------------+</code></pre>
+
+            <div class="triad-block" id="twin-layers">
+                <h3>5. The Dual-Layer Architecture: Pure Modules vs. App Scripts</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Strictly decouples screenwriting business logic from browser DOM side-effects. The engine's core is divided into two distinct tiers: 15 pure UMD modules in <code>src/</code>, and 28 orchestration scripts in <code>src/app/</code>.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Pure Layer (<code>src/*.js</code>):</strong> Universal Module Definition (UMD) files. They take plain strings or data objects in, and return transformed strings, tokens, or data objects out. They are forbidden from touching <code>window</code>, <code>document</code>, or any browser DOM API.</li>
+                        <li><strong>Stage Layer (<code>src/app/*.js</code>):</strong> Classic JavaScript scripts that execute in the browser. They bind DOM event listeners, manage the active textarea caret, paint HTML elements, and coordinate window dialogs.</li>
+                        <li><strong>Load Order Contract:</strong> <code>app.html</code> loads all pure domain modules first, followed by the app scripts in deterministic dependency order, concluding with <code>main.js</code> on <code>DOMContentLoaded</code>.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Pure domain modules can be tested headlessly in pure Node.js in milliseconds without JSDOM mocks. Changes to UI appearance or browser event quirks never risk corrupting parsing logic, pagination math, or file synchronization contracts.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="pure-domain-modules">
+                <h3>6. The 15 Pure Domain Modules</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Encapsulates all calculations, formatting algorithms, and data transformations into independent, reusable UMD modules.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Module</th>
+                                <th>Primary Responsibilities</th>
+                                <th>Key Exports</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>fountain.js</code></td>
+                                <td>Fountain parser, line classification, tokenization, inline emphasis, HTML generation.</td>
+                                <td><code>Fountain.toHTML</code>, <code>Fountain.blocks</code>, <code>Fountain.classifyLines</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>editing.js</code></td>
+                                <td>Caret-anchored typing state machine: Tab cycling, smart Enter, auto-casing, paragraph boundaries.</td>
+                                <td><code>Editing.tab</code>, <code>Editing.enter</code>, <code>Editing.autoCase</code>, <code>Editing.blockAt</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>paginate.js</code></td>
+                                <td>Screenplay pagination engine on the Courier 60&times;54/58 character grid with page breaking rules.</td>
+                                <td><code>Paginate.pages</code>, <code>Paginate.lines</code>, <code>Paginate.COURIER_GRID</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>stats.js</code></td>
+                                <td>Script metrics: exact page length, screen runtime, scene counts, dialogue share by character, locations.</td>
+                                <td><code>Stats.script</code>, <code>Stats.scenes</code>, <code>Stats.characters</code>, <code>Stats.heading</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>outline.js</code></td>
+                                <td>Section, synopsis, and scene tree hierarchy with page start indexes and caret location mapping.</td>
+                                <td><code>Outline.tree</code>, <code>Outline.atLine</code>, <code>Outline.filter</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>suggest.js</code></td>
+                                <td>Autocomplete indexer for character cues, scene locations, and lighting tokens.</td>
+                                <td><code>Suggest.at</code>, <code>Suggest.names</code>, <code>Suggest.locations</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>store.js</code></td>
+                                <td>IndexedDB data integrity rules, difference calculators, deletion guards, and emergency buffer reconcile.</td>
+                                <td><code>Store.putScripts</code>, <code>Store.reconcileEmergency</code>, <code>Store.diff</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>versions.js</code></td>
+                                <td>Time-travel snapshot creation rules and chronological logarithmic thinning algorithms.</td>
+                                <td><code>Versions.due</code>, <code>Versions.make</code>, <code>Versions.prune</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>compare.js</code></td>
+                                <td>Scene-by-scene version difference calculator and granular single-scene rollback engine.</td>
+                                <td><code>Compare.scenes</code>, <code>Compare.diff</code>, <code>Compare.takeScene</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>filesync.js</code></td>
+                                <td>Disk file dispute resolver (agreed, write, load, prompt) and canonical line-ending normalizer.</td>
+                                <td><code>FileSync.decide</code>, <code>FileSync.canon</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>fdx.js</code></td>
+                                <td>Final Draft XML exporter with element translation, dual dialogue, scene numbers, and title page.</td>
+                                <td><code>FDX.toXML</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>importing.js</code></td>
+                                <td>File format decoding (UTF-8, UTF-16, Windows-1252), normalization, and multi-file import guards.</td>
+                                <td><code>Importing.decode</code>, <code>Importing.normalize</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>narration.js</code></td>
+                                <td>Spoken-word duration estimator and YouTube video chapter generator with compliance checks.</td>
+                                <td><code>Narration.duration</code>, <code>Narration.chapters</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>adventure.js</code></td>
+                                <td>Retro interactive fiction command parser (<code>LOOK</code>, <code>INVENTORY</code>, <code>SCORE</code>).</td>
+                                <td><code>Adventure.reply</code>, <code>Adventure.isCommand</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Enforces single responsibility across every domain. If Fountain adds a new syntax element, only <code>fountain.js</code> updates; if pagination margins adjust, only <code>paginate.js</code> changes.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="app-controller-scripts">
+                <h3>7. Global Scope &amp; App Scripts (<code>src/app/</code>)</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        28 classic JavaScript files that power the live interactive UI. They share a single global scope without ES module bundlers, loaded in exact dependency order in <code>app.html</code>.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Load Order Determinism:</strong> <code>core.js</code> initializes fundamental DOM pointers and rendering pipelines. Subsequent scripts bind specific UI concerns (<code>typing.js</code>, <code>layout.js</code>, <code>shade.js</code>, <code>sheets-ui.js</code>, <code>files-ui.js</code>), culminating in <code>main.js</code> which bootstraps the library on <code>DOMContentLoaded</code>.</li>
+                        <li><strong>Single Program Invariant:</strong> Because the scripts share global scope, names cannot collide. Global variables and exported test hooks (e.g. <code>saveScript</code>, <code>setView</code>, <code>openTour</code>) remain top-level function declarations accessible to test runners.</li>
+                        <li><strong>The 500-Line Limit:</strong> Enforced by <code>test/structure.test.js</code>: no script in <code>src/app/</code> is permitted to exceed 500 lines of code. When a feature expands, it must be split by concern into a new dedicated module.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Eliminating ES modules ensures that Plainchant can be opened directly over <code>file://</code> URLs in modern browsers without triggering CORS module-blocking errors, preserving extreme portability.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="fountain-pipeline">
+                <h3>8. The Fountain Ingestion &amp; Classification Pipeline</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Transforms raw script text into an abstract syntax tree of screenplay elements: Scene Headings, Action, Character Cues, Dialogue, Parentheticals, Transitions, Centered Text, Lyrics, Sections, Synopses, Page Breaks, and Notes.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Spec-Strict Line Parsing:</strong> <code>Fountain.classifyLines(text)</code> evaluates each line using Fountain's standard structural rules. Blank lines serve as structural element boundaries rather than decorative spacers.</li>
+                        <li><strong>Forced Prefix Handling:</strong> Explicit markers override heuristics:
+                            <ul>
+                                <li><code>.</code> forces a Scene Heading (e.g. <code>.THE ROOFTOP</code>)</li>
+                                <li><code>!</code> forces Action (e.g. <code>!HE WALKS IN SILENCE.</code>)</li>
+                                <li><code>@</code> forces a Character Cue (e.g. <code>@MCCOY</code>)</li>
+                                <li><code>&gt;</code> forces a Transition (e.g. <code>&gt; SMASH CUT TO:</code>)</li>
+                                <li><code>&gt; ... &lt;</code> forces Centered Text</li>
+                                <li><code>~</code> designates Dialogue Lyrics</li>
+                                <li><code>^</code> indicates Dual Dialogue (spoken simultaneously with the preceding speech)</li>
+                            </ul>
+                        </li>
+                        <li><strong>Block Segmentation:</strong> <code>Fountain.blocks(text)</code> groups classified lines into discrete block objects containing their line range, element kind, and rendered HTML.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Separating line classification from HTML generation allows the editor to use the classification data for syntax shading, autocomplete, and pagination without repeatedly parsing raw strings into heavy DOM nodes.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- BOOK III -->
+        <section id="book-3">
+            <h2>Book III: The Typing Engine &amp; Ergonomics</h2>
+
+            <div class="triad-block" id="syntax-shading">
+                <h3>9. Sub-Pixel Syntax Shading (<code>shade.js</code>)</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Provides subtle, non-intrusive syntax coloring directly inside the drafting editor (scene headings in cyan, character cues in emerald, transitions in purple) without using heavy rich-text contenteditable wrappers.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>The Transparent Overlay:</strong> The drafting textarea (<code>#editor</code>) renders its own text transparently (<code>color: transparent; caret-color: var(--caret)</code>).</li>
+                        <li><strong>The Shadow Shading Layer:</strong> Directly behind the textarea sits a mirrored <code>div</code> (<code>#shade</code>). <code>shade.js</code> renders syntax-colored text lines into this layer matching <code>Fountain.classifyLines()</code>.</li>
+                        <li><strong>Exact Typographic Alignment:</strong> <code>copyEditorType()</code> synchronizes font family, font size, letter spacing, word spacing, padding, and an explicit line-height of <code>1.6em</code> (never unitless) between the two layers.</li>
+                        <li><strong>Wrap-Drift Circuit Breaker:</strong> On every render pass, <code>shade.js</code> compares bounding box heights. If browser text wrapping drifts by even a fraction of a pixel, shading automatically turns itself off to prevent visual ghosting.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Preserves native textarea performance. Writers retain 100% native browser undo/redo history, frictionless copy-paste, and IME composition while enjoying rich syntax illumination.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="keystroke-heuristics">
+                <h3>10. Keystroke Heuristics: Tab Cycle &amp; Smart Enter</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Enables continuous drafting using only two keys: <strong>Tab</strong> and <strong>Enter</strong>.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Tab Cycling (<code>Editing.tab</code>):</strong>
+                            <ul>
+                                <li>On a standalone line: cycles <code>Action</code> &rarr; <code>Character</code> &rarr; <code>Scene Heading</code> &rarr; <code>Transition</code> &rarr; <code>Action</code>.</li>
+                                <li>Inside a speech: toggles between <code>Dialogue</code> and <code>Parenthetical</code>.</li>
+                                <li>When autocomplete chips are visible: accepts the first highlighted suggestion.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Smart Enter (<code>Editing.enter</code>):</strong>
+                            <ul>
+                                <li>After a Character Cue or Parenthetical: advances directly into Dialogue on the next line.</li>
+                                <li>After Dialogue: produces a standard blank line and resets to Action.</li>
+                                <li>After Action: creates a new paragraph. (Shift+Enter inserts a plain line break within the paragraph).</li>
+                            </ul>
+                        </li>
+                        <li><strong>Auto-Uppercase (<code>Editing.autoCase</code>):</strong> Detects scene prefixes (<code>INT.</code>, <code>EXT.</code>) and transition tags (<code>CUT TO:</code>) and automatically transforms them to uppercase as you type.</li>
+                        <li><strong>Character Name Guessing:</strong> Typing a short, unpunctuated name after a blank line and pressing Enter automatically converts the line into an uppercase character cue.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Eliminates the friction of toggling formatting modes. The writer's hands never leave the home row, allowing dramatic thoughts to flow without mechanical interruption.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="autocomplete-engine">
+                <h3>11. Autocomplete Engine &amp; Suggestion Chips</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Presents context-aware autocomplete suggestions for character names, scene locations, and lighting tokens directly in the bottom element bar.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Dynamic Indexing:</strong> <code>Suggest.names()</code> and <code>Suggest.locations()</code> continuously index all unique characters and scene settings established within the current script.</li>
+                        <li><strong>Context Sensitivity:</strong>
+                            <ul>
+                                <li>On a Character line: suggests known speaking characters matching the typed prefix.</li>
+                                <li>On a Scene Heading after <code>-</code>: suggests standard lighting tokens (<code>DAY</code>, <code>NIGHT</code>, <code>CONTINUOUS</code>, <code>LATER</code>).</li>
+                                <li>On a fresh Scene line: suggests recurring locations.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Frictionless Selection:</strong> Suggestions appear as clickable chips. Pressing <code>Tab</code> immediately takes the top suggestion. Enter never auto-selects, ensuring natural writing flow is never hijacked.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Maintains character and location spelling consistency across multi-scene screenplays without annoying intrusive popup dropdowns that obscure surrounding lines.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="focus-mode">
+                <h3>12. Focus Mode &amp; Typewriter Scrolling</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Locks the active typing line to the vertical center of the screen and dims all surrounding text, creating a pure typewriter writing environment.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Activation:</strong> Toggled via <code>Ctrl/Cmd+Shift+F</code> or the Focus button in the bottom element bar.</li>
+                        <li><strong>Typewriter Centering:</strong> <code>layout.js</code> monitors cursor movements, dynamically scrolling the textarea so the active editing line remains positioned at 50% viewport height.</li>
+                        <li><strong>Opacity Veils:</strong> Gradient overlay veils (<code>#veil-top</code>, <code>#veil-bottom</code>) dim all text above and below the active paragraph, keeping only the current thought in sharp focus.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Prevents the writer from constantly looking down at the bottom of the screen during long drafting sessions and minimizes the urge to self-edit prior paragraphs.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- BOOK IV -->
+        <section id="book-4">
+            <h2>Book IV: The Workspace (Void &amp; Canvas)</h2>
+
+            <div class="triad-block" id="dual-pane-concept">
+                <h3>13. The Dual-Pane Concept: The Void &amp; The Canvas</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Divides the workspace into two complementary realms: <strong>The Void</strong> (where raw ideas are typed) and <strong>The Canvas</strong> (where publication-ready screenplay pages live).
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>The Void (<code>#editor</code>):</strong> A focused, distraction-free drafting environment designed for raw velocity.</li>
+                        <li><strong>The Canvas (<code>#render-target</code>):</strong> An authentic representation of standard industry screenplay formatting. Can be viewed as a continuous reading stream or as paginated paper sheets.</li>
+                        <li><strong>Caret-Anchored Scroll Sync:</strong> As you scroll through the Void, the Canvas smoothly scrolls to keep the corresponding scene in view. On mobile, tapping any paragraph in the Canvas automatically jumps the Void caret directly to that line.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Writers get the raw speed of plain text combined with the immediate reassurance that their dialogue margins, parentheticals, and scene headings conform to Hollywood standards.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="incremental-renderer">
+                <h3>14. Block-by-Block Incremental DOM Patching</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        An incremental rendering engine that updates the Canvas preview in under 30 milliseconds, even on massive 160-page feature screenplays.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Differential Block Parsing:</strong> <code>Fountain.blocks(text)</code> generates a list of blocks. <code>drawPreview()</code> in <code>core.js</code> compares incoming blocks against the previously rendered DOM nodes.</li>
+                        <li><strong>In-Place Mutation:</strong> Instead of destroying and rebuilding the entire document, only changed or newly inserted blocks are patched in the DOM. Unmodified scenes remain completely untouched.</li>
+                        <li><strong>Dual-Speed Rendering:</strong> Keystroke typing schedules a fast, non-blocking render (<code>render(true)</code>) that updates syntax shading instantly and debounces the Canvas preview to follow immediately after paint.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Eliminates UI lag. Screenwriters can draft feature films without encountering typing delays or stuttering scrollbars.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="responsive-panes">
+                <h3>15. Desktop Multiplexing &amp; Mobile Responsive Stacking</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Seamlessly adapts the interface across screen sizes from multi-monitor desktop setups to handheld phones.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Desktop Mode (&ge; 1024px):</strong> Provides three selectable layouts toggled via header buttons or keyboard shortcuts:
+                            <ul>
+                                <li><code>Ctrl/Cmd+Shift+1</code>: Dual Pane (The Void and The Canvas side-by-side).</li>
+                                <li><code>Ctrl/Cmd+Shift+2</code>: The Void alone (maximum typing immersion).</li>
+                                <li><code>Ctrl/Cmd+Shift+3</code>: The Canvas alone (pure reading mode).</li>
+                            </ul>
+                        </li>
+                        <li><strong>Mobile Mode (&lt; 1024px):</strong> Switches to single-pane display with a persistent <strong>Void | Canvas</strong> header toggle. The mobile element bar provides on-screen element switching without dismissing the software keyboard.</li>
+                        <li><strong>Keyboard Clearance:</strong> <code>layout.js</code> dynamically calculates the mobile virtual keyboard height, ensuring the active typing line remains at least three lines above the keyboard boundary.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Guarantees a first-class screenwriting experience on any device, whether typing on an iPad on an airplane or revising dialogue on a smartphone.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="canvas-quick-edit">
+                <h3>16. Canvas In-Place Quick Edits</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Allows writers to fix typos directly in the formatted Canvas preview without switching panes or hunting for the line in the editor.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Trigger:</strong> Double-clicking on desktop (or pressing and holding for 500ms on touch devices) over any paragraph in the Canvas activates quick editing.</li>
+                        <li><strong>Overlay Bubble:</strong> <code>quick-edit.js</code> displays an in-place editing bubble containing the paragraph's raw Fountain text directly over the rendered element.</li>
+                        <li><strong>Atomic Commit:</strong> Pressing <code>Enter</code> or clicking outside commits the edit into the main document as a single undoable action (via <code>applyEdit</code>). Pressing <code>Escape</code> cancels the edit cleanly.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Preserves reading flow. Proofreading a screenplay in the Canvas feels natural, allowing quick corrections without disrupting your mental state.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- BOOK V -->
+        <section id="book-5">
+            <h2>Book V: The Courier Pagination Engine</h2>
+
+            <div class="triad-block" id="courier-grid-spec">
+                <h3>17. The 60&times;54/58 Character Grid Specification</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        The mathematical heart of Plainchant's pagination engine (<code>src/paginate.js</code>), adhering strictly to the industry-standard Courier typography grid.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        Screenplay formatting relies on exact character positions in 10-pitch Courier (10 characters per inch, 6 lines per inch):
+                    </p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Element</th>
+                                <th>Left Column</th>
+                                <th>Max Width</th>
+                                <th>Typographic Rule</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Scene Heading</strong></td>
+                                <td>Column 0 (1.5" margin)</td>
+                                <td>60 characters</td>
+                                <td>UPPERCASE, preceded by 1 blank line, followed by 1 blank line.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Action</strong></td>
+                                <td>Column 0 (1.5" margin)</td>
+                                <td>60 characters</td>
+                                <td>Standard sentence case, full 60-character line width.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Character Cue</strong></td>
+                                <td>Column 20 (3.5" margin)</td>
+                                <td>38 characters</td>
+                                <td>UPPERCASE name plus optional extension (e.g. <code>(V.O.)</code>).</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Parenthetical</strong></td>
+                                <td>Column 15 (3.0" margin)</td>
+                                <td>25 characters</td>
+                                <td>Enclosed in parentheses, subordinate to character cue.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Dialogue</strong></td>
+                                <td>Column 10 (2.5" margin)</td>
+                                <td>35 characters</td>
+                                <td>Spoken speech text, strictly wrapped at 35 characters.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Transition</strong></td>
+                                <td>Column 45 (6.0" margin)</td>
+                                <td>15 characters</td>
+                                <td>Flush right, UPPERCASE ending in a colon.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p>
+                        On standard US Letter paper, each page accommodates exactly <strong>54 lines</strong>. On international A4 paper, each page accommodates <strong>58 lines</strong>.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Using an exact integer character grid eliminates font-rendering variations between operating systems, ensuring that 1 page in Plainchant equals exactly 1 minute of screen time.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="pagination-rules">
+                <h3>18. Page Breaks, (MORE) &amp; Orphan Suppression</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Applies standard Hollywood page-break rules, preventing orphaned headings and cleanly splitting long dialogue blocks across page boundaries.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Orphan Suppression:</strong> A Scene Heading appearing on the final two lines of a page is automatically moved to the top of the subsequent page.</li>
+                        <li><strong>Dialogue Splitting:</strong> If a character's speech crosses a page boundary:
+                            <ul>
+                                <li>The first portion ends with an indented <code>(MORE)</code> line.</li>
+                                <li>The top of the next page resumes with the character's name appended with <code>(CONT'D)</code>.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Explicit Page Breaks:</strong> Typing <code>===</code> in Fountain forces an immediate page break.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Produces publication-quality scripts ready for production table reads without requiring manual adjustments or post-export cleanup.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="title-and-dual-dialogue">
+                <h3>19. Title Page &amp; Dual Dialogue</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Lays out professional unnumbered title pages and formats simultaneous speech (Dual Dialogue) side-by-side.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Title Page Geometry:</strong> Metadata fields at the top of a script (<code>Title:</code>, <code>Credit:</code>, <code>Author:</code>, <code>Draft date:</code>, <code>Contact:</code>) are extracted into an unnumbered title page. Title and authors are centered vertically; contact information is placed in the bottom-left corner.</li>
+                        <li><strong>Dual Dialogue Formatting:</strong> When a character cue ends with a caret (<code>SARAH ^</code>), <code>paginate.js</code> renders Sarah's speech directly beside the preceding character's speech in two balanced columns, never splitting them across pages.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Accommodates complex screenplay formatting conventions while keeping the underlying Fountain text completely human-readable.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="simulated-sheets">
+                <h3>20. Simulated Sheets View &amp; CSS @page Printing</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Displays simulated paper sheets with real-time page numbers while writing, and renders clean PDF output via the browser's native print engine.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Page View (<code>sheets-ui.js</code>):</strong> Toggling Page View in the Canvas header renders individual paper-styled sheets (<code>#sheets</code>) scaled via CSS to fit your viewport.</li>
+                        <li><strong>Print Engine (<code>print.js</code>):</strong> Pressing <code>Ctrl/Cmd+P</code> or choosing Export &gt; Print populates <code>#print-root</code> with paginated HTML sheets styled with standard CSS <code>@page</code> declarations, producing razor-sharp vector PDFs directly from Chrome or Firefox.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Eliminates third-party PDF generation dependencies. The browser's native print subsystem handles rendering with zero external bloat.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- BOOK VI -->
+        <section id="book-6">
+            <h2>Book VI: Storage, Durability &amp; File Bridge</h2>
+
+            <div class="triad-block" id="indexeddb-engine">
+                <h3>21. Multi-Tier IndexedDB v3 Architecture</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Powers the local script library, storing multiple screenplays, revisions, metadata, and disk file handles in the browser's persistent IndexedDB database (<code>plainchant</code>, version 3).
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Object Store</th>
+                                <th>Key</th>
+                                <th>Data Contents</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>scripts</code></td>
+                                <td>Script UUID</td>
+                                <td>Fountain plain text, created timestamp, modified timestamp, word count.</td>
+                            </tr>
+                            <tr>
+                                <td><code>meta</code></td>
+                                <td><code>"library"</code></td>
+                                <td>Index of active scripts, soft-deleted scripts, and the last open script ID.</td>
+                            </tr>
+                            <tr>
+                                <td><code>versions</code></td>
+                                <td>Composite Key</td>
+                                <td>Content-addressed historical snapshots tagged by creation timestamp and commit label.</td>
+                            </tr>
+                            <tr>
+                                <td><code>files</code></td>
+                                <td>Script UUID</td>
+                                <td>Chromium FileSystemFileHandle reference for live disk synchronization.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Bypasses the restrictive 5 MB storage ceiling and synchronous main-thread blocking of <code>localStorage</code>, allowing writers to store hundreds of full-length scripts securely in browser storage.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="emergency-buffer">
+                <h3>22. The Unload Emergency Buffer Reconciler</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        A fail-safe persistence mechanism that guarantees text typed in the 2-second interval before a sudden tab closure is never lost.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>The Unload Race:</strong> IndexedDB transactions are asynchronous. When a user closes a browser tab, pending IndexedDB writes can be terminated by the browser.</li>
+                        <li><strong>Synchronous Snapshot:</strong> Plainchant binds to the <code>pagehide</code> event, instantly writing the full active script text and its ID into <code>localStorage.getItem('plainchant_emergency')</code> synchronously.</li>
+                        <li><strong>Reconciliation on Boot:</strong> When Plainchant opens, <code>Store.reconcileEmergency()</code> compares the emergency buffer against the IndexedDB record. If the emergency buffer contains fresher content, it is seamlessly merged into the database.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Guarantees zero data loss under all conditions, fulfilling Tenet 3 (<em>Never Lose Words</em>).
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="time-travel-snapshots">
+                <h3>23. Snapshot Versioning &amp; Scene Diffs</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        An automated time-travel version control system built directly into the script library, featuring scene-by-scene comparisons and granular rollbacks.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Automated Checkpoints:</strong> A revision snapshot is saved on the first modification of a session, and subsequently at 10-minute intervals whenever the text changes.</li>
+                        <li><strong>Logarithmic Thinning (<code>Versions.prune</code>):</strong> To prevent database bloat, snapshots are pruned intelligently:
+                            <ul>
+                                <li>All snapshots from the past 1 hour are retained.</li>
+                                <li>1 snapshot per hour for the past 24 hours.</li>
+                                <li>1 snapshot per day for the past 30 days.</li>
+                                <li>1 snapshot every 30 days indefinitely.</li>
+                                <li>Named versions created manually by the writer are <em>never</em> deleted.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Scene Comparison (<code>compare.js</code>):</strong> The Versions dialog shows a scene-by-scene diff against your current text, allowing you to restore an individual scene from an older version without overwriting the rest of your script.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Gives screenwriters complete creative freedom to experiment, rewrite, and discard drafts with the confidence that any earlier scene can be recovered in seconds.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="file-system-access">
+                <h3>24. Chromium Live Disk Sync (File System Access API)</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Links a Plainchant script directly to a real <code>.fountain</code> file on your physical hard drive in Chromium-based browsers, keeping disk and browser storage in continuous synchronization.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Linking:</strong> Accessed via Library &gt; <em>Open a file...</em> or Export &gt; <em>Sync with a file</em>. Plainchant obtains a <code>FileSystemFileHandle</code>.</li>
+                        <li><strong>Automatic Writing:</strong> Every autosave automatically writes the canonical text (<code>\n</code> normalized with a single trailing newline) to the physical file.</li>
+                        <li><strong>Two-Way Dispute Resolution (<code>FileSync.decide</code>):</strong> When returning to Plainchant, the engine inspects the file's modification timestamp and content hash:
+                            <ul>
+                                <li>If only the script changed: writes to disk.</li>
+                                <li>If only the disk file changed (e.g. edited in VS Code): loads from disk.</li>
+                                <li>If both changed: displays a conflict resolution banner allowing the writer to choose which version to keep.</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Bridges browser simplicity with native desktop workflows. You can store your scripts in Git repositories or sync folders while drafting in Plainchant.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="storage-safekeeping">
+                <h3>25. Persistent Storage Leases (<code>safekeeping.js</code>)</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Protects the browser's IndexedDB database from being cleared during browser disk-cleanup routines.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li>Once a user creates content in Plainchant, <code>safekeeping.js</code> calls <code>navigator.storage.persist()</code>.</li>
+                        <li>If granted, the browser promotes storage from "best-effort" to "persistent", preventing automatic eviction under low disk space.</li>
+                        <li>The current lease status is clearly displayed at the bottom of the Library dialog.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Ensures long-term data safety without requiring third-party cloud accounts or server infrastructure.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- BOOK VII -->
+        <section id="book-7">
+            <h2>Book VII: Analytics &amp; Creator Tooling</h2>
+
+            <div class="triad-block" id="script-metrics">
+                <h3>26. Runtime, Eighths &amp; Word Counts (<code>stats.js</code>)</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Calculates industry-standard production statistics in real time: total page count, estimated screen time, scene lengths measured in eighths of a page, and word counts.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Screen Time:</strong> Follows the industry standard rule of thumb: 1 page = 1 minute of screen time, accounting for partial final pages.</li>
+                        <li><strong>Eighths of a Page:</strong> Production schedules measure scene lengths in eighths of a page. <code>stats.js</code> calculates scene lengths on the Courier grid, formatting them in standard production notation (e.g. <code>2 3/8 pgs</code>).</li>
+                        <li><strong>Live Header Counter:</strong> The Canvas preview header displays a live page count that updates continuously as you type.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Gives writers and producers immediate production metrics without needing to export the script into separate breakdown software.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="character-metrics">
+                <h3>27. Dialogue Share &amp; Scene Presence</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Analyzes character dialogue distribution, speaking counts, and setting balances throughout the screenplay.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Character Dialogue Share:</strong> Counts the number of speeches and words for each character, calculating their percentage of overall dialogue.</li>
+                        <li><strong>Scene Mix:</strong> Breaks down scene settings by interior vs. exterior (<code>INT.</code> vs. <code>EXT.</code>) and time of day (<code>DAY</code>, <code>NIGHT</code>, <code>DUSK</code>, etc.).</li>
+                        <li><strong>Location Index:</strong> Aggregates recurring locations, displaying how many scenes and pages take place at each venue.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Helps writers audit character balance, identify pacing issues, and evaluate production budgeting requirements early in the drafting process.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="outline-navigator">
+                <h3>28. The Outline Hierarchy (<code>outline.js</code>)</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Generates a structured navigational tree of your screenplay based on sections (<code>#</code>), scene headings, and synopses (<code>=</code>).
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Tree Extraction:</strong> Parses top-level acts and sections (<code># Act I</code>, <code>## Sequence A</code>), nesting scenes underneath their parent section.</li>
+                        <li><strong>Synopses Attachment:</strong> Synopses lines beginning with <code>=</code> are attached directly to their respective scenes in the outline view.</li>
+                        <li><strong>Interactive Jump:</strong> Clicking any scene or section in the Outline dialog instantly scrolls both the Void and Canvas directly to that point in the script.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Allows fast structural navigation across 120-page screenplays without manual scrolling.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="narration-chapters">
+                <h3>29. YouTube Chapters &amp; Narration Time</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Estimates spoken-word read-aloud duration and automatically formats YouTube video chapter timestamps for video essays, podcasts, and documentaries.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Spoken Word Calculation:</strong> <code>narration.js</code> counts spoken words (dialogue alone, or dialogue plus action) and applies an adjustable reading speed (default: 150 words per minute).</li>
+                        <li><strong>Chapter Generation:</strong> Generates formatted YouTube chapter timestamps (e.g. <code>0:00 Intro</code>, <code>2:15 The Incident</code>) derived from top-level section headings.</li>
+                        <li><strong>YouTube Policy Verification:</strong> Automatically checks compliance with YouTube's chapter requirements (at least 3 chapters, each at least 10 seconds long, starting at <code>0:00</code>), flagging any issues before you copy the list.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Transforms Plainchant into an indispensable tool for content creators, video essayists, and podcast producers.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- BOOK VIII -->
+        <section id="book-8">
+            <h2>Book VIII: Theme Engine &amp; Nostalgia</h2>
+
+            <div class="triad-block" id="theme-token-matrix">
+                <h3>30. The Three-Theme Token System</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Provides three complete color themes—<strong>Dark</strong> (default), <strong>Light</strong>, and <strong>Retro CGA</strong>—governed by CSS variables on the root document.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>CSS Custom Properties:</strong> All UI elements derive colors from tokens (<code>--bg-void</code>, <code>--text-strong</code>, <code>--border-void</code>, <code>--btn-bg</code>) declared on <code>:root</code>.</li>
+                        <li><strong>Theme Selection:</strong> Switching themes in Settings toggles the <code>data-theme</code> attribute on the <code>&lt;html&gt;</code> element, instantly updating all colors without page reload.</li>
+                        <li><strong>Paper Invariant:</strong> The Canvas preview and printed sheets <em>always</em> remain white paper with black text regardless of the active UI theme, preserving typographic fidelity.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Ensures visual consistency while maintaining accessibility and readability across diverse lighting environments.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="contrast-verification">
+                <h3>31. 4.5:1 Contrast Verification</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Enforces strict WCAG 2.1 AA accessibility standards across all themes and interactive elements.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        An automated test sweep in <code>test/app.e2e.html</code> (Section 16o) evaluates every button, text element, and icon across all three themes, verifying that text contrast ratios never drop below <strong>4.5:1</strong> and ensuring that every control features an accessible aria label.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Guarantees that Plainchant remains accessible to users with low vision or color vision deficiencies.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="retro-cga-adventure">
+                <h3>32. Retro CGA Theme &amp; The Adventure Game Parser</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        A retro CGA palette mode (cyan, magenta, white, and black) featuring an Easter egg: interactive replies to vintage adventure game commands.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>CGA Palette:</strong> Simulates classic IBM PC Color Graphics Adapter Palette 1 with high-contrast neon accents, crisp borders, and square modal styling.</li>
+                        <li><strong>Adventure Parser (<code>adventure.js</code>):</strong> In the Retro theme, typing classic adventure commands (<code>LOOK</code>, <code>INVENTORY</code>, <code>SCORE</code>, <code>XYZZY</code>) on a line of their own and pressing Enter displays a playful in-game response in the notification banner without altering your screenplay text.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Celebrates the computing heritage of text-based interactive storytelling without interfering with professional screenwriting workflows.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- BOOK IX -->
+        <section id="book-9">
+            <h2>Book IX: The Proving Ground (Quality Assurance)</h2>
+
+            <div class="callout info" id="testing-philosophy">
+                <div class="callout-title">The Proving Ground Philosophy: "Verified Means Observed"</div>
+                <p>
+                    A feature in Plainchant is not considered complete when the code is written; it is complete only when its execution has been observed and validated by automated test suites.
+                </p>
+            </div>
+
+            <div class="triad-block" id="unit-test-suite">
+                <h3>34. Fast Node.js Unit Suite (<code>npm test</code>)</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        A zero-dependency unit test runner executing <strong>339 tests</strong> across all pure domain modules in under 1 second.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        Driven by <code>test/run.js</code>. Tests all 15 pure UMD modules under Node 18+, verifying parser edge cases, Fountain emphasis rules, pagination grid metrics, stats calculations, and file decoding.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Provides instantaneous feedback during development, ensuring algorithms remain mathematically sound before touching browser APIs.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="browser-e2e-gauntlet">
+                <h3>35. Headless Chromium E2E Gauntlet</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        An automated headless browser testing harness (<code>npm run test:browser</code> / <code>bash test/run-headless.sh</code>) executing <strong>327 unit tests</strong> and <strong>730 end-to-end integration tests</strong>.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li>Launches a real Chromium instance with a fresh, throwaway profile.</li>
+                        <li>Loads <code>test/app.e2e.html</code>, testing real user interactions inside sandboxed iframes: typing keystrokes, modal dialogs, IndexedDB transactions, emergency buffer unloads, and printing simulations.</li>
+                        <li>Completes in approximately 60 seconds with zero external npm dependencies.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Validates complete real-world browser behavior, catching timing issues, storage race conditions, and focus anomalies that unit tests cannot detect.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="structural-audits">
+                <h3>36. Structural &amp; Manifest Audits (<code>test/structure.test.js</code>)</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Enforces architectural constraints, preventing architectural drift and unintended dependencies.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li>Verifies that every script in <code>src/app/</code> is loaded in exact dependency order by <code>app.html</code>.</li>
+                        <li>Enforces that no script in <code>src/app/</code> exceeds 500 lines of code.</li>
+                        <li>Audits that all font files in <code>fonts/</code> are accounted for and referenced by <code>src/styles.css</code>.</li>
+                        <li>Verifies that every file used by the app is registered in <code>sw.js</code>'s <code>APP_FILES</code> manifest.</li>
+                        <li>Scans filenames to ensure no tracking-related keywords exist that could trigger ad-blocker false positives.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Prevents codebase entropy automatically as the project grows over time.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="mutation-testing">
+                <h3>37. Mutation Testing Protocol</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Evaluates the effectiveness of the test suite by systematically introducing deliberate bugs into the codebase.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <p>
+                        A scratch script systematically alters individual lines of code across pure modules and app controllers, running the test suite against each mutation. If the test suite continues to pass, the surviving mutant reveals an untested code path or weak assertion.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Guarantees that test coverage numbers reflect genuine verification rather than hollow execution metrics.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- BOOK X -->
+        <section id="book-10">
+            <h2>Book X: Contributor Protocol &amp; Appendices</h2>
+
+            <div class="triad-block" id="session-protocol">
+                <h3>38. The Plainchant Session Protocol</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        The formal procedure governing all development sessions to ensure state continuity and architectural discipline.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Start of Session:</strong> Read <code>docs/HANDOFF.md</code> (reflecting current state only) and the latest entry in <code>docs/SESSION-LOG.md</code>. Review <code>ROADMAP.md</code> for upcoming milestone IDs.</li>
+                        <li><strong>During Work:</strong> Work one roadmap item at a time. Record design rationale in <code>docs/DECISIONS.md</code>. Run the complete test suite before declaring any task complete.</li>
+                        <li><strong>End of Session:</strong> Update <code>ROADMAP.md</code>, rewrite <code>docs/HANDOFF.md</code> so it accurately reflects current state, append a session record to <code>docs/SESSION-LOG.md</code>, and log completed milestones in the developer diary (<code>docs/devlog/</code>).</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Prevents context loss between development sessions, ensuring smooth continuity across human and AI contributors.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="engineering-invariants">
+                <h3>39. Architectural Invariants for Contributors</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Non-negotiable engineering rules that must be preserved by all pull requests and code modifications.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ul>
+                        <li><strong>No External CDNs or npm Packages:</strong> Never add external script tags or npm runtime dependencies. All assets must remain self-contained.</li>
+                        <li><strong>Classic Script Tags Only:</strong> Do not introduce ES module syntax (<code>import</code>/<code>export</code>) into app controllers, preserving <code>file://</code> URL compatibility.</li>
+                        <li><strong>Pure Modules Must Never Touch the DOM:</strong> Code inside <code>src/*.js</code> must remain completely free of <code>window</code>, <code>document</code>, and browser APIs.</li>
+                        <li><strong>Never Assign <code>editor.value</code> Directly:</strong> All interactive edits must go through <code>applyEdit()</code> to preserve the native browser undo stack.</li>
+                    </ul>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Safeguards the long-term maintainability, speed, and privacy of the application.
+                    </p>
+                </div>
+            </div>
+
+            <div class="triad-block" id="sw-pwa-architecture">
+                <h3>40. Offline PWA &amp; Service Worker Architecture</h3>
+                <div class="triad-section">
+                    <span class="triad-label what">What It Does</span>
+                    <p>
+                        Enables full offline operation and native desktop/mobile installation via Progressive Web App technology.
+                    </p>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label how">How It Works</span>
+                    <ol>
+                        <li><strong>Asset Caching:</strong> <code>sw.js</code> maintains an explicit array of core assets (<code>APP_FILES</code>). On installation, all assets are cached locally.</li>
+                        <li><strong>Cache-First Strategy:</strong> Requests are served directly from the local cache, guaranteeing instant load times regardless of network availability.</li>
+                        <li><strong>Manifest Configuration:</strong> <code>manifest.webmanifest</code> declares application icons, theme colors, and standalone display mode, allowing Plainchant to run in a dedicated app window.</li>
+                    </ol>
+                </div>
+                <div class="triad-section">
+                    <span class="triad-label why">Why It Works</span>
+                    <p>
+                        Delivers the responsiveness and reliability of a native desktop application with the zero-install convenience of the web.
+                    </p>
+                </div>
+            </div>
+
+            <h3 id="appendices">Appendix: Critical System Paths &amp; Storage Keys</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Storage Identifier</th>
+                        <th>Type / Scope</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>plainchant</code> (v3)</td>
+                        <td>IndexedDB Database</td>
+                        <td>Primary database storing <code>scripts</code>, <code>meta</code>, <code>versions</code>, and <code>files</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>plainchant_emergency</code></td>
+                        <td><code>localStorage</code></td>
+                        <td>Synchronous emergency backup buffer populated during <code>pagehide</code> tab-close events.</td>
+                    </tr>
+                    <tr>
+                        <td><code>plainchant_settings</code></td>
+                        <td><code>localStorage</code></td>
+                        <td>User preferences that deviate from defaults (theme, font size, reading speed).</td>
+                    </tr>
+                    <tr>
+                        <td><code>plainchant_focus</code></td>
+                        <td><code>localStorage</code></td>
+                        <td>Stores active Focus / Typewriter mode toggle state.</td>
+                    </tr>
+                    <tr>
+                        <td><code>plainchant_paper</code></td>
+                        <td><code>localStorage</code></td>
+                        <td>Selected paper format (<code>"letter"</code> vs <code>"a4"</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>plainchant_onboarded</code></td>
+                        <td><code>localStorage</code></td>
+                        <td>Flag recording completion of the first-launch welcome tour.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <footer class="doc-footer">
+            <p>Plainchant v1.0 Architectural Codex &amp; Manual • Andrew Edmark &amp; The Plainchant Systems Team</p>
+            <p>Licensed under permissive MIT terms with AI-Assisted Authorship Acknowledgment.</p>
+        </footer>
+    </main>
+
+</body>
+</html>

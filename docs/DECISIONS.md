@@ -1080,6 +1080,47 @@ writing.
 **Consequences:** links or documentation that mean the editor must name `app.html`; links that mean the project front
 door use `index.html`. Adding a homepage asset means adding it to the service-worker list.
 
+## D-062 The front door wears the portfolio's sixteen colours  (2026-10-31, status: accepted)
+**Context:** The homepage (D-061) was warm paper, a red accent and Inter: a clean editorial look, but one that shared
+nothing with the owner's portfolio, where Plainchant sits among their other projects. The app already has a retro
+CGA theme (D-041, D-047), so a sixteen-colour front door is continuous with the product too.
+**Decision:**
+1. `index.html` and `src/home.css` use the portfolio's visual language: black with a blue dither, a light-grey
+   pull-down menu bar, double-bordered windows with hard offset shadows, all-Courier uppercase type, `[01]` section
+   badges, beveled buttons and bracketed links.
+2. The content and constraints of D-061 stay: the same sections and words, the side-by-side Void and Canvas
+   demonstration, no JavaScript, no new files (the two bundled Courier Prime faces only), and links to `app.html`,
+   the manual and the dev diary.
+3. One dark theme only, as on the portfolio's default. The homepage does not ask the writer to choose a theme; the
+   app's themes remain in Settings.
+**Consequences:** the front door is now deliberately arcade-era rather than neutral, and a future redesign should
+treat the portfolio as its reference. A homepage that loads a new asset must still add it to `sw.js` (D-026); today
+it loads only `home.css` and fonts already listed.
+**Update, same day:** point 1's windows, cards and section badges were replaced by the screenplay layout of D-063;
+the demonstration now stacks the Void above the page it becomes. The palette, menubar, footer, buttons and the
+no-JavaScript / no-new-files constraints stay.
+
+## D-063 The homepage is a screenplay  (2026-10-31, status: accepted)
+**Context:** D-062 gave the front door the portfolio's EGA chrome but kept the usual marketing sequence: a
+two-column hero, a promise strip, a grid of feature cards and a closing call to action. The owner judged that layout
+indistinguishable from a thousand other product pages. Plainchant's product is the transformation of plain text
+into a formatted screenplay, so the page can demonstrate it by being one.
+**Decision:**
+1. `index.html` is a screenplay: an unnumbered title page, then five numbered sheets (the premise, the primer, the
+   whole draft, the narrators, the end). The sheets are paper on the EGA desk; the menubar and footer stay as D-062
+   left them.
+2. The information is formatted as script elements: the premise is a line of dialogue by THE WRITER; the demo is a
+   black Void block and the mini page it becomes; each primer step is written in the element it teaches (scene
+   heading, character cue, speech with a parenthetical, transition); the features are characters in the draft;
+   narration is a V.O. scene; the last page is FADE OUT. and THE END.
+3. The typography follows the format's own proportions (a wide left margin, indented dialogue, scene headings,
+   right-aligned transitions), and a production note in the left margin names each page. On narrow screens the note
+   moves above the heading and the indents tighten.
+4. It is still one HTML file and one stylesheet, with no JavaScript, no new files and no network requests.
+**Consequences:** the page's copy is a script rather than brochure copy; later edits must fit the format (dialogue
+is indented, action is full width, scene headings are uppercase). The title page is the only unnumbered sheet.
+Everything inside a sheet is paper with literal ink colours; the menubar and footer remain the themed site chrome.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

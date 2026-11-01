@@ -27,6 +27,26 @@ At the end of a session, add an entry at the top of "Sessions" using this templa
 
 <!-- NEW ENTRIES GO HERE -->
 
+### Session 32: 2026-10-31: The front door in sixteen colours, then a screenplay
+
+**Goal:** The owner asked for the homepage to complement the EGA/Sierra aesthetic of their portfolio. After the
+first pass they judged the layout itself generic and asked for a different way to format the information.
+**Done:** `index.html` and `src/home.css` rebuilt twice in one session. First the portfolio's visual language: a
+dithered black desk, a grey pull-down menu bar, beveled buttons, Courier Prime. Then the layout: the homepage is a
+five-page screenplay on paper sheets — a title page, the premise, the primer written in the elements it teaches,
+the features as characters, a V.O. narration scene, and FADE OUT. / THE END. Page numbers, margins and indents
+follow screenplay typography, and each page carries a production note in the left margin. Dev-diary entry "A
+Screenplay in Five Pages".
+**Changed:** `index.html`, `src/home.css`, `docs/devlog/` (entry, index, README), docs.
+**Decisions:** D-062, D-063.
+**Problems / surprises:** percentage padding on a sheet resolves against the desk's width, not the sheet's, which
+squeezed the script column; the margins are length-based clamps now. At 320px the title's blinking cursor dropped
+to a second line until the mobile title size came down. The first window-and-card pass is described in D-062;
+D-063 replaced its layout the same day.
+**Left undone:** no light-theme or print variant of the homepage. `docs/manual/` is another session's uncommitted
+work and was not touched.
+**Next session should start with:** the owner's hands-on checks in HANDOFF, or feedback on the screenplay front door.
+
 ### Session 31: 2026-09-30: A front door for Plainchant
 
 **Goal:** Give new writers a homepage that introduces the app and acts as a short primer.

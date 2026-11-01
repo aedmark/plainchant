@@ -5,184 +5,190 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plainchant — Screenwriting without the formatting</title>
     <meta name="description" content="Write screenplays, video essays and stories in plain text. Plainchant handles the formatting, saves as you type and works offline.">
-    <meta name="theme-color" content="#f1eadc">
+    <meta name="theme-color" content="#000000">
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <link rel="stylesheet" href="src/home.css">
 </head>
 <body>
-<a class="skip-link" href="#main">Skip to the story</a>
+<a class="skip" href="#main">Skip to the script</a>
 
-<header class="site-header">
-    <a class="wordmark" href="index.html" aria-label="Plainchant home">
-        <span class="wordmark-mark" aria-hidden="true">P</span>
-        <span>PLAINCHANT</span>
-    </a>
-    <nav aria-label="Main navigation">
-        <a href="#primer">How it works</a>
-        <a href="#features">Why Plainchant</a>
-        <a href="docs/devlog/index.html">Dev diary</a>
-    </nav>
-    <a class="button button-small" href="app.html">Open the app <span aria-hidden="true">↗</span></a>
+<header class="site-head">
+    <div class="wrap">
+        <a class="brand" href="index.html" aria-label="Plainchant home">
+            <span class="brand-mark" aria-hidden="true">P</span>
+            <span>Plainchant</span>
+            <small>/ a screenplay</small>
+        </a>
+        <nav class="nav" aria-label="Main navigation">
+            <a href="#premise">The script</a>
+            <a href="#primer">The primer</a>
+            <a href="#features">The draft</a>
+            <a href="docs/manual/index.html">Manual</a>
+            <a href="docs/devlog/index.html">Dev diary</a>
+        </nav>
+        <a class="btn primary" href="app.html">Open the app <span aria-hidden="true">&gt;</span></a>
+    </div>
 </header>
 
-<main id="main">
-    <section class="hero" aria-labelledby="hero-title">
-        <div class="hero-copy">
-            <p class="eyebrow"><span>Free</span> · Private · Works offline</p>
-            <h1 id="hero-title">Your story.<br>Properly formatted.<br><em>Nothing in the way.</em></h1>
-            <p class="hero-lede">Plainchant is a screenwriting app that gets out of your way. Type simple text. Watch it become a screenplay. Keep every word yours.</p>
-            <div class="hero-actions">
-                <a class="button button-primary" href="app.html">Start writing <span aria-hidden="true">→</span></a>
-                <a class="text-link" href="#primer">See how it works <span aria-hidden="true">↓</span></a>
-            </div>
-            <p class="microcopy">No account. No install. Your first scene is one click away.</p>
-        </div>
+<main id="main" class="desk">
+    <article class="script" aria-label="Plainchant, a screenplay in five pages">
 
-        <div class="hero-demo" aria-label="Plain text becoming a formatted screenplay">
-            <div class="demo-chrome">
-                <span>THE VOID</span>
-                <span class="demo-status"><i></i> SAVED</span>
-                <span>THE CANVAS</span>
+        <section class="sheet title-sheet" aria-labelledby="title">
+            <p class="title-kicker">A screenplay in five pages</p>
+            <h1 id="title">Plainchant<span class="cursor" aria-hidden="true">_</span></h1>
+            <p class="title-tagline">Your story. Properly formatted. Nothing in the way.</p>
+            <p class="title-meta"><span>Free</span> · Private · Works offline</p>
+            <p class="title-lede">Plainchant is a screenwriting app that gets out of your way. Type simple text. Watch it become a screenplay. Keep every word yours.</p>
+            <p class="title-action"><a class="btn primary" href="app.html">Start writing <span aria-hidden="true">&gt;</span></a></p>
+            <p class="title-note">No account. No install. Your first scene is one click away.</p>
+            <p class="title-turn" aria-hidden="true">Turn the page <span></span></p>
+        </section>
+
+        <section class="sheet" id="premise" aria-labelledby="premise-title">
+            <span class="page-number" aria-hidden="true">1.</span>
+            <p class="page-label"><span>01</span> The premise</p>
+            <p class="transition in">Fade in:</p>
+            <h2 class="scene" id="premise-title">INT. THE BLANK PAGE - NIGHT</h2>
+            <p class="action">A cursor blinks. There is nothing else.</p>
+            <div class="speech">
+                <p class="cue">THE WRITER</p>
+                <p class="dialogue">Writing software should help you write.</p>
             </div>
-            <div class="demo-body">
-                <div class="demo-source" aria-label="Plain text input example">
-                    <span class="line scene">INT. ARCADE - NIGHT</span>
-                    <span class="line action">The last cabinet hums in<br>the dark.</span>
-                    <span class="line character">MARA</span>
-                    <span class="line dialogue">One more life.</span>
-                    <span class="line caret" aria-hidden="true"></span>
+            <p class="action">Margins, indentation, page breaks, file formats—Plainchant handles the machinery while you stay with the scene. It reads lightweight <a href="https://fountain.io" rel="noreferrer">Fountain</a> text and formats it live. There is nothing proprietary between you and your work, and nothing to configure before “FADE IN.”</p>
+
+            <figure class="demo">
+                <p class="demo-label">What you type</p>
+                <div class="void">
+                    <p class="void-bar"><span>The Void</span><span class="void-status"><i aria-hidden="true"></i> Saved</span><span>Fountain</span></p>
+                    <div class="void-body">
+                        <p class="v-scene">INT. ARCADE - NIGHT</p>
+                        <p class="v-action">The last cabinet hums in the dark.</p>
+                        <p class="v-cue">MARA</p>
+                        <p class="v-line">One more life.</p>
+                        <p class="v-caret" aria-hidden="true"></p>
+                    </div>
                 </div>
-                <div class="demo-page" aria-label="Formatted screenplay output example">
-                    <p class="page-scene">INT. ARCADE - NIGHT</p>
-                    <p>The last cabinet hums in the dark.</p>
-                    <p class="page-character">MARA</p>
-                    <p class="page-dialogue">One more life.</p>
-                    <span class="page-number">1.</span>
+                <p class="demo-label">What the page does with it</p>
+                <div class="mini-page" role="img" aria-label="The same lines formatted as a screenplay: a scene heading, an action line, a character cue and one line of dialogue.">
+                    <span class="mini-number">1.</span>
+                    <p class="mini-scene">INT. ARCADE - NIGHT</p>
+                    <p class="mini-action">The last cabinet hums in the dark.</p>
+                    <p class="mini-cue">MARA</p>
+                    <p class="mini-dialogue">One more life.</p>
                 </div>
-            </div>
-            <p class="demo-caption">THE SAME WORDS, READY FOR THE PAGE</p>
-        </div>
-    </section>
+            </figure>
 
-    <aside class="promise" aria-label="Plainchant at a glance">
-        <p><strong>01</strong> Just type</p>
-        <p><strong>02</strong> Saved automatically</p>
-        <p><strong>03</strong> Export anywhere</p>
-        <p><strong>04</strong> Yours, always</p>
-    </aside>
+            <p class="action">Every page in Plainchant is both: the text you typed, and the page it becomes.</p>
+        </section>
 
-    <section class="manifesto section-shell" aria-labelledby="manifesto-title">
-        <p class="section-kicker">The premise</p>
-        <div class="manifesto-grid">
-            <h2 id="manifesto-title">Writing software should help you write.</h2>
-            <div>
-                <p class="large-copy">Margins, indentation, page breaks, file formats—Plainchant handles the machinery while you stay with the scene.</p>
-                <p>It reads lightweight <a href="https://fountain.io" rel="noreferrer">Fountain</a> text and formats it live. There is nothing proprietary between you and your work, and nothing to configure before “FADE IN.”</p>
-            </div>
-        </div>
-    </section>
+        <section class="sheet" id="primer" aria-labelledby="primer-title">
+            <span class="page-number" aria-hidden="true">2.</span>
+            <p class="page-label"><span>02</span> The primer</p>
+            <h2 class="scene" id="primer-title">INT. THE PRIMER - CONTINUOUS</h2>
+            <p class="action">Plainchant understands the shape of a script from the shape of your text. Use <kbd>Tab</kbd> to cycle an element when you want a hand; smart <kbd>Enter</kbd> takes it from there.</p>
+            <p class="action">Four steps. That’s the whole primer.</p>
 
-    <section class="primer" id="primer" aria-labelledby="primer-title">
-        <div class="section-shell">
-            <p class="section-kicker light">Start writing</p>
-            <div class="primer-heading">
-                <h2 id="primer-title">Four steps.<br>That’s the whole primer.</h2>
-                <p>Plainchant understands the shape of a script from the shape of your text. Use <kbd>Tab</kbd> to cycle an element when you want a hand; smart <kbd>Enter</kbd> takes it from there.</p>
+            <div class="lesson">
+                <span class="lesson-index" aria-hidden="true">01</span>
+                <p class="sample-scene">INT. ARCADE - NIGHT</p>
+                <p class="action">Set the scene. Start with <b>INT.</b> or <b>EXT.</b> and Plainchant recognises a scene heading.</p>
             </div>
 
-            <ol class="steps">
-                <li>
-                    <span class="step-number">01</span>
-                    <div><h3>Set the scene</h3><code>INT. ARCADE - NIGHT</code><p>Start with <b>INT.</b> or <b>EXT.</b> and Plainchant recognises a scene heading.</p></div>
-                </li>
-                <li>
-                    <span class="step-number">02</span>
-                    <div><h3>Call your character</h3><code>MARA</code><p>Put a name in capitals. Names you have used before are suggested as you type.</p></div>
-                </li>
-                <li>
-                    <span class="step-number">03</span>
-                    <div><h3>Let them speak</h3><code>One more life.</code><p>Press Enter after a character and dialogue begins. Parentheticals work naturally too.</p></div>
-                </li>
-                <li>
-                    <span class="step-number">04</span>
-                    <div><h3>Take it with you</h3><code>EXPORT → .FOUNTAIN / .FDX / PDF</code><p>Print, save a PDF, or export for Fountain and Final Draft when the story is ready.</p></div>
-                </li>
-            </ol>
-
-            <div class="primer-note">
-                <span class="note-mark" aria-hidden="true">!</span>
-                <p><strong>Stuck?</strong> Tap the element bar—Scene, Action, Character, Dialogue—or press <kbd>Tab</kbd>. Plainchant never makes you memorise syntax.</p>
+            <div class="lesson">
+                <span class="lesson-index" aria-hidden="true">02</span>
+                <p class="sample-cue">MARA</p>
+                <p class="action">Call your character. Put a name in capitals. Names you have used before are suggested as you type.</p>
             </div>
-        </div>
-    </section>
 
-    <section class="features section-shell" id="features" aria-labelledby="features-title">
-        <p class="section-kicker">Built for the whole draft</p>
-        <div class="features-heading">
-            <h2 id="features-title">From blank page<br>to final draft.</h2>
-            <p>Small enough to disappear. Capable enough to stay with a full-length script.</p>
-        </div>
-        <div class="feature-grid">
-            <article class="feature feature-wide">
-                <span class="feature-index">A</span>
-                <h3>Stay in the flow</h3>
-                <p>Live formatting, smart Enter, autocomplete, focus mode and quick edits keep your hands on the story—not the toolbar.</p>
-                <div class="focus-visual" aria-hidden="true"><span>Rain needles the empty street.</span><strong>MARA crosses beneath the last working light.</strong><span>Somewhere behind her, a coin drops.</span></div>
-            </article>
-            <article class="feature">
-                <span class="feature-index">B</span>
-                <h3>Never lose the thread</h3>
-                <p>Autosave, a script library, named versions and scene-by-scene comparisons give every draft a safe place to land.</p>
-                <p class="feature-callout">SAVED AS YOU TYPE <i></i></p>
-            </article>
-            <article class="feature">
-                <span class="feature-index">C</span>
-                <h3>See the whole story</h3>
-                <p>Outline, page view, scene and character stats, screen-time estimates, and video chapters reveal the shape of the work.</p>
-                <div class="stat-row" aria-hidden="true"><span><b>92</b> pages</span><span><b>41</b> scenes</span><span><b>1h 32m</b> runtime</span></div>
-            </article>
-            <article class="feature feature-dark">
-                <span class="feature-index">D</span>
-                <h3>Keep your work yours</h3>
-                <p>Plainchant runs in the browser, works offline, and stores scripts on your device. No account, cloud lock-in or tracking.</p>
-                <p class="terminal-line"><span>LOCAL FIRST</span><br>12,408 words · 3 scripts<br>No account · No trackers · No cloud required</p>
-            </article>
-        </div>
-    </section>
+            <div class="lesson">
+                <span class="lesson-index" aria-hidden="true">03</span>
+                <div class="speech">
+                    <p class="cue">MARA (CONT'D)</p>
+                    <p class="parenthetical">(quietly)</p>
+                    <p class="dialogue">One more life.</p>
+                </div>
+                <p class="action">Let them speak. Press Enter after a character and dialogue begins. Parentheticals work naturally too.</p>
+            </div>
 
-    <section class="retro-callout section-shell" aria-labelledby="retro-title">
-        <div class="retro-copy">
-            <p class="section-kicker">More than screenplays</p>
-            <h2 id="retro-title">Made for words<br>that will be heard.</h2>
-            <p>Plainchant also understands narrated videos and voice-over. Separate what is said from what is shown, estimate read-aloud time, and turn sections into ready-to-paste video chapters.</p>
-        </div>
-        <div class="retro-screen narration-screen" aria-label="Example of a narrated video script in Plainchant">
-            <p class="narration-label"># THE OPENING</p>
-            <p class="narration-action">Slow push across an empty cinema.</p>
-            <p class="narration-character">NARRATOR</p>
-            <p>Every story begins before anyone knows what it is.</p>
-            <div class="narration-stats"><span>READ ALOUD</span><strong>08:42</strong><span>CHAPTERS</span><strong>04</strong></div>
-        </div>
-    </section>
+            <div class="lesson">
+                <span class="lesson-index" aria-hidden="true">04</span>
+                <p class="transition">Cut to: export</p>
+                <p class="action">Take it with you. Print, save a PDF, or export for Fountain and Final Draft when the story is ready.</p>
+            </div>
 
-    <section class="final-cta">
-        <div class="section-shell final-cta-inner">
-            <p class="section-kicker light">The cursor is blinking</p>
-            <h2>Ready when<br>you are.</h2>
-            <p>Open a blank script or explore the built-in example. No sign-up, no setup, nothing to configure.</p>
-            <a class="button button-paper" href="app.html">Enter the Void <span aria-hidden="true">→</span></a>
-        </div>
-    </section>
+            <aside class="margin-note">
+                <span class="note-tag">Note</span>
+                <p>Stuck? Tap the element bar—Scene, Action, Character, Dialogue—or press <kbd>Tab</kbd>. Plainchant never makes you memorise syntax.</p>
+            </aside>
+        </section>
+
+        <section class="sheet" id="features" aria-labelledby="features-title">
+            <span class="page-number" aria-hidden="true">3.</span>
+            <p class="page-label"><span>03</span> The whole draft</p>
+            <h2 class="scene" id="features-title">INT. THE WHOLE DRAFT - LATER</h2>
+            <p class="action">Small enough to disappear. Capable enough to stay with a full-length script.</p>
+
+            <div class="speech">
+                <p class="cue">THE FLOW <span class="cue-note">(typing)</span></p>
+                <p class="dialogue">Live formatting, smart Enter, autocomplete, focus mode and quick edits keep your hands on the story—not the toolbar.</p>
+            </div>
+
+            <div class="speech">
+                <p class="cue">THE ARCHIVE <span class="cue-note">(the library)</span></p>
+                <p class="dialogue">Autosave, a script library, named versions and scene-by-scene comparisons give every draft a safe place to land.</p>
+            </div>
+
+            <div class="speech">
+                <p class="cue">THE SHAPE <span class="cue-note">(the outline)</span></p>
+                <p class="dialogue">Outline, page view, scene and character stats, screen-time estimates, and video chapters reveal the shape of the work.</p>
+                <p class="parenthetical">(92 pages · 41 scenes · 1h 32m)</p>
+            </div>
+
+            <div class="speech">
+                <p class="cue">THE KEEPER <span class="cue-note">(the promise)</span></p>
+                <p class="dialogue">Plainchant runs in the browser, works offline, and stores scripts on your device. No account, cloud lock-in or tracking.</p>
+                <p class="parenthetical">(12,408 words · 3 scripts · no trackers)</p>
+            </div>
+        </section>
+
+        <section class="sheet" id="narration" aria-labelledby="narration-title">
+            <span class="page-number" aria-hidden="true">4.</span>
+            <p class="page-label"><span>04</span> For the narrators</p>
+            <h2 class="scene" id="narration-title">INT. THE EDITING ROOM - NIGHT</h2>
+            <p class="action">Plainchant also understands narrated videos and voice-over. Separate what is said from what is shown, estimate read-aloud time, and turn sections into ready-to-paste video chapters.</p>
+            <div class="speech">
+                <p class="cue">NARRATOR <span class="cue-note">(V.O.)</span></p>
+                <p class="parenthetical">(read aloud)</p>
+                <p class="dialogue">Every story begins before anyone knows what it is.</p>
+            </div>
+            <aside class="margin-note">
+                <span class="note-tag">Chapters</span>
+                <p># THE OPENING &gt; 04 sections, 08:42 at 150 words a minute.</p>
+            </aside>
+        </section>
+
+        <section class="sheet" aria-labelledby="end-title">
+            <span class="page-number" aria-hidden="true">5.</span>
+            <p class="page-label"><span>05</span> The cursor is blinking</p>
+            <p class="transition">Fade out.</p>
+            <h2 class="end-title" id="end-title">The End<span class="cursor" aria-hidden="true">_</span></h2>
+            <p class="action">Ready when you are. Open a blank script or explore the built-in example. No sign-up, no setup, nothing to configure.</p>
+            <p class="title-action"><a class="btn primary" href="app.html">Enter the Void <span aria-hidden="true">&gt;</span></a></p>
+            <p class="action small">Or read the <a href="docs/manual/index.html">Manual &amp; Codex</a> and the <a href="docs/devlog/index.html">dev diary</a>.</p>
+        </section>
+    </article>
 </main>
 
-<footer class="site-footer">
-    <a class="wordmark" href="index.html"><span class="wordmark-mark" aria-hidden="true">P</span><span>PLAINCHANT</span></a>
-    <p>Screenwriting, plain and simple.</p>
-    <div>
-        <a href="docs/devlog/index.html">Dev diary</a>
-        <a href="https://github.com/aedmark/plainchant">Source</a>
-        <a href="LICENSE">License</a>
+<footer class="site-foot">
+    <div class="wrap">
+        <p class="foot-brand">Plainchant <span>Screenwriting, plain and simple.</span></p>
+        <div class="foot-links">
+            <a href="docs/manual/index.html">Manual &amp; Codex</a>
+            <a href="docs/devlog/index.html">Dev diary</a>
+            <a href="https://github.com/aedmark/plainchant">Source</a>
+            <a href="LICENSE">License</a>
+        </div>
     </div>
 </footer>
 </body>

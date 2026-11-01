@@ -10,8 +10,9 @@ Plan: [ROADMAP.md](../ROADMAP.md). Decisions: [DECISIONS.md](DECISIONS.md). The 
 
 ## Current state
 
-_Last updated: 2026-09-30, session 31. Plainchant now has a public homepage at `index.html`; the writing app is
-`app.html` and installed copies open there (D-061). Tests: `npm test` 339, browser suite 327 unit + 730 e2e._
+_Last updated: 2026-10-31, session 32. Plainchant now has a public homepage at `index.html`; the writing app is
+`app.html` and installed copies open there (D-061). The homepage is a screenplay on paper sheets inside the
+EGA/Sierra frame of the owner's portfolio (D-062, D-063). Tests: `npm test` 339, browser suite 327 unit + 730 e2e._
 
 **Where things stand:** Phases 1 to 4 are done apart from P2-06 (desktop scroll sync still goes by percentage) and
 an optional idea (P2-20 first-use hints). Phase 3's output is done (Fountain and Final Draft export, print / save as
@@ -21,9 +22,12 @@ Apple-platform phases and the device-pass items from the roadmap on 2026-09-29. 
 features have only run in headless Chromium and the owner's Firefox, so the owner's hands-on checks (Next steps 1)
 matter more than the next feature.
 
-**Front door:** `index.html` introduces Plainchant to new writers with a raw-text-to-page demonstration, the
-distraction-free and local-first promise, a four-step primer, the core workflow, and links into `app.html` (P6-01,
-D-061). The homepage needs no JavaScript and shares the app's bundled typefaces.
+**Front door:** `index.html` is itself a five-page screenplay, set on warm paper sheets on the EGA desk of the
+owner's portfolio (P6-01, D-061, D-062, D-063). A title page leads to the premise, the primer (each step written in
+the element it teaches), the whole draft (the features as characters), a V.O. narration scene and THE END. Each
+sheet carries a page number and a production note in its left margin. The raw-text-to-page demonstration sits on
+page one as a black Void block and the mini page it becomes. It needs no JavaScript, loads no new files, and shares
+the app's bundled typefaces; the menubar and footer are the only site chrome around the paper.
 
 **What the app does** (ROADMAP has every ticked item; the detailed notes as of session 29 are frozen at the end of
 SESSION-LOG.md)
@@ -177,7 +181,7 @@ SESSION-LOG.md)
 3. **Then the next feature, the owner's pick.** Candidates: **P3-14** importing `.fdx`; **P3-09 / P3-10** Library and
    export extras; **P5-04** real-file extras; **P2-20** first-use hints.
 
-**For the dev diary:** nothing waiting; the 2026-09-30 entry includes the homepage and the recent language clean-up.
+**For the dev diary:** nothing waiting; the 2026-10-31 entry, "A Screenplay in Five Pages", covers the homepage's redesign.
 
 The latest entry, "Touching Up the Page", covers everything up to session 28.
 

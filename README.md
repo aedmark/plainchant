@@ -44,6 +44,8 @@ npm run test:browser    # unit suite and app e2e in headless Chromium/Chrome (ab
 
 ## Project docs
 
+- [docs/manual/index.html](docs/manual/index.html): the definitive architectural codex and writer's manual
+- [docs/manual/codex.html](docs/manual/codex.html): the complete element, module and operations codex
 - [ROADMAP.md](ROADMAP.md): the plan, with stable item IDs
 - [docs/HANDOFF.md](docs/HANDOFF.md): current state and next steps
 - [docs/DECISIONS.md](docs/DECISIONS.md): why things are the way they are
