@@ -33,6 +33,13 @@ python3 -m http.server
 
 Served over http(s), the app also works offline and can be installed.
 
+## Run as Tauri Desktop App
+
+```sh
+npm run tauri:dev
+npm run tauri:build
+```
+
 ## Test
 
 ```sh

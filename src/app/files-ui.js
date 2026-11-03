@@ -1,9 +1,20 @@
-const fileSupport = typeof window.showOpenFilePicker === 'function' && typeof window.showSaveFilePicker === 'function';
+const hasTauriFiles = Boolean(window.__TAURI_INTERNALS__ || window.__TAURI__);
+const fileSupport = hasTauriFiles || (typeof window.showOpenFilePicker === 'function' && typeof window.showSaveFilePicker === 'function');
 const fileBar = document.getElementById('file-bar');
 const fileBarText = document.getElementById('fileBarText');
 let fileLinks = {};
 let fileWork = Promise.resolve();
 let fileBarState = null;
+
+function tauriFileInvoke(cmd, args) {
+    if (window.__TAURI__ && window.__TAURI__.core && typeof window.__TAURI__.core.invoke === 'function') {
+        return window.__TAURI__.core.invoke(cmd, args);
+    }
+    if (window.__TAURI_INTERNALS__ && typeof window.__TAURI_INTERNALS__.invoke === 'function') {
+        return window.__TAURI_INTERNALS__.invoke(cmd, args);
+    }
+    return Promise.reject(new Error('Tauri runtime not available'));
+}
 
 function whenFilesSynced() {
     return fileWork.then(() => undefined);
@@ -15,6 +26,7 @@ function queueFileWork(job) {
 }
 
 async function fileAllowed(link, ask) {
+    if (link.path) return hasTauriFiles;
     const opts = { mode: 'readwrite' };
     try {
         if (await link.handle.queryPermission(opts) === 'granted') return true;
@@ -29,6 +41,11 @@ async function keepLink(link) {
 
 async function writeLinkedFile(link, text) {
     const out = FileSync.canon(text);
+    if (link.path) {
+        const modified = await tauriFileInvoke('write_script_file', { path: link.path, content: out });
+        await keepLink(Object.assign({}, link, { synced: out, modified: modified }));
+        return;
+    }
     const w = await link.handle.createWritable();
     await w.write(out);
     await w.close();
@@ -37,6 +54,12 @@ async function writeLinkedFile(link, text) {
 }
 
 async function readLinkedFile(link) {
+    if (link.path) {
+        const res = await tauriFileInvoke('read_script_file', { path: link.path });
+        const read = Importing.readText(new Uint8Array(res.bytes));
+        if (!read.ok) throw new Error(read.reason);
+        return { text: read.text, modified: res.modified };
+    }
     const file = await link.handle.getFile();
     const read = Importing.readText(new Uint8Array(await file.arrayBuffer()));
     if (!read.ok) throw new Error(read.reason);
@@ -103,13 +126,44 @@ async function forgetFile(id) {
 
 async function scriptOfFile(handle) {
     for (const id of Object.keys(fileLinks)) {
-        try { if (await fileLinks[id].handle.isSameEntry(handle)) return id; } catch (e) {
+        if (typeof handle === 'string') {
+            if (fileLinks[id].path === handle) return id;
+            continue;
+        }
+        try { if (fileLinks[id].handle && await fileLinks[id].handle.isSameEntry(handle)) return id; } catch (e) {
         }
     }
     return null;
 }
 
 async function openFromDisk() {
+    if (hasTauriFiles && typeof window.showOpenFilePicker !== 'function') {
+        let res;
+        try { res = await tauriFileInvoke('pick_open_script', {}); } catch (e) { return; }
+        if (!res || !res.path) return;
+        const known = await scriptOfFile(res.path);
+        if (known && getScripts()[known] && !getScripts()[known].deletedAt) {
+            openScriptById(known);
+            await syncFile(known);
+            showNotice('Opened ' + fileLinks[known].name + ', which is already in the Library.');
+            return;
+        }
+        if (known) await forgetFile(known);
+        const bytes = new Uint8Array(res.bytes || []);
+        const verdict = Importing.checkFile(res.name, bytes.byteLength);
+        const read = verdict.ok ? Importing.readText(bytes) : verdict;
+        if (!read.ok) { showNotice('“' + res.name + '”: ' + read.reason, true); return; }
+        flushSave();
+        const added = Library.add(getScripts(), newId(), read.text, Date.now());
+        if (!await putScripts(added.scripts)) { showNotice('There is not enough room left in this browser to open that file.', true); return; }
+        await keepLink({ scriptId: added.id, path: res.path, name: res.name, synced: FileSync.canon(read.text), modified: res.modified });
+        openScriptById(added.id);
+        editor.setSelectionRange(0, 0);
+        editor.scrollTop = 0;
+        if (mobileMQ.matches) setView('write');
+        showNotice('Opened ' + res.name + '. It stays in sync: every save writes it.');
+        return;
+    }
     let handle;
     try { [handle] = await window.showOpenFilePicker({ types: FileSync.TYPES, multiple: false }); } catch (e) { return; }
     const known = await scriptOfFile(handle);
@@ -141,6 +195,17 @@ async function saveToDisk() {
     const id = currentScriptId;
     const script = getScripts()[id];
     if (!script) return;
+    if (hasTauriFiles && typeof window.showSaveFilePicker !== 'function') {
+        let picked;
+        try { picked = await tauriFileInvoke('pick_save_script', { suggestedName: Fountain.fileName(script.content) }); } catch (e) { return; }
+        if (!picked || !picked.path) return;
+        const other = await scriptOfFile(picked.path);
+        if (other && other !== id) await forgetFile(other);
+        await queueFileWork(() => writeLinkedFile({ scriptId: id, path: picked.path, name: picked.name, synced: null, modified: null }, script.content));
+        prepareFileChoice();
+        showNotice('Synced with ' + picked.name + ': every save writes it from now on.');
+        return;
+    }
     let handle;
     try { handle = await window.showSaveFilePicker({ suggestedName: Fountain.fileName(script.content), types: FileSync.TYPES }); } catch (e) { return; }
     const other = await scriptOfFile(handle);

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Plainchant",
+  "version": "1.0.0",
+  "identifier": "io.plainchant.app",
+  "build": {
+    "frontendDist": "dist"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "title": "Plainchant — Distraction-Free Fountain Screenwriting",
+        "url": "app.html",
+        "width": 1440,
+        "height": 900,
+        "minWidth": 640,
+        "minHeight": 480,
+        "resizable": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  }
+}

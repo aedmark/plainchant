@@ -14,6 +14,10 @@ function flashButton(button, label, ok = true) {
 }
 
 function downloadText(filename, text) {
+    if (window.__TAURI_INTERNALS__ || window.__TAURI__) {
+        tauriFileInvoke('export_file', { suggestedName: filename, content: text }).catch(() => {});
+        return;
+    }
     const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
 
