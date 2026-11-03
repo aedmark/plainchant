@@ -60,6 +60,17 @@
             <button type="button" class="mini" id="fileKeepBtn">Keep the script here</button>
         </span>
     </div>
+    <div id="findBar" class="find-bar" role="search" aria-label="Find and replace in script" hidden>
+        <input type="text" id="findInput" placeholder="Find" aria-label="Find" autocomplete="off" spellcheck="false">
+        <button type="button" class="mini" id="findCaseBtn" aria-pressed="false" title="Match case">Aa</button>
+        <span id="findCount" class="find-count" aria-live="polite"></span>
+        <button type="button" class="mini" id="findPrevBtn" aria-label="Previous match" title="Previous match (Shift+Enter)">&uarr;</button>
+        <button type="button" class="mini" id="findNextBtn" aria-label="Next match" title="Next match (Enter)">&darr;</button>
+        <input type="text" id="replaceInput" placeholder="Replace" aria-label="Replace with" autocomplete="off" spellcheck="false">
+        <button type="button" class="mini" id="replaceBtn" title="Replace the current match (Enter in the Replace box)">Replace</button>
+        <button type="button" class="mini" id="replaceAllBtn" title="Replace every match in this script">Replace All</button>
+        <button type="button" class="mini" id="findCloseBtn" aria-label="Close find bar" title="Close (Esc)">&times;</button>
+    </div>
     <textarea id="editor" aria-label="Script"
               placeholder="FADE IN:&#10;&#10;INT. COFFEE SHOP - DAY&#10;&#10;The cafe is entirely empty.&#10;&#10;JOHN&#10;(nervous)&#10;I just wanted a program that let me type without thinking.&#10;&#10;THE ARTISAN&#10;It is done.&#10;&#10;CUT TO:&#10;&#10;EXT. THE VOID - CONTINUOUS"></textarea>
     <div class="element-bar" role="toolbar" aria-label="Element type"
@@ -124,10 +135,53 @@
             <button type="button" id="statsBtn" class="canvas-btn" aria-haspopup="dialog" title="Script stats">No pages yet</button>
         </div>
     </div>
-    <div id="render-target">
-        <div id="page" class="screenplay-font">
+    <div id="canvasBody" class="canvas-body" data-dock="right">
+        <div id="render-target">
+            <div id="page" class="screenplay-font">
+            </div>
+            <div id="sheets"></div>
         </div>
-        <div id="sheets"></div>
+        <div id="drawerResizer" class="drawer-resizer" role="separator" aria-orientation="vertical" aria-label="Resize panel" tabindex="0" hidden></div>
+        <aside id="canvasDrawer" class="canvas-drawer" aria-label="Docked Outline and Stats" hidden>
+            <div class="drawer-header">
+                <div class="drawer-tabs" role="tablist" aria-label="Panel view">
+                    <button type="button" class="drawer-tab" role="tab" id="drawerTabOutline" data-drawer-tab="outline" aria-selected="true">Outline</button>
+                    <button type="button" class="drawer-tab" role="tab" id="drawerTabStats" data-drawer-tab="stats" aria-selected="false">Stats</button>
+                </div>
+                <div class="drawer-actions">
+                    <button type="button" class="mini" id="drawerDockBtn" aria-haspopup="menu" aria-expanded="false" title="Dock position">Right &#9662;</button>
+                    <button type="button" class="mini" id="drawerCollapseBtn" aria-label="Collapse panel" title="Collapse panel">&#9662;</button>
+                    <button type="button" class="mini" id="drawerCloseBtn" aria-label="Close panel" title="Close panel (Ctrl/Cmd+Shift+O)">&times;</button>
+                </div>
+            </div>
+            <div id="drawerBody" class="drawer-body">
+                <div id="drawerOutlinePane" class="drawer-pane">
+                    <div class="drawer-tools">
+                        <input id="drawerOutlineFilter" class="library-search" type="search" placeholder="Find a scene or section" aria-label="Find a scene or section in panel" autocomplete="off">
+                    </div>
+                    <div id="drawerOutlineList" class="outline-list"></div>
+                </div>
+                <div id="drawerStatsPane" class="drawer-pane" hidden>
+                    <dl class="stats-tiles drawer-tiles">
+                        <div><dt>Pages</dt><dd id="drawerStatPages">0</dd></div>
+                        <div><dt>Screen time</dt><dd id="drawerStatTime">~0m</dd></div>
+                        <div><dt>Read aloud</dt><dd id="drawerStatAloud">~0:00</dd></div>
+                        <div><dt>Scenes</dt><dd id="drawerStatScenes">0</dd></div>
+                        <div><dt>Words</dt><dd id="drawerStatWords">0</dd></div>
+                    </dl>
+                    <h3 class="stats-heading">Characters</h3>
+                    <table class="stats-table">
+                        <thead><tr><th scope="col">Character</th><th scope="col">Speeches</th><th scope="col">Words</th><th scope="col">Share</th></tr></thead>
+                        <tbody id="drawerStatsCharacters"></tbody>
+                    </table>
+                    <h3 class="stats-heading">Scenes</h3>
+                    <table class="stats-table stats-scenes">
+                        <thead><tr><th scope="col">Scene</th><th scope="col">Page</th><th scope="col">Length</th></tr></thead>
+                        <tbody id="drawerStatsScenes"></tbody>
+                    </table>
+                </div>
+            </div>
+        </aside>
     </div>
 </div>
 
@@ -488,6 +542,14 @@
                         <td><kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>P</kbd></td>
                         <td>Prints the screenplay pages on the paper chosen last in Export.</td>
                     </tr>
+                    <tr>
+                        <td><kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>F</kbd> or <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>H</kbd></td>
+                        <td>Find and replace in the script: highlights every match in the Void, steps with <kbd>Enter</kbd> and <kbd>Shift</kbd>+<kbd>Enter</kbd>, and replaces one or all as an undoable edit.</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>O</kbd></td>
+                        <td>Docks or hides the Outline and Script stats panel beside or below the Canvas (the <strong>Dock</strong> button in Outline and Script stats does the same).</td>
+                    </tr>
                     </tbody>
                 </table>
                 <h3>Touch</h3>
@@ -610,7 +672,10 @@
     <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="outline-title">
         <div class="modal-header">
             <h2 id="outline-title">Outline</h2>
-            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+            <div class="modal-header-actions">
+                <button type="button" class="mini" id="outlineDockBtn" title="Pin Outline beside the Canvas (Ctrl/Cmd+Shift+O)">Pin to Canvas</button>
+                <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+            </div>
         </div>
         <div class="library-tools">
             <input id="outlineFilter" class="library-search" type="search" placeholder="Find a scene or section"
@@ -625,7 +690,10 @@
     <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="stats-title">
         <div class="modal-header">
             <h2 id="stats-title">Script stats</h2>
-            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+            <div class="modal-header-actions">
+                <button type="button" class="mini" id="statsDockBtn" title="Pin Script stats beside the Canvas (Ctrl/Cmd+Shift+O)">Pin to Canvas</button>
+                <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+            </div>
         </div>
         <div class="modal-body">
             <p id="statsFor" class="stats-for"></p>
@@ -837,6 +905,12 @@ Is anyone here?</pre>
     </div>
 </div>
 
+<div id="drawerDockMenu" class="dock-menu" role="menu" aria-label="Dock position" hidden>
+    <button type="button" role="menuitemradio" data-dock="right" aria-checked="true">Right</button>
+    <button type="button" role="menuitemradio" data-dock="left" aria-checked="false">Left</button>
+    <button type="button" role="menuitemradio" data-dock="bottom" aria-checked="false">Bottom</button>
+    <button type="button" role="menuitemradio" data-dock="top" aria-checked="false">Top</button>
+</div>
 <div id="dropHint" class="drop-hint" hidden>Drop a script here to import it</div>
 <div id="notice" class="notice" role="status" aria-live="polite"></div>
 <div id="print-root" aria-hidden="true"></div>
@@ -855,6 +929,7 @@ Is anyone here?</pre>
 <script src="src/filesync.js"></script>
 <script src="src/fdx.js"></script>
 <script src="src/importing.js"></script>
+<script src="src/finding.js"></script>
 <script src="src/suggest.js"></script>
 <script src="src/app/core.js"></script>
 <script src="src/app/layout.js"></script>
@@ -870,6 +945,7 @@ Is anyone here?</pre>
 <script src="src/app/typing.js"></script>
 <script src="src/app/adventure-ui.js"></script>
 <script src="src/app/shade.js"></script>
+<script src="src/app/find.js"></script>
 <script src="src/app/focus.js"></script>
 <script src="src/app/export.js"></script>
 <script src="src/app/import.js"></script>
@@ -881,6 +957,7 @@ Is anyone here?</pre>
 <script src="src/app/chapters-ui.js"></script>
 <script src="src/app/stats-ui.js"></script>
 <script src="src/app/outline-ui.js"></script>
+<script src="src/app/drawer-ui.js"></script>
 <script src="src/app/offline.js"></script>
 <script src="src/app/safekeeping.js"></script>
 <script src="src/app/main.js"></script>

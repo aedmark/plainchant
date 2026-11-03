@@ -324,7 +324,11 @@
                 if (last && last.mark === marks[c]) last.text += line[c];
                 else runs.push({ text: line[c], mark: marks[c] });
             }
-            return { kind: kinds[i], runs: runs.length ? runs : [{ text: '', mark: null }] };
+            const out = runs.length ? runs : [{ text: '', mark: null }];
+            if (out.map(function (r) { return r.text; }).join('') !== line) {
+                return { kind: 'action', runs: [{ text: line, mark: null }] };
+            }
+            return { kind: kinds[i], runs: out };
         });
     }
 

@@ -8,6 +8,7 @@ let shadeKeys = [];
 let shadeText = null;
 let shadeCaret = -1;
 let shadeBroken = false;
+let highlightedLines = [-1, -1];
 
 function shadeLine(line, last) {
     const el = document.createElement('span');
@@ -28,6 +29,7 @@ function lineKey(line) {
 }
 
 function drawShade(tokens) {
+    if (typeof refreshFind === 'function') refreshFind();
     if (shadeBroken || !settings.colours) return;
     try {
         const text = editor.value;
@@ -37,6 +39,23 @@ function drawShade(tokens) {
     } catch (e) {
         stopShade('the colour hints could not be drawn', e);
     }
+}
+
+function applyLineHighlightClasses() {
+    const children = shadeLayer.children;
+    const [sLine, eLine] = highlightedLines;
+    for (let i = 0; i < children.length; i++) {
+        children[i].classList.toggle('sh-selected-line', sLine !== -1 && i >= sLine && i <= eLine);
+    }
+}
+
+function highlightScriptLines(fromLine, toLine) {
+    if (typeof fromLine !== 'number' || fromLine < 0) {
+        highlightedLines = [-1, -1];
+    } else {
+        highlightedLines = [fromLine, typeof toLine === 'number' && toLine >= fromLine ? toLine : fromLine];
+    }
+    applyLineHighlightClasses();
 }
 
 function paintShade() {
@@ -61,11 +80,13 @@ function paintShade() {
     for (let k = head; k < keys.length - tail; k++) fresh.appendChild(shadeLine(lines[k], k === keys.length - 1));
     shadeLayer.insertBefore(fresh, old[head] || null);
     shadeKeys = keys;
+    applyLineHighlightClasses();
     placeShade();
     checkShade();
 }
 
 function placeShade() {
+    if (typeof placeFindLayer === 'function') placeFindLayer();
     if (shadeBroken || shadeText === null || editor.offsetParent === null) return;
     copyEditorType(shadeLayer);
     Object.assign(shadeLayer.style, { top: editor.offsetTop + 'px', left: editor.offsetLeft + 'px', height: editor.clientHeight + 'px' });
@@ -85,7 +106,7 @@ function checkShade() {
 }
 
 function setShadeOn(on) {
-    if (on) { drawShade(); return; }
+    if (on) { shadeBroken = false; drawShade(); return; }
     document.body.classList.remove('shaded');
     shadeLayer.textContent = '';
     shadeBase = [];
@@ -100,11 +121,16 @@ function stopShade(why, detail) {
     shadeKeys = [];
     shadeText = null;
     console.warn('Plainchant: ' + why + ', so they are off until the page is reloaded.', detail);
+    if (typeof showNotice === 'function') {
+        showNotice('Colour hints were switched off because they stopped lining up with the text. Turn Colours in the editor off and on in Settings, or reload, to bring them back.', true);
+    }
 }
 
 editor.addEventListener('scroll', () => { shadeLayer.scrollTop = editor.scrollTop; });
 document.addEventListener('selectionchange', () => {
-    if (document.activeElement !== editor || shadeBroken || shadeText === null) return;
+    if (document.activeElement !== editor) return;
+    if (highlightedLines[0] !== -1) highlightScriptLines(-1, -1);
+    if (shadeBroken || shadeText === null) return;
     try {
         if (editor.value !== shadeText) drawShade();
         else if (caretLine() !== shadeCaret) paintShade();

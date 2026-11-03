@@ -441,6 +441,17 @@ test('shade: parsed tokens can be passed in, so the text is parsed once', () => 
     assert.deepEqual(Fountain.classifyLines(text, Fountain.parse(text)), Fountain.classifyLines(text));
 });
 
+test('shade: character-preservation guard keeps every line exact even across nested or edge-case spans (P2-26)', () => {
+    const samples = [
+        '[[note /* with boneyard */ inside]] and /* boneyard [[with note]] inside */',
+        '[[multiline\nnote\nspanning]]\n/* multiline\nboneyard */',
+        '[[unclosed note and /* closed boneyard */ on same line'
+    ];
+    samples.forEach((s) => {
+        assert.equal(shadeText(s), s);
+    });
+});
+
 test('toHTML: every line of a speech says which source line it is (for tapping the preview, P2-10)', () => {
     const html = Fountain.toHTML(Fountain.parse('INT. A - DAY\n\nJOHN\n(quietly)\nHi.\n\nBRICK\nLeft.\n\nSTEEL ^\nRight.'));
     ['<div class="script-character" data-line="2">', '<div class="script-parenthetical" data-line="3">', '<div class="script-dialogue" data-line="4">',

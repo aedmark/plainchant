@@ -1121,6 +1121,85 @@ into a formatted screenplay, so the page can demonstrate it by being one.
 is indented, action is full width, scene headings are uppercase). The title page is the only unnumbered sheet.
 Everything inside a sheet is paper with literal ink colours; the menubar and footer remain the themed site chrome.
 
+## D-064 In-script Find and Replace with undoable edits and an overlay highlight layer  (2026-11-02, status: accepted; P2-25)
+**Context:** Plainchant-web introduced a compact Find & Replace bar (`src/finding.js`, `src/app/find.js`) because browser
+`Ctrl/Cmd+F` cannot replace text inside a `<textarea>` through the app's undo stack, nor can it highlight matches
+reliably when `body.shaded` makes the textarea text transparent. Screenwriters frequently rename characters or places
+across a draft and need single or bulk replacement that `Ctrl/Cmd+Z` can undo.
+**Decision:**
+1. **Pure module (`src/finding.js`, UMD):** `findAll(text, query, { matchCase })`, `nearest(matches, caret, dir)`,
+   `step(matches, current, dir)`, `replaceAt(text, match, replacement)` and `replaceAll(text, query, replacement, opts)`.
+   Queries are plain text (special regex characters are escaped), case-insensitive by default.
+2. **UI and highlight layer (`src/app/find.js`):** `Ctrl/Cmd+F` and `Ctrl/Cmd+H` open `#findBar` at the top of the Void
+   pane (switching to the Void first if the Canvas is shown alone). Matches are painted in a transparent-text overlay
+   (`.editor-find`) behind `#editor` that mirrors the textarea's box, font and scroll via `copyEditorType` (`layout.js`).
+3. **Undoable replacement:** both **Replace** and **All** route through `applyEdit(from, to, text, caret)` so a single
+   `Ctrl/Cmd+Z` undoes even a bulk character rename across the whole script, and autosave, versions and linked files
+   follow automatically.
+**Consequences:** When `#findBar` is closed (`Esc` or the close button), `.editor-find` is emptied so it adds zero cost
+during normal typing.
+
+## D-065 Colour-hint character-preservation guard and recovery via Settings  (2026-11-02, status: accepted; P2-26)
+**Context:** In `plainchant-web`, a subtle tokenizer bug once dropped characters from the `.editor-shade` overlay,
+making the wrap check trip and silently leaving the editor unshaded for the rest of the session with no way to recover
+short of reloading.
+**Decision:**
+1. **Character-preservation invariant in `Fountain.shade`:** after splitting a source line into `[[note]]` and
+   `/* boneyard */` runs, `Fountain.shade` verifies that the runs rejoin to `line` character-for-character; if any
+   future edit or edge case ever disagrees, that line falls back to a single plain action run (`{ kind: 'action',
+   runs: [{ text: line, mark: null }] }`) so `.editor-shade` can never drop or add characters.
+2. **Recovery and visibility in `src/app/shade.js`:** if `stopShade()` ever trips because of browser layout drift, it
+   calls `showNotice` to tell the writer that editor colours were switched off and how to re-enable them. Toggling
+   *Colors in the editor* back on in Settings (`setShadeOn(true)`) resets `shadeBroken = false` and redraws immediately.
+**Consequences:** The colour layer is self-healing and never fails silently.
+
+## D-066 Caret-anchored desktop scroll sync and Canvas-to-Void paragraph highlight  (2026-11-02, status: accepted; P2-06)
+**Context:** Roadmap item `P2-06` was still half-open (`[~]`): mobile Preview used `[data-line]` anchors, while desktop
+continuous scroll sync still used raw scroll-height percentages, which drift whenever title pages, boneyards or page
+view sheets change the height ratio between Void and Canvas. In addition, `plainchant-web` added bidirectional stage-to-code
+highlighting.
+**Decision:**
+1. **Caret-anchored desktop scroll sync (`src/app/layout.js`):** while typing or moving the caret in the Void on a
+   two-pane desktop (`syncPreviewToCaret`), the Canvas scrolls smoothly to keep the `[data-line]` element (in either
+   continuous preview or Page view via `previewShown()`) at the same relative viewport fraction as the caret line in
+   the editor. Manual scrollbar dragging in the Void still falls back to `[data-line]` anchor lookup for the top visible
+   line (and pins the very top and bottom edges cleanly).
+2. **Canvas-to-Void paragraph highlight:** clicking a rendered element in the desktop Canvas highlights its source
+   paragraph's lines in `.editor-shade` (`.sh-selected-line`) and scrolls the Void to show them, **without** moving
+   `editor.selectionStart` or stealing focus from the Canvas (preserving desktop text selection and D-033's mobile-only
+   tap-to-jump rule). Double-clicking still opens Quick Edit (`D-057`), which clears the highlight.
+**Consequences:** `P2-06` is complete across both mobile and desktop, and both continuous preview and Page view stay
+locked to the line being written.
+
+## D-067 Dockable Outline and Script stats drawer in the Canvas pane  (2026-11-02, status: accepted; P4-23)
+**Context:** Outline (`P4-03`) and Script stats (`P4-04`) previously existed only as modal dialogs (`openModal`), which
+covered the screenplay and closed as soon as the writer jumped to a scene. `plainchant-web` introduced a dockable,
+resizable panel inside `.canvas-body` (`dock-bottom`, `dock-top`, `dock-left`, `dock-right`, plus collapse) so writers
+can keep structural tools open alongside the stage.
+**Decision:**
+1. **Dockable drawer (`src/app/drawer-ui.js`, `#canvasDrawer` inside `#canvasBody`):** on desktop viewports, writers
+   can dock Outline and Script stats beside or below the Canvas (`right`, `left`, `bottom`, `top`) via a **Dock** button
+   in the Outline and Script stats modal headers or `Ctrl/Cmd+Shift+O`.
+2. **Live updates and shared rendering:** `scheduleDrawer` (called by `render()`, debounced on keystrokes for long
+   scripts just like `scheduleStats`) reuses `Outline.build` and `Stats.collect` to keep the docked Outline (with its
+   search filter and current-scene highlight) and Script stats live while writing.
+3. **Persisted layout:** `drawer`, `drawerTab`, `drawerDock` and `drawerWidth` (drag-resizable between 220px and 640px
+   when docked left or right) are saved in `plainchant_settings`. On narrow/mobile screens (`MOBILE_QUERY`), the drawer
+   hides automatically and Outline / Stats remain modals.
+**Consequences:** Writers working on desktop screens can keep a live scene outline or character/scene breakdown docked
+next to the Canvas while drafting, while the existing modal dialogs remain unchanged for quick checks and mobile use.
+
+## D-068 Automated documentation consistency linter (`tools/check_docs.py`)  (2026-11-02, status: accepted; P4-24)
+**Context:** Plainchant's session protocol relies on `CLAUDE.md`, `ROADMAP.md`, `docs/DECISIONS.md`, `docs/HANDOFF.md`
+and `docs/SESSION-LOG.md` staying in lockstep. `plainchant-web` added a zero-dependency Python linter (`tools/check_docs.py`)
+to catch broken links, duplicate or out-of-order decision and session numbers, unknown roadmap IDs, and missing files in
+the layout tables.
+**Decision:** Backport `tools/check_docs.py` adapted for Plainchant's `CLAUDE.md` (`Layout` and `App scripts` tables)
+and split `HANDOFF.md` / `SESSION-LOG.md` structure (`D-058`). Run `python3 tools/check_docs.py` alongside `npm test`
+and `npm run test:browser` at the end of every session.
+**Consequences:** Any file added to `src/` or `src/app/`, or any roadmap/decision reference added to the docs, is
+checked automatically before handoff.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom

@@ -1,4 +1,4 @@
-const CACHE = 'plainchant-v4';
+const CACHE = 'plainchant-v5';
 const APP_FILES = [
     './',
     'index.html',
@@ -20,6 +20,7 @@ const APP_FILES = [
     'src/filesync.js',
     'src/fdx.js',
     'src/importing.js',
+    'src/finding.js',
     'src/suggest.js',
     'src/app/core.js',
     'src/app/layout.js',
@@ -35,6 +36,7 @@ const APP_FILES = [
     'src/app/typing.js',
     'src/app/adventure-ui.js',
     'src/app/shade.js',
+    'src/app/find.js',
     'src/app/focus.js',
     'src/app/export.js',
     'src/app/import.js',
@@ -46,6 +48,7 @@ const APP_FILES = [
     'src/app/chapters-ui.js',
     'src/app/stats-ui.js',
     'src/app/outline-ui.js',
+    'src/app/drawer-ui.js',
     'src/app/main.js',
     'src/app/offline.js',
     'src/app/safekeeping.js',

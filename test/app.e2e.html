@@ -3023,6 +3023,66 @@ setTimeout(() => {
     check('help: quick edits are explained', /Quick edits in the preview/.test(fid(m, 'help-modal').textContent));
     W().localStorage.removeItem('plainchant_settings');
 
+    // ---------- 16z. Backported features: Find & Replace (P2-25), Shade recovery (P2-26), Canvas line highlight (P2-06), Dockable drawer (P4-23) ----------
+    const bpF = await openFrame(1200, 800);
+    const bpW = bpF.contentWindow, bpDoc = bpF.contentDocument, bpE = fid(bpF, 'editor');
+    setText(bpF, 'INT. ROOM - NIGHT\n\nMARA\nWait for Mara.\n\nDEV\nMara left.');
+    bpW.render();
+    bpW.openFind();
+    const bpFi = fid(bpF, 'findInput'), bpRi = fid(bpF, 'replaceInput');
+    bpFi.value = 'Mara';
+    bpFi.dispatchEvent(new bpW.Event('input', { bubbles: true }));
+    check('find: opening Find and typing a query highlights every match in the Void (P2-25)',
+      !fid(bpF, 'findBar').hidden && bpDoc.querySelectorAll('.editor-find .sh-find-match').length === 3 &&
+      fid(bpF, 'findCount').textContent === '1 of 3', fid(bpF, 'findCount').textContent);
+    bpRi.value = 'CLARA';
+    bpW.replaceCurrentMatch();
+    check('find: Replace changes the active match and advances to the next',
+      bpE.value.indexOf('CLARA\nWait for Mara.') !== -1 && fid(bpF, 'findCount').textContent === '1 of 2', bpE.value);
+    bpW.replaceEveryMatch();
+    check('find: Replace All substitutes every remaining match as an undoable edit',
+      bpE.value.indexOf('Mara') === -1 && bpE.value.indexOf('CLARA left.') !== -1, bpE.value);
+    bpE.focus();
+    bpDoc.execCommand('undo');
+    check('find: Ctrl/Cmd+Z undoes Replace All in one step', bpE.value.indexOf('CLARA left.') === -1 && bpE.value.indexOf('Mara left.') !== -1, bpE.value);
+    bpW.closeFind();
+    check('find: closing Find hides the bar and clears the highlight overlay',
+      fid(bpF, 'findBar').hidden && bpDoc.querySelectorAll('.editor-find .sh-find-match').length === 0);
+
+    // Shade recovery (P2-26)
+    bpW.stopShade();
+    check('shade recovery: stopShade switches off body.shaded and shows a helpful notice (P2-26)',
+      !bpDoc.body.classList.contains('shaded') && /switched off/.test(fid(bpF, 'notice').textContent), fid(bpF, 'notice').textContent);
+    bpW.setShadeOn(true);
+    check('shade recovery: toggling colours back on resets shadeBroken and restores body.shaded',
+      bpDoc.body.classList.contains('shaded'));
+
+    // Desktop Canvas click highlights paragraph lines in Void without moving caret or stealing focus (P2-06)
+    bpE.setSelectionRange(0, 0);
+    bpE.blur();
+    const bpDial = Array.from(bpDoc.querySelectorAll('#page [data-line]')).find((el) => el.textContent.indexOf('Mara left') !== -1);
+    bpDial.click();
+    check('canvas highlight: clicking a paragraph on desktop highlights its source lines in the Void without moving the caret (P2-06)',
+      bpDoc.querySelectorAll('.editor-shade .sh-selected-line').length >= 2 && bpE.selectionStart === 0 && bpDoc.activeElement !== bpE);
+
+    // Dockable Outline & Script stats drawer (P4-23)
+    fid(bpF, 'outlineBtn').click();
+    fid(bpF, 'outlineDockBtn').click();
+    check('drawer: clicking Dock in Outline closes the modal and opens the docked Canvas drawer (P4-23)',
+      active(bpF).length === 0 && !fid(bpF, 'canvasDrawer').hidden &&
+      fid(bpF, 'drawerOutlineList').querySelectorAll('.outline-item').length >= 1);
+    bpW.setDrawerTab('stats');
+    check('drawer: switching to the Stats tab renders live script stats inside the drawer',
+      !fid(bpF, 'drawerStatsPane').hidden && fid(bpF, 'drawerStatsPane').querySelectorAll('dd').length >= 4);
+    bpW.setDrawerDock('bottom');
+    check('drawer: docking to bottom updates canvasBody data-dock and drawer class',
+      fid(bpF, 'canvasBody').getAttribute('data-dock') === 'bottom' && fid(bpF, 'canvasDrawer').classList.contains('dock-bottom'));
+    bpW.toggleDrawer(false);
+    check('drawer: toggleDrawer(false) hides the drawer', fid(bpF, 'canvasDrawer').hidden);
+    bpW.saveScript = () => {};
+    bpF.remove();
+    W().localStorage.removeItem('plainchant_settings');
+
     // Phone: the Library fits a 375px screen and every action is reachable
     await seedLibrary();
     await reloadFrame(m);

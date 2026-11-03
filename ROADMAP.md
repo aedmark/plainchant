@@ -65,8 +65,8 @@ Goal: the "just type" promise. The editor helps; it never interrupts.
   takes the first, Enter never does. Time of day is not suggested; not seen on a real device or with a screen reader.
 - [x] P2-05 Mobile layout: single pane with a write/preview toggle, no fixed 50/50 split, keyboard-safe. Verified at
   375px in a headless browser; real-device keyboard behaviour is P2-09.
-- [~] P2-06 Caret-anchored preview scroll (use the parser's `data-line` anchors instead of percentage sync). Done
-  for opening Preview on mobile; continuous desktop sync still uses percentage.
+- [x] P2-06 Caret-anchored preview scroll (use the parser's `data-line` anchors instead of percentage sync), and
+  clicking a paragraph on the desktop Canvas highlights its lines in the Void without moving the caret (D-066).
 - [x] P2-07 Focus / typewriter mode (dim everything but the current block, keep the caret vertically centred) (D-025):
   veils over the textarea, the Focus toggle in the element bar and Ctrl/Cmd+Shift+F, remembered
 - [x] P2-08 Editor styling that hints at structure (subtle per-element colour) without becoming a WYSIWYG editor
@@ -100,6 +100,12 @@ Goal: the "just type" promise. The editor helps; it never interrupts.
 - [x] P2-24 Quick edits in the preview (the owner's idea, 2026-09-28): touch up a paragraph without going back to the
   text (done, D-057: double-click, or press and hold on touch, opens the paragraph's own Fountain lines in a box over
   it, in the preview and in page view; Enter or clicking away keeps it as one undoable edit, Esc leaves it)
+- [x] P2-25 In-script Find and Replace (`Ctrl/Cmd+F`, `Ctrl/Cmd+H`): plain-text search with case toggle, match
+  highlights behind the textarea, Next / Previous stepping, and single or bulk undoable replacement (`src/finding.js`,
+  `src/app/find.js`, D-064)
+- [x] P2-26 Colour-hint character-preservation guard in `Fountain.shade`, automatic re-enable when toggling *Colours in
+  the editor* back on in Settings (`shadeBroken = false`), and a visible notice if the wrap check ever switches colours
+  off (D-065)
 
 ## Phase 3: Output and library
 
@@ -192,6 +198,11 @@ Goal: get finished work out of the app in industry-standard shapes, and manage m
   retro theme only, as the notice; the thank-you in Help is now P4-22)
 - [x] P4-22 A thank-you in Help to the creator whose videos prompted P4-18 / P3-13 / P4-19 / P4-20, **only with their
   permission** to use their name (split from P4-20) (done, D-045: permission given; a line at the foot of Help > Start here)
+- [x] P4-23 Dockable Outline and Script stats drawer in the Canvas pane (`Ctrl/Cmd+Shift+O` or the **Dock** button in
+  the Outline and Script stats headers): docks right, left, bottom or top with a drag resizer on left/right docks,
+  live-updating as you type (`src/app/drawer-ui.js`, D-067)
+- [x] P4-24 Automated documentation consistency linter (`tools/check_docs.py`): verifies roadmap IDs, decision numbers,
+  session-log numbering, relative links and `CLAUDE.md` file tables with zero external dependencies (D-068)
 
 ## Phase 5: Sync and share (open questions)
 

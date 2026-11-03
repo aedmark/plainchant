@@ -6,6 +6,7 @@ const tabWrite = document.getElementById('tabWrite');
 const tabPreview = document.getElementById('tabPreview');
 const menuBtn = document.getElementById('menuBtn');
 const buttonGroup = document.querySelector('.button-group');
+let syncingFromCanvas = false;
 
 function setView(view) {
     document.body.dataset.view = view;
@@ -20,16 +21,38 @@ function setView(view) {
     }
 }
 
-function scrollPreviewToCaret() {
-    const line = caretLine();
+function previewAnchorForLine(line) {
     let target = null;
     for (const el of previewShown().querySelectorAll('[data-line]')) {
         if (Number(el.dataset.line) > line) break;
         target = el;
     }
+    return target;
+}
+
+function scrollPreviewToCaret() {
+    const target = previewAnchorForLine(caretLine());
     if (!target) { renderTarget.scrollTop = 0; return; }
     const top = target.getBoundingClientRect().top - renderTarget.getBoundingClientRect().top + renderTarget.scrollTop;
     renderTarget.scrollTop = Math.max(0, top - renderTarget.clientHeight / 3);
+}
+
+function syncPreviewToCaret() {
+    if (mobileMQ.matches || (typeof panesShown === 'function' && panesShown() !== 'both')) return;
+    if (renderTarget.clientHeight <= 0 || renderTarget.scrollHeight <= renderTarget.clientHeight) return;
+    const target = previewAnchorForLine(caretLine());
+    if (!target) return;
+    const rt = renderTarget.getBoundingClientRect();
+    const tr = target.getBoundingClientRect();
+    const pad = Math.min(48, renderTarget.clientHeight / 5);
+    if (tr.top < rt.top + pad) {
+        renderTarget.scrollTop = Math.max(0, renderTarget.scrollTop + (tr.top - rt.top) - renderTarget.clientHeight / 3);
+    } else if (tr.bottom > rt.bottom - pad) {
+        renderTarget.scrollTop = Math.min(
+            renderTarget.scrollHeight - renderTarget.clientHeight,
+            renderTarget.scrollTop + (tr.bottom - rt.bottom) + renderTarget.clientHeight / 3
+        );
+    }
 }
 
 const measureCopy = document.createElement('div');
@@ -135,21 +158,52 @@ if (window.visualViewport) {
     visualViewport.addEventListener('scroll', () => fitToViewport());
 }
 
-editor.addEventListener('input', keepCaretClear);
+editor.addEventListener('input', () => {
+    keepCaretClear();
+    syncPreviewToCaret();
+});
 
 renderTarget.addEventListener('click', (e) => {
-    if (!mobileMQ.matches || document.body.dataset.view !== 'preview') return;
+    if (e.target.closest('.quick-edit')) return;
     const sel = window.getSelection();
     if (sel && !sel.isCollapsed) return;
     const at = e.target.closest('[data-line]');
     if (!at || !renderTarget.contains(at)) return;
-    setView('write');
-    jumpToLine(Number(at.dataset.line));
+    const line = Number(at.dataset.line);
+    if (mobileMQ.matches && document.body.dataset.view === 'preview') {
+        setView('write');
+        jumpToLine(line);
+        return;
+    }
+    if (!mobileMQ.matches && editor.value) {
+        const para = Editing.paragraphAt(editor.value, line);
+        const endLine = para.first + Math.max(0, editor.value.slice(para.start, para.end).split('\n').length - 1);
+        if (typeof highlightScriptLines === 'function') highlightScriptLines(para.first, endLine);
+        if (editor.offsetParent !== null) {
+            const lineY = parseFloat(getComputedStyle(editor).paddingTop) + textTop(para.start);
+            if (lineY < editor.scrollTop || lineY > editor.scrollTop + editor.clientHeight - lineHeightPx()) {
+                syncingFromCanvas = true;
+                editor.scrollTop = Math.max(0, Math.min(lineY - editor.clientHeight / 3, editor.scrollHeight - editor.clientHeight));
+            }
+        }
+    }
 });
 
 editor.addEventListener('scroll', () => {
+    if (syncingFromCanvas) { syncingFromCanvas = false; return; }
     const editorRange = editor.scrollHeight - editor.clientHeight;
     const renderRange = renderTarget.scrollHeight - renderTarget.clientHeight;
     if (editorRange <= 0 || renderRange <= 0) return;
-    renderTarget.scrollTop = (editor.scrollTop / editorRange) * renderRange;
+    if (editor.scrollTop <= 2) { renderTarget.scrollTop = 0; return; }
+    if (editor.scrollTop >= editorRange - 2) { renderTarget.scrollTop = renderRange; return; }
+    const ratio = editor.scrollTop / editorRange;
+    const lines = editor.value.split('\n');
+    const approxLine = Math.min(lines.length - 1, Math.max(0, Math.round(ratio * (lines.length - 1))));
+    const target = previewAnchorForLine(approxLine);
+    if (target) {
+        const top = target.getBoundingClientRect().top - renderTarget.getBoundingClientRect().top + renderTarget.scrollTop;
+        renderTarget.scrollTop = Math.max(0, Math.min(renderRange, top - renderTarget.clientHeight * ratio));
+    } else {
+        renderTarget.scrollTop = ratio * renderRange;
+    }
 });

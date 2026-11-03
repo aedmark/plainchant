@@ -10,12 +10,13 @@ Plan: [ROADMAP.md](../ROADMAP.md). Decisions: [DECISIONS.md](DECISIONS.md). The 
 
 ## Current state
 
-_Last updated: 2026-10-31, session 32. Plainchant now has a public homepage at `index.html`; the writing app is
-`app.html` and installed copies open there (D-061). The homepage is a screenplay on paper sheets inside the
-EGA/Sierra frame of the owner's portfolio (D-062, D-063). Tests: `npm test` 339, browser suite 327 unit + 730 e2e._
+_Last updated: 2026-11-02, session 33. Backported five high-impact features and safeguards from `plainchant-web`:
+in-script Find & Replace (`P2-25`, `D-064`), colour-hint character-preservation and recovery (`P2-26`, `D-065`),
+caret-anchored desktop scroll sync and Canvas-to-Void paragraph highlight (`P2-06`, `D-066`), a dockable Outline and
+Script stats drawer in the Canvas (`P4-23`, `D-067`), and the automated documentation linter `tools/check_docs.py`
+(`P4-24`, `D-068`). Tests: `npm test` 343, browser suite 331 unit + 742 e2e, `check_docs.py` 0 errors._
 
-**Where things stand:** Phases 1 to 4 are done apart from P2-06 (desktop scroll sync still goes by percentage) and
-an optional idea (P2-20 first-use hints). Phase 3's output is done (Fountain and Final Draft export, print / save as
+**Where things stand:** Phases 1 to 4 are done apart from an optional idea (P2-20 first-use hints). Phase 3's output is done (Fountain and Final Draft export, print / save as
 PDF, the page view while writing); what is left there is optional (P3-09, P3-10, P3-14). Phase 5 has real files on
 disk (P5-01, Chromium only); cloud sync and sharing (P5-02, P5-03) are not planned. The owner dropped the brand and
 Apple-platform phases and the device-pass items from the roadmap on 2026-09-29. The biggest gap is not code: most
@@ -31,9 +32,11 @@ the app's bundled typefaces; the menubar and footer are the only site chrome aro
 
 **What the app does** (ROADMAP has every ticked item; the detailed notes as of session 29 are frozen at the end of
 SESSION-LOG.md)
-- **Writing:** Fountain text in a textarea with colour hints behind it (D-031); a live preview patched block by block
-  (D-043) or shown as printed sheets (page view, D-054); on a desktop the editor, the preview or both (D-056); quick
-  edits in the preview by double-click or press-and-hold (D-057). Under 1024px, one pane at a time (Void | Canvas, D-060).
+- **Writing:** Fountain text in a textarea with colour hints behind it (D-031, D-065); in-script Find & Replace with
+  match highlights and undoable single or bulk replace (`Ctrl/Cmd+F`, `Ctrl/Cmd+H`, D-064); a live preview patched block
+  by block (D-043) or shown as printed sheets (page view, D-054); caret-anchored scroll sync and Canvas-to-Void
+  paragraph line highlight (D-066); on a desktop the editor, the preview or both (D-056); quick edits in the preview by
+  double-click or press-and-hold (D-057). Under 1024px, one pane at a time (Void | Canvas, D-060).
 - **Typing helpers:** Tab cycles elements, smart Enter, capitals as you type, character names guessed on Enter, the
   element bar, autocomplete chips for names, places and times of day (D-010, D-017, D-036, D-037); focus mode (D-025);
   the caret kept clear of the on-screen keyboard (D-030); tapping the one-pane preview goes to that line (D-033).
@@ -43,7 +46,8 @@ SESSION-LOG.md)
 - **In and out:** import `.fountain` / `.txt` / `.md` (D-016); download `.fountain` or `.fdx` (D-049, D-052); print /
   save as PDF on Letter or A4 (D-021, D-022, D-051); scripts linked to real files on disk, Chromium only (D-046).
 - **Around the script:** stats with scenes, locations and the scene mix (D-023, D-028, D-029); the Outline (D-024);
-  read-aloud time and YouTube chapters for narrated videos (D-038).
+  dockable Outline and Script stats drawer in the Canvas pane (`Ctrl/Cmd+Shift+O`, D-067); read-aloud time and YouTube
+  chapters for narrated videos (D-038).
 - **Everything else:** Settings (D-032); dark, light, retro (CGA) and system themes, text size, an accessibility sweep
   in the e2e (D-035, D-041, D-047); the welcome tour and Help (D-011); offline and installable when served (D-026);
   adventure-game replies in the retro theme (D-042, an Easter egg, not in Help).

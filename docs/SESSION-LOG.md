@@ -27,6 +27,28 @@ At the end of a session, add an entry at the top of "Sessions" using this templa
 
 <!-- NEW ENTRIES GO HERE -->
 
+### Session 33: 2026-11-02: Backporting Find & Replace, dockable Outline/Stats, caret scroll sync, shade recovery and doc linter from plainchant-web
+
+**Goal:** Identify features and architectural improvements from `plainchant-web` that benefit screenwriting in
+`plainchant`, document them, and implement them in priority order.
+**Done:** P2-25 (in-script Find & Replace bar with `.editor-find` overlay and undoable single/all replacement,
+`src/finding.js`, `src/app/find.js`, `test/finding.test.js`); P2-26 (`Fountain.shade` character-preservation guard,
+`shadeBroken = false` recovery on `setShadeOn(true)`, and a user-visible notice in `stopShade`); P2-06 completed
+(caret-anchored desktop scroll sync via `[data-line]` anchors in continuous and Page view, plus desktop Canvas click
+highlighting the paragraph's source lines in `.editor-shade` without stealing focus); P4-23 (dockable, resizable
+Outline and Script stats drawer in `#canvasBody`, `src/app/drawer-ui.js`, `Ctrl/Cmd+Shift+O` and modal **Dock**
+buttons); P4-24 (`tools/check_docs.py` adapted for Plainchant's `CLAUDE.md` and split handoff/session-log layout).
+**Changed:** `src/finding.js` (new), `src/app/find.js` (new), `src/app/drawer-ui.js` (new), `test/finding.test.js`
+(new), `tools/check_docs.py` (new), `src/fountain.js`, `src/app/shade.js`, `src/app/layout.js`, `src/app/core.js`,
+`src/app/settings.js`, `src/styles.css`, `app.html`, `sw.js`, `test/run.js`, `test/index.html`, `test/fountain.test.js`,
+`test/structure.test.js`, `test/app.e2e.html`, `CLAUDE.md`, `ROADMAP.md`, `docs/DECISIONS.md`, `docs/HANDOFF.md`,
+`docs/SESSION-LOG.md`.
+**Decisions:** D-064, D-065, D-066, D-067, D-068.
+**Problems / surprises:** none.
+**Left undone:** nothing from the backport list.
+**Next session should start with:** the owner's hands-on checks in HANDOFF, or trying the new Find & Replace bar and
+dockable Outline/Stats drawer on a feature-length script.
+
 ### Session 32: 2026-10-31: The front door in sixteen colours, then a screenplay
 
 **Goal:** The owner asked for the homepage to complement the EGA/Sierra aesthetic of their portfolio. After the

@@ -82,4 +82,5 @@ function render(typed) {
     drawShade(tokens);
     scheduleStats();
     schedulePages(tokens, typed);
+    if (typeof scheduleDrawer === 'function') scheduleDrawer(typed);
 }
