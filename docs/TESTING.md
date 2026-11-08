@@ -55,7 +55,7 @@ python3 tools/check_docs.py
   set (HANDOFF, DECISIONS, README, ARCHITECTURE, TESTING, SECURITY, CONTRIBUTING, CHANGELOG) as active documents, and
   `docs/SESSION-LOG.md` and `docs/archive/*.md` as history. It checks IDs (`P`, `D`, `Q`, `T`), links, the AGENTS.md
   Layout and App scripts tables, invisible characters, HANDOFF's date and Session owner line and size limits.
-- To trust a change to the checker, plant the mistake in a scratch copy (a `T-099` reference, a duplicate `T-001`, a
+- To trust a change to the checker, plant the mistake in a scratch copy (an undefined tension reference, a duplicate tension number, a
   zero-width space) and see it fail.
 
 ### Adding a check

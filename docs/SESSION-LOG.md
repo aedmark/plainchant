@@ -12,20 +12,55 @@ At the end of a session, add an entry at the top of "Sessions" using this templa
 ```
 ### Session N: YYYY-MM-DD: short title
 
+**Contributor:** person or agent/tool
 **Goal:**
 **Done:** roadmap IDs
 **Changed:** files / behaviour
 **Decisions:** D-numbers added
+**Verified:** tests and their counts (and the tally for runs that vary)
+**Not verified:** checks skipped or environments unavailable
 **Problems / surprises:**
+**Corrections:** earlier notes found wrong, and what was actually true
 **Left undone:**
 **Next session should start with:**
 ```
+
+Entries before session 34 have no Contributor, Verified, Not verified or Corrections lines (D-069).
 
 ---
 
 ## Sessions
 
 <!-- NEW ENTRIES GO HERE -->
+
+### Session 34: 2026-11-08: Adopting the Manifold's repository-memory scheme (Phase 8)
+
+**Contributor:** Claude (Sonnet 5.5), at the owner's request.
+**Goal:** Compare Plainchant with the current `the-manifold` template, list what was not adopted, and roll the gaps out
+as roadmap Phase 8.
+**Done:** P8-01 (D-069), P8-02 (`AGENTS.md` canonical, `CLAUDE.md` imports it, with Zones, fore-conceptions,
+stop-and-inquire, Working agreement, Maintainer preferences, Protected areas, Names and terms, Environments), P8-03 to
+P8-06 (ARCHITECTURE, TESTING, SECURITY, docs map, CONTRIBUTING, CHANGELOG, archive), P8-07 (T-001, T-002, Q-004), P8-08
+(HANDOFF: Session owner, Verified table, gotchas moved out), P8-09 (`[~]` and `[-]` conventions), P8-10 (checker),
+P8-11 (this entry). New item P8-12 filed.
+**Changed:** documents and `tools/check_docs.py` only; no app code.
+**Decisions:** D-069. Three local differences kept: the split HANDOFF / SESSION-LOG (D-058), the dev diary, the App
+scripts table.
+**Verified:** `npm test` 343/343; `npm run test:browser` 331 unit and 742 e2e, 0 failed (Chrome 157 headless, on
+`a4fe0f5`; the commits after it change documents only); `check_docs.py` 0 errors, 0 warnings, 13 files. The checker's new
+rules were exercised on a scratch copy: an undefined `T-` reference, a duplicate tension and a zero-width space each
+failed it.
+**Not verified:** the new documents' claims were derived from `AGENTS.md`, HANDOFF, the structure test and a short
+survey, not re-checked line by line against every module; the `ARCHITECTURE.md` invariants marked "nothing yet" are
+exactly that.
+**Problems / surprises:** `src-tauri/` (a Tauri 2 wrapper, CSP `null`) has no decision record anywhere (P8-12, Q-004).
+HANDOFF's "Current state" would have exceeded the new 80-line limit with a Verified table until the front-door
+paragraph was shortened.
+**Corrections:** HANDOFF's old line "Run `npm test`... about 60 s" said 60 s; the run takes about 50 s, as `AGENTS.md`
+already said.
+**Left undone:** P8-12, waiting on Q-004. The phase's one-line lesson: a checker earns its keep on its own
+documentation first (it caught two literal references written to describe its tests).
+**Next session should start with:** Q-004, then P8-12; or the owner's hands-on checks (HANDOFF, Next steps 1).
 
 ### Session 33: 2026-11-02: Backporting Find & Replace, dockable Outline/Stats, caret scroll sync, shade recovery and doc linter from plainchant-web
 

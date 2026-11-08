@@ -16,12 +16,12 @@ Plan: [ROADMAP.md](../ROADMAP.md). Architecture: [ARCHITECTURE.md](ARCHITECTURE.
 
 _Last updated: 2026-11-08, session 34, on `master`: the Manifold adoption (Phase 8, D-069) is under way. P8-01 to P8-09
 are done: `AGENTS.md` is the canonical instruction file, and ARCHITECTURE, TESTING, SECURITY, CONTRIBUTING, CHANGELOG,
-the docs map and the archive exist. The linter upgrade (P8-10) and the consolidation (P8-11) are left. No app code
-changed. `index.html` and `src/home.css` carry the owner's uncommitted edits._
+the docs map and the archive exist; the checker reads them all (P8-10) and the consolidation ran (P8-11). Only P8-12 is
+left, waiting on Q-004. No app code changed. `index.html` and `src/home.css` carry the owner's uncommitted edits._
 
 **Session owner:** none. The last session was the Manifold adoption; nothing is held.
 
-**Verified** (2026-11-08, on `a4fe0f5`, Arch Linux, Node 22.23, Google Chrome 157 headless): every row was run this
+**Verified** (2026-11-08, on `a4fe0f5`; documents only since, Arch Linux, Node 22.23, Google Chrome 157 headless): every row was run this
 session.
 
 | Suite | Result |
@@ -98,10 +98,8 @@ SESSION-LOG.md)
 
 ## Next steps (in order)
 
-0. **Finish Phase 8:** P8-10 (upgrade `tools/check_docs.py`: `T-` checks, invisible characters, the new documents, a
-   log limit, planted-failure test), then P8-11 (consolidation, a SESSION-LOG entry for session 34). Then P8-12 once
-   Q-004 is answered.
-
+0. **Answer Q-004** (is `src-tauri/` a supported target?), then P8-12: record the decision and review its CSP and
+   capabilities, or remove the crate. That closes Phase 8.
 1. **The owner's hands-on checks,** each a few minutes (whatever feels wrong is the next session's first job):
    - After a day of writing, **Library > Versions** on a real script: Go back, then Ctrl+Z.
    - **On an Android phone or tablet:** type at the bottom of a long script (three lines of room above the keyboard?);
