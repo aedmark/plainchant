@@ -1,16 +1,23 @@
 # Decisions
 
 Short, append-only record of choices that a future session might otherwise re-litigate. One entry per decision.
-Newest at the bottom. To reverse a decision, add a new entry that supersedes it; do not edit the old one.
+Newest at the bottom. To reverse a decision, add a new entry that supersedes it; the old one keeps its text and only
+its status changes ("superseded by D-MMM"). Record pre-existing choices too, the first time a session has to
+understand them ("status: accepted, recorded YYYY-MM-DD"): every constraint in the code answers an earlier question or
+failure, and recording it stops a future session removing a fence whose purpose it forgot (D-069).
 
 Format:
 
 ```
-## D-NNN Title  (YYYY-MM-DD, status: accepted | superseded by D-MMM)
-**Context:** why this came up.
+## D-NNN Title  (YYYY-MM-DD, status: proposed | accepted | rejected | superseded by D-MMM)
+**Context:** why this came up (the originating question, failure or measurement; the roadmap item or bug).
 **Decision:** what we chose.
+**Alternatives:** what else was considered, and why not (one line each). Optional, but it stops re-litigation.
 **Consequences:** what it costs or constrains.
+**Review trigger:** an event that should cause reconsideration. Optional.
 ```
+
+Entries before D-069 have no Alternatives or Review trigger lines; they are not rewritten.
 
 ---
 
@@ -1199,6 +1206,27 @@ and split `HANDOFF.md` / `SESSION-LOG.md` structure (`D-058`). Run `python3 tool
 and `npm run test:browser` at the end of every session.
 **Consequences:** Any file added to `src/` or `src/app/`, or any roadmap/decision reference added to the docs, is
 checked automatically before handoff.
+
+## D-069 Adopt the Manifold's repository-memory scheme, keeping three local differences  (2026-11-08, status: accepted; P8-01)
+**Context:** `the-manifold` (the owner's template for repository memory, root template as of commit `b8cec4b`) grew
+past what Plainchant adopted in D-058 and D-068: zones and untrusted context, fore-conceptions, held tensions, session
+ownership, protected areas, and separate ARCHITECTURE, TESTING and SECURITY documents. Plainchant keeps that material in
+`CLAUDE.md` and HANDOFF, where `docs/HANDOFF.md` has outgrown its 80-line limit.
+**Decision:**
+1. Adopt the scheme as Phase 8 (P8-01 to P8-11): `AGENTS.md` is the canonical instruction file and `CLAUDE.md` imports
+   it; add ARCHITECTURE, TESTING, SECURITY, CONTRIBUTING, CHANGELOG, docs/README and archive; add held tensions and the
+   fuller decision template; upgrade `tools/check_docs.py`.
+2. Keep three local differences: the frozen split between `docs/HANDOFF.md` (present only) and `docs/SESSION-LOG.md`
+   (history, D-058) stays, so the Manifold's "last ten sessions in HANDOFF" does not apply; the dev diary in
+   `docs/devlog/` stays; the `src/app/` table stays in `AGENTS.md` as a project-specific section, checked by the linter.
+3. New and rewritten prose follows the Manifold's writing preference (no em dashes). Existing text is not rewritten for
+   style.
+**Alternatives:** Adopt nothing further (HANDOFF keeps growing, rules stay in one 160-line file). Copy the template
+verbatim (it would put history back in HANDOFF and drop the App scripts check). Neither was chosen.
+**Consequences:** More files to keep true; the linter and the update-trigger table in `docs/README.md` carry that cost.
+Doc moves are not behaviour changes: no app code is touched.
+**Review trigger:** The Manifold template changes its structure again, or a document in this set goes two phases
+without an edit (then it is deleted, per the template's own rule).
 
 ## Open questions
 

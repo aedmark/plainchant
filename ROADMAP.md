@@ -20,9 +20,14 @@ These break ties when a feature is debatable.
 
 ## Status legend
 
-`[ ]` not started · `[~]` in progress · `[x]` done · `[-]` dropped (say why in DECISIONS.md)
+`[ ]` not started · `[~]` in progress (who holds it, since when, and what is left) · `[x]` done · `[-]` dropped (say
+why, and the decision in DECISIONS.md). An item held `[~]` by someone else is theirs until they or the owner release it.
 
 Every item has a stable ID (`P1-03`). Reference IDs in commits and in HANDOFF.md. Never renumber; append new items.
+A new item says where it came from (a test run, a real user, the owner) and the date. A finished item says what was
+done, the decision if any, the evidence (the test or the measurement) and the date. Keep an item's history in it
+("tried X, measured Y, then did Z"): it saves the next session from trying X again. Bugs are items too, filed under
+the phase they belong to. Earlier items predate this convention and are not rewritten.
 
 ---
 
@@ -222,6 +227,45 @@ Not committed. Decide only after Phase 3 ships. See open questions in DECISIONS.
   demonstration, a four-step primer, the main workflow and privacy features, narration support, and clear links into
   the app (D-061). The writing app moves from `index.html` to `app.html`; the installable app still opens straight into
   the editor.
+
+## Phase 8: Manifold adoption
+
+Goal: bring Plainchant's repository memory up to the current Manifold scheme (`the-manifold`, root template as of
+commit `b8cec4b`, 2026-11-08), keeping the deliberate local differences: the split `SESSION-LOG.md` (D-058), the dev
+diary and the project-specific App scripts table. Origin: the owner, 2026-11-08, after the Manifold's scope grew
+(zones, fore-conceptions, held tensions, session ownership). Not committed to the app's features; docs and tooling only.
+Each item is one commit; record the adoption decision (P8-01) first, since the rest cite it.
+
+- [x] P8-01 Decision record (D-069, 2026-11-08): adopt the Manifold, and which differences stay (D-058 split log, devlog, App scripts
+  table). Done when DECISIONS has the entry with Alternatives and Review trigger.
+- [ ] P8-02 `AGENTS.md` becomes the canonical instruction file; `CLAUDE.md` shrinks to `@AGENTS.md`. Add the missing
+  sections: Zones and untrusted context, fore-conceptions and the stop-and-inquire rules, reconstruct-the-question,
+  Working agreement (who may commit, push, publish), Maintainer preferences (including the writing style),
+  Protected areas, Names and terms, Environments, Run and verify. Done when `check_docs.py` still passes with its
+  Layout and App scripts checks pointed at `AGENTS.md`.
+- [ ] P8-03 `docs/ARCHITECTURE.md`: components, invariants (storage rules, preview and shade ownership, parser purity),
+  failure modes and a "Claims vs. code" section, moved out of `CLAUDE.md`'s conventions. Done when `AGENTS.md`
+  links to it instead of repeating it.
+- [ ] P8-04 `docs/TESTING.md`: commands, what each suite proves and does not prove, pitfalls (real-time runs, no
+  `--virtual-time-budget`, `file://` profiles), moved out of `CLAUDE.md` and HANDOFF Gotchas.
+- [ ] P8-05 `docs/SECURITY.md`: assets (scripts in IndexedDB, linked files), trust boundaries (imports, File System
+  Access, service worker), escaping rule, reporting path.
+- [ ] P8-06 `docs/README.md` (document ownership and update triggers), `docs/CONTRIBUTING.md`, `docs/CHANGELOG.md`
+  (seeded from the devlog's writer-visible changes) and `docs/archive/`. Add `docs/GLOSSARY.md` only if the Names
+  table outgrows `AGENTS.md`.
+- [ ] P8-07 Held tensions and open questions: add the "Held tensions" section and the fuller decision template to
+  DECISIONS. Seed candidates: zero dependencies against a hand-written parser; "works" claims that only ran in
+  headless Chromium. Open any real `Q-` questions instead of guessing.
+- [ ] P8-08 HANDOFF restructure: session owner line, a Verified table (command, commit, environment), "Open
+  questions for maintainers", and trim Current state toward the 80-line limit by moving detail to ARCHITECTURE and
+  TESTING.
+- [x] P8-09 Roadmap conventions (status legend above, 2026-11-08): add `[~]` (holder, since, what is left) and `[-]` (why, decision) to the status
+  legend, and origin and evidence on new items.
+- [ ] P8-10 Upgrade `tools/check_docs.py`: `T-` checks, invisible and bidirectional character check, archive-reserved
+  IDs, the 10-entry log limit, the 80-line state limit, `--template`-style listing, and the new files in its list.
+  Done when it passes on the migrated docs and a planted bad `T-` reference and a zero-width space both fail it.
+- [ ] P8-11 Consolidation pass at the end of the phase (the Manifold's finishing step 6): fold repeated lessons into
+  `AGENTS.md` or DECISIONS, archive finished phases, and write one line on what the phase taught.
 
 ## Known limitations (deliberate, revisit)
 
