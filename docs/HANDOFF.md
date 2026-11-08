@@ -81,7 +81,7 @@ SESSION-LOG.md)
   YouTube yet.
 - **Printing** has only run in headless Chromium, deliberately: the owner chose (2026-09-26) to assume it works until a
   bug report says otherwise.
-- **The Tauri shell** (`src-tauri/`, D-070, D-071): builds, starts for 12 seconds without an error and passes its 4 Rust tests, but nobody has looked at the window: the CSP against the real webview, the file dialogs, the IPC bridge and the "choose it again" notice are unseen.
+- **The Tauri shell** (`src-tauri/`, D-070, D-071): builds, passes its 4 Rust tests, and the owner ran `npm run tauri:dev` on 2026-11-08 and said it works fine. They did not itemise what they tried, so the file dialogs, a file linked by an older build and the "choose it again" notice are not individually confirmed.
 - **Also unobserved:** a real tab closed mid-write; colour hints with IME or dictation; Windows high-contrast mode; a
   screen reader hearing the autocomplete chips; the ad-blocker fix (D-055) confirmed with the owner's blocker on; the
   Windows test runner (not run since session 11).
@@ -100,9 +100,7 @@ SESSION-LOG.md)
 
 ## Next steps (in order)
 
-0. **Run the desktop build once and look at it** (`npm run tauri:dev`): the window opens `app.html` under the new CSP, Open a
-   file and Sync with a file still work, and a file linked by an older build asks to be chosen again (D-071). That closes
-   Phase 8.
+0. Phase 8 is closed. No step is pending from it.
 1. **The owner's hands-on checks,** each a few minutes (whatever feels wrong is the next session's first job):
    - After a day of writing, **Library > Versions** on a real script: Go back, then Ctrl+Z.
    - **On an Android phone or tablet:** type at the bottom of a long script (three lines of room above the keyboard?);

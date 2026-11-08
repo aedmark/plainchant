@@ -64,7 +64,7 @@ Each names what enforces it; "nothing yet" marks a candidate for a test or a roa
   undo checks for the main helpers; nothing for a new one.
 - **Chrome colours are tokens in all three theme sets.** Enforced by: the e2e accessibility sweep (section 16o), 4.5:1
   in every theme (D-035, D-041).
-- **The desktop shell's commands touch only dialog-picked paths, and the page loads only its own files** (D-071). Enforced by: four Rust unit tests (`npm run tauri:test`) and the window's CSP for the page; the structure test for the web files. The CSP has not been seen in a real window.
+- **The desktop shell's commands touch only dialog-picked paths, and the page loads only its own files** (D-071). Enforced by: four Rust unit tests (`npm run tauri:test`) and the window's CSP for the page; the structure test for the web files. The owner has run the real window (2026-11-08, "works fine", not itemised).
 - **Two media-query pairs move together** (the one-pane CSS block and `MOBILE_QUERY`; the fixed-body rule and
   `FIT_QUERY`). Enforced by: nothing (D-008, D-009).
 - **Emptying the editor does not overwrite the saved script** (D-006) and **a script is never lost** (ROADMAP

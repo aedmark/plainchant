@@ -1271,7 +1271,7 @@ page script restyle the app). A static `@page` per paper size (a larger change t
 **Consequences:** Links to files stored by an earlier build have no entry, so the first read or write fails with "not
 chosen" and the writer sees a notice to choose the file again (Library > Open a file); this is the one-time cost. The
 Rust commands have four unit tests; the CSP was checked against `app.html` in headless Chrome (no violations, A4
-print size intact) but not in a real Tauri window with the IPC bridge, which nobody has driven (HANDOFF).
+print size intact) and the owner ran the real window on 2026-11-08 and said it works fine; the individual dialogs and the older-link notice were not itemised (HANDOFF).
 **Review trigger:** A feature needs a remote origin, a blob or data URL beyond images, or inline script; or a Tauri
 release changes how it merges a CSP.
 

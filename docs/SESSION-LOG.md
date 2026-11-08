@@ -60,9 +60,9 @@ HANDOFF's "Current state" would have exceeded the new 80-line limit with a Verif
 paragraph was shortened.
 **Corrections:** HANDOFF's old line "Run `npm test`... about 60 s" said 60 s; the run takes about 50 s, as `AGENTS.md`
 already said.
-**Left undone:** looking at the desktop window (HANDOFF, Next steps 0). The phase's one-line lesson: a checker earns its keep on its own
+**Left undone:** nothing from Phase 8. The owner ran `npm run tauri:dev` afterwards and reported it works fine. The phase's one-line lesson: a checker earns its keep on its own
 documentation first (it caught two literal references written to describe its tests).
-**Next session should start with:** `npm run tauri:dev` and the check in HANDOFF; or the owner's hands-on checks (HANDOFF, Next steps 1).
+**Next session should start with:** the owner's hands-on checks (HANDOFF, Next steps 1).
 
 ### Session 33: 2026-11-02: Backporting Find & Replace, dockable Outline/Stats, caret scroll sync, shade recovery and doc linter from plainchant-web
 
