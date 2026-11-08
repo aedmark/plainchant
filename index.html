@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plainchant — Screenwriting without the formatting</title>
+    <title>Plainchant - Screenwriting Without the Formatting</title>
     <meta name="description" content="Write screenplays, video essays and stories in plain text. Plainchant handles the formatting, saves as you type and works offline.">
+    <meta name="author" content="Andrew Edmark">
     <meta name="theme-color" content="#000000">
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -24,6 +25,8 @@
             <a href="#premise">The script</a>
             <a href="#primer">The primer</a>
             <a href="#features">The draft</a>
+            <a href="#narration">Narration</a>
+            <a href="#suite">The suite</a>
             <a href="docs/manual/index.html">Manual</a>
             <a href="docs/devlog/index.html">Dev diary</a>
         </nav>
@@ -38,10 +41,11 @@
             <p class="title-kicker">A screenplay in five pages</p>
             <h1 id="title">Plainchant<span class="cursor" aria-hidden="true">_</span></h1>
             <p class="title-tagline">Your story. Properly formatted. Nothing in the way.</p>
-            <p class="title-meta"><span>Free</span> · Private · Works offline</p>
-            <p class="title-lede">Plainchant is a screenwriting app that gets out of your way. Type simple text. Watch it become a screenplay. Keep every word yours.</p>
+            <p class="title-by">written by</p>
+            <p class="title-author">Andrew Edmark</p>
+            <p class="title-meta"><span>Free &amp; Open Source</span></p>
+            <p class="title-lede">The OG screenwriting studio that gets out of your way. Type simple Fountain text. Watch it format live to industry standard. Keep every word yours.</p>
             <p class="title-action"><a class="btn primary" href="app.html">Start writing <span aria-hidden="true">&gt;</span></a></p>
-            <p class="title-note">No account. No install. Your first scene is one click away.</p>
             <p class="title-turn" aria-hidden="true">Turn the page <span></span></p>
         </section>
 
@@ -55,7 +59,7 @@
                 <p class="cue">THE WRITER</p>
                 <p class="dialogue">Writing software should help you write.</p>
             </div>
-            <p class="action">Margins, indentation, page breaks, file formats—Plainchant handles the machinery while you stay with the scene. It reads lightweight <a href="https://fountain.io" rel="noreferrer">Fountain</a> text and formats it live. There is nothing proprietary between you and your work, and nothing to configure before “FADE IN.”</p>
+            <p class="action">Margins, indentation, page breaks, file formats... If the industry demands it, Plainchant handles the machinery behind it while you stay in the scene. It reads lightweight <a href="https://fountain.io" rel="noreferrer">Fountain</a> text and formats it live. There is nothing proprietary between you and your work, and nothing to configure before “FADE IN.”</p>
 
             <figure class="demo">
                 <p class="demo-label">What you type</p>
@@ -119,7 +123,7 @@
 
             <aside class="margin-note">
                 <span class="note-tag">Note</span>
-                <p>Stuck? Tap the element bar—Scene, Action, Character, Dialogue—or press <kbd>Tab</kbd>. Plainchant never makes you memorise syntax.</p>
+                <p>Stuck? Tap the element bar or press <kbd>Tab</kbd>. Plainchant never makes you memorise syntax.</p>
             </aside>
         </section>
 
@@ -131,7 +135,7 @@
 
             <div class="speech">
                 <p class="cue">THE FLOW <span class="cue-note">(typing)</span></p>
-                <p class="dialogue">Live formatting, smart Enter, autocomplete, focus mode and quick edits keep your hands on the story—not the toolbar.</p>
+                <p class="dialogue">Live formatting, smart Enter, autocomplete, focus mode and quick edits keep your hands on the story.</p>
             </div>
 
             <div class="speech">
@@ -168,26 +172,50 @@
             </aside>
         </section>
 
-        <section class="sheet" aria-labelledby="end-title">
+        <section class="sheet" id="suite" aria-labelledby="end-title">
             <span class="page-number" aria-hidden="true">5.</span>
-            <p class="page-label"><span>05</span> The cursor is blinking</p>
+            <p class="page-label"><span>05</span> The Plainchant Suite</p>
+            <h2 class="scene" id="family-title">EXT. THE PLAINCHANT FAMILY - DAY</h2>
+            <p class="action">Plainchant began as this zero-dependency screenwriting studio. As stories grew beyond the script into web articles and bound books, two companion studios joined the desk:</p>
+
+            <div class="speech">
+                <p class="cue"><a href="https://github.com/aedmark/plainchant-web">PLAINCHANT WEB</a> <span class="cue-note">(the publisher)</span></p>
+                <p class="dialogue">A companion WYSIWYG studio for longform web publication, interactive essays, and clean semantic articles.</p>
+            </div>
+
+            <div class="speech">
+                <p class="cue"><a href="https://github.com/aedmark/plainchant-scribe">PLAINCHANT SCRIBE</a> <span class="cue-note">(the typesetter)</span></p>
+                <p class="dialogue">A dedicated book typesetting studio that compiles clean manuscripts into validated EPUB 3.3 editions.</p>
+            </div>
+
             <p class="transition">Fade out.</p>
             <h2 class="end-title" id="end-title">The End<span class="cursor" aria-hidden="true">_</span></h2>
             <p class="action">Ready when you are. Open a blank script or explore the built-in example. No sign-up, no setup, nothing to configure.</p>
             <p class="title-action"><a class="btn primary" href="app.html">Enter the Void <span aria-hidden="true">&gt;</span></a></p>
-            <p class="action small">Or read the <a href="docs/manual/index.html">Manual &amp; Codex</a> and the <a href="docs/devlog/index.html">dev diary</a>.</p>
+            <p class="action small">Crafted by <a href="https://edmark.net">Andrew Edmark</a>. Read the <a href="docs/manual/index.html">Manual &amp; Codex</a> and the <a href="docs/devlog/index.html">dev diary</a>.</p>
         </section>
     </article>
 </main>
 
 <footer class="site-foot">
     <div class="wrap">
-        <p class="foot-brand">Plainchant <span>Screenwriting, plain and simple.</span></p>
-        <div class="foot-links">
+        <div class="foot-col">
+            <p class="foot-brand">Plainchant <span>Screenwriting, plain and simple.</span></p>
+            <p class="foot-credit">Designed &amp; coded by <a href="https://edmark.net">Andrew Edmark</a></p>
+        </div>
+        <div class="foot-links-group">
+            <span class="foot-group-label">App &amp; Docs</span>
+            <a href="app.html">Open App</a>
             <a href="docs/manual/index.html">Manual &amp; Codex</a>
             <a href="docs/devlog/index.html">Dev diary</a>
-            <a href="https://github.com/aedmark/plainchant">Source</a>
+            <a href="https://github.com/aedmark/plainchant">Source (GitHub)</a>
             <a href="LICENSE">License</a>
+        </div>
+        <div class="foot-links-group">
+            <span class="foot-group-label">Plainchant Suite</span>
+            <a href="index.html">Plainchant (Screenplay)</a>
+            <a href="https://github.com/aedmark/plainchant-web">Plainchant Web (Studio)</a>
+            <a href="https://github.com/aedmark/plainchant-scribe">Plainchant Scribe (EPUB)</a>
         </div>
     </div>
 </footer>

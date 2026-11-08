@@ -3,6 +3,8 @@
 
 @font-face { font-family: 'Courier Prime'; font-style: normal; font-weight: 400; font-display: swap; src: url('../fonts/courier-prime-latin-400-normal.woff2') format('woff2'); }
 @font-face { font-family: 'Courier Prime'; font-style: normal; font-weight: 700; font-display: swap; src: url('../fonts/courier-prime-latin-700-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 400; font-display: swap; src: url('../fonts/inter-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url('../fonts/inter-latin-600-normal.woff2') format('woff2'); }
 
 :root {
     /* The sixteen colours of the hardware */
@@ -36,6 +38,7 @@
     --paper-line: #d9d1c1;
 
     --mono: 'Courier Prime', 'Courier New', Courier, monospace;
+    --sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --wrap: 68rem;
     --gutter: clamp(1rem, 3vw, 2rem);
     color-scheme: dark;
@@ -52,7 +55,7 @@ body {
     background-size: 4px 4px;
     background-attachment: fixed;
     color: var(--text);
-    font-family: var(--mono);
+    font-family: var(--sans);
     font-size: .95rem;
     line-height: 1.6;
 }
@@ -78,6 +81,7 @@ a:focus-visible, button:focus-visible { outline: 2px dashed var(--highlight); ou
     padding: .55rem 1rem;
     background: var(--accent-deep);
     color: var(--ega-white);
+    font-family: var(--sans);
     font-size: .82rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -94,6 +98,7 @@ a:focus-visible, button:focus-visible { outline: 2px dashed var(--highlight); ou
     background: var(--ega-lgray);
     color: var(--ega-black);
     border-bottom: 4px solid var(--ega-black);
+    font-family: var(--sans);
 }
 
 .site-head .wrap {
@@ -112,6 +117,7 @@ a:focus-visible, button:focus-visible { outline: 2px dashed var(--highlight); ou
     gap: .55rem;
     padding: .2rem .35rem;
     color: var(--ega-black);
+    font-family: var(--sans);
     font-size: .9rem;
     font-weight: 700;
     letter-spacing: .04em;
@@ -139,6 +145,7 @@ a:focus-visible, button:focus-visible { outline: 2px dashed var(--highlight); ou
     display: flex;
     flex-wrap: wrap;
     gap: .1rem;
+    font-family: var(--sans);
     font-size: .76rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -161,7 +168,7 @@ a:focus-visible, button:focus-visible { outline: 2px dashed var(--highlight); ou
     background: var(--ega-lgray);
     box-shadow: 3px 3px 0 var(--shadow), 0 0 0 1px var(--shadow);
     color: var(--ega-black);
-    font: 700 .8rem/1.2 var(--mono);
+    font: 700 .8rem/1.2 var(--sans);
     letter-spacing: .04em;
     text-decoration: none;
     text-transform: uppercase;
@@ -242,7 +249,8 @@ a:focus-visible, button:focus-visible { outline: 2px dashed var(--highlight); ou
     width: 6rem;
     margin: 0;
     color: var(--paper-muted);
-    font-size: .58rem;
+    font-family: var(--sans);
+    font-size: .62rem;
     font-weight: 700;
     letter-spacing: .08em;
     line-height: 1.5;
@@ -307,9 +315,10 @@ a:focus-visible, button:focus-visible { outline: 2px dashed var(--highlight); ou
 .demo-label {
     margin: 0 0 .4rem;
     color: var(--paper-muted);
-    font-size: .56rem;
+    font-family: var(--sans);
+    font-size: .62rem;
     font-weight: 700;
-    letter-spacing: .14em;
+    letter-spacing: .12em;
     text-transform: uppercase;
 }
 
@@ -332,9 +341,10 @@ a:focus-visible, button:focus-visible { outline: 2px dashed var(--highlight); ou
     border-bottom: 2px solid var(--ega-black);
     background: var(--ega-lgray);
     color: var(--ega-black);
-    font-size: .55rem;
+    font-family: var(--sans);
+    font-size: .6rem;
     font-weight: 700;
-    letter-spacing: .1em;
+    letter-spacing: .08em;
     text-transform: uppercase;
 }
 
@@ -415,8 +425,9 @@ a:focus-visible, button:focus-visible { outline: 2px dashed var(--highlight); ou
     padding: .7rem .9rem;
     border-left: 3px solid var(--accent-deep);
     background: rgba(170, 0, 0, .05);
-    font-size: .8rem;
-    line-height: 1.65;
+    font-family: var(--sans);
+    font-size: .82rem;
+    line-height: 1.6;
 }
 
 .margin-note p { margin: .3rem 0 0; }
@@ -425,9 +436,10 @@ a:focus-visible, button:focus-visible { outline: 2px dashed var(--highlight); ou
 .note-tag {
     display: inline-block;
     color: var(--accent-deep);
-    font-size: .54rem;
+    font-family: var(--sans);
+    font-size: .6rem;
     font-weight: 700;
-    letter-spacing: .14em;
+    letter-spacing: .12em;
     text-transform: uppercase;
 }
 
@@ -446,14 +458,15 @@ a:focus-visible, button:focus-visible { outline: 2px dashed var(--highlight); ou
 .title-kicker {
     margin: 0;
     color: var(--paper-muted);
-    font-size: .58rem;
+    font-family: var(--sans);
+    font-size: .62rem;
     font-weight: 700;
     letter-spacing: .2em;
     text-transform: uppercase;
 }
 
 .title-sheet h1 {
-    margin: .7rem 0 .5rem;
+    margin: .7rem 0 .4rem;
     color: var(--paper-ink);
     font-family: var(--mono);
     font-size: clamp(2rem, 6vw, 4rem);
@@ -466,22 +479,40 @@ a:focus-visible, button:focus-visible { outline: 2px dashed var(--highlight); ou
 .cursor { color: var(--accent-deep); font-weight: 400; animation: ega-blink 1s steps(2, start) infinite; }
 
 .title-tagline {
-    max-width: 34ch;
-    margin: 0 auto 1.1rem;
-    font-size: clamp(.88rem, 1.7vw, 1.1rem);
+    max-width: 38ch;
+    margin: 0 auto .6rem;
+    font-family: var(--sans);
+    font-size: clamp(.92rem, 1.8vw, 1.15rem);
+    font-weight: 600;
+    letter-spacing: .02em;
+    line-height: 1.45;
+}
+
+.title-by {
+    margin: .6rem 0 .15rem;
+    color: var(--paper-muted);
+    font-family: var(--mono);
+    font-size: .82rem;
+    font-style: italic;
+}
+
+.title-author {
+    margin: 0 0 1rem;
+    color: var(--paper-ink);
+    font-family: var(--mono);
+    font-size: 1.1rem;
     font-weight: 700;
-    letter-spacing: .05em;
-    line-height: 1.5;
+    letter-spacing: .06em;
     text-transform: uppercase;
 }
 
-.title-meta { margin: 0 0 1.2rem; color: var(--paper-muted); font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; }
-.title-meta span { color: var(--accent-deep); }
+.title-meta { margin: 0 0 1.2rem; color: var(--paper-muted); font-family: var(--sans); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
+.title-meta span { color: var(--accent-deep); font-weight: 600; }
 
-.title-lede { max-width: 44ch; margin: 0 auto; font-size: .9rem; line-height: 1.65; }
+.title-lede { max-width: 46ch; margin: 0 auto; font-family: var(--sans); font-size: .92rem; line-height: 1.6; }
 
 .title-action { margin: 1.6rem 0 .6rem !important; }
-.title-note { margin: 0; color: var(--paper-muted); font-size: .68rem; }
+.title-note { margin: 0; color: var(--paper-muted); font-family: var(--sans); font-size: .74rem; }
 
 .title-turn {
     position: absolute;
@@ -490,7 +521,8 @@ a:focus-visible, button:focus-visible { outline: 2px dashed var(--highlight); ou
     width: 100%;
     margin: 0;
     color: var(--paper-muted);
-    font-size: .55rem;
+    font-family: var(--sans);
+    font-size: .6rem;
     font-weight: 700;
     letter-spacing: .16em;
     text-align: center;
@@ -525,29 +557,33 @@ a:focus-visible, button:focus-visible { outline: 2px dashed var(--highlight); ou
 
 .site-foot {
     margin-top: 2rem;
-    padding: 1.5rem 0;
+    padding: 2rem 0;
     border-top: 4px double var(--line);
     background: var(--ega-black);
-    font-size: .72rem;
-    letter-spacing: .05em;
-    text-transform: uppercase;
+    font-family: var(--sans);
+    font-size: .78rem;
+    line-height: 1.5;
 }
 
 .site-foot .wrap {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    gap: .6rem 2rem;
+    gap: 1.5rem 2.5rem;
 }
 
-.site-foot p { margin: 0; }
-.foot-brand { color: var(--bright); font-weight: 700; }
-.foot-brand span { display: block; margin-top: .15rem; color: #999999; font-size: .94em; font-weight: 400; letter-spacing: 0; text-transform: none; }
+.foot-col { max-width: 22rem; }
+.foot-brand { color: var(--bright); font-weight: 700; letter-spacing: .05em; text-transform: uppercase; font-size: .85rem; margin: 0; }
+.foot-brand span { display: block; margin-top: .25rem; color: #aaaaaa; font-size: .92em; font-weight: 400; letter-spacing: 0; text-transform: none; }
+.foot-credit { margin: .65rem 0 0 !important; color: #888888; font-size: .78rem; }
+.foot-credit a { color: var(--accent-2); text-decoration: none; }
+.foot-credit a:hover { background: var(--accent-deep); color: var(--ega-white); }
 
-.foot-links { display: flex; flex-wrap: wrap; gap: .35rem 1rem; }
-.site-foot a { color: var(--accent-2); text-decoration: none; }
-.site-foot a:hover { background: var(--accent-deep); color: var(--ega-white); }
+.foot-links-group { display: flex; flex-direction: column; gap: .35rem; }
+.foot-group-label { color: var(--highlight); font-size: .65rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: .25rem; }
+.foot-links-group a { color: var(--accent-2); text-decoration: none; font-size: .78rem; }
+.foot-links-group a:hover { background: var(--accent-deep); color: var(--ega-white); }
 
 @keyframes ega-blink { to { visibility: hidden; } }
 
