@@ -250,7 +250,7 @@ Each item is one commit; record the adoption decision (P8-01) first, since the r
   `--virtual-time-budget`, `file://` profiles), moved out of `CLAUDE.md` and HANDOFF Gotchas.
 - [x] P8-05 (2026-11-08) `docs/SECURITY.md`: assets (scripts in IndexedDB, linked files), trust boundaries (imports, File System
   Access, service worker), escaping rule, reporting path.
-- [ ] P8-06 `docs/README.md` (document ownership and update triggers), `docs/CONTRIBUTING.md`, `docs/CHANGELOG.md`
+- [x] P8-06 (2026-11-08) `docs/README.md` (document ownership and update triggers), `docs/CONTRIBUTING.md`, `docs/CHANGELOG.md`
   (seeded from the devlog's writer-visible changes) and `docs/archive/`. Add `docs/GLOSSARY.md` only if the Names
   table outgrows `AGENTS.md`.
 - [ ] P8-07 Held tensions and open questions: add the "Held tensions" section and the fuller decision template to

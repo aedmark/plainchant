@@ -151,6 +151,10 @@ Maintainer-reviewed work on `master`, owner-directed.
 | `test/` | `fountain.test.js` (parser), `editing.test.js` (typing helpers), `library.test.js` (library rules), `importing.test.js` (import rules), `suggest.test.js` (autocomplete rules), `store.test.js` (storage rules), `paginate.test.js` (print pagination), `stats.test.js` (script stats), `outline.test.js` (outline), `versions.test.js` (version rules), `narration.test.js` (narration time and chapters), `adventure.test.js` (adventure-game replies), `compare.test.js` (comparing versions), `filesync.test.js` (files on disk), `fdx.test.js` (Final Draft export), `finding.test.js` (search and replace), `structure.test.js` (app script structure, Node only), `app.e2e.html` (app behaviour), `harness.js`, runners: `index.html`, `run-headless.ps1` (Windows), `run-headless.sh` (Linux/macOS), `run.js` |
 | `tools/check_docs.py` | Zero-dependency documentation consistency linter (roadmap IDs, decisions, session log, links, and `CLAUDE.md` file tables) (D-068) |
 | `ROADMAP.md` | The plan, with stable item IDs |
+| `docs/README.md` | Which document owns what, and the update triggers |
+| `docs/CONTRIBUTING.md` | The contribution workflow for people and agents |
+| `docs/CHANGELOG.md` | Writer-visible changes, newest first |
+| `docs/archive/` | History moved out of the live documents |
 | `docs/ARCHITECTURE.md` | The shape, code map, invariants and what enforces them, boundaries, state, failure modes, and where a claim outruns the code |
 | `docs/TESTING.md` | Every suite, what it proves and does not prove, the change-to-check matrix, manual checks and pitfalls |
 | `docs/SECURITY.md` | Assets, trust boundaries, secure development rules, reporting |
