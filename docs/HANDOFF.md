@@ -3,7 +3,7 @@
 Read this first. It describes the project **as it is right now** and what comes next. It is rewritten at the end of
 every session, and nothing in it is history: when something stops being true, change it or delete it.
 
-History (what each session did) is in [SESSION-LOG.md](SESSION-LOG.md). Protocol: [CLAUDE.md](../CLAUDE.md).
+History (what each session did) is in [SESSION-LOG.md](SESSION-LOG.md). Protocol: [AGENTS.md](../AGENTS.md).
 Plan: [ROADMAP.md](../ROADMAP.md). Decisions: [DECISIONS.md](DECISIONS.md). The writer-facing story: [devlog/](devlog/).
 
 ---
@@ -111,9 +111,9 @@ SESSION-LOG.md)
   like a tracker (pageview, analytics, track, beacon, ads, banner, metric, counter; `test/structure.test.js`, D-055).
 
 **App code**
-- The app is classic scripts in `src/app/` sharing one global scope (CLAUDE.md "App scripts", D-014). Functions the e2e
+- The app is classic scripts in `src/app/` sharing one global scope (AGENTS.md "App scripts", D-014). Functions the e2e
   calls stay top-level declarations: `fitToViewport`, `setView`, `setMenu`, `syncElementState`, `buildPrintPages`,
-  `printScript` and the others listed in CLAUDE.md. Header comments are optional; no test looks for them (D-059).
+  `printScript` and the others listed in AGENTS.md. Header comments are optional; no test looks for them (D-059).
 - **Offline:** add any new file the page loads to `APP_FILES` in `sw.js` (the structure test fails until you do), and
   bump `CACHE` when a file is removed or renamed. Service workers never run on `file://`; to see the offline copy,
   serve the folder (`python3 -m http.server`) and use Playwright with `context.setOffline(true)`.

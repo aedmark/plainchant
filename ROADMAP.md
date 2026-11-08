@@ -238,7 +238,7 @@ Each item is one commit; record the adoption decision (P8-01) first, since the r
 
 - [x] P8-01 Decision record (D-069, 2026-11-08): adopt the Manifold, and which differences stay (D-058 split log, devlog, App scripts
   table). Done when DECISIONS has the entry with Alternatives and Review trigger.
-- [ ] P8-02 `AGENTS.md` becomes the canonical instruction file; `CLAUDE.md` shrinks to `@AGENTS.md`. Add the missing
+- [x] P8-02 (D-069, 2026-11-08) `AGENTS.md` becomes the canonical instruction file; `CLAUDE.md` shrinks to `@AGENTS.md`. Add the missing
   sections: Zones and untrusted context, fore-conceptions and the stop-and-inquire rules, reconstruct-the-question,
   Working agreement (who may commit, push, publish), Maintainer preferences (including the writing style),
   Protected areas, Names and terms, Environments, Run and verify. Done when `check_docs.py` still passes with its

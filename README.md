@@ -57,7 +57,7 @@ npm run test:browser    # unit suite and app e2e in headless Chromium/Chrome (ab
 - [docs/HANDOFF.md](docs/HANDOFF.md): current state and next steps
 - [docs/DECISIONS.md](docs/DECISIONS.md): why things are the way they are
 - [docs/devlog/](docs/devlog/): the dev diary
-- [CLAUDE.md](CLAUDE.md): code layout, conventions and the session protocol
+- [AGENTS.md](AGENTS.md): code layout, conventions and the session protocol (`CLAUDE.md` imports it)
 
 ## License
 

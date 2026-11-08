@@ -9,11 +9,11 @@ Errors (exit 1):
   - a roadmap ID used twice, filed under the wrong phase, or with an unknown checkbox
   - a decision number used twice or out of order, or superseded by one that does not exist or comes earlier
   - an open question (Q-NNN) defined twice
-  - a roadmap ID, decision number or question mentioned in active docs (CLAUDE.md, ROADMAP.md, docs/HANDOFF.md,
+  - a roadmap ID, decision number or question mentioned in active docs (AGENTS.md, ROADMAP.md, docs/HANDOFF.md,
     docs/DECISIONS.md, README.md) that does not exist
   - two session-log entries with the same number in docs/SESSION-LOG.md
-  - a relative link, or a path in CLAUDE.md's Layout / App scripts tables, that points at nothing
-  - an on-disk src/app/*.js script omitted from CLAUDE.md's App scripts table
+  - a relative link, or a path in AGENTS.md's Layout / App scripts tables, that points at nothing
+  - an on-disk src/app/*.js script omitted from AGENTS.md's App scripts table
 Warnings (exit 0):
   - HANDOFF's "Last updated" is missing, or older than the newest session-log entry in SESSION-LOG.md
   - HANDOFF's "Current state" has outgrown the limit below
@@ -26,7 +26,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 ACTIVE_DOCS = [
-    "CLAUDE.md", "README.md", "ROADMAP.md",
+    "AGENTS.md", "CLAUDE.md", "README.md", "ROADMAP.md",
     "docs/HANDOFF.md", "docs/DECISIONS.md",
 ]
 HISTORY_DOCS = [
@@ -137,7 +137,7 @@ def main():
             if not (path.parent / target).exists():
                 errors.append(f"{where(path, text, m.start())}: link to {target}, which does not exist")
 
-    claude = ROOT / "CLAUDE.md"
+    claude = ROOT / "AGENTS.md"
     if claude in texts:
         layout, offset = section(texts[claude], "Layout")
         for row in re.finditer(r"^\| ([^|]+) \|", layout, flags=re.M):
@@ -159,7 +159,7 @@ def main():
                                   f"{name}, which does not exist in src/app/")
         on_disk_app = {p.name for p in (ROOT / "src" / "app").glob("*.js")}
         for missing in sorted(on_disk_app - listed_app):
-            errors.append(f"CLAUDE.md: src/app/{missing} is on disk but missing from the App scripts table")
+            errors.append(f"AGENTS.md: src/app/{missing} is on disk but missing from the App scripts table")
 
     session_log = ROOT / "docs" / "SESSION-LOG.md"
     newest_session_date = None
