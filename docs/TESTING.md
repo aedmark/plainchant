@@ -51,8 +51,12 @@ npm run test:browser
 python3 tools/check_docs.py
 ```
 
-- Exit 1 on an error, 0 with warnings. It reads `AGENTS.md`, `CLAUDE.md`, `README.md`, `ROADMAP.md`, `docs/HANDOFF.md`
-  and `docs/DECISIONS.md` as active documents and `docs/SESSION-LOG.md` as history.
+- Exit 1 on an error, 0 with warnings. It reads `AGENTS.md`, `CLAUDE.md`, `README.md`, `ROADMAP.md` and the `docs/`
+  set (HANDOFF, DECISIONS, README, ARCHITECTURE, TESTING, SECURITY, CONTRIBUTING, CHANGELOG) as active documents, and
+  `docs/SESSION-LOG.md` and `docs/archive/*.md` as history. It checks IDs (`P`, `D`, `Q`, `T`), links, the AGENTS.md
+  Layout and App scripts tables, invisible characters, HANDOFF's date and Session owner line and size limits.
+- To trust a change to the checker, plant the mistake in a scratch copy (a `T-099` reference, a duplicate `T-001`, a
+  zero-width space) and see it fail.
 
 ### Adding a check
 

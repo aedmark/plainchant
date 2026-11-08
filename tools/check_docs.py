@@ -8,15 +8,17 @@ Errors (exit 1):
   - a {{placeholder}} left in a doc
   - a roadmap ID used twice, filed under the wrong phase, or with an unknown checkbox
   - a decision number used twice or out of order, or superseded by one that does not exist or comes earlier
-  - an open question (Q-NNN) defined twice
+  - an open question (Q-NNN) defined twice, or a held tension (T-NNN) defined twice or out of order
   - a roadmap ID, decision number or question mentioned in active docs (AGENTS.md, ROADMAP.md, docs/HANDOFF.md,
-    docs/DECISIONS.md, README.md) that does not exist
+    docs/DECISIONS.md, README.md, and the docs/ set) that does not exist: P-, D-, Q- and T- references
+  - an invisible or bidirectional control character in any document
   - two session-log entries with the same number in docs/SESSION-LOG.md
   - a relative link, or a path in AGENTS.md's Layout / App scripts tables, that points at nothing
   - an on-disk src/app/*.js script omitted from AGENTS.md's App scripts table
 Warnings (exit 0):
   - HANDOFF's "Last updated" is missing, or older than the newest session-log entry in SESSION-LOG.md
-  - HANDOFF's "Current state" has outgrown the limit below
+  - HANDOFF's "Current state" has outgrown the limit below, or has no "Session owner" line
+  - docs/SESSION-LOG.md has outgrown its limit (time to move the oldest sessions to docs/archive/)
 
 Standard library only. HTML comments are ignored, so examples can live in them.
 """
@@ -28,17 +30,23 @@ ROOT = Path(__file__).resolve().parent.parent
 ACTIVE_DOCS = [
     "AGENTS.md", "CLAUDE.md", "README.md", "ROADMAP.md",
     "docs/HANDOFF.md", "docs/DECISIONS.md",
+    "docs/README.md", "docs/ARCHITECTURE.md", "docs/TESTING.md", "docs/SECURITY.md",
+    "docs/CONTRIBUTING.md", "docs/CHANGELOG.md",
 ]
 HISTORY_DOCS = [
     "docs/SESSION-LOG.md",
 ]
 CURRENT_STATE_LINES = 80
+# The session log is history (D-058), so it has no entry limit; past this many lines it is time to archive (D-069).
+SESSION_LOG_LINES = 1500
 # IDs retired by the owner in session 30 before SESSION-LOG.md was frozen, still mentioned in historical prose.
 RETIRED_ITEMS = {"P2-09", "P2-13", "P2-22", "P6-03", "P6-04", "P7-02"}
 
 ITEM_RE = re.compile(r"\bP(\d+)-(\d+)\b")
 DECISION_RE = re.compile(r"\bD-(\d{3})\b")
 QUESTION_RE = re.compile(r"\bQ-(\d{3})\b")
+TENSION_RE = re.compile(r"\bT-(\d{3})\b")
+INVISIBLE_RE = re.compile(r"[\u180e\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]")
 DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
 LINK_RE = re.compile(r"\]\(([^)\s]+)\)|\b(?:href|src)=\"([^\"]+)\"")
 
@@ -63,7 +71,9 @@ def main():
     template = "--template" in sys.argv[1:]
     active_paths = [ROOT / d for d in ACTIVE_DOCS if (ROOT / d).is_file()]
     history_paths = [ROOT / d for d in HISTORY_DOCS if (ROOT / d).is_file()]
-    docs = active_paths + history_paths
+    archive = ROOT / "docs" / "archive"
+    archived = sorted(p for p in archive.glob("*.md") if p.name != "README.md") if archive.is_dir() else []
+    docs = active_paths + history_paths + archived
     texts = {p: read(p) for p in docs}
 
     if not template:
@@ -93,8 +103,12 @@ def main():
             if phase is not None and item_phase != phase:
                 errors.append(f"{where(roadmap, text, m.start())}: {item} is filed under Phase {phase}")
 
+    # Archived roadmap phases keep their IDs reserved.
+    for path in archived:
+        items.update(m.group(1) for m in re.finditer(r"^- \[.\] (P\d+-\d+)\b", texts[path], flags=re.M))
+
     decisions_path = ROOT / "docs" / "DECISIONS.md"
-    decisions, supersessions, questions = set(), [], set()
+    decisions, supersessions, questions, tensions = set(), [], set(), set()
     if decisions_path in texts:
         text, last = texts[decisions_path], 0
         for m in re.finditer(r"^## D-(\d{3})\b([^\n]*)", text, flags=re.M):
@@ -116,6 +130,20 @@ def main():
             if f"Q-{m.group(1)}" in questions:
                 errors.append(f"{where(decisions_path, text, m.start())}: Q-{m.group(1)} is used twice")
             questions.add(f"Q-{m.group(1)}")
+        last_t = 0
+        for m in re.finditer(r"^### T-(\d{3})\b", text, flags=re.M):
+            number = int(m.group(1))
+            if f"T-{m.group(1)}" in tensions:
+                errors.append(f"{where(decisions_path, text, m.start())}: T-{m.group(1)} is used twice")
+            elif number < last_t:
+                errors.append(f"{where(decisions_path, text, m.start())}: T-{m.group(1)} comes after T-{last_t:03d}")
+            tensions.add(f"T-{m.group(1)}")
+            last_t = max(last_t, number)
+
+    for path, text in texts.items():
+        for m in INVISIBLE_RE.finditer(text):
+            errors.append(f"{where(path, text, m.start())}: invisible or bidirectional control character "
+                          f"U+{ord(m.group(0)):04X}")
 
     for path in active_paths:
         text = texts[path]
@@ -130,6 +158,9 @@ def main():
             for m in QUESTION_RE.finditer(text):
                 if m.group(0) not in questions:
                     errors.append(f"{where(path, text, m.start())}: {m.group(0)} is not in DECISIONS.md's open questions")
+            for m in TENSION_RE.finditer(text):
+                if m.group(0) not in tensions:
+                    errors.append(f"{where(path, text, m.start())}: {m.group(0)} is not in DECISIONS.md's held tensions")
         for m in LINK_RE.finditer(text):
             target = (m.group(1) or m.group(2)).split("#")[0]
             if not target or "{{" in target or re.match(r"[a-z][a-z0-9+.-]*:", target):
@@ -190,9 +221,15 @@ def main():
             warnings.append(f"docs/HANDOFF.md: Current state was last updated {updated.group(1)}, "
                             f"but SESSION-LOG.md has an entry from {newest_session_date}")
         current, _ = section(text, "Current state")
+        if not template and "Session owner" not in current:
+            warnings.append("docs/HANDOFF.md: Current state has no 'Session owner' line")
         if current.count("\n") > CURRENT_STATE_LINES:
             warnings.append(f"docs/HANDOFF.md: Current state is {current.count(chr(10))} lines (limit "
                             f"{CURRENT_STATE_LINES}); move history to SESSION-LOG.md")
+
+    if session_log in texts and texts[session_log].count("\n") > SESSION_LOG_LINES:
+        warnings.append(f"docs/SESSION-LOG.md: {texts[session_log].count(chr(10))} lines (limit {SESSION_LOG_LINES}); "
+                        f"move the oldest sessions to docs/archive/")
 
     for line in errors:
         print(f"ERROR {line}")

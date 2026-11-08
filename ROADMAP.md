@@ -261,7 +261,7 @@ Each item is one commit; record the adoption decision (P8-01) first, since the r
   TESTING.
 - [x] P8-09 Roadmap conventions (status legend above, 2026-11-08): add `[~]` (holder, since, what is left) and `[-]` (why, decision) to the status
   legend, and origin and evidence on new items.
-- [ ] P8-10 Upgrade `tools/check_docs.py`: `T-` checks, invisible and bidirectional character check, archive-reserved
+- [x] P8-10 (2026-11-08; the session-log limit became a line limit and there is no `--template` mode, because D-058 keeps history out of HANDOFF and this repository is not a template; planted `T-099`, a duplicate `T-001` and a zero-width space all fail it) Upgrade `tools/check_docs.py`: `T-` checks, invisible and bidirectional character check, archive-reserved
   IDs, the 10-entry log limit, the 80-line state limit, `--template`-style listing, and the new files in its list.
   Done when it passes on the migrated docs and a planted bad `T-` reference and a zero-width space both fail it.
 - [ ] P8-11 Consolidation pass at the end of the phase (the Manifold's finishing step 6): fold repeated lessons into
