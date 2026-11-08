@@ -243,12 +243,12 @@ Each item is one commit; record the adoption decision (P8-01) first, since the r
   Working agreement (who may commit, push, publish), Maintainer preferences (including the writing style),
   Protected areas, Names and terms, Environments, Run and verify. Done when `check_docs.py` still passes with its
   Layout and App scripts checks pointed at `AGENTS.md`.
-- [ ] P8-03 `docs/ARCHITECTURE.md`: components, invariants (storage rules, preview and shade ownership, parser purity),
+- [x] P8-03 (2026-11-08) `docs/ARCHITECTURE.md`: components, invariants (storage rules, preview and shade ownership, parser purity),
   failure modes and a "Claims vs. code" section, moved out of `CLAUDE.md`'s conventions. Done when `AGENTS.md`
   links to it instead of repeating it.
-- [ ] P8-04 `docs/TESTING.md`: commands, what each suite proves and does not prove, pitfalls (real-time runs, no
+- [x] P8-04 (2026-11-08) `docs/TESTING.md`: commands, what each suite proves and does not prove, pitfalls (real-time runs, no
   `--virtual-time-budget`, `file://` profiles), moved out of `CLAUDE.md` and HANDOFF Gotchas.
-- [ ] P8-05 `docs/SECURITY.md`: assets (scripts in IndexedDB, linked files), trust boundaries (imports, File System
+- [x] P8-05 (2026-11-08) `docs/SECURITY.md`: assets (scripts in IndexedDB, linked files), trust boundaries (imports, File System
   Access, service worker), escaping rule, reporting path.
 - [ ] P8-06 `docs/README.md` (document ownership and update triggers), `docs/CONTRIBUTING.md`, `docs/CHANGELOG.md`
   (seeded from the devlog's writer-visible changes) and `docs/archive/`. Add `docs/GLOSSARY.md` only if the Names
@@ -266,6 +266,10 @@ Each item is one commit; record the adoption decision (P8-01) first, since the r
   Done when it passes on the migrated docs and a planted bad `T-` reference and a zero-width space both fail it.
 - [ ] P8-11 Consolidation pass at the end of the phase (the Manifold's finishing step 6): fold repeated lessons into
   `AGENTS.md` or DECISIONS, archive finished phases, and write one line on what the phase taught.
+- [ ] P8-12 Record or retire the `src-tauri/` desktop wrapper: it has no decision, its CSP is `null` and
+  `withGlobalTauri` is on (ARCHITECTURE "Claims vs. code", SECURITY). Found by the P8-03 survey (2026-11-08). Done when
+  DECISIONS says whether it is a supported target and, if so, its CSP and capabilities are reviewed; or the crate is
+  removed with `tauri:*` scripts.
 
 ## Known limitations (deliberate, revisit)
 

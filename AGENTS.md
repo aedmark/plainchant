@@ -151,6 +151,9 @@ Maintainer-reviewed work on `master`, owner-directed.
 | `test/` | `fountain.test.js` (parser), `editing.test.js` (typing helpers), `library.test.js` (library rules), `importing.test.js` (import rules), `suggest.test.js` (autocomplete rules), `store.test.js` (storage rules), `paginate.test.js` (print pagination), `stats.test.js` (script stats), `outline.test.js` (outline), `versions.test.js` (version rules), `narration.test.js` (narration time and chapters), `adventure.test.js` (adventure-game replies), `compare.test.js` (comparing versions), `filesync.test.js` (files on disk), `fdx.test.js` (Final Draft export), `finding.test.js` (search and replace), `structure.test.js` (app script structure, Node only), `app.e2e.html` (app behaviour), `harness.js`, runners: `index.html`, `run-headless.ps1` (Windows), `run-headless.sh` (Linux/macOS), `run.js` |
 | `tools/check_docs.py` | Zero-dependency documentation consistency linter (roadmap IDs, decisions, session log, links, and `CLAUDE.md` file tables) (D-068) |
 | `ROADMAP.md` | The plan, with stable item IDs |
+| `docs/ARCHITECTURE.md` | The shape, code map, invariants and what enforces them, boundaries, state, failure modes, and where a claim outruns the code |
+| `docs/TESTING.md` | Every suite, what it proves and does not prove, the change-to-check matrix, manual checks and pitfalls |
+| `docs/SECURITY.md` | Assets, trust boundaries, secure development rules, reporting |
 | `docs/HANDOFF.md` | Current state, what is not checked yet, gotchas, next steps, open questions: the present only |
 | `docs/SESSION-LOG.md` | Append-only history, one entry per session, newest first (D-058) |
 | `docs/DECISIONS.md` | Append-only decision record |
@@ -201,6 +204,9 @@ Keep each file's own listeners in that file. Functions the e2e tests call (`save
 
 ## Conventions
 
+The rules that hold across the code, with what enforces them, are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md);
+this list is what a change to the code must follow.
+
 - Vanilla JS, no frameworks. Modern syntax is fine (evergreen browsers). Targets: Firefox and Chromium-based browsers.
   Safari (Mac, iPhone, iPad) is a distant future milestone, roadmap Phase 7 (D-039, D-040): no Safari-only work.
 - Classic `<script>` files, not ES modules (`file://` blocks module imports).
@@ -241,19 +247,14 @@ Keep each file's own listeners in that file. Functions the e2e tests call (`save
 
 ## Run and verify
 
-- App: open `app.html` directly in a browser, or open `index.html` and follow the homepage's Start writing link. Served over http(s) it also works
-  offline and can be installed (service worker + manifest); from disk it needs no network either (local fonts).
-  **Add a new file the page loads to `APP_FILES` in `sw.js`** (the structure test fails until you do).
-- Tests: `npm run test:browser` (or `bash test/run-headless.sh`) on Linux/macOS, the owner's machine since
-  2026-09-25 (Arch Linux). It runs the unit suite and the app e2e in headless Chromium/Chrome with a throwaway profile;
-  `BROWSER=/path/to/chrome` picks the browser; exit code 0 = pass. On Windows: `npm run test:browser:windows`
-  (`test/run-headless.ps1`, Edge/Chrome, nothing to install). Both run in real time, about 50 s: never add
-  `--virtual-time-budget` back, IndexedDB does not work under it (D-019).
-- Or open `test/index.html` (unit) / `test/app.e2e.html` (app, needs http or `--allow-file-access-from-files`) in a
-  browser; a green banner means pass.
-- `npm test` runs `test/run.js` under Node (unit suite only; needs Node 18+, developed on 24). If `node` is not
-  found in a session that was already open when Node was installed, refresh PATH or restart the session.
-- Never run a headless browser against `file://` pages with your real profile. See D-007.
+Details, proof boundaries and pitfalls are in [docs/TESTING.md](docs/TESTING.md).
+
+- App: open `app.html` directly in a browser, or open `index.html` and follow the homepage's Start writing link. Served
+  over http(s) (`npm run serve`) it also works offline and can be installed. **Add a new file the page loads to
+  `APP_FILES` in `sw.js`** (the structure test fails until you do).
+- Fast checks: `npm test` (Node 18+, developed on 24; unit and structure) and `python3 tools/check_docs.py`.
+- Full checks: add `npm run test:browser` (headless Chromium or Chrome, about 50 s, real time; `BROWSER=/path/to/chrome`
+  picks the browser). On Windows, `npm run test:browser:windows`. Never add `--virtual-time-budget` back (D-019), and
+  never run a headless browser against `file://` pages with your real profile (D-007).
 - When you add a parser rule, add a test in `test/fountain.test.js` first. When you change app behaviour (restore,
-  save, library), extend `test/app.e2e.html`. There, wait for `loaded(frame, go)` after any navigation, and read storage
-  with `await stored()` / `await storedMeta()` (they wait for every frame's pending writes first).
+  save, library), extend `test/app.e2e.html`.
