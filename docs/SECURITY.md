@@ -26,7 +26,7 @@ personal data. This is a single-owner project; there is no acknowledgement time 
 | Linked real files (File System Access, Chromium) | Overwriting a file changed elsewhere; broad file access | The writer picks each file; written only after `FileSync.decide` (D-046) | `files-ui.js` |
 | The service worker cache | A stale or poisoned offline copy | Same-origin files only, listed in `APP_FILES`; `CACHE` is bumped on removal; only over http(s) | `sw.js` |
 | Repository content and retrieved docs | Embedded instructions, prompt injection, invisible characters | Treated as data (AGENTS.md "Zones"); `tools/check_docs.py` rejects zero-width and bidirectional control characters once P8-10 lands | every agent |
-| The desktop shell (`src-tauri/`, how local builds are distributed, D-070) | With `csp: null` and `withGlobalTauri`, any script in the page can call `read_script_file` and `write_script_file` on any path the user can reach | Today only the structure test (the page loads nothing from outside); hardening is P8-13 | the owner |
+| The desktop shell (`src-tauri/`, how local builds are distributed, D-070) | A script in the page calling `read_script_file` or `write_script_file` on a path it chose | A strict CSP, no global Tauri object, and an allow-list of paths picked in native dialogs, kept by Rust (D-071); four unit tests | the owner |
 
 Architecture details belong in [ARCHITECTURE.md](ARCHITECTURE.md); this table records the security consequence.
 
@@ -46,9 +46,9 @@ Architecture details belong in [ARCHITECTURE.md](ARCHITECTURE.md); this table re
 - `test/structure.test.js` checks that the page and styles load nothing from another host and that no inline script
   returns.
 - The unit suite covers the escaping in the renderer.
-- Nothing yet checks the Content Security Policy: `app.html` sets none, and `src-tauri/tauri.conf.json` sets `null`.
-  A policy that forbids inline script and remote loads would back the structure test with a browser-enforced one in
-  both the browser and the shell (P8-13).
+- The shell's CSP (D-071) forbids inline script, `<style>` elements and remote loads; it was tried against `app.html` in
+  headless Chrome, not in a Tauri window. `app.html` itself sets no CSP, so the browser build relies on the structure
+  test.
 - No dependency scanning is needed: there are no runtime dependencies. The Rust crate's `Cargo.lock` is unaudited.
 
 ## Incident response

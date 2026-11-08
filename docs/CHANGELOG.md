@@ -11,6 +11,9 @@ before this file existed is summarised once under "Before this changelog", from 
 - A dockable Outline and Script stats drawer beside or below the Canvas (`Ctrl/Cmd+Shift+O`).
 
 ### Changed
+- The desktop build now only reads and writes files you picked in a dialog. A script linked to a file by an earlier
+  build shows a notice the first time; choose the file again (Library > Open a file).
+- A stricter content policy in the desktop build.
 - On a desktop the Canvas follows the line being written, and clicking a Canvas paragraph highlights its lines in the
   Void.
 - The colour hints recover on their own if they ever misalign.

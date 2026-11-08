@@ -42,9 +42,9 @@ as roadmap Phase 8.
 stop-and-inquire, Working agreement, Maintainer preferences, Protected areas, Names and terms, Environments), P8-03 to
 P8-06 (ARCHITECTURE, TESTING, SECURITY, docs map, CONTRIBUTING, CHANGELOG, archive), P8-07 (T-001, T-002, Q-004), P8-08
 (HANDOFF: Session owner, Verified table, gotchas moved out), P8-09 (`[~]` and `[-]` conventions), P8-10 (checker),
-P8-11 (this entry), P8-12 (D-070, after the owner said Tauri is how local builds ship). P8-13 filed.
-**Changed:** documents and `tools/check_docs.py` only; no app code.
-**Decisions:** D-069, D-070. Three local differences kept: the split HANDOFF / SESSION-LOG (D-058), the dev diary, the App
+P8-11 (this entry), P8-12 (D-070, after the owner said Tauri is how local builds ship). P8-13 (D-071).
+**Changed:** documents and `tools/check_docs.py`, then for P8-13 `src-tauri/` (CSP, `withGlobalTauri` off, the path allow-list with 4 Rust tests), `src/app/print.js` (the `@page` size from a constructed stylesheet) and a notice in `src/app/files-ui.js`.
+**Decisions:** D-069, D-070, D-071. Three local differences kept: the split HANDOFF / SESSION-LOG (D-058), the dev diary, the App
 scripts table.
 **Verified:** `npm test` 343/343; `npm run test:browser` 331 unit and 742 e2e, 0 failed (Chrome 157 headless, on
 `a4fe0f5`; the commits after it change documents only); `check_docs.py` 0 errors, 0 warnings, 13 files. The checker's new
@@ -60,9 +60,9 @@ HANDOFF's "Current state" would have exceeded the new 80-line limit with a Verif
 paragraph was shortened.
 **Corrections:** HANDOFF's old line "Run `npm test`... about 60 s" said 60 s; the run takes about 50 s, as `AGENTS.md`
 already said.
-**Left undone:** P8-13 (harden the shell). The phase's one-line lesson: a checker earns its keep on its own
+**Left undone:** looking at the desktop window (HANDOFF, Next steps 0). The phase's one-line lesson: a checker earns its keep on its own
 documentation first (it caught two literal references written to describe its tests).
-**Next session should start with:** P8-13; or the owner's hands-on checks (HANDOFF, Next steps 1).
+**Next session should start with:** `npm run tauri:dev` and the check in HANDOFF; or the owner's hands-on checks (HANDOFF, Next steps 1).
 
 ### Session 33: 2026-11-02: Backporting Find & Replace, dockable Outline/Stats, caret scroll sync, shade recovery and doc linter from plainchant-web
 

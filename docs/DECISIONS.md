@@ -1250,6 +1250,31 @@ The owner confirmed (2026-11-08) that Tauri is how local builds are distributed.
 has not been run in a session (HANDOFF).
 **Review trigger:** The web app loads anything from outside the bundle, or a build is shared beyond the owner's machines.
 
+## D-071 The desktop shell: a strict CSP, no global Tauri object, and paths only from a dialog  (2026-11-08, status: accepted; P8-13)
+**Context:** D-070 accepted `csp: null`, `withGlobalTauri: true` and two commands that take any path, on the condition that
+the page loads only its own files. That condition is enforced by a test, not by the window.
+**Decision:**
+1. `tauri.conf.json` sets `default-src 'self'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline';
+   img-src 'self' data:; font-src 'self'; connect-src 'self' ipc: http://ipc.localhost; object-src 'none';
+   base-uri 'self'; form-action 'none'; frame-src 'none'`. `style-src-attr 'unsafe-inline'` stays because `app.html` has
+   a few `style="..."` attributes; `<style>` elements and inline script stay refused.
+2. `withGlobalTauri` is false. The page already falls back to `__TAURI_INTERNALS__`, which Tauri injects regardless.
+3. `read_script_file` and `write_script_file` accept only a path in an allow-list that `pick_open_script` and
+   `pick_save_script` fill from native dialogs (exact string match). Rust keeps the list in the app data directory
+   (`linked-paths.json`), so a linked file survives a restart; the page cannot add to it. `export_file` opens its own
+   dialog and needs no entry.
+4. `print.js` sets the `@page` size from a constructed stylesheet (`adoptedStyleSheets`, with the old `<style>` as a
+   fallback) because the injected `<style>` element is exactly what `style-src 'self'` refuses.
+**Alternatives:** An allow-list for the running session only (a linked file would need picking again after every
+restart). `style-src 'unsafe-inline'` (Tauri adds nonces to its own styles, which would void it; and it would let a
+page script restyle the app). A static `@page` per paper size (a larger change to printing).
+**Consequences:** Links to files stored by an earlier build have no entry, so the first read or write fails with "not
+chosen" and the writer sees a notice to choose the file again (Library > Open a file); this is the one-time cost. The
+Rust commands have four unit tests; the CSP was checked against `app.html` in headless Chrome (no violations, A4
+print size intact) but not in a real Tauri window with the IPC bridge, which nobody has driven (HANDOFF).
+**Review trigger:** A feature needs a remote origin, a blob or data URL beyond images, or inline script; or a Tauri
+release changes how it merges a CSP.
+
 ## Held tensions
 
 A tension is two claims that are true and do not fit together yet. It is not an open question: an open question has an

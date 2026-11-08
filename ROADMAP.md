@@ -270,7 +270,7 @@ Each item is one commit; record the adoption decision (P8-01) first, since the r
   `withGlobalTauri` is on (ARCHITECTURE "Claims vs. code", SECURITY). Found by the P8-03 survey (2026-11-08). Done when
   DECISIONS says whether it is a supported target and, if so, its CSP and capabilities are reviewed; or the crate is
   removed with `tauri:*` scripts. Done as: recorded (D-070); the review became P8-13.
-- [ ] P8-13 Harden the desktop shell (D-070): set a Content Security Policy, drop `withGlobalTauri` if the bridge works
+- [x] P8-13 (D-071, 2026-11-08; 4 Rust tests, `cargo build` and a 12 s `cargo run` clean, headless Chrome shows no CSP violation and A4 print intact, npm test 343, browser 331 and 742; the window itself is unseen) Harden the desktop shell (D-070): set a Content Security Policy, drop `withGlobalTauri` if the bridge works
   without it, and narrow `read_script_file` / `write_script_file` so they only touch a path the writer picked in this
   session. Add a Rust-side check and run `cargo build` once to see it still builds. Found by the P8-03 survey
   (2026-11-08); the same `csp: null` is in `plainchant-web` and `plainchant-scribe` (other Zones, not changed here).

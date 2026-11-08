@@ -9,6 +9,7 @@
     "test:browser:windows": "powershell -NoProfile -ExecutionPolicy Bypass -File test/run-headless.ps1",
     "serve": "python3 -m http.server 8080",
     "tauri:dev": "cargo run --manifest-path src-tauri/Cargo.toml",
+    "tauri:test": "cargo test --manifest-path src-tauri/Cargo.toml",
     "tauri:build": "cargo build --release --manifest-path src-tauri/Cargo.toml"
   },
   "license": "SEE LICENSE IN LICENSE",

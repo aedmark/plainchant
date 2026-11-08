@@ -248,7 +248,7 @@ this list is what a change to the code must follow.
 | --- | --- | --- |
 | Owner's machine (Arch Linux) | Headless Chromium or Chrome for `npm run test:browser`; Firefox for hands-on checks | Windows runner (`test/run-headless.ps1`) not run since session 11 |
 | Cloud session | The branch it is given; `npm test` under Node | No `gh` CLI; GitHub-side changes are the owner's; no real devices |
-| Desktop build | Rust and Cargo for `npm run tauri:dev` / `tauri:build` | Not run in agent sessions; no tests cover the shell (D-070) |
+| Desktop build | Rust and Cargo for `npm run tauri:dev` / `tauri:build` / `tauri:test` | An agent can build and run the Rust tests; it cannot look at the window or the dialogs (D-070, D-071) |
 | Real devices | Only the owner's Android tablet and Firefox | Nothing else has been seen (HANDOFF, "Not checked yet") |
 
 ## Run and verify
@@ -259,7 +259,7 @@ Details, proof boundaries and pitfalls are in [docs/TESTING.md](docs/TESTING.md)
   over http(s) (`npm run serve`) it also works offline and can be installed. **Add a new file the page loads to
   `APP_FILES` in `sw.js`** (the structure test fails until you do).
 - Desktop shell: `npm run tauri:dev` (run) and `npm run tauri:build` (release build). `src-tauri/dist/` and `src-tauri/target/`
-  are build output and stay ignored. Change `tauri.conf.json` or `main.rs` only under a roadmap item (P8-13).
+  are build output and stay ignored. Change `tauri.conf.json`, `main.rs` or the CSP only under a roadmap item and a decision (D-071); `npm run tauri:test` runs its Rust tests.
 - Fast checks: `npm test` (Node 18+, developed on 24; unit and structure) and `python3 tools/check_docs.py`.
 - Full checks: add `npm run test:browser` (headless Chromium or Chrome, about 50 s, real time; `BROWSER=/path/to/chrome`
   picks the browser). On Windows, `npm run test:browser:windows`. Never add `--virtual-time-budget` back (D-019), and

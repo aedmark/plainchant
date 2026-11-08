@@ -64,6 +64,7 @@ Each names what enforces it; "nothing yet" marks a candidate for a test or a roa
   undo checks for the main helpers; nothing for a new one.
 - **Chrome colours are tokens in all three theme sets.** Enforced by: the e2e accessibility sweep (section 16o), 4.5:1
   in every theme (D-035, D-041).
+- **The desktop shell's commands touch only dialog-picked paths, and the page loads only its own files** (D-071). Enforced by: four Rust unit tests (`npm run tauri:test`) and the window's CSP for the page; the structure test for the web files. The CSP has not been seen in a real window.
 - **Two media-query pairs move together** (the one-pane CSS block and `MOBILE_QUERY`; the fixed-body rule and
   `FIT_QUERY`). Enforced by: nothing (D-008, D-009).
 - **Emptying the editor does not overwrite the saved script** (D-006) and **a script is never lost** (ROADMAP
@@ -75,7 +76,7 @@ Each names what enforces it; "nothing yet" marks a candidate for a test or a roa
 | --- | --- | --- | --- |
 | The writer's text | a string | `escapeHTML` in `fountain.js` | escaped before it reaches HTML; the only other `innerHTML` writes are `core.js` (parser output) and `tour.js` (static text) |
 | Imported files | bytes | `src/importing.js` | accepted types only; decoded (UTF-8/16, Windows-1252); each file becomes a new script, nothing is overwritten (D-016) |
-| Linked real files | File System Access handles (Chromium), or the shell's `read_script_file` / `write_script_file` with a path | `FileSync.decide` | never written over a change made elsewhere (D-046); the shell's commands do not check the path (P8-13) |
+| Linked real files | File System Access handles (Chromium), or the shell's `read_script_file` / `write_script_file` with a path | `FileSync.decide` | never written over a change made elsewhere (D-046); the shell's commands accept only a path the writer picked in a native dialog (D-071) |
 | Another tab | storage events | `persistence.js` | told of every write |
 | The network | nothing | `test/structure.test.js` | the app loads nothing from it, fonts included (D-026) |
 
@@ -159,8 +160,8 @@ Traps already hit, moved here from HANDOFF's gotchas (2026-11-08). Test pitfalls
 
 ## Claims vs. code
 
-- **The desktop shell is configured wide open.** `app.security.csp` is `null`, `withGlobalTauri` is on, and the shell's
-  `read_script_file` and `write_script_file` take any path. D-070 accepts that while the page loads only its own files;
-  P8-13 hardens it. The shell has no tests and `cargo build` has not been run in a session.
+- **The shell's CSP and path rule (D-071) are checked in pieces.** The path rule has Rust unit tests; the CSP was tried
+  against `app.html` in headless Chrome, not in a Tauri window, and nothing has driven a linked file through the IPC
+  bridge since the change.
 - **`CLAUDE.md` is now a pointer.** Older session-log entries and DECISIONS entries say "CLAUDE.md" where the rule now
   lives in `AGENTS.md`; they are history and are not rewritten.

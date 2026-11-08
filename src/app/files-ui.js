@@ -21,7 +21,10 @@ function whenFilesSynced() {
 }
 
 function queueFileWork(job) {
-    fileWork = fileWork.then(job).catch((e) => console.error('Plainchant: a file could not be read or written.', e));
+    fileWork = fileWork.then(job).catch((e) => {
+        console.error('Plainchant: a file could not be read or written.', e);
+        if (/not chosen/.test(String(e))) showNotice('A linked file has to be chosen again: Library > Open a file.', true);
+    });
     return fileWork;
 }
 

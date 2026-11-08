@@ -11,7 +11,7 @@ themselves live in HANDOFF's "Verified" table; this file is how to get them.
 | Structure | `test/structure.test.js` (part of `npm test`, Node only) | the app scripts, the page and `sw.js` agree; no inline script or style; no duplicate global name; no file over 500 lines; nothing loaded from another host; no tracker-like file name | that any of it runs | seconds |
 | Unit, browser | `test/index.html` | the same unit tests in a real engine | the app | part of the headless run |
 | App end to end | `test/app.e2e.html` | restore, save, library, typing, panes, print layout, themes and the accessibility sweep, in headless Chromium or Chrome with a real IndexedDB | Firefox, Safari, a real phone or tablet, real printing, a screen reader, an ad blocker | about 50 s, a browser |
-| Desktop shell | none | nothing: `cargo build` has not been run in a session and the Rust commands have no tests | the shell building, or the five commands working | `cargo build --manifest-path src-tauri/Cargo.toml` (P8-13) |
+| Desktop shell | `src-tauri/src/main.rs` (`npm run tauri:test`) | the path allow-list: only dialog-picked paths pass, nothing before a pick, no path that climbs out | the CSP in a real window, the IPC bridge, the dialogs, persistence of the list | seconds once built, Rust and Cargo |
 | Docs | `tools/check_docs.py` | the documents agree with each other: IDs, links, tables, limits | that the prose is true of the code | under a second, Python 3 |
 
 **The fast set** (before every commit): `npm test` and `python3 tools/check_docs.py`.
@@ -47,6 +47,13 @@ npm run test:browser
   `waitUntil: 'commit'` (the e2e page holds its own load event open until it is done, for up to 10 real minutes).
 - Or open `test/index.html` (unit) or `test/app.e2e.html` (needs http, or `--allow-file-access-from-files`) in a
   browser; a green banner means pass.
+
+```bash
+npm run tauri:test
+```
+
+- Runs the four Rust unit tests (`cargo test`; `--offline` works once the crates are cached). `cargo build` and `cargo
+  run` start the real window, which only a person can look at.
 
 ```bash
 python3 tools/check_docs.py

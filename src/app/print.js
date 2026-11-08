@@ -5,8 +5,17 @@ const PT = { top: 72, left: 108, col: 7.2, row: 12 };
 const printChoice = document.getElementById('export-modal');
 const printRoot = document.getElementById('print-root');
 const printSummary = document.getElementById('printSummary');
-const pageRule = document.createElement('style');
-document.head.appendChild(pageRule);
+// The @page size is set from a constructed stylesheet, not an injected <style>, so the desktop shell's Content Security
+// Policy (style-src 'self') can stay strict (D-070, P8-13). Older engines fall back to the <style> element.
+const pageSheet = typeof CSSStyleSheet === 'function' && 'adoptedStyleSheets' in document ? new CSSStyleSheet() : null;
+const pageRule = pageSheet ? null : document.createElement('style');
+if (pageSheet) document.adoptedStyleSheets = [...document.adoptedStyleSheets, pageSheet];
+else document.head.appendChild(pageRule);
+
+function setPageRule(css) {
+    if (pageSheet) pageSheet.replaceSync(css);
+    else pageRule.textContent = css;
+}
 
 function paperChoice() {
     try { return localStorage.getItem(PAPER_KEY) === 'a4' ? 'a4' : 'letter'; } catch (e) { return 'letter'; }
@@ -61,7 +70,7 @@ function buildPrintPages(paper = paperChoice()) {
     if (layout.titlePage) printRoot.appendChild(printSheet(layout.titlePage, null, paper));
     layout.pages.forEach((p) => printRoot.appendChild(printSheet(p.lines, p.number, paper)));
     printRoot.dataset.paper = paper;
-    pageRule.textContent = '@page { size: ' + SHEETS[paper] + '; margin: 0; }';
+    setPageRule('@page { size: ' + SHEETS[paper] + '; margin: 0; }');
     return layout;
 }
 
