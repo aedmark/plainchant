@@ -1228,9 +1228,56 @@ Doc moves are not behaviour changes: no app code is touched.
 **Review trigger:** The Manifold template changes its structure again, or a document in this set goes two phases
 without an edit (then it is deleted, per the template's own rule).
 
+## Held tensions
+
+A tension is two claims that are true and do not fit together yet. It is not an open question: an open question has an
+unknown answer; a held tension has two known answers and a price. Hold one only while the price of holding is lower
+than the price of choosing badly. Each names an owner, a review trigger and the cost of holding both; one with no owner
+or trigger is deleted at consolidation. One that survives review becomes a decision, with the losing claim recorded as
+an alternative (D-069).
+
+```
+### T-NNN Title  (YYYY-MM-DD, status: held | resolved by D-MMM)
+**Owner:** ...
+**Claim A:** ...
+**Claim B:** ...
+**Why both hold:** ...
+**Cost of holding both:** ...
+**Review trigger:** ...
+```
+
+### T-001 No runtime dependencies against hand-written formats  (2026-11-08, status: held)
+**Owner:** the owner
+**Claim A:** Plainchant ships static files with no runtime dependency (D-001), so the Fountain parser, the paginator and
+the Final Draft writer are written here (D-003, D-021, D-049).
+**Claim B:** Fountain, Final Draft XML and page-break rules are specifications with edge cases; a maintained library
+would carry fixes this project has to find by itself.
+**Why both hold:** The no-dependency rule is what keeps the app offline, installable and auditable; every edge case so
+far has been found by a test or the owner, not by lost work.
+**Cost of holding both:** Each new format rule is written and tested here; the `.fdx` export has never been opened in
+Final Draft (HANDOFF).
+**Review trigger:** A parser or export bug that a maintained library would have prevented and that cost a writer work,
+or a Fountain specification revision.
+
+### T-002 Features marked done against what has only run in headless Chromium  (2026-11-08, status: held)
+**Owner:** the owner
+**Claim A:** Roadmap items are ticked when their tests pass (742 e2e checks, 331 unit tests).
+**Claim B:** Firefox, a real Android device, real printing, Final Draft and a screen reader have seen only part of it;
+HANDOFF's "Not verified" lists what nobody has looked at.
+**Why both hold:** The owner's own hands-on checks are the only available evidence, and they happen in short bursts
+between sessions; ticking at "tests pass" keeps the roadmap moving.
+**Cost of holding both:** A tick means "tested in headless Chromium", not "seen working"; a writer on an unchecked
+browser may meet a defect the roadmap calls done.
+**Review trigger:** A defect report from an unchecked browser or device, or the owner completing the hands-on list in
+HANDOFF's Next steps.
+
 ## Open questions
 
 - ~~Q-001 Should the editor stay a plain `<textarea>` (simple, great on mobile) or move to `contenteditable` / a custom
   editor for inline element styling (P2-08)?~~ Textarea plus an overlay (D-031).
 - ~~Q-002 Sync (Phase 5): local-file-first via the File System Access API, or hosted accounts?~~ Local files first (D-046).
 - ~~Q-003 iPhone and iPad (D-039): keep them as targets?~~ A distant future milestone, Phase 7 (D-040).
+- **Q-004** Is the `src-tauri/` desktop wrapper a supported target? It has no decision, `csp` is `null` and
+  `withGlobalTauri` is on. (asked 2026-11-08, by the P8-03 survey; blocks P8-12; recommendation: keep it only if you intend
+  to ship a desktop build, then review its capabilities and set a CSP; otherwise remove the crate and the `tauri:*`
+  scripts.)

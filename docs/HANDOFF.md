@@ -1,20 +1,35 @@
 # Session Handoff
 
 Read this first. It describes the project **as it is right now** and what comes next. It is rewritten at the end of
-every session, and nothing in it is history: when something stops being true, change it or delete it.
+every session, and nothing in it is history: when something stops being true, change it or delete it. "Current state"
+fits in about 80 lines; what does not fit is history (SESSION-LOG) or design (ARCHITECTURE).
 
 History (what each session did) is in [SESSION-LOG.md](SESSION-LOG.md). Protocol: [AGENTS.md](../AGENTS.md).
-Plan: [ROADMAP.md](../ROADMAP.md). Decisions: [DECISIONS.md](DECISIONS.md). The writer-facing story: [devlog/](devlog/).
+Plan: [ROADMAP.md](../ROADMAP.md). Architecture: [ARCHITECTURE.md](ARCHITECTURE.md). Decisions:
+[DECISIONS.md](DECISIONS.md). Tests: [TESTING.md](TESTING.md). Security: [SECURITY.md](SECURITY.md). Changes:
+[CHANGELOG.md](CHANGELOG.md). Older material: [archive/](archive/README.md). The writer-facing story:
+[devlog/](devlog/).
 
 ---
 
 ## Current state
 
-_Last updated: 2026-11-02, session 33. Backported five high-impact features and safeguards from `plainchant-web`:
-in-script Find & Replace (`P2-25`, `D-064`), colour-hint character-preservation and recovery (`P2-26`, `D-065`),
-caret-anchored desktop scroll sync and Canvas-to-Void paragraph highlight (`P2-06`, `D-066`), a dockable Outline and
-Script stats drawer in the Canvas (`P4-23`, `D-067`), and the automated documentation linter `tools/check_docs.py`
-(`P4-24`, `D-068`). Tests: `npm test` 343, browser suite 331 unit + 742 e2e, `check_docs.py` 0 errors._
+_Last updated: 2026-11-08, session 34, on `master`: the Manifold adoption (Phase 8, D-069) is under way. P8-01 to P8-09
+are done: `AGENTS.md` is the canonical instruction file, and ARCHITECTURE, TESTING, SECURITY, CONTRIBUTING, CHANGELOG,
+the docs map and the archive exist. The linter upgrade (P8-10) and the consolidation (P8-11) are left. No app code
+changed. `index.html` and `src/home.css` carry the owner's uncommitted edits._
+
+**Session owner:** none. The last session was the Manifold adoption; nothing is held.
+
+**Verified** (2026-11-08, on `a4fe0f5`, Arch Linux, Node 22.23, Google Chrome 157 headless): every row was run this
+session.
+
+| Suite | Result |
+| --- | --- |
+| `npm test` (Node: unit and structure) | **343/343** |
+| `npm run test:browser`, unit | **331/331** |
+| `npm run test:browser`, e2e | **742 passed, 0 failed** |
+| `python3 tools/check_docs.py` | **0 errors, 0 warnings** |
 
 **Where things stand:** Phases 1 to 4 are done apart from an optional idea (P2-20 first-use hints). Phase 3's output is done (Fountain and Final Draft export, print / save as
 PDF, the page view while writing); what is left there is optional (P3-09, P3-10, P3-14). Phase 5 has real files on
@@ -23,12 +38,8 @@ Apple-platform phases and the device-pass items from the roadmap on 2026-09-29. 
 features have only run in headless Chromium and the owner's Firefox, so the owner's hands-on checks (Next steps 1)
 matter more than the next feature.
 
-**Front door:** `index.html` is itself a five-page screenplay, set on warm paper sheets on the EGA desk of the
-owner's portfolio (P6-01, D-061, D-062, D-063). A title page leads to the premise, the primer (each step written in
-the element it teaches), the whole draft (the features as characters), a V.O. narration scene and THE END. Each
-sheet carries a page number and a production note in its left margin. The raw-text-to-page demonstration sits on
-page one as a black Void block and the mini page it becomes. It needs no JavaScript, loads no new files, and shares
-the app's bundled typefaces; the menubar and footer are the only site chrome around the paper.
+**Front door:** `index.html` is a five-page screenplay on warm paper sheets (P6-01, D-061 to D-063). It needs no
+JavaScript and loads no new files; the owner edits it by hand.
 
 **What the app does** (ROADMAP has every ticked item; the detailed notes as of session 29 are frozen at the end of
 SESSION-LOG.md)
@@ -52,7 +63,7 @@ SESSION-LOG.md)
   in the e2e (D-035, D-041, D-047); the welcome tour and Help (D-011); offline and installable when served (D-026);
   adventure-game replies in the retro theme (D-042, an Easter egg, not in Help).
 
-**Not checked yet** (the tests cannot, or have not)
+**Not verified** (the tests cannot, or have not; T-002)
 - **Real touch devices (Android):** keyboard room at the bottom of a long script, tapping the preview, quick edits by
   press-and-hold (does Android's own long-press menu compete?), soft-keyboard Enter and composition (GBoard may delay
   auto-uppercase), the element bar keeping the keyboard up. The owner reported in September that the app works on
@@ -77,96 +88,19 @@ SESSION-LOG.md)
 
 ## Gotchas
 
-**Tests**
-- Run `npm test` (Node, unit) and `bash test/run-headless.sh` (headless Chromium, unit + e2e, real time, about 60 s)
-  before declaring anything done. Never add `--virtual-time-budget` back: IndexedDB never answers under it (D-019).
-  "The page never finished" means a script error or a hung `await`; open the page in a browser, or in Playwright with
-  `waitUntil: 'commit'` (the e2e page holds its own load event open until it is done, for up to 10 real minutes).
-- **The panes are the Void (the text) and the Canvas (the formatted script)** in everything a writer sees, on every
-  screen size (D-060). Code and tests still say write / preview (`data-view`, `setView('preview')`, `#tabPreview`).
-- **The e2e checks match visible text exactly** (`textContent`, Help's wording, button labels). An editor's
-  "reformat" that wraps a sentence across lines in `app.html` breaks them, and so does a copy edit ("capitalised"
-  to "capitalized"). Keep each phrase a check looks for on one line, and after changing Help's wording run the e2e
-  and update the check's pattern to the new words (D-059).
-- **The e2e page is one shared script scope** (~2,000 lines): a name declared twice (`typeInto`, `cs2`, `tf`, `kw`,
-  `chips`, `said` all have) breaks the whole page. Prefix a new section's names (`verF`, `acChips`) and syntax-check by
-  compiling each `<script>` block of `test/app.e2e.html` with `new Function` under `node -e`.
-- **Every e2e frame must set `plainchant_onboarded` first**, or the tour opens and blocks it. Wait for
-  `loaded(frame, go)` after any navigation; read storage with `await stored()` / `await storedMeta()`. A stubbed write
-  that never resolves hangs `stored()` (section 16c reads `Store.loadAll(await idb())` directly while one is in place).
-- **Stale autosave timers:** frames from early sections keep a 2-second autosave timer, and a late one can write into
-  storage during a later section (symptom: "library: choosing a script opens the wrong script"). A new section that
-  touches storage after long-lived frames should silence every existing frame first, as the typing section does.
-- **Two timing checks can trip on a busy machine:** "hints: on a 120-page script a keystroke's redraw stays quick"
-  (e2e 16k, 20 ms) and "speed: a feature-length script lays out quickly" (`test/paginate.test.js`, 150 ms). If one
-  fails alone, run again; if it fails twice, it is real.
-- **A line in capitals parses as a character cue** (`A.` alone after a blank line): use lowercase in action fixtures.
-- **The Help cheat sheet is tested against the parser:** each `<code data-expect="...">` in `app.html` runs through
-  `Fountain.classifyLines`. Change the parser and the failing example names the Help line to update. Add a line to Help
-  for each user-visible feature; bump `TOUR_VERSION` to re-show a revised tour.
-- **Mutation testing** (a scratch script swaps one source line, runs the suites, restores it) is how features have been
-  checked. Restore from the text the script read, **never with `git checkout <file>`**; don't commit while a run is
-  going; check `git diff` after an interrupted run. Survivors are usually a weak test or a redundant guard.
-- Headless runs have no browser extensions, so they cannot catch an ad blocker refusing a file: never name a file
-  like a tracker (pageview, analytics, track, beacon, ads, banner, metric, counter; `test/structure.test.js`, D-055).
-
-**App code**
-- The app is classic scripts in `src/app/` sharing one global scope (AGENTS.md "App scripts", D-014). Functions the e2e
-  calls stay top-level declarations: `fitToViewport`, `setView`, `setMenu`, `syncElementState`, `buildPrintPages`,
-  `printScript` and the others listed in AGENTS.md. Header comments are optional; no test looks for them (D-059).
-- **Offline:** add any new file the page loads to `APP_FILES` in `sw.js` (the structure test fails until you do), and
-  bump `CACHE` when a file is removed or renamed. Service workers never run on `file://`; to see the offline copy,
-  serve the folder (`python3 -m http.server`) and use Playwright with `context.setOffline(true)`.
-- **Never assign `editor.value` or use `setRangeText` for a user-visible edit:** it wipes undo. Go through
-  `applyEdit()` (execCommand). Programmatic loads (Library, New, restore) may assign `.value`. `applyingEdit` stops our
-  own edits re-triggering auto-uppercase; `elementMode` / `modeLine` are the chosen-element state.
-- The parser is spec-strict (D-004); the editor adds leniency (D-010), writing forced markers (`!`, `@`, `.`, `> `)
-  where needed. Blank lines are structure, not spacers: spacing is CSS margins only. `Editing.kindAt()` asks the parser
-  twice (next line blank / not); the property test "the parser agrees afterwards" is its safety net.
-- Autocomplete: `Suggest.at(text, caret, mode)` sees a cue only once the line is uppercase; `mode` matters only for an
-  empty cue line, whose suggestions carry `tab: false`. Chips are `.suggest-chip`, not `.el-btn` (tests count six
-  element buttons). `dismissedFor` clears as soon as the caret leaves the dismissed word.
-- **The editor's copies must lay out exactly like the textarea** (colour layer, measuring copy): line height a length
-  (`1.6em`), `copyEditorType` for type and width, `getBoundingClientRect`, not `offsetTop`. The wrap check in `shade.js`
-  switches the hints off if anything drifts.
-- **Colours** are tokens in all three theme sets, never literals in the chrome (D-035, D-041); the e2e sweep (16o) fails
-  for text under 4.5:1 or an unnamed control in any theme, so run the e2e after any CSS change.
-- **Settings:** a new choice goes in `SETTING_DEFAULTS` (and `SETTING_CHOICES` for a pick-one) with a control in the
-  window; the stored key holds only what differs from the defaults; a pure rule takes it as an option.
-- Dialogs: `openModal(overlay, {focus, onClose})` / `closeModal(overlay)`; any `data-close` element closes. Don't toggle
-  `.active` by hand; tests read `.modal-overlay.active`, not `openModals`.
-- **Printing:** `#print-root` is `display: none` on screen (show it before measuring); the `@page` size comes from a
-  `<style>` that `print.js` creates. Real output: Playwright `page.emulateMedia({ media: 'print' })` then
-  `page.pdf({ preferCSSPageSize: true })`.
-- Two media queries live in two places each: the CSS one-pane block and `MOBILE_QUERY`, the CSS fixed-body rule and
-  `FIT_QUERY`. Change each pair together (D-008, D-009). Help's `?` / "Help" label switches at 700px with the actions;
-  move them together.
-- No `nowrap` or large `ch` margin in the preview without checking 744-1024px wide (it once clipped the preview off
-  every portrait iPad). In Preview on mobile, `.pane-void` is `display: contents` (never `none`; a test guards it).
-  `#render-target` (scroll area) and `#page` (the column) are separate on purpose: render into `#page`, scroll
-  `#render-target`.
-
-**Storage**
-- The library is the in-memory `library` in `persistence.js`; `putScripts(next)` stores the difference. Never write to
-  IndexedDB or localStorage directly (other tabs would not be told; the emergency buffer would go wrong); the
-  exceptions are `versions-ui.js` and `files-ui.js`, through `Store`. The global is `Store`, never `Storage`. Each
-  IndexedDB write creates its transaction synchronously: no `await` in front of one (D-019).
-- No legacy support (D-020): the old `frictionless_*` keys are dead. Storage names may change without a migration
-  while this is not a production release; record it in DECISIONS.
-- Versions are saved inside `Store.saveScript`'s own transaction when `Versions.due` says so; the e2e stubs the frame's
-  `Date.now` to reach "ten minutes later".
-
-**Environment and git**
-- The owner works on Arch Linux: `npm run test:browser` runs the Linux runner. `npm run test:browser:windows`
-  (`test/run-headless.ps1`) still exists and handles headless Edge's quirks (unquoted URLs, paths with spaces).
-- `origin` is `https://github.com/aedmark/plainchant.git`. Cloud sessions work on the branch they are given, commit
-  and push there; the owner merges into `master` and says so. No `gh` CLI: GitHub-side changes are the owner's. The
-  owner's preference: commit finished, tested work without asking; never force-push or rewrite history; push when
-  asked. The owner also commits from PyCharm, often with one-word messages ("0", "copy").
-- The docs in this repo are the only memory between sessions. The old name (NeuroFountain) appears in DECISIONS and
-  the session log as history: never bulk-replace it.
+- **Tests:** pitfalls and how to run them are in [TESTING.md](TESTING.md); app-code and storage traps are in
+  [ARCHITECTURE.md](ARCHITECTURE.md), "Working rules for app code and storage".
+- The owner works on Arch Linux: `npm run test:browser` runs the Linux runner. `origin` is
+  `https://github.com/aedmark/plainchant.git`. There is no `gh` CLI; GitHub-side changes are the owner's.
+- The owner also commits from PyCharm, often with one-word messages ("0", "copy"). Commits between sessions get a short
+  entry in SESSION-LOG, written by whoever notices.
+- The old name (NeuroFountain) appears in DECISIONS and the session log as history: never bulk-replace it.
 
 ## Next steps (in order)
+
+0. **Finish Phase 8:** P8-10 (upgrade `tools/check_docs.py`: `T-` checks, invisible characters, the new documents, a
+   log limit, planted-failure test), then P8-11 (consolidation, a SESSION-LOG entry for session 34). Then P8-12 once
+   Q-004 is answered.
 
 1. **The owner's hands-on checks,** each a few minutes (whatever feels wrong is the next session's first job):
    - After a day of writing, **Library > Versions** on a real script: Go back, then Ctrl+Z.
@@ -185,11 +119,14 @@ SESSION-LOG.md)
 3. **Then the next feature, the owner's pick.** Candidates: **P3-14** importing `.fdx`; **P3-09 / P3-10** Library and
    export extras; **P5-04** real-file extras; **P2-20** first-use hints.
 
-**For the dev diary:** nothing waiting; the 2026-10-31 entry, "A Screenplay in Five Pages", covers the homepage's redesign.
+**For the dev diary:** nothing waiting (Phase 8 changes no writer-visible behaviour); the 2026-10-31 entry, "A Screenplay in Five Pages", covers the homepage's redesign.
 
 The latest entry, "Touching Up the Page", covers everything up to session 28.
 
 ## Open questions for the owner
+
+Blocking: Q-004 (is the `src-tauri/` wrapper a supported target? blocks P8-12). Held tensions: T-001, T-002. The
+rest are product questions, not yet in DECISIONS.
 
 - Is the tour the right length and tone (four steps)? It has not been revised since session 8.
 - Enter after an action line starts a new paragraph (Shift+Enter for a line break): the right default? (Switchable,

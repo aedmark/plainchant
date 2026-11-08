@@ -106,6 +106,56 @@ decision record.
 | A linked file changed elsewhere | a bar: Load the file / Keep the script here | `FileSync.decide` | the writer chooses (D-046) |
 | The browser refuses to keep storage | a line at the foot of the Library | `navigator.storage.persist()` result | export `.fountain` files (D-027) |
 
+## Working rules for app code and storage
+
+Traps already hit, moved here from HANDOFF's gotchas (2026-11-08). Test pitfalls are in [TESTING.md](TESTING.md).
+
+### App code
+- The app is classic scripts in `src/app/` sharing one global scope (AGENTS.md "App scripts", D-014). Functions the e2e
+  calls stay top-level declarations: `fitToViewport`, `setView`, `setMenu`, `syncElementState`, `buildPrintPages`,
+  `printScript` and the others listed in AGENTS.md. Header comments are optional; no test looks for them (D-059).
+- **Offline:** add any new file the page loads to `APP_FILES` in `sw.js` (the structure test fails until you do), and
+  bump `CACHE` when a file is removed or renamed. Service workers never run on `file://`; to see the offline copy,
+  serve the folder (`python3 -m http.server`) and use Playwright with `context.setOffline(true)`.
+- **Never assign `editor.value` or use `setRangeText` for a user-visible edit:** it wipes undo. Go through
+  `applyEdit()` (execCommand). Programmatic loads (Library, New, restore) may assign `.value`. `applyingEdit` stops our
+  own edits re-triggering auto-uppercase; `elementMode` / `modeLine` are the chosen-element state.
+- The parser is spec-strict (D-004); the editor adds leniency (D-010), writing forced markers (`!`, `@`, `.`, `> `)
+  where needed. Blank lines are structure, not spacers: spacing is CSS margins only. `Editing.kindAt()` asks the parser
+  twice (next line blank / not); the property test "the parser agrees afterwards" is its safety net.
+- Autocomplete: `Suggest.at(text, caret, mode)` sees a cue only once the line is uppercase; `mode` matters only for an
+  empty cue line, whose suggestions carry `tab: false`. Chips are `.suggest-chip`, not `.el-btn` (tests count six
+  element buttons). `dismissedFor` clears as soon as the caret leaves the dismissed word.
+- **The editor's copies must lay out exactly like the textarea** (colour layer, measuring copy): line height a length
+  (`1.6em`), `copyEditorType` for type and width, `getBoundingClientRect`, not `offsetTop`. The wrap check in `shade.js`
+  switches the hints off if anything drifts.
+- **Colours** are tokens in all three theme sets, never literals in the chrome (D-035, D-041); the e2e sweep (16o) fails
+  for text under 4.5:1 or an unnamed control in any theme, so run the e2e after any CSS change.
+- **Settings:** a new choice goes in `SETTING_DEFAULTS` (and `SETTING_CHOICES` for a pick-one) with a control in the
+  window; the stored key holds only what differs from the defaults; a pure rule takes it as an option.
+- Dialogs: `openModal(overlay, {focus, onClose})` / `closeModal(overlay)`; any `data-close` element closes. Don't toggle
+  `.active` by hand; tests read `.modal-overlay.active`, not `openModals`.
+- **Printing:** `#print-root` is `display: none` on screen (show it before measuring); the `@page` size comes from a
+  `<style>` that `print.js` creates. Real output: Playwright `page.emulateMedia({ media: 'print' })` then
+  `page.pdf({ preferCSSPageSize: true })`.
+- Two media queries live in two places each: the CSS one-pane block and `MOBILE_QUERY`, the CSS fixed-body rule and
+  `FIT_QUERY`. Change each pair together (D-008, D-009). Help's `?` / "Help" label switches at 700px with the actions;
+  move them together.
+- No `nowrap` or large `ch` margin in the preview without checking 744-1024px wide (it once clipped the preview off
+  every portrait iPad). In Preview on mobile, `.pane-void` is `display: contents` (never `none`; a test guards it).
+  `#render-target` (scroll area) and `#page` (the column) are separate on purpose: render into `#page`, scroll
+  `#render-target`.
+
+### Storage
+- The library is the in-memory `library` in `persistence.js`; `putScripts(next)` stores the difference. Never write to
+  IndexedDB or localStorage directly (other tabs would not be told; the emergency buffer would go wrong); the
+  exceptions are `versions-ui.js` and `files-ui.js`, through `Store`. The global is `Store`, never `Storage`. Each
+  IndexedDB write creates its transaction synchronously: no `await` in front of one (D-019).
+- No legacy support (D-020): the old `frictionless_*` keys are dead. Storage names may change without a migration
+  while this is not a production release; record it in DECISIONS.
+- Versions are saved inside `Store.saveScript`'s own transaction when `Versions.due` says so; the e2e stubs the frame's
+  `Date.now` to reach "ten minutes later".
+
 ## Claims vs. code
 
 - **`src-tauri/` has no decision record.** It carries a Tauri 2 desktop wrapper (`tauri.conf.json`, `main.rs`) added

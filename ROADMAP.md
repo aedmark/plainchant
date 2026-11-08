@@ -253,10 +253,10 @@ Each item is one commit; record the adoption decision (P8-01) first, since the r
 - [x] P8-06 (2026-11-08) `docs/README.md` (document ownership and update triggers), `docs/CONTRIBUTING.md`, `docs/CHANGELOG.md`
   (seeded from the devlog's writer-visible changes) and `docs/archive/`. Add `docs/GLOSSARY.md` only if the Names
   table outgrows `AGENTS.md`.
-- [ ] P8-07 Held tensions and open questions: add the "Held tensions" section and the fuller decision template to
+- [x] P8-07 (T-001, T-002, Q-004; 2026-11-08) Held tensions and open questions: add the "Held tensions" section and the fuller decision template to
   DECISIONS. Seed candidates: zero dependencies against a hand-written parser; "works" claims that only ran in
   headless Chromium. Open any real `Q-` questions instead of guessing.
-- [ ] P8-08 HANDOFF restructure: session owner line, a Verified table (command, commit, environment), "Open
+- [x] P8-08 (2026-11-08) HANDOFF restructure: session owner line, a Verified table (command, commit, environment), "Open
   questions for maintainers", and trim Current state toward the 80-line limit by moving detail to ARCHITECTURE and
   TESTING.
 - [x] P8-09 Roadmap conventions (status legend above, 2026-11-08): add `[~]` (holder, since, what is left) and `[-]` (why, decision) to the status
