@@ -26,7 +26,7 @@ linked files on disk all work from the same text. Nothing leaves the device and 
 | Storage | `src/store.js` | `Store` (rules plus thin IndexedDB calls) | IndexedDB, passed in as an argument |
 | The app | `src/app/*.js` | `main.js` on `DOMContentLoaded` | every module above, one global scope (D-014) |
 | Offline and install | `sw.js`, `manifest.webmanifest`, `src/app/offline.js` | `APP_FILES` | the Cache API, only over http(s) |
-| Desktop wrapper | `src-tauri/` | `tauri.conf.json` | `app.html` (see Claims vs. code) |
+| Desktop shell (how local builds are distributed, D-070) | `src-tauri/` | `main.rs`, `tauri.conf.json` | `app.html`; five Rust commands for native file dialogs and real paths |
 
 ## Interfaces and data flow
 
@@ -75,7 +75,7 @@ Each names what enforces it; "nothing yet" marks a candidate for a test or a roa
 | --- | --- | --- | --- |
 | The writer's text | a string | `escapeHTML` in `fountain.js` | escaped before it reaches HTML; the only other `innerHTML` writes are `core.js` (parser output) and `tour.js` (static text) |
 | Imported files | bytes | `src/importing.js` | accepted types only; decoded (UTF-8/16, Windows-1252); each file becomes a new script, nothing is overwritten (D-016) |
-| Linked real files | File System Access handles (Chromium) | `FileSync.decide` | never written over a change made elsewhere (D-046) |
+| Linked real files | File System Access handles (Chromium), or the shell's `read_script_file` / `write_script_file` with a path | `FileSync.decide` | never written over a change made elsewhere (D-046); the shell's commands do not check the path (P8-13) |
 | Another tab | storage events | `persistence.js` | told of every write |
 | The network | nothing | `test/structure.test.js` | the app loads nothing from it, fonts included (D-026) |
 
@@ -83,7 +83,8 @@ Each names what enforces it; "nothing yet" marks a candidate for a test or a roa
 
 None at runtime (D-001). Courier Prime and Inter are bundled as `woff2` under their OFL licences in `fonts/`. Dev
 tooling: Node 18+ for `npm test`, headless Chromium or Chrome for the browser suite, Python 3 for `tools/check_docs.py`.
-The `src-tauri/` Rust crate is described under Claims vs. code. A new dependency needs the owner's approval and a
+The `src-tauri/` shell (D-070) has its own build-time dependencies, outside the web app's rule: `tauri` 2, `serde`,
+`serde_json`, `rfd` 0.15, pinned by `src-tauri/Cargo.lock`. A new dependency needs the owner's approval and a
 decision record.
 
 ## State and caches
@@ -158,8 +159,8 @@ Traps already hit, moved here from HANDOFF's gotchas (2026-11-08). Test pitfalls
 
 ## Claims vs. code
 
-- **`src-tauri/` has no decision record.** It carries a Tauri 2 desktop wrapper (`tauri.conf.json`, `main.rs`) added
-  in the "Website" commit `cf871d3`; `npm run tauri:dev` and `tauri:build` point at it. No document says it is a
-  supported target, its `app.security.csp` is `null`, and `withGlobalTauri` is on. Tracked as P8-12.
+- **The desktop shell is configured wide open.** `app.security.csp` is `null`, `withGlobalTauri` is on, and the shell's
+  `read_script_file` and `write_script_file` take any path. D-070 accepts that while the page loads only its own files;
+  P8-13 hardens it. The shell has no tests and `cargo build` has not been run in a session.
 - **`CLAUDE.md` is now a pointer.** Older session-log entries and DECISIONS entries say "CLAUDE.md" where the rule now
   lives in `AGENTS.md`; they are history and are not rewritten.

@@ -16,8 +16,8 @@ Plan: [ROADMAP.md](../ROADMAP.md). Architecture: [ARCHITECTURE.md](ARCHITECTURE.
 
 _Last updated: 2026-11-08, session 34, on `master`: the Manifold adoption (Phase 8, D-069) is under way. P8-01 to P8-09
 are done: `AGENTS.md` is the canonical instruction file, and ARCHITECTURE, TESTING, SECURITY, CONTRIBUTING, CHANGELOG,
-the docs map and the archive exist; the checker reads them all (P8-10) and the consolidation ran (P8-11). Only P8-12 is
-left, waiting on Q-004. No app code changed. `index.html` and `src/home.css` carry the owner's uncommitted edits._
+the docs map and the archive exist; the checker reads them all (P8-10) and the consolidation ran (P8-11). P8-12 is
+done (D-070: the Tauri shell is how local builds ship); only P8-13, hardening it, is left. No app code changed. `index.html` and `src/home.css` carry the owner's uncommitted edits._
 
 **Session owner:** none. The last session was the Manifold adoption; nothing is held.
 
@@ -80,6 +80,7 @@ SESSION-LOG.md)
   YouTube yet.
 - **Printing** has only run in headless Chromium, deliberately: the owner chose (2026-09-26) to assume it works until a
   bug report says otherwise.
+- **The Tauri shell** (`src-tauri/`): never built or run in a session; no tests cover it (D-070).
 - **Also unobserved:** a real tab closed mid-write; colour hints with IME or dictation; Windows high-contrast mode; a
   screen reader hearing the autocomplete chips; the ad-blocker fix (D-055) confirmed with the owner's blocker on; the
   Windows test runner (not run since session 11).
@@ -98,8 +99,8 @@ SESSION-LOG.md)
 
 ## Next steps (in order)
 
-0. **Answer Q-004** (is `src-tauri/` a supported target?), then P8-12: record the decision and review its CSP and
-   capabilities, or remove the crate. That closes Phase 8.
+0. **P8-13:** harden the Tauri shell (CSP, `withGlobalTauri`, path-taking commands) and run `cargo build` once. That
+   closes Phase 8.
 1. **The owner's hands-on checks,** each a few minutes (whatever feels wrong is the next session's first job):
    - After a day of writing, **Library > Versions** on a real script: Go back, then Ctrl+Z.
    - **On an Android phone or tablet:** type at the bottom of a long script (three lines of room above the keyboard?);
@@ -123,7 +124,7 @@ The latest entry, "Touching Up the Page", covers everything up to session 28.
 
 ## Open questions for the owner
 
-Blocking: Q-004 (is the `src-tauri/` wrapper a supported target? blocks P8-12). Held tensions: T-001, T-002. The
+Nothing blocks the next steps (Q-004 is answered, D-070). Held tensions: T-001, T-002. The
 rest are product questions, not yet in DECISIONS.
 
 - Is the tour the right length and tone (four steps)? It has not been revised since session 8.

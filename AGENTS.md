@@ -155,6 +155,7 @@ Maintainer-reviewed work on `master`, owner-directed.
 | `docs/CONTRIBUTING.md` | The contribution workflow for people and agents |
 | `docs/CHANGELOG.md` | Writer-visible changes, newest first |
 | `docs/archive/` | History moved out of the live documents |
+| `src-tauri/` | The Tauri 2 desktop shell, how local builds are distributed: five Rust commands for native dialogs and paths; `build.rs` stages the web files into `dist/` (D-070) |
 | `docs/ARCHITECTURE.md` | The shape, code map, invariants and what enforces them, boundaries, state, failure modes, and where a claim outruns the code |
 | `docs/TESTING.md` | Every suite, what it proves and does not prove, the change-to-check matrix, manual checks and pitfalls |
 | `docs/SECURITY.md` | Assets, trust boundaries, secure development rules, reporting |
@@ -247,6 +248,7 @@ this list is what a change to the code must follow.
 | --- | --- | --- |
 | Owner's machine (Arch Linux) | Headless Chromium or Chrome for `npm run test:browser`; Firefox for hands-on checks | Windows runner (`test/run-headless.ps1`) not run since session 11 |
 | Cloud session | The branch it is given; `npm test` under Node | No `gh` CLI; GitHub-side changes are the owner's; no real devices |
+| Desktop build | Rust and Cargo for `npm run tauri:dev` / `tauri:build` | Not run in agent sessions; no tests cover the shell (D-070) |
 | Real devices | Only the owner's Android tablet and Firefox | Nothing else has been seen (HANDOFF, "Not checked yet") |
 
 ## Run and verify
@@ -256,6 +258,8 @@ Details, proof boundaries and pitfalls are in [docs/TESTING.md](docs/TESTING.md)
 - App: open `app.html` directly in a browser, or open `index.html` and follow the homepage's Start writing link. Served
   over http(s) (`npm run serve`) it also works offline and can be installed. **Add a new file the page loads to
   `APP_FILES` in `sw.js`** (the structure test fails until you do).
+- Desktop shell: `npm run tauri:dev` (run) and `npm run tauri:build` (release build). `src-tauri/dist/` and `src-tauri/target/`
+  are build output and stay ignored. Change `tauri.conf.json` or `main.rs` only under a roadmap item (P8-13).
 - Fast checks: `npm test` (Node 18+, developed on 24; unit and structure) and `python3 tools/check_docs.py`.
 - Full checks: add `npm run test:browser` (headless Chromium or Chrome, about 50 s, real time; `BROWSER=/path/to/chrome`
   picks the browser). On Windows, `npm run test:browser:windows`. Never add `--virtual-time-budget` back (D-019), and

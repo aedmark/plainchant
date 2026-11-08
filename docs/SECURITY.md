@@ -26,7 +26,7 @@ personal data. This is a single-owner project; there is no acknowledgement time 
 | Linked real files (File System Access, Chromium) | Overwriting a file changed elsewhere; broad file access | The writer picks each file; written only after `FileSync.decide` (D-046) | `files-ui.js` |
 | The service worker cache | A stale or poisoned offline copy | Same-origin files only, listed in `APP_FILES`; `CACHE` is bumped on removal; only over http(s) | `sw.js` |
 | Repository content and retrieved docs | Embedded instructions, prompt injection, invisible characters | Treated as data (AGENTS.md "Zones"); `tools/check_docs.py` rejects zero-width and bidirectional control characters once P8-10 lands | every agent |
-| The desktop wrapper (`src-tauri/`) | `csp: null` and `withGlobalTauri` give page script access to Tauri commands | Not reviewed; undocumented as a target (ARCHITECTURE, Claims vs. code; P8-12) | the owner |
+| The desktop shell (`src-tauri/`, how local builds are distributed, D-070) | With `csp: null` and `withGlobalTauri`, any script in the page can call `read_script_file` and `write_script_file` on any path the user can reach | Today only the structure test (the page loads nothing from outside); hardening is P8-13 | the owner |
 
 Architecture details belong in [ARCHITECTURE.md](ARCHITECTURE.md); this table records the security consequence.
 
@@ -47,8 +47,8 @@ Architecture details belong in [ARCHITECTURE.md](ARCHITECTURE.md); this table re
   returns.
 - The unit suite covers the escaping in the renderer.
 - Nothing yet checks the Content Security Policy: `app.html` sets none, and `src-tauri/tauri.conf.json` sets `null`.
-  A policy that forbids inline script and remote loads would back the structure test with a browser-enforced one. Not
-  planned; recorded here so it is a choice, not an oversight.
+  A policy that forbids inline script and remote loads would back the structure test with a browser-enforced one in
+  both the browser and the shell (P8-13).
 - No dependency scanning is needed: there are no runtime dependencies. The Rust crate's `Cargo.lock` is unaudited.
 
 ## Incident response

@@ -266,10 +266,14 @@ Each item is one commit; record the adoption decision (P8-01) first, since the r
   Done when it passes on the migrated docs and a planted bad `T-` reference and a zero-width space both fail it.
 - [x] P8-11 (2026-11-08; one-line lesson in SESSION-LOG session 34; Phase 8 stays open for P8-12) Consolidation pass at the end of the phase (the Manifold's finishing step 6): fold repeated lessons into
   `AGENTS.md` or DECISIONS, archive finished phases, and write one line on what the phase taught.
-- [ ] P8-12 Record or retire the `src-tauri/` desktop wrapper: it has no decision, its CSP is `null` and
+- [x] P8-12 (D-070, Q-004 answered by the owner, 2026-11-08) Record or retire the `src-tauri/` desktop wrapper: it has no decision, its CSP is `null` and
   `withGlobalTauri` is on (ARCHITECTURE "Claims vs. code", SECURITY). Found by the P8-03 survey (2026-11-08). Done when
   DECISIONS says whether it is a supported target and, if so, its CSP and capabilities are reviewed; or the crate is
-  removed with `tauri:*` scripts.
+  removed with `tauri:*` scripts. Done as: recorded (D-070); the review became P8-13.
+- [ ] P8-13 Harden the desktop shell (D-070): set a Content Security Policy, drop `withGlobalTauri` if the bridge works
+  without it, and narrow `read_script_file` / `write_script_file` so they only touch a path the writer picked in this
+  session. Add a Rust-side check and run `cargo build` once to see it still builds. Found by the P8-03 survey
+  (2026-11-08); the same `csp: null` is in `plainchant-web` and `plainchant-scribe` (other Zones, not changed here).
 
 ## Known limitations (deliberate, revisit)
 

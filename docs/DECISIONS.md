@@ -1228,6 +1228,28 @@ Doc moves are not behaviour changes: no app code is touched.
 **Review trigger:** The Manifold template changes its structure again, or a document in this set goes two phases
 without an edit (then it is deleted, per the template's own rule).
 
+## D-070 The Tauri 2 desktop shell is how local builds are distributed  (2026-11-08, status: accepted, recorded 2026-11-08; P8-12)
+**Context:** `src-tauri/` arrived in the "Website" commit `cf871d3`, made outside a session, so no document recorded it.
+The owner confirmed (2026-11-08) that Tauri is how local builds are distributed. `plainchant-web` and `plainchant-scribe`
+(other Zones) follow the same pattern. Q-004 asked whether it was supported.
+**Decision:**
+1. `src-tauri/` is the supported desktop build: `npm run tauri:dev` and `tauri:build` (`cargo run` / `cargo build
+   --release` on `src-tauri/Cargo.toml`). It loads `app.html` in a native window; `build.rs` stages the web files into
+   `src-tauri/dist/` (ignored, like `target/`).
+2. The web app stays the product and the shell stays thin (D-001 holds for the web code). The shell gives it native file
+   dialogs and real paths through five Rust commands (`pick_open_script`, `pick_save_script`, `read_script_file`,
+   `write_script_file`, `export_file`), which `files-ui.js` and `export.js` call when `window.__TAURI__` or
+   `__TAURI_INTERNALS__` exists. In a browser the File System Access path (D-046) or a download is used instead.
+3. The shell's own dependencies (`tauri`, `serde`, `serde_json`, `rfd`, `Cargo.lock`) are build-time and live outside the
+   web app's "no runtime dependency" rule; they are recorded in ARCHITECTURE.
+**Alternatives:** Browser only (no native dialogs or real paths; rejected by the owner's distribution choice). Electron
+(far larger; not considered further).
+**Consequences:** `app.security.csp` is `null` and `withGlobalTauri` is true, and `read_script_file` and
+`write_script_file` accept any path the page sends. That is acceptable only while the page loads nothing but its own files
+(structure test); a hardened CSP and narrower commands are review items (P8-13). The shell has no tests, and `cargo build`
+has not been run in a session (HANDOFF).
+**Review trigger:** The web app loads anything from outside the bundle, or a build is shared beyond the owner's machines.
+
 ## Held tensions
 
 A tension is two claims that are true and do not fit together yet. It is not an open question: an open question has an
@@ -1277,7 +1299,5 @@ HANDOFF's Next steps.
   editor for inline element styling (P2-08)?~~ Textarea plus an overlay (D-031).
 - ~~Q-002 Sync (Phase 5): local-file-first via the File System Access API, or hosted accounts?~~ Local files first (D-046).
 - ~~Q-003 iPhone and iPad (D-039): keep them as targets?~~ A distant future milestone, Phase 7 (D-040).
-- **Q-004** Is the `src-tauri/` desktop wrapper a supported target? It has no decision, `csp` is `null` and
-  `withGlobalTauri` is on. (asked 2026-11-08, by the P8-03 survey; blocks P8-12; recommendation: keep it only if you intend
-  to ship a desktop build, then review its capabilities and set a CSP; otherwise remove the crate and the `tauri:*`
-  scripts.)
+- ~~**Q-004** Is the `src-tauri/` desktop wrapper a supported target?~~ Answered 2026-11-08: yes, it is how local
+  builds are distributed (D-070). Its hardening is P8-13.

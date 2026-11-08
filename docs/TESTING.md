@@ -11,6 +11,7 @@ themselves live in HANDOFF's "Verified" table; this file is how to get them.
 | Structure | `test/structure.test.js` (part of `npm test`, Node only) | the app scripts, the page and `sw.js` agree; no inline script or style; no duplicate global name; no file over 500 lines; nothing loaded from another host; no tracker-like file name | that any of it runs | seconds |
 | Unit, browser | `test/index.html` | the same unit tests in a real engine | the app | part of the headless run |
 | App end to end | `test/app.e2e.html` | restore, save, library, typing, panes, print layout, themes and the accessibility sweep, in headless Chromium or Chrome with a real IndexedDB | Firefox, Safari, a real phone or tablet, real printing, a screen reader, an ad blocker | about 50 s, a browser |
+| Desktop shell | none | nothing: `cargo build` has not been run in a session and the Rust commands have no tests | the shell building, or the five commands working | `cargo build --manifest-path src-tauri/Cargo.toml` (P8-13) |
 | Docs | `tools/check_docs.py` | the documents agree with each other: IDs, links, tables, limits | that the prose is true of the code | under a second, Python 3 |
 
 **The fast set** (before every commit): `npm test` and `python3 tools/check_docs.py`.
