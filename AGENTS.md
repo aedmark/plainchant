@@ -90,7 +90,8 @@ Maintainer-reviewed work on `master`, owner-directed.
 - Commit finished, tested work without asking. Push when asked. Never force-push or rewrite history.
 - Ask first before: adding a dependency (there are none, D-001), deleting user data or changing a storage name,
   publishing or deploying anything, or crossing a Zone.
-- Version scheme: none; this is not a production release (D-020).
+- Version scheme: `v*` tags (`v1.0.0` onward) trigger cross-platform desktop draft releases (D-072); earlier work had no
+  production release (D-020).
 
 ## Maintainer preferences
 
@@ -163,6 +164,7 @@ Maintainer-reviewed work on `master`, owner-directed.
 | `docs/SESSION-LOG.md` | Append-only history, one entry per session, newest first (D-058) |
 | `docs/DECISIONS.md` | Append-only decision record |
 | `docs/devlog/` | The public dev diary: one HTML fragment per entry and `index.html` listing them, kept up as work lands (session protocol step 5); how to write one is in its README (D-053) |
+| `.github/workflows/` | GitHub Actions CI (`ci.yml`) and cross-platform Tauri release (`release.yml`) workflows (D-072) |
 
 ## App scripts (`src/app/`)
 

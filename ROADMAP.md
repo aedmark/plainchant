@@ -275,6 +275,10 @@ Each item is one commit; record the adoption decision (P8-01) first, since the r
   session. Add a Rust-side check and run `cargo build` once to see it still builds. Found by the P8-03 survey
   (2026-11-08); the same `csp: null` is in `plainchant-web` and `plainchant-scribe` (other Zones, not changed here).
 
+## Phase 9: Distribution and CI
+
+- [x] P9-01 (D-072, 2026-11-27; `npm test` 343/343, `npm run tauri:test` 4/4, `check_docs.py` 0 errors/0 warnings, release workflow triggered on `v1.0.0`) GitHub Actions CI (`ci.yml`) and cross-platform Tauri release workflow (`release.yml`) with `bundle` config and icons in `src-tauri/`.
+
 ## Known limitations (deliberate, revisit)
 
 - Notes (`[[...]]`) that span several lines are not recognised; single-line notes are.

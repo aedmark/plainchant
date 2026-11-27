@@ -6,7 +6,10 @@ before this file existed is summarised once under "Before this changelog", from 
 
 ## Unreleased
 
+## v1.0.0 (2026-11-27)
+
 ### Added
+- Cross-platform desktop installers (Linux, Windows, macOS universal) built and staged as a GitHub Release via GitHub Actions.
 - Find and Replace in the script (`Ctrl/Cmd+F`, `Ctrl/Cmd+H`), with highlighted matches and undoable replace.
 - A dockable Outline and Script stats drawer beside or below the Canvas (`Ctrl/Cmd+Shift+O`).
 

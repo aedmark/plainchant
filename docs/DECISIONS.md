@@ -1275,6 +1275,25 @@ print size intact) and the owner ran the real window on 2026-11-08 and said it w
 **Review trigger:** A feature needs a remote origin, a blob or data URL beyond images, or inline script; or a Tauri
 release changes how it merges a CSP.
 
+## D-072 GitHub Actions CI and cross-platform Tauri desktop releases  (2026-11-27, status: accepted; P9-01)
+**Context:** Plainchant's Tauri desktop shell (D-070, hardened in D-071) previously built only on the owner's machine
+and had no `bundle` configuration or platform icons (`icon.icns`, `icon.ico`). The owner asked to add GitHub Actions
+CI and publish the first cross-platform release using `plainchant-web`'s workflows as a template.
+**Decision:**
+1. Add `.github/workflows/ci.yml` (runs `npm test`, `python3 tools/check_docs.py`, `cargo test`, and `cargo build` on
+   `push` and `pull_request` to `master`).
+2. Add `.github/workflows/release.yml` (on `v*` tags or `workflow_dispatch`: verifies `npm test`, `check_docs.py`, and
+   `cargo test`, then builds Tauri bundles across `ubuntu-22.04`, `windows-latest`, and `macos-latest` with
+   `--target universal-apple-darwin` via `tauri-apps/tauri-action@v0` into a draft GitHub Release).
+3. Configure `"bundle"` (`"targets": "all"`, category `Productivity`) in `src-tauri/tauri.conf.json` and generate the
+   cross-platform icon set in `src-tauri/icons/` from `src-tauri/icons/icon.png` while preserving D-071's strict CSP and
+   `withGlobalTauri: false`.
+**Alternatives:** Manual local builds only (cannot produce Windows or macOS bundles from Arch Linux). Publishing
+releases immediately instead of as drafts (drafts let the owner inspect artifacts before making them public).
+**Consequences:** Tagging `v*` (starting with `v1.0.0`) produces draft installers for Linux, Windows, and macOS
+universal; `AGENTS.md`'s version-scheme note reflects `v*` release tags alongside D-020's historical note.
+**Review trigger:** Tauri or `tauri-action` major version changes, or adding code signing / notarization secrets.
+
 ## Held tensions
 
 A tension is two claims that are true and do not fit together yet. It is not an open question: an open question has an

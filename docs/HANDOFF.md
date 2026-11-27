@@ -14,21 +14,17 @@ Plan: [ROADMAP.md](../ROADMAP.md). Architecture: [ARCHITECTURE.md](ARCHITECTURE.
 
 ## Current state
 
-_Last updated: 2026-11-08, session 34, on `master`: the Manifold adoption (Phase 8, D-069) is under way. P8-01 to P8-09
-are done: `AGENTS.md` is the canonical instruction file, and ARCHITECTURE, TESTING, SECURITY, CONTRIBUTING, CHANGELOG,
-the docs map and the archive exist; the checker reads them all (P8-10) and the consolidation ran (P8-11). P8-12 is
-done (D-070: the Tauri shell is how local builds ship); P8-13 hardened it (D-071). No app code changed. `index.html` and `src/home.css` carry the owner's uncommitted edits._
+_Last updated: 2026-11-27, session 35, on `master`: GitHub Actions CI (`ci.yml`) and cross-platform Tauri release (`release.yml`) workflows are in place (P9-01, D-072), `src-tauri/` is configured with bundle targets and icons, and `v1.0.0` is tagged to build a draft GitHub Release._
 
-**Session owner:** none. The last session was the Manifold adoption; nothing is held.
+**Session owner:** none.
 
-**Verified** (2026-11-08, on `98694c1` plus the P8-13 changes, Arch Linux, Node 22.23, Google Chrome 157 headless): every row was run this
-session.
+**Verified** (2026-11-27, on `master`, Arch Linux):
 
 | Suite | Result |
 | --- | --- |
 | `npm test` (Node: unit and structure) | **343/343** |
-| `npm run test:browser`, unit | **331/331** |
-| `npm run test:browser`, e2e | **742 passed, 0 failed** |
+| `npm run test:browser`, unit (2026-11-08, `98694c1`) | **331/331** |
+| `npm run test:browser`, e2e (2026-11-08, `98694c1`) | **742 passed, 0 failed** |
 | `npm run tauri:test` (Rust) | **4/4** |
 | `python3 tools/check_docs.py` | **0 errors, 0 warnings** |
 
@@ -100,7 +96,7 @@ SESSION-LOG.md)
 
 ## Next steps (in order)
 
-0. Phase 8 is closed. No step is pending from it.
+0. Review and publish the `v1.0.0` draft release in GitHub Releases once `.github/workflows/release.yml` finishes building Linux, Windows, and macOS universal bundles.
 1. **The owner's hands-on checks,** each a few minutes (whatever feels wrong is the next session's first job):
    - After a day of writing, **Library > Versions** on a real script: Go back, then Ctrl+Z.
    - **On an Android phone or tablet:** type at the bottom of a long script (three lines of room above the keyboard?);

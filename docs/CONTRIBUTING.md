@@ -45,6 +45,10 @@ There is no production release, so storage names may change without a migration 
 do. A script exported as Fountain stays valid Fountain. A change to the database version needs the upgrade path
 exercised against a database from the earlier version, not only a fresh profile.
 
+## Releases
+
+Push and pull-request checks run in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml). Tagging `v*` (for example `v1.0.0`) runs [`.github/workflows/release.yml`](../.github/workflows/release.yml), which verifies the Node, docs, and Rust suites and builds cross-platform Tauri bundles into a draft GitHub Release (D-072).
+
 ## Reporting security issues
 
 Do not open a public issue for a suspected vulnerability. Follow [SECURITY.md](SECURITY.md).

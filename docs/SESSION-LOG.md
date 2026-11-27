@@ -33,6 +33,20 @@ Entries before session 34 have no Contributor, Verified, Not verified or Correct
 
 <!-- NEW ENTRIES GO HERE -->
 
+### Session 35: 2026-11-27: GitHub Actions CI and v1.0.0 cross-platform release
+
+**Contributor:** Antigravity, at the owner's request.
+**Goal:** Add GitHub Actions CI and cross-platform Tauri release workflows modeled on `plainchant-web`, configure Tauri bundling and icons, and trigger the `v1.0.0` draft release.
+**Done:** P9-01 (D-072).
+**Changed:** `.github/workflows/ci.yml` (new), `.github/workflows/release.yml` (new), `src-tauri/tauri.conf.json` (added `bundle` config, preserved D-071 CSP and `withGlobalTauri: false`), `src-tauri/icons/` (generated cross-platform icons via `cargo tauri icon`), `ROADMAP.md`, `docs/DECISIONS.md`, `AGENTS.md`, `docs/CHANGELOG.md`, `docs/CONTRIBUTING.md`, `docs/HANDOFF.md`, `docs/SESSION-LOG.md`.
+**Decisions:** D-072.
+**Verified:** `npm test` 343/343; `npm run tauri:test` 4/4; `python3 tools/check_docs.py` 0 errors, 0 warnings.
+**Not verified:** `npm run test:browser` was not re-run (no app or web files changed; 2026-11-08 results remain in HANDOFF); GitHub Actions cross-platform builds run asynchronously on GitHub after pushing `v1.0.0`.
+**Problems / surprises:** none.
+**Corrections:** none.
+**Left undone:** owner review and publication of the `v1.0.0` draft release on GitHub once the workflow finishes.
+**Next session should start with:** confirming the `v1.0.0` GitHub Release artifacts and the owner's hands-on checks (HANDOFF, Next steps 1).
+
 ### Session 34: 2026-11-08: Adopting the Manifold's repository-memory scheme (Phase 8)
 
 **Contributor:** Claude (Sonnet 5.5), at the owner's request.
